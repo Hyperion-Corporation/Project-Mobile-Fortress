@@ -1,0 +1,53 @@
+name: 🐛 Bug Report
+description: Report a defect (structured for humans and coding agents)
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. Device/API level and repro steps speed up triage a lot for Android bugs.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected area
+      options:
+        - Game loop / rendering (GameLoop, GameView, engine/)
+        - Lifecycle (Activity, SurfaceView, save/restore)
+        - UI (Compose menus/HUD)
+        - Optional backend (infra/)
+        - Build / tooling (Gradle, CI)
+        - Other / unknown
+    validations:
+      required: true
+
+  - type: input
+    id: device
+    attributes:
+      label: Device and Android version
+      placeholder: "e.g. Pixel 7, Android 15 (API 35)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Expected vs actual behavior.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Minimal, exact steps — commands, inputs, environment.
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logcat output
+      render: shell

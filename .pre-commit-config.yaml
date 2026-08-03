@@ -1,0 +1,80 @@
+# Pre-commit hooks for this repository.
+#
+# Install once: pip install pre-commit && pre-commit install
+# Run manually: pre-commit run --all-files
+# Update hooks: pre-commit autoupdate
+#
+# Gate philosophy:
+#   - Blocking: ktlint, Android Lint (on touched files), keystore-file guard
+#   - Advisory: lychee (markdown link check), Swift build-analyze (macOS only, skipped elsewhere)
+
+repos:
+  # ── General file hygiene ─────────────────────────────────────────────────
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+        args: [--allow-multiple-documents]
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: [--maxkb=5000]
+      - id: mixed-line-ending
+        args: [--fix=lf]
+
+  # ── Keystore/secrets guard ───────────────────────────────────────────────
+  - repo: local
+    hooks:
+      - id: no-keystore-files
+        name: Refuse to commit keystore/signing files
+        language: fail
+        entry: "Refusing to commit a keystore/signing file. Use local.properties / CI secrets instead."
+        files: \.(jks|keystore)$
+
+  # ── Kotlin: ktlint ────────────────────────────────────────────────────────
+  - repo: local
+    hooks:
+      - id: ktlint
+        name: ktlint (android/app/)
+        language: system
+        entry: bash -c './android/gradlew -p android ktlintCheck'
+        files: ^android/app/.*\.kt$
+        pass_filenames: false
+
+  # ── Android Lint ──────────────────────────────────────────────────────────
+  - repo: local
+    hooks:
+      - id: android-lint
+        name: Android Lint (android/app/)
+        language: system
+        entry: bash -c './android/gradlew -p android lintDebug'
+        files: ^android/app/src/main/.*\.(kt|xml)$
+        pass_filenames: false
+
+  # ── Swift: build-analyze (macOS only) ────────────────────────────────────
+  - repo: local
+    hooks:
+      - id: swift-analyze
+        name: xcodebuild analyze (ios/, macOS only — no-op elsewhere)
+        language: system
+        entry: >-
+          bash -c 'if [ "$(uname -s)" = "Darwin" ]; then
+          xcodebuild -project ios/MyGame.xcodeproj -scheme MyGame -configuration Debug analyze;
+          else echo "Skipping xcodebuild analyze: not on macOS."; fi'
+        files: ^ios/.*\.swift$
+        pass_filenames: false
+
+  # ── Markdown: link checker ───────────────────────────────────────────────
+  - repo: https://github.com/lycheeverse/lychee
+    rev: lychee-v0.15.1
+    hooks:
+      - id: lychee
+        name: lychee (markdown link check)
+        args:
+          - --verbose
+          - --no-progress
+          - --include-verbatim
+        files: \.(md|markdown)$
+        pass_filenames: true

@@ -1,0 +1,17 @@
+# tools/docs/justfile
+# MkDocs documentation site recipes.
+
+set shell := ["bash", "-c"]
+set working-directory := '../..'
+
+cyan := '\033[0;36m'
+reset := '\033[0m'
+
+# Build the MkDocs documentation site
+build:
+    @echo -e "{{cyan}}Building MkDocs site...{{reset}}"
+    mkdocs build --config-file docs/mkdocs.yml --strict
+
+# Serve the docs site locally with live reload
+serve:
+    mkdocs serve --config-file docs/mkdocs.yml
