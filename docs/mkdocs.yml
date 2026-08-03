@@ -1,0 +1,48 @@
+site_name: Mobile-Game-Template Documentation
+site_description: >-
+  Documentation portal for repositories generated from Mobile-Game-Template.
+site_author: ACFHarbinger
+repo_url: https://github.com/ACFHarbinger/Mobile-Game-Template
+repo_name: ACFHarbinger/Mobile-Game-Template
+edit_uri: edit/main/docs/
+
+docs_dir: .
+site_dir: ../site
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: green
+      accent: green
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: green
+      accent: green
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.top
+    - navigation.indexes
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+  icon:
+    repo: fontawesome/brands/github
+
+plugins:
+  - search
+
+nav:
+  - Home: index.md
+  - Architecture: ARCHITECTURE.md
+  - Development: DEVELOPMENT.md
+  - Testing: TESTING.md
+  - Glossary: GLOSSARY.md
+  - Architecture Decisions: adr/

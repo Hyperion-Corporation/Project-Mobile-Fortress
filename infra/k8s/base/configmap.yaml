@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: game-backend-config
+data:
+  LOG_LEVEL: "info"
+  PORT: "8080"
