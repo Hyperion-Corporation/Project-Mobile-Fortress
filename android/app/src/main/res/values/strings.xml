@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Game Template</string>
+    <string name="menu_play">Play</string>
+    <string name="menu_settings">Settings</string>
+    <string name="pause_resume">Resume</string>
+    <string name="pause_quit">Quit</string>
+    <string name="content_description_game_surface">Game play area</string>
+</resources>
