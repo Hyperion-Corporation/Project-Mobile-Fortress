@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Level",
+  "description": "Shape of files under core/assets/levels/. Implemented natively by ios/MyGame/Resources/Levels/LevelLoader.swift today; a future Kotlin loader on the Android side should implement against this same schema rather than inventing a parallel shape.",
+  "type": "object",
+  "required": ["id", "displayName", "enemySpawnIntervalSeconds", "waves"],
+  "properties": {
+    "id": { "type": "string" },
+    "displayName": { "type": "string" },
+    "enemySpawnIntervalSeconds": { "type": "number", "minimum": 0 },
+    "waves": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["delaySeconds", "enemyCount", "spawnPattern"],
+        "properties": {
+          "delaySeconds": { "type": "number", "minimum": 0 },
+          "enemyCount": { "type": "integer", "minimum": 1 },
+          "spawnPattern": { "type": "string", "enum": ["row", "scattered"] }
+        }
+      }
+    }
+  }
+}
