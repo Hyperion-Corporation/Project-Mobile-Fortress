@@ -1,0 +1,19 @@
+# tools/helper/justfile
+# Shared header/utility recipes imported by the root justfile.
+
+set shell := ["bash", "-c"]
+set working-directory := '../..'
+
+blue := '\033[0;34m'
+bold := '\033[1m'
+reset := '\033[0m'
+
+# Canonical header — imported by root justfile as helper::_print_header
+_print_header:
+    @echo -e "{{blue}}╔══════════════════════════════════════════════════════════════════════╗{{reset}}"
+    @echo -e "{{blue}}║                    Mobile-Game-Template Control                     ║{{reset}}"
+    @echo -e "{{blue}}╚══════════════════════════════════════════════════════════════════════╝{{reset}}"
+
+# List all available recipes
+help:
+    @just --list --unsorted

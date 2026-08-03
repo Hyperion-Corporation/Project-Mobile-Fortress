@@ -1,0 +1,50 @@
+name: Agent Backlog Sync
+
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "Why are you running this?"
+        required: false
+        default: "Manual trigger"
+
+# Cancel in-progress runs for the same branch on new push
+concurrency:
+  group: agent-sync-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sync-backlog:
+    name: Gemini-driven Project Board sync
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2   # need HEAD~1 to diff the pushed commit
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: latest
+
+      - name: Install script dependencies (ci extra, skip C++ build)
+        run: uv sync --frozen --extra ci --no-install-project
+
+      - name: Run backlog sync
+        run: uv run python backend/scripts/github/sync_backlog.py
+        env:
+          PYTHONPATH: .
+          GH_PROJECT_TOKEN: ${{ secrets.PROJECT_ISSUES_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_SHA: ${{ github.sha }}
+          PROJECT_NUMBER: ${{ vars.PROJECT_NUMBER }}
+          GITHUB_PROJECT_OWNER: ${{ github.repository_owner }}
