@@ -1,0 +1,26 @@
+# tools/validation/justfile
+# Formatting/static-analysis recipes — mirrored by .github/workflows/ci.yml.
+
+set shell := ["bash", "-c"]
+set working-directory := '../..'
+
+cyan := '\033[0;36m'
+green := '\033[0;32m'
+reset := '\033[0m'
+
+# Run ktlint + Android Lint
+check:
+    @echo -e "{{ cyan }}Running ktlint + Android Lint (android/)...{{ reset }}"
+    ./android/gradlew -p android ktlintCheck lintDebug
+
+# Auto-fix ktlint formatting issues
+fix:
+    ./android/gradlew -p android ktlintFormat
+    @echo -e "{{ green }}✓ Kotlin sources reformatted.{{ reset }}"
+
+# Static-analyze the iOS sources — no SwiftLint config ships by default with
+# this template (see docs/DEVELOPMENT.md); this just exercises the Swift
+# compiler's own warnings via a build-for-analyzing pass.
+ios-check:
+    @echo -e "{{ cyan }}Analyzing MyGame (ios/)...{{ reset }}"
+    xcodebuild -project ios/MyGame.xcodeproj -scheme MyGame -configuration Debug analyze

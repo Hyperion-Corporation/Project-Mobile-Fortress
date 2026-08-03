@@ -1,0 +1,6 @@
+---
+- name: Provision the optional leaderboards/cloud-save backend host
+  hosts: backend
+  become: true
+  roles:
+    - app

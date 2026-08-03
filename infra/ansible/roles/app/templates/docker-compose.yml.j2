@@ -1,0 +1,8 @@
+services:
+  backend:
+    image: ghcr.io/example/mobile-game-template-backend:{{ backend_version | default('latest') }}
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      DATABASE_URL: "{{ database_url }}"
