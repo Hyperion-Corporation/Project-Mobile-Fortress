@@ -1,0 +1,51 @@
+# --- Android (android/) ---
+*.iml
+android/.gradle
+android/local.properties
+android/.idea/caches
+android/.idea/libraries
+android/.idea/modules.xml
+android/.idea/workspace.xml
+android/.idea/navEditor.xml
+android/.idea/assetWizardSettings.xml
+.DS_Store
+android/build
+android/app/build
+android/captures
+android/.externalNativeBuild
+android/.cxx
+local.properties
+
+# Android Studio / IntelliJ
+*.iws
+android/.idea/*
+!android/.idea/codeStyles
+!android/.idea/runConfigurations
+
+# Keystores — never commit signing material
+*.jks
+*.keystore
+
+# Log/profiling
+*.hprof
+
+# Gradle
+.gradle/
+android/gradle/wrapper/gradle-wrapper.jar.sha256
+
+# --- iOS (ios/) ---
+ios/build/
+ios/DerivedData/
+ios/*.xcarchive
+ios/MyGame.xcodeproj/xcuserdata/
+ios/MyGame.xcodeproj/project.xcworkspace/xcuserdata/
+ios/MyGame.xcodeproj/project.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
+*.xcuserstate
+*.xcuserdatad/
+
+# Generated docs site
+/site
+
+# Env
+.env
+.kotlin/

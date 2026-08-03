@@ -1,0 +1,10 @@
+{
+  "id": "level_01",
+  "displayName": "Level 1",
+  "enemySpawnIntervalSeconds": 1.2,
+  "waves": [
+    { "delaySeconds": 0.0, "enemyCount": 3, "spawnPattern": "row" },
+    { "delaySeconds": 8.0, "enemyCount": 5, "spawnPattern": "scattered" },
+    { "delaySeconds": 18.0, "enemyCount": 8, "spawnPattern": "scattered" }
+  ]
+}

@@ -1,0 +1,19 @@
+# tools/reducer/justfile
+# Cleanup recipes.
+
+set shell := ["bash", "-c"]
+set working-directory := '../..'
+
+yellow := '\033[0;33m'
+reset := '\033[0m'
+
+# Clean all Gradle build outputs (android/)
+clean:
+    @echo -e "{{yellow}}Cleaning Gradle build outputs (android/)...{{reset}}"
+    ./android/gradlew -p android clean
+
+# Clean Xcode build/archive outputs (ios/) — macOS host only
+clean-ios:
+    @echo -e "{{yellow}}Cleaning Xcode build outputs (ios/)...{{reset}}"
+    rm -rf ios/build
+    xcodebuild -project ios/MyGame.xcodeproj -scheme MyGame clean
