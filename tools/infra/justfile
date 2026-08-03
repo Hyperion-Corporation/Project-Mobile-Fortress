@@ -1,0 +1,18 @@
+# tools/infra/justfile
+# Optional backend (leaderboards/cloud-save) recipes — see infra/docker/README.md.
+# Not required for a purely offline game.
+
+set shell := ["bash", "-c"]
+set working-directory := '../..'
+
+cyan := '\033[0;36m'
+reset := '\033[0m'
+
+# Start the optional backend stack locally
+docker-up:
+    @echo -e "{{cyan}}Starting optional backend stack...{{reset}}"
+    docker compose -f infra/docker/docker-compose.yml up --build
+
+# Stop the optional backend stack
+docker-down:
+    docker compose -f infra/docker/docker-compose.yml down
