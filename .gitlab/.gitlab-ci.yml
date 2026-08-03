@@ -1,0 +1,180 @@
+# GitLab CI/CD Pipeline
+# Equivalent translation of GitHub Actions: ci, docs, release
+# (agent_sync.yml is GitHub-Projects-API-only -- see .forgejo/.gitea's
+# guard-failing equivalent; not ported here since GitLab has no matching
+# workflow_dispatch-triggered job in the .github source to translate).
+
+stages:
+  - test
+  - build
+  - docs
+  - release
+
+variables:
+  GIT_DEPTH: "1"
+
+# ==========================================
+# STAGE: TEST (Android lint/unit + iOS XCTest)
+# ==========================================
+android-lint-and-unit-test:
+  stage: test
+  image: eclipse-temurin:17-jdk
+  variables:
+    GRADLE_USER_HOME: "$CI_PROJECT_DIR/.gradle"
+  cache:
+    key: "gradle-${CI_JOB_NAME}"
+    paths:
+      - .gradle/wrapper
+      - .gradle/caches
+  script:
+    - cd android
+    - ./gradlew ktlintCheck
+    - ./gradlew lintDebug
+    - ./gradlew testDebugUnitTest
+  artifacts:
+    when: always
+    paths:
+      - android/app/build/test-results/testDebugUnitTest/
+      - android/app/build/reports/jacoco/
+    expire_in: 14 days
+
+android-build-debug:
+  stage: build
+  image: eclipse-temurin:17-jdk
+  needs:
+    - android-lint-and-unit-test
+  variables:
+    GRADLE_USER_HOME: "$CI_PROJECT_DIR/.gradle"
+  cache:
+    key: "gradle-${CI_JOB_NAME}"
+    paths:
+      - .gradle/wrapper
+      - .gradle/caches
+  script:
+    - cd android
+    - ./gradlew assembleDebug
+  artifacts:
+    paths:
+      - android/app/build/outputs/apk/debug/*.apk
+
+# Android instrumented tests need a KVM-capable runner with an Android
+# emulator image available -- GitLab has no equivalent to
+# reactivecircus/android-emulator-runner as a managed action. This job
+# assumes a self-hosted runner tagged `android-emulator` with KVM and the
+# Android SDK/emulator preinstalled; adjust `tags:` to match your actual
+# runner setup, or drop this job if no such runner exists.
+android-instrumented-tests:
+  stage: test
+  needs:
+    - android-lint-and-unit-test
+  tags:
+    - android-emulator
+  parallel:
+    matrix:
+      - API_LEVEL: [29, 35]
+  script:
+    - cd android
+    - $ANDROID_HOME/emulator/emulator -avd "test-api-${API_LEVEL}" -no-window -no-audio -no-boot-anim &
+    - $ANDROID_HOME/platform-tools/adb wait-for-device
+    - ./gradlew connectedDebugAndroidTest
+  allow_failure: true # best-effort: depends entirely on the runner's emulator image being present
+
+# iOS tests need a macOS runner (Xcode) -- GitLab.com's shared macOS
+# runners are a paid tier; self-hosted needs a macOS runner tagged
+# `macos`/`saas-macos-medium-m1` or similar. Adjust `tags:` to match your
+# actual runner.
+ios-test:
+  stage: test
+  tags:
+    - macos
+  script:
+    - xcodebuild -project ios/MyGame.xcodeproj -scheme MyGame -destination 'platform=iOS Simulator,name=iPhone 15' test
+  allow_failure: true # best-effort: depends on a macOS runner being registered
+
+# ==========================================
+# STAGE: DOCS
+# ==========================================
+docs-mkdocs:
+  stage: docs
+  image: python:3.12
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+      changes:
+        - "docs/**/*"
+  script:
+    - pip install mkdocs-material
+    - mkdocs build --config-file docs/mkdocs.yml --strict --site-dir public
+  artifacts:
+    paths:
+      - public/
+
+pages:
+  stage: docs
+  image: alpine:latest
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+      changes:
+        - "docs/**/*"
+  dependencies:
+    - docs-mkdocs
+  script:
+    - echo "Deploying MkDocs site to GitLab Pages..."
+  artifacts:
+    paths:
+      - public
+
+# ==========================================
+# STAGE: RELEASE (Android signed build + GitLab Release)
+# ==========================================
+android-release:
+  stage: release
+  image: eclipse-temurin:17-jdk
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/'
+  variables:
+    GRADLE_USER_HOME: "$CI_PROJECT_DIR/.gradle"
+  before_script:
+    - cd android
+    - |
+      if [ -n "${ANDROID_KEYSTORE_BASE64:-}" ]; then
+        echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > release.keystore
+      else
+        echo "No ANDROID_KEYSTORE_BASE64 CI/CD variable configured -- skipping signed build steps that require it." >&2
+      fi
+  script:
+    - export ANDROID_KEYSTORE_PATH="$CI_PROJECT_DIR/android/release.keystore"
+    - ./gradlew bundleRelease
+    - ./gradlew assembleRelease
+  after_script:
+    - rm -f android/release.keystore
+  artifacts:
+    paths:
+      - android/app/build/outputs/bundle/release/*.aab
+      - android/app/build/outputs/apk/release/*.apk
+
+# GitLab's native Release feature (equivalent of softprops/action-gh-release)
+# needs the dedicated release-cli image/job shape -- a separate job, not a
+# `release:` block inside the build job itself, so the build job's own
+# image doesn't need release-cli installed.
+create-release:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/'
+  needs:
+    - android-release
+  script:
+    - echo "Creating release $CI_COMMIT_TAG"
+  release:
+    tag_name: "$CI_COMMIT_TAG"
+    description: |
+      Release $CI_COMMIT_TAG
+
+      Build artifacts (.aab/.apk) are attached to the `android-release` job
+      for this pipeline -- see ${CI_PROJECT_URL}/-/pipelines/${CI_PIPELINE_ID}.
+      (Not linked directly as release assets: that needs the specific job ID,
+      which isn't available as a simple predefined variable for a job other
+      than the one running this script.)
+
+# iOS release (App Store Connect signing/export) is not automated here --
+# see moon/roadmaps/ios.md.
