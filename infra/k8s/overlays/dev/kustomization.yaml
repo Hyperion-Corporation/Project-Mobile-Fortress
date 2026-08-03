@@ -1,0 +1,20 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: game-backend-dev
+resources:
+  - ../../base
+patches:
+  - target:
+      kind: Deployment
+      name: game-backend
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+  - target:
+      kind: Ingress
+      name: game-backend
+    patch: |-
+      - op: replace
+        path: /spec/rules/0/host
+        value: api-dev.game-backend.example.com

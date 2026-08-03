@@ -1,0 +1,42 @@
+# tools/build/justfile
+# Gradle (android/) and Xcode (ios/) build/install recipes. Gradle is always
+# invoked via the wrapper script directly (./android/gradlew), never a bare
+# `gradle` or a `cd android &&` — the wrapper resolves its own project
+# directory from its own path, so this works unchanged from the repo root.
+
+set shell := ["bash", "-c"]
+set working-directory := '../..'
+
+cyan := '\033[0;36m'
+reset := '\033[0m'
+
+# --- Android ---
+
+# Assemble the debug APK
+debug:
+    @echo -e "{{cyan}}Assembling debug APK (android/)...{{reset}}"
+    ./android/gradlew -p android assembleDebug
+
+# Assemble a signed release App Bundle (.aab) for the Play Store
+release:
+    @echo -e "{{cyan}}Assembling release bundle (android/)...{{reset}}"
+    ./android/gradlew -p android bundleRelease
+
+# Install the debug build on a connected device/emulator
+install:
+    ./android/gradlew -p android installDebug
+
+# --- iOS ---
+# xcodebuild requires a macOS host — see .devcontainer/README.md.
+
+# Build the iOS app (Debug, simulator) without running it
+ios-build:
+    @echo -e "{{cyan}}Building MyGame for iOS Simulator (ios/)...{{reset}}"
+    xcodebuild -project ios/MyGame.xcodeproj -scheme MyGame -configuration Debug \
+        -destination 'generic/platform=iOS Simulator' build
+
+# Archive the iOS app (Release) — produces an unsigned .xcarchive; export/signing is not automated (see moon/roadmaps/ios.md)
+ios-archive:
+    @echo -e "{{cyan}}Archiving MyGame (ios/)...{{reset}}"
+    xcodebuild -project ios/MyGame.xcodeproj -scheme MyGame -configuration Release \
+        -archivePath ios/build/MyGame.xcarchive archive
