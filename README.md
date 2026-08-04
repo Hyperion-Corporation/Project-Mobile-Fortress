@@ -1,18 +1,18 @@
 <div align="center">
 
-# Mobile-Game-Template
+# Mobile Fortress
 
-**A batteries-included GitHub template for a two-platform mobile game — real, idiomatic Android Studio (Kotlin) and Xcode (Swift) app modules, sharing assets, plus CI/CD, docs, containerization, and LLM agent scaffolding.**
+**A cooperative tower-defense mobile game set in 1520s Sengoku Japan — defend a Daimyo's castle, command Ashigaru, Matchlock gunners, and Samurai hero-commanders, and extend the fight into a clan-based territory meta-game. Built as real, idiomatic Android Studio (Kotlin) and Xcode (Swift) app modules, sharing a planned Rust simulation core, CI/CD, docs, containerization, and LLM agent scaffolding.**
 
-<a href="https://github.com/ACFHarbinger/Mobile-Game-Template/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/ACFHarbinger/Mobile-Game-Template/actions/workflows/ci.yml/badge.svg"></a>
-<a href="https://github.com/ACFHarbinger/Mobile-Game-Template/actions/workflows/docs.yml"><img alt="Docs" src="https://github.com/ACFHarbinger/Mobile-Game-Template/actions/workflows/docs.yml/badge.svg"></a>
+<a href="https://github.com/ACFHarbinger/Project-Mobile-Fortress/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/ACFHarbinger/Project-Mobile-Fortress/actions/workflows/ci.yml/badge.svg"></a>
+<a href="https://github.com/ACFHarbinger/Project-Mobile-Fortress/actions/workflows/docs.yml"><img alt="Docs" src="https://github.com/ACFHarbinger/Project-Mobile-Fortress/actions/workflows/docs.yml/badge.svg"></a>
 <img alt="PRs Welcome" src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg">
 
 </br>
 
-<a href="https://github.com/ACFHarbinger/Mobile-Game-Template/releases"><img alt="Release" src="https://img.shields.io/github/v/release/ACFHarbinger/Mobile-Game-Template?include_prereleases&logo=github&color=blue"></a>
+<a href="https://github.com/ACFHarbinger/Project-Mobile-Fortress/releases"><img alt="Release" src="https://img.shields.io/github/v/release/ACFHarbinger/Project-Mobile-Fortress?include_prereleases&logo=github&color=blue"></a>
 <a href="LICENSE.md"><img alt="License" src="https://img.shields.io/badge/License-AGPL--3.0%20%2F%20Commercial-blue.svg"></a>
-<a href="https://github.com/ACFHarbinger/Mobile-Game-Template/issues"><img alt="Open Issues" src="https://img.shields.io/github/issues/ACFHarbinger/Mobile-Game-Template?color=yellow"></a>
+<a href="https://github.com/ACFHarbinger/Project-Mobile-Fortress/issues"><img alt="Open Issues" src="https://img.shields.io/github/issues/ACFHarbinger/Project-Mobile-Fortress?color=yellow"></a>
 
 </br>
 
@@ -34,18 +34,20 @@
 
 ## About
 
-`Mobile-Game-Template` is a GitHub template repository for a **two-platform mobile game**: a Kotlin Android client under [`android/`](android/) and a Swift iOS client under [`ios/`](ios/). Unlike a generic app scaffold, it ships real, working (if minimal) game skeletons on both platforms — Android: a `SurfaceView`-based render surface on a fixed-timestep game loop thread; iOS: a SpriteKit `SKScene` — following each platform's official conventions exactly (standard Android Studio / Gradle Kotlin DSL layout, standard Xcode project layout). Raw assets and a documented (non-compiled) shared spec live under [`core/`](core/) — see `core/README.md` for exactly what's shared today vs. aspirational. Around all of that, it carries the same cross-cutting agentic/DevOps/docs framework (`.agent/`, `docs/`, `moon/`, `.github/`, `infra/`) used across this org's other project templates.
+**Mobile Fortress** is a cooperative tower-defense mobile game: players defend a Sengoku-era Daimyo's castle against sieging armies, then extend that fight into a light 4X-style clan/territory meta-game. The design targets an underserved market gap identified in [`reports/Tower Defense Market Research.md`](reports/Tower%20Defense%20Market%20Research.md) — a AAA-quality Feudal Japan setting is largely absent from the current top-grossing tower-defense/4X-hybrid charts.
 
-Use **"Use this template"** on GitHub to create a new repository, rename the Android package from `com.example.gametemplate` and the iOS bundle ID from `com.example.mygame`, and start building.
+The game is a **two-platform mobile client**: a Kotlin Android client under [`android/`](android/) and a Swift iOS client under [`ios/`](ios/), each following its platform's official conventions exactly (standard Android Studio / Gradle Kotlin DSL layout, standard Xcode project layout) — Android renders via a `SurfaceView` on a fixed-timestep game loop thread, iOS via a SpriteKit `SKScene`. Both clients are converging on a shared Rust simulation core (ECS via `hecs`, bridged with UniFFI) so Co-Op multiplayer sessions stay deterministic across platforms — see [`research/Multiplayer Tower Defense Implementation.md`](research/Multiplayer%20Tower%20Defense%20Implementation.md) for the full technical rationale and [`moon/roadmaps/shared_core.md`](moon/roadmaps/shared_core.md) for the migration plan. Raw assets and the shared spec live under [`core/`](core/) — see `core/README.md` for exactly what's shared today vs. planned. Around all of that, the repository carries a cross-cutting agentic/DevOps/docs framework (`.agent/`, `docs/`, `moon/`, `.github/`, `infra/`) shared with this org's other project templates.
+
+See [`moon/ROADMAP.md`](moon/ROADMAP.md) for the full game concept, architecture decisions, and phased delivery plan.
 
 ## Why SurfaceView + Canvas (Android) / SpriteKit (iOS)?
 
-This template targets simple, dependency-light 2D games (arcade, puzzle, roguelike-lite) on each platform independently — it is **not** a shared cross-platform engine. Android uses `SurfaceView` + a dedicated fixed-timestep loop thread; iOS uses SpriteKit's own display-link-driven `update(_:)`, with a clamped per-frame delta for the same "don't spiral after a long pause" reason. Jetpack Compose / SwiftUI are used for chrome around each game surface (menus, HUD, settings). For 3D, physics-heavy games, or a genuinely shared cross-platform core, see [`.agent/AGENTS.md`](.agent/AGENTS.md) §1.1, [`docs/adr/0002-rendering-approach.md`](docs/adr/0002-rendering-approach.md), [`docs/adr/0003-ios-rendering-approach.md`](docs/adr/0003-ios-rendering-approach.md), and [`moon/roadmaps/shared_core.md`](moon/roadmaps/shared_core.md).
+This project targets simple, dependency-light 2D game clients (per platform, ahead of the shared Rust core landing) on each platform independently — it is **not** a shared cross-platform engine. Android uses `SurfaceView` + a dedicated fixed-timestep loop thread; iOS uses SpriteKit's own display-link-driven `update(_:)`, with a clamped per-frame delta for the same "don't spiral after a long pause" reason. Jetpack Compose / SwiftUI are used for chrome around each game surface (menus, HUD, settings). For 3D, physics-heavy games, or a genuinely shared cross-platform core, see [`.agent/AGENTS.md`](.agent/AGENTS.md) §1.1, [`docs/adr/0002-rendering-approach.md`](docs/adr/0002-rendering-approach.md), [`docs/adr/0003-ios-rendering-approach.md`](docs/adr/0003-ios-rendering-approach.md), and [`moon/roadmaps/shared_core.md`](moon/roadmaps/shared_core.md).
 
 ## Repository Layout
 
 ```
-Mobile-Game-Template/
+Project-Mobile-Fortress/
 ├── android/                 # Kotlin Android client
 │   ├── app/                 # standard com.android.application + kotlin-android module
 │   ├── gradlew, gradle/, build.gradle.kts, settings.gradle.kts, gradle.properties
@@ -84,9 +86,9 @@ Mobile-Game-Template/
 ## Quick Start
 
 ```bash
-# Clone from the template
-git clone https://github.com/<org>/<your-new-repo>.git
-cd <your-new-repo>
+# Clone the repo
+git clone https://github.com/ACFHarbinger/Project-Mobile-Fortress.git
+cd Project-Mobile-Fortress
 
 # Install pre-commit hooks
 pip install pre-commit && pre-commit install

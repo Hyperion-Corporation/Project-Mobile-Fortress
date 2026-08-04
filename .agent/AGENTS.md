@@ -5,7 +5,7 @@
 [![Swift](https://img.shields.io/badge/Swift-5.0-F05138?logo=swift&logoColor=white)](https://swift.org/)
 [![iOS](https://img.shields.io/badge/iOS-16%2B-000000?logo=apple&logoColor=white)](https://developer.apple.com/ios/)
 [![Just](https://img.shields.io/badge/Just-Task_Runner-000000?logoColor=white)](https://github.com/casey/just)
-[![CI](https://github.com/ACFHarbinger/Mobile-Game-Template/actions/workflows/ci.yml/badge.svg)](https://github.com/ACFHarbinger/Mobile-Game-Template/actions/workflows/ci.yml)
+[![CI](https://github.com/ACFHarbinger/Project-Mobile-Fortress/actions/workflows/ci.yml/badge.svg)](https://github.com/ACFHarbinger/Project-Mobile-Fortress/actions/workflows/ci.yml)
 
 > **Version**: 2.0
 > **Last Updated**: 2026-08-03
@@ -23,9 +23,9 @@
 
 ## 1. Project Overview & Mission
 
-> **TODO:** Replace with a one-paragraph description of the actual game once this template seeds a real project.
+**Mobile Fortress** is a cooperative tower-defense mobile game set in 1520s Sengoku Japan: players defend a Daimyo's castle against sieging armies of Ashigaru, rival Samurai clans, and Yokai-corrupted invaders using Flow-Field-routed unit placement, then extend the fight into a light 4X-style clan/territory meta-game. See [`moon/ROADMAP.md`](../moon/ROADMAP.md) for the full game concept and phased delivery plan, and [`reports/`](../reports/)/[`research/`](../research/) for the underlying market and technical research.
 
-This repository is a scaffold for a **two-platform mobile game**: a Kotlin Android client (`android/`) and a Swift iOS client (`ios/`), not a product. Each ships a single, real product module — minimal but functional 2D game skeletons (Android: `SurfaceView` + a fixed-timestep loop thread; iOS: SpriteKit's `SKScene`) — plus the cross-cutting agentic/DevOps/docs framework shared across this org's other templates (`.agent/`, `docs/`, `moon/`, `.github/`, `infra/`). A `core/` module holds shared raw assets and a documented (not compiled) state-machine/level spec both clients implement independently — see [`core/README.md`](../core/README.md) before assuming any logic is actually shared. When used via "Use this template", update this section first.
+This repository is a **two-platform mobile game**: a Kotlin Android client (`android/`) and a Swift iOS client (`ios/`). Each ships a real product module — currently minimal 2D game skeletons inherited from this repo's template origin (Android: `SurfaceView` + a fixed-timestep loop thread; iOS: SpriteKit's `SKScene`), being built out into the actual Mobile Fortress core loop — plus the cross-cutting agentic/DevOps/docs framework shared across this org's other templates (`.agent/`, `docs/`, `moon/`, `.github/`, `infra/`). A `core/` module holds shared raw assets and a documented (not yet compiled) state-machine/level spec both clients implement independently today — see [`core/README.md`](../core/README.md) and [`moon/roadmaps/shared_core.md`](../moon/roadmaps/shared_core.md) for the plan to replace this with a compiled Rust simulation core once Co-Op multiplayer work starts.
 
 ### 1.1 Why SurfaceView + Canvas (Android) / SpriteKit (iOS), not Compose-only, SwiftUI-only, or a game engine
 
@@ -122,9 +122,8 @@ This template targets **simple, dependency-light 2D games** (arcade, puzzle, rog
 
 ## 7. Known Constraints
 
-> **TODO:** Document real device/performance constraints once the project has them.
-
-- This template repository does not ship a complete game on either platform — `engine/`/`Engine/` contain illustrative skeletons (a bouncing-entity demo on Android, a top-down shooter skeleton on iOS), not final or even matching gameplay. See the documented Android/iOS asymmetry in `core/src/game-state-machine.md`.
-- The optional backend under `infra/` is unimplemented scaffolding — see each `infra/*/README.md` before assuming any service exists.
-- `core/` is assets + documentation only, not a compiled shared module — see `core/README.md` and `moon/roadmaps/shared_core.md` before assuming any logic is actually shared between the two clients.
+- Neither platform ships the real Mobile Fortress core loop yet — `engine/`/`Engine/` still contain the inherited template skeletons (a bouncing-entity demo on Android, a top-down shooter skeleton on iOS), not the Sengoku castle-defense gameplay described in [`moon/roadmaps/gameplay.md`](../moon/roadmaps/gameplay.md). See the documented Android/iOS asymmetry in `core/src/game-state-machine.md`.
+- The optional backend under `infra/` is unimplemented scaffolding — see each `infra/*/README.md` and [`moon/roadmaps/backend.md`](../moon/roadmaps/backend.md) before assuming any service exists.
+- `core/` is assets + documentation only, not a compiled shared module — see `core/README.md` and [`moon/roadmaps/shared_core.md`](../moon/roadmaps/shared_core.md) (Rust + UniFFI is the decided direction) before assuming any logic is actually shared between the two clients.
 - The iOS client cannot be built, tested, or run inside `.devcontainer/` (Linux-only) — it requires a native macOS host or a `macos-latest` CI runner.
+- Multiplayer, gacha/monetization, and ML-driven systems (Flow Field pathfinding, WFC procgen, RL difficulty, CMAB offers) are all pre-implementation — see [`moon/ROADMAP.md`](../moon/ROADMAP.md) for phase sequencing before assuming any are wired up.

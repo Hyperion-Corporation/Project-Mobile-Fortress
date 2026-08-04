@@ -1,19 +1,33 @@
-# Shared Core Roadmap (future option, not started)
+# Shared Core Roadmap — Rust + UniFFI (decided)
 
-Today `core/` is assets + documentation only — see [`core/README.md`](../../core/README.md). This roadmap tracks the option of making it a real compiled shared module. **Read `core/README.md` in full before starting any of this** — it changes both clients' architecture substantially and is a multi-week undertaking, not a template default.
+Today `core/` is assets + documentation only — see [`core/README.md`](../../core/README.md). **This decision is now made**: Mobile Fortress requires a real compiled shared simulation core, not documentation-only convention, because Co-Op multiplayer needs bit-identical simulation state across both native clients. See [`research/Multiplayer Tower Defense Implementation.md`](../../research/Multiplayer%20Tower%20Defense%20Implementation.md) §"Architecting the Shared Computational Core" for the full evaluation.
 
-## Option A — Kotlin Multiplatform (KMP)
+## Decision: Option B — Rust core via UniFFI
 
-Move `GameManager`/`GameEngine`-equivalent logic into a KMP module compiled to a JVM target (consumed directly by `android/app/`) and an iOS framework (consumed from Swift via `import Shared`). Pros: one Kotlin codebase for game logic; Android integration is nearly free. Cons: iOS interop still requires an Obj-C/Swift-facing API layer, and the Kotlin/Native toolchain adds real build complexity and iteration-speed cost on the iOS side.
+The shared core is implemented in Rust and bridged to Kotlin (Android) and Swift (iOS) via [UniFFI](https://mozilla.github.io/uniffi-rs/), Mozilla's automated multi-language bindings generator. Rationale over the alternatives considered:
 
-## Option B — Rust or C++ core with per-platform bindings
+- **vs. Kotlin Multiplatform (KMP):** KMP's managed-language GC pauses and Kotlin/Native's C-interop friction on iOS jeopardize the 16.6ms frame budget for a CPU-bound Flow Field + ECS simulation with hundreds of concurrent entities.
+- **vs. staying documentation-only:** acceptable for a single-player demo, but Co-Op multiplayer requires deterministic, identical simulation logic on both platforms — hand-synced Kotlin/Swift implementations will drift under active development.
 
-Shared core in Rust (via UniFFI or cbindgen) or C++, linked into Android via JNI and into iOS via a bridging header / Swift Package. Pros: genuinely platform-neutral, reusable beyond just these two clients. Cons: highest setup cost of the three options; neither client team gets to write the core logic in their primary language.
+## Architecture
 
-## Option C — stay documentation-only (current state)
+| Layer | Technology | Purpose |
+| --- | --- | --- |
+| Simulation | Rust, ECS via [`hecs`](https://lib.rs/crates/hecs) | Cache-local archetype storage for pathfinding, combat, and economy systems |
+| FFI bridge | [UniFFI](https://mozilla.github.io/uniffi-rs/) | Auto-generated C-ABI scaffolding + idiomatic Kotlin/Swift wrappers, avoiding handwritten-FFI memory bugs |
+| Serialization | [`rkyv`](https://github.com/rkyv/rkyv) | Zero-copy state snapshots across the FFI boundary and over the network |
+| Concurrency | `Arc`/`Mutex`/`RwLock`, or lock-free MPSC channels between simulation and FFI threads | Enforces Rust's "concurrent read, exclusive write" model |
 
-Keep `core/src/` as schema/spec documents (`level-schema.json`, `game-state-machine.md`) that both native implementations follow by convention, enforced only by code review and the `Tests/` suites on each side independently asserting the documented behavior. Pros: zero build complexity, zero new toolchain. Cons: the two implementations *can* drift, and nothing catches it automatically except tests/review — already true today (see the Android/iOS state-machine asymmetry noted in `core/src/game-state-machine.md`).
+## Roadmap
 
-## Recommendation
+| # | Item | Effort | Status |
+| --- | --- | --- | --- |
+| S1 | Stand up the Rust workspace (`core/` compiled crate) with `hecs` and a minimal ECS skeleton (position/velocity/health components) | L | 📋 Pending |
+| S2 | Port Flow Field pathfinding into the Rust core | L | 📋 Pending |
+| S3 | UniFFI bindings generation wired into the Android Gradle build and Xcode build | M | 📋 Pending |
+| S4 | `rkyv`-based state snapshot passed across the UniFFI boundary as an opaque `RustBuffer`; native clients render UI-state differentials only | M | 📋 Pending |
+| S5 | Replace Android's `engine/` and iOS's `Engine/`/`Core/GameManager.swift` game-logic bodies with calls into the shared core, keeping native code as the presentation/input layer only | XL | 📋 Pending |
+| S6 | Async bridging: expose Rust `Future`s to Kotlin coroutines / Swift `async`/`await`, auditing for the known `callbackFlow`-cancellation leak pattern | M | 📋 Pending |
+| S7 | Cross-platform determinism test suite (see [`qa_testing.md`](qa_testing.md#Q4)) — fixed-point arithmetic and synchronized PRNGs where floating-point divergence would break lockstep-style sync | L | 📋 Pending |
 
-Stay on Option C until the game's actual gameplay logic (not just this template's minimal demo) is complex enough that keeping two implementations in sync by hand is regularly causing bugs — then revisit A vs. B based on which platform's team is doing more of the core-logic work at that point.
+Effort key: S = days, M = 1–2 weeks, L = 3–6 weeks, XL = multi-month/cross-cutting.
