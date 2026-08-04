@@ -1,10 +1,10 @@
 # Architecture
 
-> **TODO:** Replace with the real game's architecture once product code exists beyond the template skeleton. This page should stay in sync with the actual `android/app/` and `ios/MyGame/` modules.
+> **TODO:** Expand with Mobile Fortress' actual castle-defense/multiplayer architecture as it's implemented beyond the current inherited client skeletons — see [`moon/ROADMAP.md`](../moon/ROADMAP.md) and [`moon/roadmaps/shared_core.md`](../moon/roadmaps/shared_core.md). This page should stay in sync with the actual `android/app/` and `ios/MyGame/` modules.
 
 ## Overview
 
-Mobile-Game-Template ships two independent native clients — an Android application module (`android/app/`, standard `com.android.application` + `kotlin-android` Gradle setup) and an iOS app (`ios/MyGame.xcodeproj`, SwiftUI-lifecycle + SpriteKit) — plus a shared-assets/spec module (`core/`, see `core/README.md`). Each client renders its game surface on a dedicated per-frame update loop decoupled from its UI-chrome framework (Android: `SurfaceView` + a fixed-timestep thread; iOS: SpriteKit's `SKScene.update(_:)`, delta-clamped); menus/HUD/settings around that surface use the platform's native declarative UI (Jetpack Compose / SwiftUI). An **optional** lightweight backend (`infra/`) can be added later for leaderboards or cloud save — both apps run fully offline without it.
+Mobile Fortress ships two independent native clients — an Android application module (`android/app/`, standard `com.android.application` + `kotlin-android` Gradle setup) and an iOS app (`ios/MyGame.xcodeproj`, SwiftUI-lifecycle + SpriteKit) — plus a shared-assets/spec module (`core/`, see `core/README.md`). Each client renders its game surface on a dedicated per-frame update loop decoupled from its UI-chrome framework (Android: `SurfaceView` + a fixed-timestep thread; iOS: SpriteKit's `SKScene.update(_:)`, delta-clamped); menus/HUD/settings around that surface use the platform's native declarative UI (Jetpack Compose / SwiftUI). An **optional** lightweight backend (`infra/`) can be added later for leaderboards or cloud save — both apps run fully offline without it.
 
 ## Android Module Boundaries (`android/app/`)
 

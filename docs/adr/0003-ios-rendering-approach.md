@@ -8,11 +8,11 @@ Accepted
 
 ## Context
 
-Mirroring [ADR 0002](0002-rendering-approach.md)'s Android decision, the iOS client needs a default rendering approach for its own game surface. The realistic options for a lightweight, dependency-light 2D iOS game template:
+Mirroring [ADR 0002](0002-rendering-approach.md)'s Android decision, the iOS client needs a default rendering approach for its own game surface. The realistic options for a lightweight, dependency-light 2D iOS client:
 
 1. **SpriteKit + SwiftUI chrome** — Apple's first-party 2D game framework, ships with iOS, integrates with SwiftUI via `SpriteView`; `SKScene.update(_:)` is display-link-driven, giving predictable per-frame timing without hand-rolling a render thread the way Android's `SurfaceView` approach requires.
-2. **Metal from scratch** — maximum control, but building a 2D sprite/physics pipeline directly on Metal is a large, ongoing engineering investment wildly disproportionate to a lightweight arcade/puzzle template.
-3. **A full cross-platform engine (Unity, Godot, LibGDX-via-RoboVM)** — the right call for teams that want one codebase across platforms, but pulls in a heavy, opinionated toolchain and abandons the "real, idiomatic per-platform app" premise of this template (see the parallel reasoning for the Android side skipping LibGDX/Godot by default).
+2. **Metal from scratch** — maximum control, but building a 2D sprite/physics pipeline directly on Metal is a large, ongoing engineering investment wildly disproportionate to a lightweight arcade/puzzle client.
+3. **A full cross-platform engine (Unity, Godot, LibGDX-via-RoboVM)** — the right call for teams that want one codebase across platforms, but pulls in a heavy, opinionated toolchain and abandons the "real, idiomatic per-platform app" premise of this project (see the parallel reasoning for the Android side skipping LibGDX/Godot by default).
 4. **Kotlin Multiplatform targeting an iOS framework** — would let Android's `engine/` logic run on iOS too, but doesn't solve *rendering* (SpriteKit or Metal would still be needed on the iOS side to actually draw anything) and is a substantial architecture commitment tracked separately in `moon/roadmaps/shared_core.md` rather than assumed here.
 
 ## Decision

@@ -19,7 +19,7 @@ fix:
     @echo -e "{{ green }}✓ Kotlin sources reformatted.{{ reset }}"
 
 # Static-analyze the iOS sources — no SwiftLint config ships by default with
-# this template (see docs/DEVELOPMENT.md); this just exercises the Swift
+# this project (see docs/DEVELOPMENT.md); this just exercises the Swift
 # compiler's own warnings via a build-for-analyzing pass.
 ios-check:
     @echo -e "{{ cyan }}Analyzing MyGame (ios/)...{{ reset }}"

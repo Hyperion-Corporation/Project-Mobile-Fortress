@@ -1,4 +1,4 @@
-package com.example.gametemplate.ui
+package com.acfharbinger.mobilefortress.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -16,11 +16,11 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.gametemplate.R
+import com.acfharbinger.mobilefortress.R
 
 /**
- * Illustrative Compose chrome screen — not wired into [com.example.gametemplate.MainActivity]
- * by default, since this template's [com.example.gametemplate.GameView] is set directly as the
+ * Illustrative Compose chrome screen — not wired into [com.acfharbinger.mobilefortress.MainActivity]
+ * by default, since this project's [com.acfharbinger.mobilefortress.GameView] is set directly as the
  * content view (see `docs/adr/0002-rendering-approach.md`). Wire this in via a second Activity,
  * a Compose `NavHost`, or an `AndroidView`-hosted overlay once you have real menu flows —
  * see `.agent/rules/ui_compose.md` and `.agent/workflows/ui_compose.md`.

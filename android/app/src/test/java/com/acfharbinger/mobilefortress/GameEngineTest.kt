@@ -1,7 +1,7 @@
-package com.example.gametemplate
+package com.acfharbinger.mobilefortress
 
-import com.example.gametemplate.engine.GameEngine
-import com.example.gametemplate.engine.GameState
+import com.acfharbinger.mobilefortress.engine.GameEngine
+import com.acfharbinger.mobilefortress.engine.GameState
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before

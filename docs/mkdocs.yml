@@ -1,9 +1,9 @@
-site_name: Mobile-Game-Template Documentation
+site_name: Mobile Fortress Documentation
 site_description: >-
-  Documentation portal for repositories generated from Mobile-Game-Template.
+  Documentation portal for Mobile Fortress, a cooperative Sengoku-Japan tower-defense mobile game.
 site_author: ACFHarbinger
-repo_url: https://github.com/ACFHarbinger/Mobile-Game-Template
-repo_name: ACFHarbinger/Mobile-Game-Template
+repo_url: https://github.com/ACFHarbinger/Project-Mobile-Fortress
+repo_name: ACFHarbinger/Project-Mobile-Fortress
 edit_uri: edit/main/docs/
 
 docs_dir: .

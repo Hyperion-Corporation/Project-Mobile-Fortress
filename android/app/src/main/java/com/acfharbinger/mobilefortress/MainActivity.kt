@@ -1,4 +1,4 @@
-package com.example.gametemplate
+package com.acfharbinger.mobilefortress
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -6,7 +6,7 @@ import androidx.activity.ComponentActivity
 /**
  * Hosts the [GameView] game surface and wires the Android lifecycle to it.
  *
- * This template intentionally does not route the game surface through Compose
+ * This project intentionally does not route the game surface through Compose
  * (see `.agent/AGENTS.md` §1.1 and `docs/adr/0002-rendering-approach.md`) —
  * [GameView] is set directly as the content view. Compose is reserved for
  * chrome around the game surface (see `ui/`), added via separate screens/

@@ -14,6 +14,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "mobile-game-template"
+rootProject.name = "mobile-fortress"
 
 include(":app")

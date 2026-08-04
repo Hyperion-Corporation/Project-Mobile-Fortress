@@ -1,4 +1,4 @@
-package com.example.gametemplate
+package com.acfharbinger.mobilefortress
 
 import androidx.lifecycle.Lifecycle
 import androidx.test.core.app.ActivityScenario

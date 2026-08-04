@@ -1,5 +1,5 @@
 {
-    "name": "Mobile-Game-Template Dev Environment (Android only — see .devcontainer/README.md for iOS)",
+    "name": "Mobile Fortress Dev Environment (Android only — see .devcontainer/README.md for iOS)",
     "build": {
         "dockerfile": "Dockerfile",
         "context": ".."

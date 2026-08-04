@@ -1,9 +1,9 @@
-package com.example.gametemplate
+package com.acfharbinger.mobilefortress
 
 import android.graphics.Canvas
 import android.util.Log
 import android.view.SurfaceHolder
-import com.example.gametemplate.engine.GameEngine
+import com.acfharbinger.mobilefortress.engine.GameEngine
 
 /**
  * Fixed-timestep update, variable-rate render loop running on its own [Thread].

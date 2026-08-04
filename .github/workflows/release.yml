@@ -81,7 +81,7 @@ jobs:
       #     bundle exec fastlane supply \
       #       --aab app/build/outputs/bundle/release/app-release.aab \
       #       --track internal \
-      #       --package_name com.example.gametemplate
+      #       --package_name com.acfharbinger.mobilefortress
 
       - name: Clean up keystore
         if: always()

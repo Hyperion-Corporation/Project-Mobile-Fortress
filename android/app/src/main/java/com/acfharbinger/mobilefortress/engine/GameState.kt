@@ -1,4 +1,4 @@
-package com.example.gametemplate.engine
+package com.acfharbinger.mobilefortress.engine
 
 import android.content.Context
 import kotlinx.serialization.Serializable

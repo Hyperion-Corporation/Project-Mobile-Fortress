@@ -1,10 +1,10 @@
-# Mobile-Game-Template Documentation
+# Mobile Fortress Documentation
 
-Welcome to the documentation portal for this repository. This site is built with [MkDocs Material](https://squidfunk.github.io/mkdocs-material/).
+Welcome to the documentation portal for **Mobile Fortress** — a cooperative tower-defense mobile game set in 1520s Sengoku Japan. This site is built with [MkDocs Material](https://squidfunk.github.io/mkdocs-material/).
 
-> **TODO:** Replace this landing page with a real project overview once this template is used to seed an actual game.
+See [`moon/ROADMAP.md`](../moon/ROADMAP.md) for the full game concept and phased delivery plan.
 
-This is a two-client repository: a Kotlin Android app (`android/`) and a Swift iOS app (`ios/`), sharing raw assets and a documented spec under `core/`.
+This is a two-client repository: a Kotlin Android app (`android/`) and a Swift iOS app (`ios/`), sharing raw assets and a documented spec under `core/` (migrating to a compiled Rust shared core — see [`moon/roadmaps/shared_core.md`](../moon/roadmaps/shared_core.md)).
 
 ## Where to start
 

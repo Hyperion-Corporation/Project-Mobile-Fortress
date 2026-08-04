@@ -38,8 +38,8 @@ Or run/debug directly from Android Studio's device toolbar.
 
 ```bash
 sdkmanager "system-images;android-35;google_apis;x86_64"
-avdmanager create avd -n game-template -k "system-images;android-35;google_apis;x86_64"
-emulator -avd game-template
+avdmanager create avd -n mobile-fortress -k "system-images;android-35;google_apis;x86_64"
+emulator -avd mobile-fortress
 ```
 
 ## iOS (`ios/`)
@@ -57,7 +57,7 @@ just ios-build     # xcodebuild ... -destination 'generic/platform=iOS Simulator
 just ios-test       # xcodebuild ... test
 ```
 
-No SwiftLint configuration ships by default with this template — add a `.swiftlint.yml` under `ios/` and wire it into `tools/validation/justfile`'s `ios-check` recipe if you want stricter enforcement than the compiler's own warnings.
+No SwiftLint configuration ships by default with this project — add a `.swiftlint.yml` under `ios/` and wire it into `tools/validation/justfile`'s `ios-check` recipe if you want stricter enforcement than the compiler's own warnings.
 
 ## Containerized Dev Environment
 

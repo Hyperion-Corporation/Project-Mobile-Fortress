@@ -1,5 +1,5 @@
 COMMERCIAL LICENSE AGREEMENT
-Mobile-Game-Template
+Mobile Fortress
 
 Copyright (c) 2026 ACFHarbinger. All rights reserved.
 
@@ -56,7 +56,7 @@ the software under LICENSE.md instead, free of charge.
 
 6. HOW TO OBTAIN A COMMERCIAL LICENSE
    Contact ACFHarbinger <afonso.fernandes100@gmail.com> to discuss
-   commercial licensing, pricing, and terms for Mobile-Game-Template.
+   commercial licensing, pricing, and terms for Mobile Fortress.
 
 This file (LICENSE.txt) governs commercial use only. Free/open use under
 the GNU AGPL-3.0 is governed by LICENSE.md, and takes precedence for any

@@ -1,9 +1,9 @@
-package com.example.gametemplate.engine
+package com.acfharbinger.mobilefortress.engine
 
 import android.graphics.Canvas
 import android.graphics.Color
-import com.example.gametemplate.engine.entities.Ball
-import com.example.gametemplate.engine.entities.Entity
+import com.acfharbinger.mobilefortress.engine.entities.Ball
+import com.acfharbinger.mobilefortress.engine.entities.Entity
 
 /**
  * Orchestrates per-frame update/render across all live [Entity] instances.

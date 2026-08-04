@@ -1,4 +1,4 @@
-# Mobile-Game-Template - Root Justfile
+# Mobile Fortress - Root Justfile
 # https://github.com/casey/just
 # Entry point. All recipes delegate to sub-modules via `mod`.
 # Invoke sub-module recipes directly with dot notation: just build::debug

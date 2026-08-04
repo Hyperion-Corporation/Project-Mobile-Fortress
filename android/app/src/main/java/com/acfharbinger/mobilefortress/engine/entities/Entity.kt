@@ -1,9 +1,9 @@
-package com.example.gametemplate.engine.entities
+package com.acfharbinger.mobilefortress.engine.entities
 
 import android.graphics.Canvas
 
 /**
- * Contract for anything participating in [com.example.gametemplate.engine.GameEngine]'s
+ * Contract for anything participating in [com.acfharbinger.mobilefortress.engine.GameEngine]'s
  * per-frame update/render cycle.
  *
  * Implementations must not allocate inside [update] or [render] — pre-allocate any
@@ -14,7 +14,7 @@ interface Entity {
     /**
      * Advances this entity's simulation state by exactly [deltaMs] milliseconds.
      * Called zero or more times per frame by the fixed-timestep accumulator in
-     * [com.example.gametemplate.GameLoop]. Must never touch a [Canvas].
+     * [com.acfharbinger.mobilefortress.GameLoop]. Must never touch a [Canvas].
      */
     fun update(
         deltaMs: Float,

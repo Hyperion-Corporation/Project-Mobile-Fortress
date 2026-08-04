@@ -9,7 +9,7 @@
 
 > **Version**: 2.0
 > **Last Updated**: 2026-08-03
-> **Purpose**: Authoritative reference for AI assistants (Claude, GPT, Gemini, Copilot, etc.) working in repositories generated from this template.
+> **Purpose**: Authoritative reference for AI assistants (Claude, GPT, Gemini, Copilot, etc.) working on Mobile Fortress.
 
 ## Table of Contents
 
@@ -29,12 +29,12 @@ This repository is a **two-platform mobile game**: a Kotlin Android client (`and
 
 ### 1.1 Why SurfaceView + Canvas (Android) / SpriteKit (iOS), not Compose-only, SwiftUI-only, or a game engine
 
-This template targets **simple, dependency-light 2D games** (arcade, puzzle, roguelike-lite) on each platform independently — it is **not** a shared cross-platform engine (see `moon/roadmaps/shared_core.md` for that option, not adopted by default). Each client uses its platform's idiomatic, zero-extra-dependency 2D approach, decoupled from its declarative-UI framework's recomposition/re-render timing:
+This project targets **simple, dependency-light 2D game clients** (per platform, ahead of the shared Rust core landing) — it is **not** a shared cross-platform engine (see `moon/roadmaps/shared_core.md` for that option, not adopted by default). Each client uses its platform's idiomatic, zero-extra-dependency 2D approach, decoupled from its declarative-UI framework's recomposition/re-render timing:
 
 | If your game needs... | Consider instead |
 | --- | --- |
-| Menus, HUD, settings screens, leaderboards UI | Keep those in Jetpack Compose (Android, [`ui_compose.md`](rules/ui_compose.md)) / SwiftUI (iOS, [`swift.md`](rules/swift.md)) layered *around* the game surface — this template already does this for the main menu on both platforms. |
-| 3D rendering, physics engine, or a genuinely shared cross-platform codebase | [LibGDX](https://libgdx.com/)/[Godot](https://godotengine.org/) (Android), or revisit `moon/roadmaps/shared_core.md`'s KMP/Rust options — swap the platform-native surface/loop for the engine's own and keep everything else in this template (`.agent/`, CI, docs, infra). |
+| Menus, HUD, settings screens, leaderboards UI | Keep those in Jetpack Compose (Android, [`ui_compose.md`](rules/ui_compose.md)) / SwiftUI (iOS, [`swift.md`](rules/swift.md)) layered *around* the game surface — this project already does this for the main menu on both platforms. |
+| 3D rendering, physics engine, or a genuinely shared cross-platform codebase | [LibGDX](https://libgdx.com/)/[Godot](https://godotengine.org/) (Android), or revisit `moon/roadmaps/shared_core.md`'s KMP/Rust options — swap the platform-native surface/loop for the engine's own and keep everything else in this project (`.agent/`, CI, docs, infra). |
 | Compose-only / SwiftUI-only rendering (shaders via `Canvas`/`Modifier.drawWithCache`, or SwiftUI `Canvas`) | Viable for lower-frequency/simpler games; see [ADR 0002](../docs/adr/0002-rendering-approach.md) (Android) and [ADR 0003](../docs/adr/0003-ios-rendering-approach.md) (iOS) for the tradeoffs we weighed on each platform. |
 
 ## 2. Technical Stack & Governance
@@ -54,7 +54,7 @@ This template targets **simple, dependency-light 2D games** (arcade, puzzle, rog
 
 ## 3. Module Boundaries
 
-- `android/app/src/main/java/com/example/gametemplate/` — the Android product module. Structured as:
+- `android/app/src/main/java/com/acfharbinger/mobilefortress/` — the Android product module. Structured as:
   - `MainActivity.kt` — hosts the `GameView`, wires lifecycle to the game loop.
   - `GameView.kt` — `SurfaceView` + `SurfaceHolder.Callback`, owns the `GameLoop` thread.
   - `GameLoop.kt` — fixed-timestep loop thread (update/render separation), independent of any Android UI class beyond the `SurfaceHolder` it's given.

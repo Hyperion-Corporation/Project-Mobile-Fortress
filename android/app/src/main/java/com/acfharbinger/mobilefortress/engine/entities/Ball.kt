@@ -1,4 +1,4 @@
-package com.example.gametemplate.engine.entities
+package com.acfharbinger.mobilefortress.engine.entities
 
 import android.graphics.Canvas
 import android.graphics.Color
@@ -19,7 +19,7 @@ class Ball(
     velocityY: Float,
     color: Int = Color.parseColor("#4CC9F0"),
 ) : Entity {
-    /** Current velocity, exposed read-only so [com.example.gametemplate.engine.GameEngine] can persist it. */
+    /** Current velocity, exposed read-only so [com.acfharbinger.mobilefortress.engine.GameEngine] can persist it. */
     var velocityX: Float = velocityX
         private set
     var velocityY: Float = velocityY

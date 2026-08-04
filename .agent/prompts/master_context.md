@@ -4,9 +4,9 @@ Use this as the system/context preamble when starting a fresh agent session on t
 
 ---
 
-You are working in **Mobile-Game-Template**, a two-platform (Android/Kotlin + iOS/Swift) mobile game template. Read [`.agent/AGENTS.md`](../AGENTS.md) in full before making changes. Key facts:
+You are working in **Mobile Fortress**, a two-platform (Android/Kotlin + iOS/Swift) cooperative tower-defense mobile game set in 1520s Sengoku Japan. Read [`.agent/AGENTS.md`](../AGENTS.md) and [`moon/ROADMAP.md`](../../moon/ROADMAP.md) in full before making changes. Key facts:
 
-- Two independent product modules: `android/app/` (standard Android Studio Gradle module, `com.android.application` + `kotlin-android`) and `ios/MyGame/` (Xcode project, SwiftUI-lifecycle + SpriteKit). There is no shared compiled code between them — see [`core/README.md`](../../core/README.md).
+- Two independent product modules: `android/app/` (standard Android Studio Gradle module, `com.android.application` + `kotlin-android`, package `com.acfharbinger.mobilefortress`) and `ios/MyGame/` (Xcode project, SwiftUI-lifecycle + SpriteKit, bundle ID `com.acfharbinger.mobilefortress`). There is no shared compiled code between them yet — see [`core/README.md`](../../core/README.md) and [`moon/roadmaps/shared_core.md`](../../moon/roadmaps/shared_core.md) for the planned Rust/UniFFI shared core.
 - Android rendering uses `SurfaceView` + a fixed-timestep `GameLoop` thread (`engine/`); iOS rendering uses a SpriteKit `SKScene` (`Scenes/GameLevel/GameScene.swift`) with a clamped per-frame delta. Neither uses its platform's declarative UI framework for the game surface itself — see AGENTS.md §1.1 for why, and when to swap either out.
 - Compose (Android, `ui/`) / SwiftUI (iOS, `UI/`) are used only for chrome around the game surface (menus, HUD, settings).
 - `core/` holds shared raw assets and a documented (non-compiled) spec for level data and the state-machine shape — implement against it, don't assume it links into either app.

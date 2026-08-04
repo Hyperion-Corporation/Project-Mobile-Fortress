@@ -1,18 +1,18 @@
-package com.example.gametemplate
+package com.acfharbinger.mobilefortress
 
 import android.content.Context
 import android.util.AttributeSet
 import android.view.SurfaceHolder
 import android.view.SurfaceView
-import com.example.gametemplate.engine.GameEngine
-import com.example.gametemplate.engine.GameState
+import com.acfharbinger.mobilefortress.engine.GameEngine
+import com.acfharbinger.mobilefortress.engine.GameState
 
 /**
  * The game surface. Owns [GameLoop]'s lifecycle, mirroring [SurfaceHolder.Callback]
  * transitions so the render thread never touches a torn-down [android.view.Surface].
  *
  * See `.agent/rules/android_lifecycle.md` — the thread start/stop pairing here is
- * the most crash-sensitive part of this template.
+ * the most crash-sensitive part of this project.
  */
 class GameView
     @JvmOverloads
