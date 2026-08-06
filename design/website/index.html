@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Fortress - Interactive Game Design Document</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <!-- Main Styles -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="dark-theme">
+    <!-- Falling Cherry Blossoms Canvas Background -->
+    <canvas id="blossoms-canvas"></canvas>
+
+    <!-- Header Navigation -->
+    <header class="navbar">
+        <div class="logo">
+            <span class="fortress-title">MOBILE FORTRESS</span>
+            <span class="sengoku-tag">戦国攻城</span>
+        </div>
+        <nav class="nav-links">
+            <a href="#vision" class="active">Vision</a>
+            <a href="#gameplay">Gameplay & Flow Fields</a>
+            <a href="#netcode">Netcode & Cloud</a>
+            <a href="#ai-ml">AI & Machine Learning</a>
+            <a href="#roadmap">Roadmap</a>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <div class="badge">DESIGN SPECIFICATION V2.0</div>
+            <h1>Defend the Daimyo's Keep</h1>
+            <p class="hero-desc">
+                A Sengoku-era Cooperative Tower Defense & 4X Strategy Game combining traditional Ukiyo-e aesthetics with state-of-the-art vector pathfinding and machine learning engines.
+            </p>
+            <div class="hero-actions">
+                <a href="#gameplay" class="btn btn-primary">Try Interactive Simulator</a>
+                <a href="../game_design_document.md" target="_blank" class="btn btn-secondary">Read Raw GDD</a>
+            </div>
+        </div>
+        <div class="hero-image-container">
+            <img src="assets/mobile_fortress_banner.jpg" alt="Sengoku Siege: Night of the Blossoms" class="hero-banner-img">
+        </div>
+    </section>
+
+    <!-- Main Container -->
+    <main class="container">
+        
+        <!-- Tab System for GDD Exploration -->
+        <section class="gdd-tabs-section">
+            <div class="tabs-header">
+                <button class="tab-btn active" data-target="tab-vision">
+                    <span class="icon">🏮</span> Vision & Theme
+                </button>
+                <button class="tab-btn" data-target="tab-flowfield">
+                    <span class="icon">🌀</span> Flow Field Simulator
+                </button>
+                <button class="tab-btn" data-target="tab-dda">
+                    <span class="icon">🧠</span> Adversarial DDA
+                </button>
+                <button class="tab-btn" data-target="tab-monetization">
+                    <span class="icon">💰</span> CMAB Dynamic Pricing
+                </button>
+            </div>
+
+            <div class="tabs-content">
+                
+                <!-- Tab: Vision & Theme -->
+                <div class="tab-pane active" id="tab-vision">
+                    <div class="grid-2-col">
+                        <div class="panel glass">
+                            <h2>The Sengoku Jidai & Yokai Corruption</h2>
+                            <p>
+                                Set in the 1520s, <strong>Mobile Fortress</strong> transports players to a historically inspired, mythological feudal Japan. Players do not just build stationary stone towers; they deploy ashigaru spearmen, matchlock gunners, and recruit legendary Samurai heroes to fight back invading hordes of Yokai.
+                            </p>
+                            <p>
+                                The thematic aesthetic is rooted heavily in <strong>Ukiyo-e (woodblock print)</strong> art style. Bold inks, vintage paper textures, and dynamic water ripples create a tactile representation of classic Japanese prints.
+                            </p>
+                            <div class="quote-box">
+                                <p>"The environment itself reacts to purification. As you purge the Yokai defilement, the land shifts from monochromatic ash to vibrant, hand-painted watercolor."</p>
+                                <span class="quote-author">— Art Director Specification</span>
+                            </div>
+                        </div>
+
+                        <div class="panel glass flex-center">
+                            <h3>Deployable Defender Classes</h3>
+                            <div class="unit-cards-grid">
+                                <div class="unit-card" onclick="showUnitDetails('ashigaru')">
+                                    <div class="unit-icon">🌾</div>
+                                    <h4>Ashigaru Spearmen</h4>
+                                    <span class="unit-role">Melee Blocker</span>
+                                </div>
+                                <div class="unit-card" onclick="showUnitDetails('matchlock')">
+                                    <div class="unit-icon">🔫</div>
+                                    <h4>Matchlock Gunner</h4>
+                                    <span class="unit-role">Piercing Ranged</span>
+                                </div>
+                                <div class="unit-card" onclick="showUnitDetails('samurai')">
+                                    <div class="unit-icon">⚔️</div>
+                                    <h4>Samurai Hero</h4>
+                                    <span class="unit-role">Mobile Champion</span>
+                                </div>
+                                <div class="unit-card" onclick="showUnitDetails('shaman')">
+                                    <div class="unit-icon">🌸</div>
+                                    <h4>Shaman Priestess</h4>
+                                    <span class="unit-role">Support & Purifier</span>
+                                </div>
+                            </div>
+                            <div id="unit-detail-box" class="unit-details panel-dark">
+                                <p>Select a defender class above to view active attributes and combat roles.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab: Flow Field Pathfinding Simulator -->
+                <div class="tab-pane" id="tab-flowfield">
+                    <div class="grid-3-col">
+                        <!-- Controls panel -->
+                        <div class="panel glass col-span-1">
+                            <h3>Simulation Controls</h3>
+                            <p class="panel-desc">
+                                In Mobile Fortress, enemies don't path individually. The map maintains a global Dijkstra grid and a normalized vector flow field. Placing a wall or blocker recalculates the flow for all units instantly.
+                            </p>
+                            <div class="control-group">
+                                <label>Brush Tool:</label>
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-tool active" id="tool-wall" onclick="setTool('wall')">🧱 Place Barricade</button>
+                                    <button class="btn btn-sm btn-tool" id="tool-swamp" onclick="setTool('swamp')">🌾 Slow Swamp (Cost: 3)</button>
+                                    <button class="btn btn-sm btn-tool" id="tool-clear" onclick="setTool('clear')">🧹 Clear Tile</button>
+                                </div>
+                            </div>
+                            <div class="control-group">
+                                <button class="btn btn-primary btn-block" onclick="spawnEnemies()">⚔️ Spawn Ashigaru Wave</button>
+                                <button class="btn btn-secondary btn-block" onclick="clearSimMap()">🔄 Reset Grid</button>
+                            </div>
+                            <div class="info-alert">
+                                <strong>Dijkstra Math:</strong>
+                                <code>C(p) = min(C(n) + Cost)</code>
+                                <br>
+                                <strong>Vector Gradient:</strong>
+                                <code>V(p) = -∇C(p)</code>
+                            </div>
+                        </div>
+
+                        <!-- The Grid Simulator -->
+                        <div class="panel glass col-span-2 flex-center">
+                            <div class="grid-simulator-container">
+                                <div class="legend-bar">
+                                    <span>⛩️ Spawn</span>
+                                    <span>🏰 Keep (Goal)</span>
+                                    <span>🧱 Barricade</span>
+                                    <span>🌾 Swamp</span>
+                                </div>
+                                <div id="sim-grid" class="simulator-grid"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab: Adversarial DDA -->
+                <div class="tab-pane" id="tab-dda">
+                    <div class="grid-2-col">
+                        <div class="panel glass">
+                            <h3>Imitation vs. Competition Agent</h3>
+                            <p>
+                                Rather than inflating health pools, Mobile Fortress uses a dual-agent Reinforcement Learning model to modulate challenge:
+                            </p>
+                            <ul>
+                                <li><strong>Imitation Agent (Clone)</strong>: Tracks player placement velocity, response to breaches, and upgrade habits, learning to copy the player.</li>
+                                <li><strong>Competition Agent (Tactician)</strong>: Searches for tactical counters to the clone's setup and adapts enemy wave mixtures dynamically.</li>
+                            </ul>
+                            <div class="panel-dark slider-panel">
+                                <h4>Adjust Player Metrics</h4>
+                                <div class="slider-group">
+                                    <label>Reaction Time (Slowing Breaches): <span id="val-reaction">500ms</span></label>
+                                    <input type="range" min="150" max="1500" value="500" class="slider" id="slider-reaction" oninput="updateDda()">
+                                </div>
+                                <div class="slider-group">
+                                    <label>Resource Hoarding Ratio: <span id="val-hoarding">30%</span></label>
+                                    <input type="range" min="0" max="100" value="30" class="slider" id="slider-hoarding" oninput="updateDda()">
+                                </div>
+                                <div class="slider-group">
+                                    <label>Short-range Placement Preference: <span id="val-shortrange">70%</span></label>
+                                    <input type="range" min="10" max="100" value="70" class="slider" id="slider-shortrange" oninput="updateDda()">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="panel glass flex-center">
+                            <h3>Live Threat Calibration</h3>
+                            <div class="dda-status-box">
+                                <div class="dda-bar">
+                                    <span>Imitation Clone Fit:</span>
+                                    <div class="progress-container"><div id="bar-clone" class="progress-bar" style="width: 65%;">65%</div></div>
+                                </div>
+                                <div class="dda-bar">
+                                    <span>Yokai Threat Intensity:</span>
+                                    <div class="progress-container"><div id="bar-threat" class="progress-bar warning" style="width: 45%;">45%</div></div>
+                                </div>
+                                <div class="ai-speech">
+                                    <strong>Competition Agent Strategy:</strong>
+                                    <p id="dda-tactical-response">Analyzing playstyle...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab: CMAB Dynamic Pricing -->
+                <div class="tab-pane" id="tab-monetization">
+                    <div class="grid-2-col">
+                        <div class="panel glass">
+                            <h3>Contextual Multi-Armed Bandits (LinUCB)</h3>
+                            <p>
+                                Personalizing storefront offers maximizes lifetime value (LTV). Our contextual bandit evaluates player parameters ($x_t$) and selects the offer that maximizes the confidence bound:
+                            </p>
+                            <p class="math-formula">
+                                $$a_t = \arg\max_{a} \left( x_{t, a}^T \hat{\theta}_a + \alpha \sqrt{x_{t, a}^T A_a^{-1} x_{t, a}} \right)$$
+                            </p>
+                            <div class="panel-dark profile-panel">
+                                <h4>Configure User Profile Context</h4>
+                                <div class="slider-group">
+                                    <label>Player Retention Phase: <span id="val-retention">D7 Active</span></label>
+                                    <input type="range" min="1" max="30" value="7" class="slider" id="slider-retention" oninput="updateBandit()">
+                                </div>
+                                <div class="slider-group">
+                                    <label>Gold Coin Deficit: <span id="val-deficit">Low</span></label>
+                                    <input type="range" min="0" max="2" value="0" class="slider" id="slider-deficit" oninput="updateBandit()">
+                                </div>
+                                <div class="slider-group">
+                                    <label>Favorite Unit Class: <span id="val-fav">Samurai</span></label>
+                                    <input type="range" min="0" max="3" value="0" class="slider" id="slider-fav" oninput="updateBandit()">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="panel glass flex-center">
+                            <h3>Recommended Store Offer</h3>
+                            <div class="bandit-response-box">
+                                <div class="recommended-card" id="recommended-offer-card">
+                                    <div class="badge badge-success">RECOMMENDED OFFER</div>
+                                    <h3 id="offer-title">Samurai Warlord Starter Bundle</h3>
+                                    <div class="offer-price" id="offer-price">$4.99</div>
+                                    <p id="offer-desc">Unlock dynamic combat perks and visual cosmetic effects for your Samurai Champion.</p>
+                                </div>
+                                <div class="bandit-math-details">
+                                    <h5>LinUCB Score Breakdown:</h5>
+                                    <ul>
+                                        <li>Expected Payout ($x_t^T \hat{\theta}_a$): <strong id="math-payout">0.82</strong></li>
+                                        <li>Exploration Bonus ($\alpha \sqrt{\dots}$): <strong id="math-bonus">0.24</strong></li>
+                                        <li>Total UCB Score: <strong id="math-total" class="highlight">1.06</strong></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Technical Roadmap Timeline -->
+        <section class="roadmap-section" id="roadmap">
+            <h2 class="section-title">Development Roadmap</h2>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-badge">1</div>
+                    <div class="timeline-panel glass">
+                        <h3>Phase 1: Native Skeleton & Parity</h3>
+                        <span class="timeline-date">Q3 2026</span>
+                        <p>Establish baseline game-state parity between iOS SpriteKit and Android SurfaceView loops. Create unified asset JSON reading schemas.</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-badge">2</div>
+                    <div class="timeline-panel glass">
+                        <h3>Phase 2: Rust Headless Core & UniFFI</h3>
+                        <span class="timeline-date">Q4 2026</span>
+                        <p>Write core simulation in Rust. Implement Entity-Component-System (ECS) with hecs. Expose FFI bindings using UniFFI and Rkyv serialization.</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-badge">3</div>
+                    <div class="timeline-panel glass">
+                        <h3>Phase 3: Real-Time Netcode & AWS GameLift</h3>
+                        <span class="timeline-date">Q1 2027</span>
+                        <p>Build server-authoritative UDP state synchronization. Write FlexMatch configurations on AWS GameLift to optimize match queues and spot instances.</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-badge">4</div>
+                    <div class="timeline-panel glass">
+                        <h3>Phase 4: ML Models & Content Generation</h3>
+                        <span class="timeline-date">Q2 2027</span>
+                        <p>Deploy WFC and PCGRL level synthesis. Wire continuous PPO agents for dynamic difficulty adjustment and contextual bandits for storefronts.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2026 ACFHarbinger. Project Mobile Fortress. All Rights Reserved.</p>
+        <p class="sub-footer">Authoritative Codebase Reference: <a href="file:///.agent/AGENTS.md" class="footer-link">AGENTS.md</a></p>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="script.js"></script>
+</body>
+</html>
