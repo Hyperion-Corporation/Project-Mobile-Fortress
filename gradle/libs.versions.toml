@@ -9,7 +9,7 @@ composeBom = "2024.09.00"
 junit = "4.13.2"
 androidxJunit = "1.2.1"
 androidxTestCore = "1.7.0"
-espressoCore = "3.6.1"
+espressoCore = "3.7.0"
 kotlinxCoroutines = "1.11.0"
 kotlinxSerializationJson = "1.7.1"
 
