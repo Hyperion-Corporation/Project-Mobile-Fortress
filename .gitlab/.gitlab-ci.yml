@@ -27,7 +27,6 @@ android-lint-and-unit-test:
       - .gradle/wrapper
       - .gradle/caches
   script:
-    - cd android
     - ./gradlew ktlintCheck
     - ./gradlew lintDebug
     - ./gradlew testDebugUnitTest
@@ -51,7 +50,6 @@ android-build-debug:
       - .gradle/wrapper
       - .gradle/caches
   script:
-    - cd android
     - ./gradlew assembleDebug
   artifacts:
     paths:
@@ -73,7 +71,6 @@ android-instrumented-tests:
     matrix:
       - API_LEVEL: [29, 35]
   script:
-    - cd android
     - $ANDROID_HOME/emulator/emulator -avd "test-api-${API_LEVEL}" -no-window -no-audio -no-boot-anim &
     - $ANDROID_HOME/platform-tools/adb wait-for-device
     - ./gradlew connectedDebugAndroidTest
@@ -134,10 +131,9 @@ android-release:
   variables:
     GRADLE_USER_HOME: "$CI_PROJECT_DIR/.gradle"
   before_script:
-    - cd android
     - |
       if [ -n "${ANDROID_KEYSTORE_BASE64:-}" ]; then
-        echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > release.keystore
+        echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > android/release.keystore
       else
         echo "No ANDROID_KEYSTORE_BASE64 CI/CD variable configured -- skipping signed build steps that require it." >&2
       fi

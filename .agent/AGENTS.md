@@ -23,7 +23,7 @@
 
 ## 1. Project Overview & Mission
 
-**Mobile Fortress** is a cooperative tower-defense mobile game set during the 1540s–1560s Wōkòu (倭寇) pirate crisis on the East Asian coast: players defend a Main HQ/Citadel plus Resource Outposts (fund land units) and Trading Outposts (fund naval units) against raiding Wōkòu pirate fleets — mixed Japanese rōnin and Chinese/Korean pirate-smugglers striking by land and sea — using Flow-Field-routed unit placement, commanding an East Asian primary civilization (Ming China by default) alongside a supporting Western civilization (Portuguese by default; Spanish/Dutch/British/French as alternates), then extend the fight into a light 4X-style coastal-territory meta-game. See [`docs/moon/ROADMAP.md`](../docs/moon/ROADMAP.md) for the full game concept and phased delivery plan, and [`reports/`](../reports/)/[`research/`](../research/) for the underlying market and technical research.
+**Mobile Fortress** is a cooperative tower-defense mobile game set during the 1540s–1560s Wōkòu (倭寇) pirate crisis on the East Asian coast: players defend a Main HQ/Citadel plus Resource Outposts (fund land units) and Trading Outposts (fund naval units) against raiding Wōkòu pirate fleets — mixed Japanese rōnin and Chinese/Korean pirate-smugglers striking by land and sea — using Flow-Field-routed unit placement, commanding an East Asian primary civilization (Ming China by default) alongside a supporting Western civilization (Portuguese by default; Spanish/Dutch/British/French as alternates), then extend the fight into a light 4X-style coastal-territory meta-game. See [`docs/moon/ROADMAP.md`](../docs/moon/ROADMAP.md) for the full game concept and phased delivery plan, and [`docs/reports/`](../docs/reports/)/[`docs/research/`](../docs/research/) for the underlying market and technical research.
 
 This repository is a **two-platform mobile game**: a Kotlin Android client (`android/`) and a Swift iOS client (`ios/`). Each ships a real product module — currently minimal 2D game skeletons inherited from this repo's template origin (Android: `SurfaceView` + a fixed-timestep loop thread; iOS: SpriteKit's `SKScene`), being built out into the actual Mobile Fortress core loop — plus the cross-cutting agentic/DevOps/docs framework shared across this org's other templates (`.agent/`, `docs/`, `docs/moon/`, `.github/`, `infra/`). A `core/` module holds shared raw assets and a documented (not yet compiled) state-machine/level spec both clients implement independently today — see [`core/README.md`](../core/README.md) and [`docs/moon/roadmaps/shared_core.md`](../docs/moon/roadmaps/shared_core.md) for the plan to replace this with a compiled Rust simulation core once Co-Op multiplayer work starts.
 
@@ -43,14 +43,14 @@ This project targets **simple, dependency-light 2D game clients** (per platform,
 | --- | --- | --- |
 | Kotlin | 2.0.20 | `kotlin-android` plugin, JVM target 17 (`android/`) |
 | Android Gradle Plugin (AGP) | 8.5.2 | `com.android.application` |
-| Gradle | 8.7 (wrapper-pinned) | Always invoke via `./android/gradlew`, never a bare `gradle` |
+| Gradle | 8.7 (wrapper-pinned) | Always invoke via `./gradlew`, never a bare `gradle` |
 | compileSdk / targetSdk | 35 (Android 15) | |
 | minSdk | 24 (Android 7.0) | ~97% device coverage as of 2026 |
 | Android UI toolkit | Views (`SurfaceView`) for the game surface, Jetpack Compose for menus/HUD chrome | See §1.1 |
 | Swift | 5.0 | `ios/MyGame.xcodeproj`, iOS 16+ deployment target |
 | iOS UI toolkit | SpriteKit for the game surface, SwiftUI for menus/HUD chrome | See §1.1 — requires a macOS host to build, see `.devcontainer/README.md` |
 | Build variants | Android: `debug`, `release` (minified + resource-shrunk, R8); iOS: `Debug`, `Release` | |
-| Config | `android/local.properties` (git-ignored, SDK path + signing refs), `.env.example` for optional backend | |
+| Config | `local.properties` (git-ignored, SDK path + signing refs), `.env.example` for optional backend | |
 
 ## 3. Module Boundaries
 
@@ -76,12 +76,12 @@ This project targets **simple, dependency-light 2D game clients** (per platform,
 | Command | Purpose | Platform |
 | --- | --- | --- |
 | `just --list` | List all available command-runner recipes | both |
-| `just apk` | `./android/gradlew assembleDebug` | Android |
-| `just unit-test` | Unit tests (`./android/gradlew testDebugUnitTest`) | Android |
-| `just test-instrumented` | Instrumented tests on a connected device/emulator (`./android/gradlew connectedDebugAndroidTest`) | Android |
-| `just lint-check` | `./android/gradlew lint ktlintCheck` | Android |
-| `just assemble-release` | `./android/gradlew bundleRelease` (signed App Bundle for Play Store) | Android |
-| `just install` | `./android/gradlew installDebug` onto a connected device/emulator | Android |
+| `just apk` | `./gradlew assembleDebug` | Android |
+| `just unit-test` | Unit tests (`./gradlew testDebugUnitTest`) | Android |
+| `just test-instrumented` | Instrumented tests on a connected device/emulator (`./gradlew connectedDebugAndroidTest`) | Android |
+| `just lint-check` | `./gradlew lint ktlintCheck` | Android |
+| `just assemble-release` | `./gradlew bundleRelease` (signed App Bundle for Play Store) | Android |
+| `just install` | `./gradlew installDebug` onto a connected device/emulator | Android |
 | `just ios-build` | `xcodebuild ... -destination 'generic/platform=iOS Simulator' build` | iOS (macOS host) |
 | `just ios-test` | `xcodebuild ... test` — runs the `ios/Tests/` XCTest suite on a simulator | iOS (macOS host) |
 | `just ios-check` | `xcodebuild ... analyze` | iOS (macOS host) |
@@ -92,7 +92,7 @@ This project targets **simple, dependency-light 2D game clients** (per platform,
 - Follow the per-topic rules in [`.agent/rules/`](rules/): `kotlin.md`, `swift.md`, `android_lifecycle.md`, `game_loop_performance.md`, `ui_compose.md`, `testing_qa.md`, `code_review.md`, `error_debug.md`, `documentation.md`, `reasoning_planning.md`.
 - Prefer small, reviewable diffs. Do not reformat files unrelated to the change.
 - Every new public Kotlin function/class needs a KDoc comment and every new Swift type/function a `///` doc comment; every new `engine/`-equivalent class (Android `engine/`, iOS `Engine/`/`Core/GameManager.swift`) needs at least one unit test.
-- Never commit secrets, keystores, signing passwords, or provisioning profiles. Use `android/local.properties`/`.env` (git-ignored) and document new variables in `.env.example`; iOS signing is Automatic/local-only by default (no committed certs — see `docs/DEVELOPMENT.md`).
+- Never commit secrets, keystores, signing passwords, or provisioning profiles. Use `local.properties`/`.env` (git-ignored) and document new variables in `.env.example`; iOS signing is Automatic/local-only by default (no committed certs — see `docs/DEVELOPMENT.md`).
 - Changes to shared behavior (state-machine states/transitions, level-data shape) must update [`core/src/game-state-machine.md`](../core/src/game-state-machine.md) / [`core/src/level-schema.json`](../core/src/level-schema.json) and both platforms' implementations in the same PR — see `.agent/rules/swift.md` and `.agent/rules/kotlin.md`.
 
 ## 6. AI Review & Severity Protocol

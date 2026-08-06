@@ -17,7 +17,8 @@ The actual project lives in [`vue/`](vue/) — see [`vue/README.md`](vue/README.
   - `docs/adr/` — Architecture Decision Records (auto-expanded from the directory, titled from each file's own `# H1`).
   - `docs/moon/` — the roadmap and changelog.
   - `docs/design/` — the Game Design Document, art bible, audio design doc, pitch deck, production roadmap, QA test plan, technical design document.
-  - A curated set of guides that live *outside* `docs/` — the root `README.md`, `git/CONTRIBUTING.md`, `core/README.md` and `core/src/game-state-machine.md`, infra runbooks (`infra/{docker,k8s,helm,terraform,ansible}/README.md`), `.devcontainer/README.md`, and the two research write-ups under `reports/` and `research/`.
+  - `docs/reports/` and `docs/research/` — the market-gap and technical-architecture research write-ups the roadmap is built on.
+  - A curated set of guides that live *outside* `docs/` — the root `README.md`, `git/CONTRIBUTING.md`, `core/README.md` and `core/src/game-state-machine.md`, infra runbooks (`infra/{docker,k8s,helm,terraform,ansible}/README.md`), and `.devcontainer/README.md`.
 
 ## Running it locally
 
@@ -45,7 +46,7 @@ See [`vue/README.md`](vue/README.md) for the build/preview commands and how the 
 - A directory-style `nav:` entry (e.g. `- Architecture Decisions: adr/`) auto-expands into a section from that directory's `*.md` files, using each file's own `# H1` as the title — you don't need to list ADRs individually.
 - Route paths are derived from the file path (`moon/ROADMAP.md` → `/moon/ROADMAP`), except `index.md` in any directory, which maps to `/docs` (the docs-portal landing page — `/` itself is reserved for the design hub, see `vue/src/router.ts`).
 
-**A new repo-wide guide that lives outside `docs/`** (e.g. a new module's `README.md`): add an entry to `EXTRA_SECTIONS` in [`vue/scripts/generate-nav.mjs`](vue/scripts/generate-nav.mjs) — a `{ title, source }` pair under the appropriate section (`Codebase Guides`, `Infrastructure`, `Research`, or a new section). This list is hand-curated rather than a full repo walk, so the nav stays deliberate — a file won't appear here just by existing.
+**A new repo-wide guide that lives outside `docs/`** (e.g. a new module's `README.md`): add an entry to `EXTRA_SECTIONS` in [`vue/scripts/generate-nav.mjs`](vue/scripts/generate-nav.mjs) — a `{ title, source }` pair under the appropriate section (`Codebase Guides`, `Infrastructure`, or a new section). This list is hand-curated rather than a full repo walk, so the nav stays deliberate — a file won't appear here just by existing.
 
 **Content inside an existing page**: just edit the Markdown file itself (or use the page's own "Edit on GitHub" link) — no site code changes needed. Supported in every page: GitHub-flavored Markdown, fenced code blocks with syntax highlighting (see `vue/src/composables/useMarkdown.ts` for the registered languages — add a `highlight.js` language import there if you need one that isn't), ` ```mermaid ` fences for diagrams, and `$inline$` / `$$block$$` math via KaTeX.
 

@@ -26,6 +26,6 @@
         "ANDROID_SDK_ROOT": "/opt/android-sdk",
         "ANDROID_HOME": "/opt/android-sdk"
     },
-    "postCreateCommand": "yes | sdkmanager --licenses > /dev/null && ./android/gradlew -p android --version && pre-commit install",
+    "postCreateCommand": "yes | sdkmanager --licenses > /dev/null && ./gradlew --version && pre-commit install",
     "remoteUser": "vscode"
 }

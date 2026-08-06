@@ -217,6 +217,24 @@ export const navTree: NavNode[] = [
     ]
   },
   {
+    "title": "Research",
+    "kind": "section",
+    "children": [
+      {
+        "title": "Tower Defense Market",
+        "kind": "md",
+        "path": "/reports/Tower Defense Market Research",
+        "source": "docs/reports/Tower Defense Market Research.md"
+      },
+      {
+        "title": "Multiplayer Architecture",
+        "kind": "md",
+        "path": "/research/Multiplayer Tower Defense Implementation",
+        "source": "docs/research/Multiplayer Tower Defense Implementation.md"
+      }
+    ]
+  },
+  {
     "title": "Codebase Guides",
     "kind": "section",
     "children": [
@@ -291,24 +309,6 @@ export const navTree: NavNode[] = [
         "kind": "md",
         "path": "/repo/infra/ansible/README",
         "source": "infra/ansible/README.md"
-      }
-    ]
-  },
-  {
-    "title": "Research",
-    "kind": "section",
-    "children": [
-      {
-        "title": "Tower Defense Market",
-        "kind": "md",
-        "path": "/repo/reports/Tower-Defense-Market-Research",
-        "source": "reports/Tower Defense Market Research.md"
-      },
-      {
-        "title": "Multiplayer Architecture",
-        "kind": "md",
-        "path": "/repo/research/Multiplayer-Tower-Defense-Implementation",
-        "source": "research/Multiplayer Tower Defense Implementation.md"
       }
     ]
   }
@@ -466,6 +466,16 @@ export const searchIndex: { title: string; path: string; source: string }[] = [
     "source": "docs/design/technical_design_document.md"
   },
   {
+    "title": "Tower Defense Market",
+    "path": "/reports/Tower Defense Market Research",
+    "source": "docs/reports/Tower Defense Market Research.md"
+  },
+  {
+    "title": "Multiplayer Architecture",
+    "path": "/research/Multiplayer Tower Defense Implementation",
+    "source": "docs/research/Multiplayer Tower Defense Implementation.md"
+  },
+  {
     "title": "Repository Guide",
     "path": "/repo/README",
     "source": "README.md"
@@ -519,15 +529,5 @@ export const searchIndex: { title: string; path: string; source: string }[] = [
     "title": "Ansible",
     "path": "/repo/infra/ansible/README",
     "source": "infra/ansible/README.md"
-  },
-  {
-    "title": "Tower Defense Market",
-    "path": "/repo/reports/Tower-Defense-Market-Research",
-    "source": "reports/Tower Defense Market Research.md"
-  },
-  {
-    "title": "Multiplayer Architecture",
-    "path": "/repo/research/Multiplayer-Tower-Defense-Implementation",
-    "source": "research/Multiplayer Tower Defense Implementation.md"
   }
 ];

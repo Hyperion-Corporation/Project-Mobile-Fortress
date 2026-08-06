@@ -26,7 +26,7 @@
 | Per-frame heap allocation (update/render hot path) | Zero | [`.agent/rules/game_loop_performance.md`](../.agent/rules/game_loop_performance.md) — allocation churn is the most common cause of GC/ARC-driven frame drops |
 | Cold start (Android, Baseline Profiles) | Meaningfully faster than JIT-only cold start | [`docs/moon/roadmaps/performance.md`](moon/roadmaps/performance.md) P6 |
 | UniFFI FFI round-trip (once the Rust core lands) | Zero-copy via `rkyv`; no per-frame (de)serialization allocation | [`docs/moon/roadmaps/performance.md`](moon/roadmaps/performance.md) P5; [`docs/moon/roadmaps/shared_core.md`](moon/roadmaps/shared_core.md) |
-| Co-Op netcode state sync | Within GameLift FlexMatch's latency-graduated matchmaking thresholds (see [`research/Multiplayer Tower Defense Implementation.md`](../research/Multiplayer%20Tower%20Defense%20Implementation.md) §"Matchmaking and Fleet Orchestration") | [`docs/moon/roadmaps/backend.md`](moon/roadmaps/backend.md) |
+| Co-Op netcode state sync | Within GameLift FlexMatch's latency-graduated matchmaking thresholds (see [`research/Multiplayer Tower Defense Implementation.md`](research/Multiplayer%20Tower%20Defense%20Implementation.md) §"Matchmaking and Fleet Orchestration") | [`docs/moon/roadmaps/backend.md`](moon/roadmaps/backend.md) |
 
 ---
 
@@ -48,7 +48,7 @@ None of these runners exist in the repository yet — this table is the plan the
 
 - **60fps, not 30fps:** the core loop supports "hundreds of low-tier enemy combatants" on screen simultaneously during a siege wave (per [`docs/design/game_design_document.md`](design/game_design_document.md) §3) — at 30fps, the Flow-Field-routed swarm reads as choppy rather than as the "overwhelming visual spectacle" the design targets.
 - **Zero per-frame allocation:** both platforms' GC/ARC pause behavior is nondeterministic under allocation pressure — a budget of "mostly zero, occasionally spikes" is indistinguishable from "occasionally drops frames," so the target is a hard zero in the hot path, not a soft average.
-- **Sub-$100 device coverage:** directly sourced from the market-gap rationale in [`reports/Tower Defense Market Research.md`](../reports/Tower%20Defense%20Market%20Research.md) — a tower-defense/4X hybrid that only runs acceptably on flagship hardware misses a meaningful slice of the addressable market this project targets.
+- **Sub-$100 device coverage:** directly sourced from the market-gap rationale in [`reports/Tower Defense Market Research.md`](reports/Tower%20Defense%20Market%20Research.md) — a tower-defense/4X hybrid that only runs acceptably on flagship hardware misses a meaningful slice of the addressable market this project targets.
 
 ---
 

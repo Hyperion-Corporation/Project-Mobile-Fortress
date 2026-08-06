@@ -1,6 +1,6 @@
 # Backend Roadmap
 
-Scope: server-authoritative Co-Op multiplayer, matchmaking/fleet orchestration, leaderboards, and cloud save. See [`research/Multiplayer Tower Defense Implementation.md`](../../../research/Multiplayer%20Tower%20Defense%20Implementation.md) §"Multiplayer Netcode" and §"Matchmaking and Fleet Orchestration via Amazon GameLift".
+Scope: server-authoritative Co-Op multiplayer, matchmaking/fleet orchestration, leaderboards, and cloud save. See [`research/Multiplayer Tower Defense Implementation.md`](../../research/Multiplayer%20Tower%20Defense%20Implementation.md) §"Multiplayer Netcode" and §"Matchmaking and Fleet Orchestration via Amazon GameLift".
 
 | # | Item | Effort | Status |
 | --- | --- | --- | --- |

@@ -22,14 +22,14 @@
 | --- | --- | --- | --- |
 | Kotlin | Android | 2.0.20 | Current `kotlin-android` plugin baseline, see [`.agent/AGENTS.md`](../.agent/AGENTS.md) §2 |
 | Android Gradle Plugin (AGP) | Android | 8.5.2 | `com.android.application` baseline |
-| Gradle | Android | 8.7 (wrapper-pinned) | Always invoke via `./android/gradlew`, never a bare `gradle` |
+| Gradle | Android | 8.7 (wrapper-pinned) | Always invoke via `./gradlew`, never a bare `gradle` |
 | Android SDK | Android | compileSdk/targetSdk 35, minSdk 24 | ~97% device coverage as of 2026; see [`.agent/AGENTS.md`](../.agent/AGENTS.md) §2 |
 | Swift | iOS | 5.0 | `ios/MyGame.xcodeproj` baseline |
 | iOS / Xcode | iOS | iOS 16+ deployment target | SpriteKit + SwiftUI chrome baseline |
 | Node.js | `docs/website/vue` | 20 LTS | Matches `actions/setup-node@v4`'s `node-version` in `.github/workflows/docs.yml` |
 | npm | `docs/website/vue` | 10+ (ships with Node 20) | `package-lock.json` v3 lockfile format |
 | Rust | Shared core (planned) | 1.75+ | `hecs` ECS + `rkyv` zero-copy serialization baseline once [`shared_core.md`](moon/roadmaps/shared_core.md) lands |
-| Python | `docs/mkdocs.yml` (local `mkdocs serve` only) | 3.12 | Matches `actions/setup-python@v5`'s pin in historical `docs.yml` revisions |
+| Python | `docs/mkdocs.yml` (local `mkdocs serve` only) | 3.11+ | Pinned via root `pyproject.toml` (`mkdocs-material`) — install with `pip install .` |
 
 ---
 
@@ -37,18 +37,20 @@
 
 ### Android (`gradle/libs.versions.toml`)
 
-- All Gradle dependency versions live in the version catalog (`android/gradle/libs.versions.toml`), never hardcoded inline in a `build.gradle.kts` — see [`.agent/rules/kotlin.md`](../.agent/rules/kotlin.md).
-- The Gradle wrapper (`android/gradle/wrapper/gradle-wrapper.properties`) pins the exact Gradle distribution; AGP's version must stay within that Gradle version's supported range (check the [AGP/Gradle compatibility matrix](https://developer.android.com/studio/releases/gradle-plugin#updating-gradle) before bumping either independently).
+- All Gradle dependency versions live in the version catalog (`gradle/libs.versions.toml`), never hardcoded inline in a `build.gradle.kts` — see [`.agent/rules/kotlin.md`](../.agent/rules/kotlin.md).
+- The Gradle wrapper (`gradle/wrapper/gradle-wrapper.properties`) pins the exact Gradle distribution; AGP's version must stay within that Gradle version's supported range (check the [AGP/Gradle compatibility matrix](https://developer.android.com/studio/releases/gradle-plugin#updating-gradle) before bumping either independently).
 
 ### iOS (Swift Package Manager)
 
 - Prefer Swift Package Manager over CocoaPods for any new dependency — SPM resolves reproducibly from `Package.resolved` without a separate `pod install` step. This project has no CocoaPods `Podfile` today; keep it that way unless a dependency genuinely requires it.
 - `Package.resolved` (once any SPM dependency is added) must be committed — it's the iOS equivalent of a lockfile.
 
-### `docs/website/vue` (`package-lock.json`)
+### Node / npm (root `package-lock.json`, npm workspaces)
 
-- `package-lock.json` is committed and is the authoritative pin for `npm ci` in CI (`.github/workflows/docs.yml`'s `docs-website` job runs `npm ci`, never `npm install`, so it fails loudly on lockfile drift instead of silently re-resolving).
-- `package.json` uses `^` (caret) ranges for all dependencies — Vue, Vue Router, `markdown-it` and its plugins, `highlight.js`, `mermaid`, and KaTeX are all still pre-1.0-breakage-sensitive enough that patch/minor bumps should go through the normal `npm update` + test cycle rather than being pinned exact.
+- The root `package.json` declares `docs/website/vue` as an npm workspace — `npm install`/`npm ci` at the **repo root** resolves and hoists dependencies for every workspace member into a single root `node_modules/`, with one root `package-lock.json` as the single lockfile (`docs/website/vue` has no lockfile of its own).
+- `package-lock.json` is committed and is the authoritative pin for `npm ci` in CI (`.github/workflows/docs.yml`'s `build-and-deploy` job runs `npm ci` at the root, never `npm install`, so it fails loudly on lockfile drift instead of silently re-resolving).
+- `docs/website/vue/package.json` uses `^` (caret) ranges for all dependencies — Vue, Vue Router, `markdown-it` and its plugins, `highlight.js`, `mermaid`, and KaTeX are all still pre-1.0-breakage-sensitive enough that patch/minor bumps should go through the normal `npm update` + test cycle rather than being pinned exact.
+- A future second JS/TS package just needs adding to the root `package.json`'s `workspaces` array — the lockfile and `node_modules` hoisting are automatic.
 
 ### Rust (planned — `Cargo.lock`)
 
@@ -79,14 +81,14 @@ Before adding any new package, answer:
 4. **Does it have a compatible license?** Permitted: MIT, Apache-2.0, BSD-2/3, MPL-2.0, ISC. Avoid GPL/AGPL/SSPL for anything linked into a shipped client or the docs site.
 5. **Is there a security history?** Check [osv.dev](https://osv.dev/) before adding, especially for anything touching the optional `infra/` backend's dependency surface.
 
-Once approved: add to the correct manifest (`android/gradle/libs.versions.toml`, `docs/website/vue/package.json`, or the relevant `infra/` module), regenerate the lockfile, and document the addition in [`docs/moon/CHANGELOG.md`](moon/CHANGELOG.md).
+Once approved: add to the correct manifest (`gradle/libs.versions.toml`, `docs/website/vue/package.json`, or the relevant `infra/` module), regenerate the lockfile, and document the addition in [`docs/moon/CHANGELOG.md`](moon/CHANGELOG.md).
 
 ---
 
 ## Removing a Dependency
 
 1. Verify no code paths still reference it (`grep -r` across `android/app/src/`, `ios/MyGame/`, or `docs/website/vue/src/` as applicable).
-2. Remove it from the manifest and regenerate the lockfile (`./android/gradlew --refresh-dependencies`, or `npm install` inside `docs/website/vue`).
+2. Remove it from the manifest and regenerate the lockfile (`./gradlew --refresh-dependencies`, or `npm install` at the repo root).
 3. Run the relevant test suite (`just unit-test`, `just ios-test`, or `docs/website/vue`'s `npm run build`).
 4. Document the removal in [`docs/moon/CHANGELOG.md`](moon/CHANGELOG.md).
 
@@ -119,4 +121,4 @@ Once approved: add to the correct manifest (`android/gradle/libs.versions.toml`,
 
 ### Shared Rust core (planned)
 
-- `hecs` and `rkyv` are the decided choices per [`shared_core.md`](moon/roadmaps/shared_core.md) and the underlying research in [`research/Multiplayer Tower Defense Implementation.md`](../research/Multiplayer%20Tower%20Defense%20Implementation.md) — don't introduce a competing ECS or serialization crate without a new ADR superseding that decision.
+- `hecs` and `rkyv` are the decided choices per [`shared_core.md`](moon/roadmaps/shared_core.md) and the underlying research in [`research/Multiplayer Tower Defense Implementation.md`](research/Multiplayer%20Tower%20Defense%20Implementation.md) — don't introduce a competing ECS or serialization crate without a new ADR superseding that decision.

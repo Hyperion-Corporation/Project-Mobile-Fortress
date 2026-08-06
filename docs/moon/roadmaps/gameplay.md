@@ -1,6 +1,6 @@
 # Gameplay Roadmap
 
-Scope: the Wōkòu-pirate-era tower-defense core loop and its meta-progression layer. See [`moon/ROADMAP.md`](../ROADMAP.md#game-concept-summary) for the overall concept and [`reports/Tower Defense Market Research.md`](../../../reports/Tower%20Defense%20Market%20Research.md) for the design rationale.
+Scope: the Wōkòu-pirate-era tower-defense core loop and its meta-progression layer. See [`moon/ROADMAP.md`](../ROADMAP.md#game-concept-summary) for the overall concept and [`reports/Tower Defense Market Research.md`](../../reports/Tower%20Defense%20Market%20Research.md) for the design rationale.
 
 | # | Item | Effort | Status |
 | --- | --- | --- | --- |

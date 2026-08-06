@@ -72,3 +72,6 @@ nav:
       - Production Roadmap: design/production_roadmap.md
       - QA Test Plan: design/qa_test_plan.md
       - Technical Design Document: design/technical_design_document.md
+  - Research:
+      - Tower Defense Market: reports/Tower Defense Market Research.md
+      - Multiplayer Architecture: research/Multiplayer Tower Defense Implementation.md

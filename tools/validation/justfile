@@ -11,11 +11,11 @@ reset := '\033[0m'
 # Run ktlint + Android Lint
 check:
     @echo -e "{{ cyan }}Running ktlint + Android Lint (android/)...{{ reset }}"
-    ./android/gradlew -p android ktlintCheck lintDebug
+    ./gradlewktlintCheck lintDebug
 
 # Auto-fix ktlint formatting issues
 fix:
-    ./android/gradlew -p android ktlintFormat
+    ./gradlewktlintFormat
     @echo -e "{{ green }}✓ Kotlin sources reformatted.{{ reset }}"
 
 # Static-analyze the iOS sources — no SwiftLint config ships by default with

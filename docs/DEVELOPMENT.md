@@ -23,13 +23,13 @@ just --list
 Open `android/` in Android Studio ("Open" → select `android/`, which contains `settings.gradle.kts`) and let it sync Gradle. Or from the CLI:
 
 ```bash
-./android/gradlew -p android tasks
+./gradlew tasks
 ```
 
 ### Running the Android app
 
 ```bash
-just install     # ./android/gradlew installDebug onto a connected device/emulator
+just install     # ./gradlew installDebug onto a connected device/emulator
 ```
 
 Or run/debug directly from Android Studio's device toolbar.

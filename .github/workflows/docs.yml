@@ -27,10 +27,11 @@ jobs:
         with:
           node-version: "20"
           cache: npm
-          cache-dependency-path: docs/website/vue/package-lock.json
 
+      # Root package.json declares docs/website/vue as an npm workspace —
+      # a single `npm ci` at the repo root resolves and hoists its
+      # dependencies (and any future JS/TS package added to "workspaces").
       - name: Install dependencies
-        working-directory: docs/website/vue
         run: npm ci
 
       # docs/website/vue is a Vite + Vue 3 + TypeScript SPA: every
@@ -40,8 +41,7 @@ jobs:
       # SITE_BASE matches the GitHub Pages project-site subpath so built
       # asset URLs (and the 404.html deep-link redirect) resolve correctly.
       - name: Type-check + build
-        working-directory: docs/website/vue
-        run: npm run build
+        run: npm run build --workspace docs/website/vue
         env:
           SITE_BASE: /${{ github.event.repository.name }}/
 

@@ -18,9 +18,9 @@
 
 ## Android / Gradle
 
-### `./android/gradlew` fails with "SDK location not found"
+### `./gradlew` fails with "SDK location not found"
 
-`android/local.properties` is git-ignored and must be created locally (or by Android Studio on first project open):
+`local.properties` is git-ignored and must be created locally (or by Android Studio on first project open):
 
 ```properties
 sdk.dir=/path/to/Android/sdk
@@ -33,8 +33,8 @@ In the Dev Container this is templated automatically from `ANDROID_HOME` — see
 Stop the Gradle daemon and retry — a stale daemon sometimes holds an old version catalog in memory:
 
 ```bash
-./android/gradlew --stop
-./android/gradlew build
+./gradlew --stop
+./gradlew build
 ```
 
 ### `ktlintCheck` / `lint` fails in CI but passes locally
@@ -42,7 +42,7 @@ Stop the Gradle daemon and retry — a stale daemon sometimes holds an old versi
 CI runs against a clean checkout with no local Gradle caches or IDE-applied formatting. Run the exact CI commands before pushing:
 
 ```bash
-just lint-check   # ./android/gradlew lint ktlintCheck
+just lint-check   # ./gradlew lint ktlintCheck
 ```
 
 `ktlintFormat` auto-fixes most style violations; Android Lint findings (unused resources, missing content descriptions) need manual fixes.

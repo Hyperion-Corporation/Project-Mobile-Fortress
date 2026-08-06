@@ -1,6 +1,6 @@
 # Monetization Roadmap
 
-Scope: monetization systems aligned to the UTAUT3 psychological constructs identified in [`reports/Tower Defense Market Research.md`](../../../reports/Tower%20Defense%20Market%20Research.md) §"The Psychological Architecture of Monetization: UTAUT3", while staying ahead of the regulatory precedent set by Japan's Kompu Gacha ban (§"Regulatory Pressures").
+Scope: monetization systems aligned to the UTAUT3 psychological constructs identified in [`reports/Tower Defense Market Research.md`](../../reports/Tower%20Defense%20Market%20Research.md) §"The Psychological Architecture of Monetization: UTAUT3", while staying ahead of the regulatory precedent set by Japan's Kompu Gacha ban (§"Regulatory Pressures").
 
 | # | Item | Effort | Status | UTAUT3 construct |
 | --- | --- | --- | --- | --- |

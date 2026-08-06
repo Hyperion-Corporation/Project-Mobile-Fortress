@@ -7,7 +7,7 @@
 //      repo-root-relative (prefixed with "docs/") so useDocs.ts can resolve
 //      every page — mkdocs-only and repo-wide alike — with one glob.
 //   2. EXTRA_SECTIONS below — repo-wide guides that intentionally live
-//      outside docs/ (contributor guide, infra runbooks, research write-ups)
+//      outside docs/ (contributor guide, infra runbooks, module READMEs)
 //      and so aren't part of mkdocs's docs_dir. Hand-curated rather than a
 //      full repo walk, to keep the nav deliberate rather than noisy.
 //
@@ -51,13 +51,6 @@ const EXTRA_SECTIONS = [
       { title: "Helm", source: "infra/helm/README.md" },
       { title: "Terraform", source: "infra/terraform/README.md" },
       { title: "Ansible", source: "infra/ansible/README.md" },
-    ],
-  },
-  {
-    title: "Research",
-    children: [
-      { title: "Tower Defense Market", source: "reports/Tower Defense Market Research.md" },
-      { title: "Multiplayer Architecture", source: "research/Multiplayer Tower Defense Implementation.md" },
     ],
   },
 ];

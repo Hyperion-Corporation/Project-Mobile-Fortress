@@ -4,10 +4,12 @@
 # Invoke sub-module recipes directly with dot notation: just build::debug
 # Or use the root shorthands defined below.
 #
-# Android (android/) is always built via the Gradle wrapper directly
-# (./android/gradlew), never a bare `gradle`, so the pinned wrapper version
-# (see android/gradle/wrapper/gradle-wrapper.properties) is what actually
-# runs. iOS (ios/) is built via `xcodebuild` and requires a macOS host — see
+# Android's app module (android/app/) is built via the root Gradle wrapper
+# directly (./gradlew), never a bare `gradle`, so the pinned wrapper version
+# (see gradle/wrapper/gradle-wrapper.properties) is what actually runs — the
+# Gradle root lives at the repo root (settings.gradle.kts, build.gradle.kts)
+# alongside package.json's npm workspaces, with :app mapped to android/app/.
+# iOS (ios/) is built via `xcodebuild` and requires a macOS host — see
 # .devcontainer/README.md; iOS recipes will fail on the Linux devcontainer.
 
 set shell := ["bash", "-c"]
