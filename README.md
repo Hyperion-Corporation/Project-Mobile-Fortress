@@ -65,7 +65,7 @@ Project-Mobile-Fortress/
 ├── docs/                       # architecture notes, ADRs, roadmap, design docs
 │   ├── design/                 # GDD, art/audio bibles, pitch deck, production/QA plans
 │   ├── moon/                   # ROADMAP.md, CHANGELOG.md, per-topic roadmaps
-│   └── website/                # Vue 3 SPA: interactive design hub + doc reader (deployed to gh-pages)
+│   └── website/vue/             # Vite + Vue 3 + TS SPA: interactive design hub + doc reader (deployed to gh-pages)
 ├── git/                        # CONTRIBUTING.md, codecov.yaml
 ├── tools/{build,test,validation,ci,docs,infra,reducer,helper}/justfile
 └── justfile                    # root — imports tools/*/justfile as `just` modules
