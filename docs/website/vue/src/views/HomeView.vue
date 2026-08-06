@@ -25,6 +25,12 @@ const tabs: Tab[] = [
 const activeTab = ref(tabs[0].id);
 const activeComponent = shallowRef(tabs[0].component);
 
+// public/ assets must be prefixed with BASE_URL by hand when referenced from
+// a template string (unlike index.html's own src="...", Vite doesn't rewrite
+// plain string literals inside .vue templates) — otherwise this 404s once
+// deployed under the GitHub Pages project-site subpath (SITE_BASE).
+const bannerSrc = import.meta.env.BASE_URL + "assets/mobile_fortress_banner.jpg";
+
 function selectTab(id: string) {
   activeTab.value = id;
   activeComponent.value = tabs.find((t) => t.id === id)!.component;
@@ -161,6 +167,9 @@ onUnmounted(() => {
           <router-link to="/design/game_design_document" class="btn btn-secondary">Read GDD Spec</router-link>
           <router-link to="/docs" class="btn btn-secondary">Browse Documentation</router-link>
         </div>
+      </div>
+      <div class="hero-image-container">
+        <img :src="bannerSrc" alt="Wōkòu Raid: Night on the China Coast" class="hero-banner-img" />
       </div>
     </section>
 

@@ -103,6 +103,24 @@
   gap: 1rem;
 }
 
+.hero-image-container {
+  position: relative;
+  z-index: 1;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--border);
+  transition: transform 0.5s ease;
+}
+.hero-image-container:hover {
+  transform: scale(1.02);
+}
+.hero-banner-img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
 /* --- Buttons --- */
 .btn {
   display: inline-block;
@@ -629,7 +647,7 @@
 
 @media (min-width: 992px) {
   .hero-section {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1.2fr 1fr;
     padding: 6rem 8% 4rem;
   }
   .hero-section h1 {
