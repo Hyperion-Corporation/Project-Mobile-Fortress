@@ -117,6 +117,26 @@ open ios/MyGame.xcodeproj
 
 Select the `MyGame` scheme and an iOS Simulator destination, then Run (⌘R). Or from the CLI: `just ios-build` / `just ios-test`.
 
+### Documentation website
+
+The interactive design hub + full-repo documentation portal at [`docs/website/`](docs/website/) — see [`docs/website/README.md`](docs/website/README.md) for what's on it and [`docs/website/vue/README.md`](docs/website/vue/README.md) for implementation notes.
+
+```bash
+cd docs/website/vue
+npm install
+npm run dev       # http://localhost:5173, hot-reloading
+```
+
+Other useful commands from `docs/website/vue/`:
+
+```bash
+npm run build      # type-check (vue-tsc) + production build -> dist/
+npm run preview    # serve the production build locally
+node scripts/generate-nav.mjs   # regenerate src/nav.generated.ts after editing docs/mkdocs.yml's nav
+```
+
+The production build is deployed automatically to the `gh-pages` branch by [`.github/workflows/docs.yml`](.github/workflows/docs.yml) on every push to `main` that touches `docs/**` or any tracked Markdown file.
+
 ## Development
 
 See [`git/CONTRIBUTING.md`](git/CONTRIBUTING.md) for the contribution workflow, [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) for local setup on both platforms, and [`.devcontainer/`](.devcontainer/devcontainer.json) for a one-click containerized **Android** dev environment.
