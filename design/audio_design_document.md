@@ -1,54 +1,44 @@
-# Audio Design Document (ADD): AI Soccer Simulator (AISS)
-*Spatial Audio Architectures, Dynamic Crowd Soundscapes, and Middleware specs in UE5*
+# Audio Design Document (ADD): Mobile Fortress
+*Dynamic Taiko Drums, Atmospheric Nature Cues, and Spatial Combat Effects*
 
 ---
 
-## 1. Audio Architecture & System Overview
+## 1. Acoustic Identity & Design Philosophy
 
-AISS utilizes a high-dynamic-range (HDR) audio system designed to simulate the acoustics of a massive sports stadium. The engine must seamlessly balance ambient crowd noise, acoustic reflections from concrete stands, and distinct on-pitch physical sounds.
+Mobile Fortress relies on a traditional Japanese acoustic landscape designed to balance peaceful Day phases with intense Night sieges.
 
 ```mermaid
 graph TD
-    A[Unreal Engine Match State] -->|Score, Pressure, Proximity| B[MetaSound Controller]
-    B -->|Ambisonic Crowds| C[3D Stadium Attenuation]
-    B -->|Chants & Dynamics| D[Dynamic Music/Chant Stitches]
-    A -->|Physical Impacts| E[Spatial Pitch Audio]
+    A[Match Phase Event] -->|Day Preparation| B[Ambient Wind & Crickets Cues]
+    A -->|Night Attack Phase| C[Dynamic Taiko Drums & Biwa Riffs]
+    C -->|Horde Intensity Scaled| D[Audio Excitement Amplitude Modulator]
+    E[On-Pitch Action] -->|Combat Triggers| F[Spatial Matchlock & Blade Impacts]
 ```
 
 ---
 
-## 2. Spatial Pitch Acoustics
+## 2. Dynamic Audio Systems
 
-On-pitch audio events are localized using distance-based attenuation curves and spatial filters.
+The soundtrack and ambient environmental loops adjust dynamically using a centralized **Excitement Scale** ($E \in [0.0, 1.0]$) monitored by the game loop:
+$$E = w_1 \cdot \text{EnemiesOnScreen} + w_2 \cdot \text{CastleHealthLoss} + w_3 \cdot \text{BossPresence}$$
 
-### 2.1 Physics Collision Audio
-*   **Ball-to-Boot Impacts**: Dynamic sound triggers mapping impact velocity to sample pitch and volume. Soft taps trigger dry leather brushing, while high-velocity shots trigger loud thuds.
-*   **Net Swishes**: Spatially positioned line assets along the goal net trigger multi-channel swish sounds when intersected by high-velocity ball actors.
-*   **Player Locomotion**: Footstep SFX are modulated by surface parameters (dry turf, wet turf, mud) and speed (walk, run, sprint).
-
-### 2.2 Camera Zoom Attenuation
-The listener position is attached to the broadcast camera. Attenuation models use a dynamic scale:
-*   **Wide Broadcast Camera**: Low-pass filters are applied to on-pitch events; crowd acoustics are wide and diffuse.
-*   **Close/Focus Camera**: Attenuation curves clamp crowd volumes (-6dB) and boost pitch events (+4dB) to highlight tactical details.
+### 2.1 Day / Night Transition Loops
+*   **Day Phase ($E < 0.2$)**: Smooth ambient wind sweeps, rustling bamboo trees, soft crickets, and occasional distant flutes (Shakuhachi).
+*   **Night Phase (Start of wave)**: Rhythmic clapping, tension-building Biwa strings, and light percussion.
+*   **Peak Siege ($E \ge 0.6$)**: Loud Taiko drum arrays, aggressive Shamisen strums, and shouting backing vocals, scaling in volume and speed as enemies approach the Keep.
 
 ---
 
-## 3. Dynamic Stadium Ambience
+## 3. Spatial Combat Audio
 
-The stadium crowd is modeled as a multi-layered acoustic entity that shifts states based on match events.
+Sound effects are localized based on screen coordinates to help players recognize where breaches occur.
 
-### 3.1 Crowd Mood States
-The system maintains a **Crowd Excitement Metric** ($E \in [0.0, 1.0]$) updated in real-time by scoreboard and tactical data:
-$$E = w_1 \cdot \text{BallProximityToGoal} + w_2 \cdot \text{MatchTension} + w_3 \cdot \text{RecentEventModifier}$$
-
-*   **State 0: Idle Murmur ($E < 0.3$)**: Low-frequency hum, distant chatter.
-*   **State 1: Anticipation ($0.3 \le E < 0.7$)**: Mid-frequency cheers, rhythmic clapping, volume swell.
-*   **State 2: Peak Roar ($E \ge 0.7$)**: High-frequency explosions, cheering waves, dynamic chanting.
-
-### 3.2 Middleware Integration: MetaSounds & Wwise
-*   **MetaSound Pipeline**: Native Unreal Engine MetaSounds generate complex sound layers directly in the engine.
-*   **Interactive Music/Chant Stitching**: Crowds dynamically stitch chants based on the leading team. MetaSounds coordinate sample changes at bar/beat boundaries (utilizing the Quartz subsystems) to maintain rhythmic synchronization of crowd clapping.
+### 3.1 Weapon SFX Cues
+1.  **Matchlock Gunners**: Loud, bass-heavy explosions with high high-frequency crackle, dropping in volume if fired off-screen.
+2.  **Yumi Archers**: High-velocity arrow whistling sample, fading out at target coordinates.
+3.  **Samurai Cleaves**: Metallic blade slashing sounds with organic body impacts.
+4.  **Shaman Purifications**: Shimmering spiritual bell sounds (Kagura Suzu) played in a high-pitch loop.
 
 ---
-*Document Version: 1.0*  
-*Authoritative Reference: design/GDD.md*
+*Document Version: 2.0*  
+*Authoritative Reference: design/game_design_document.md*

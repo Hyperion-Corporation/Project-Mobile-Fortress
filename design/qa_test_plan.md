@@ -1,64 +1,58 @@
-# QA Test Plan: AI Soccer Simulator (AISS)
-*Automated Verification, Network Synchronization, and Performance Profiling Standards for UE5*
+# QA Test Plan: Mobile Fortress
+*Automated Simulation Runs, Replication Sync Checks, and Mobile Profiling Standards*
 
 ---
 
 ## 1. Quality Assurance Testing Methodologies
 
-AISS uses a hybrid QA approach combining automated headless server runs with manual visual checks.
+Mobile Fortress uses automated headless simulation passes combined with on-device rendering validation.
 
 ```mermaid
 graph LR
-    A[Source Commit] -->|Trigger| B[Automated Headless Test Runs]
-    B -->|Check| C[AI Behavior Tree Assertions]
-    B -->|Check| D[PhysX/Chaos Boundary Asserts]
-    B -->|Check| E[Network Out-of-Sync Audits]
+    A[Build Commit] -->|Trigger| B[Automated Headless Simulation Runs]
+    B -->|Verify| C[Dijkstra Path Solvability asserts]
+    B -->|Verify| D[UniFFI FFI serialization boundaries]
+    B -->|Verify| E[Network desync audits]
 ```
 
 ### 1.1 Automated Headless Simulation Runs
-*   **Headless Mode**: The server runs the match simulation without loading graphical assets or spawning a render viewport (`-nullrhi` flag).
-*   **Stress Testing**: Runs 100 simultaneous matches in headless mode to verify AI stability, checking for logic deadlocks (e.g., players stopping and not chasing the ball).
+*   **Headless Tests**: The game loop is run in a pure Rust test harness, executing matches without rendering.
+*   **Stress Checks**: Simulates matches containing 500 simultaneous entities to verify path recalculation speeds and detect CPU bottlenecks.
 
-### 1.2 AI Behavior Assertions
-*   **Verification script checks**:
-    *   *Assert 01*: The possessed agent must attempt to intercept the ball when loose.
-    *   *Assert 02*: Goalkeepers must remain within the box boundary unless in possession of the ball.
-    *   *Assert 03*: Opponent players must select a marking target during defensive phases.
+### 1.2 Path Solvability Assertions
+*   **WFC Level Generator checks**:
+    *   *Assert 01*: The Dijkstra map must contain a valid, unblocked pathway from every active spawn gate to the Keep.
+    *   *Assert 02*: No generated layouts can exceed the maximum barricade placement budget.
 
 ---
 
-## 2. Network Synchronization & Replication Verification
+## 2. Network Replication Synchronization
 
-Multiplayer builds require regular verification of replicated states to prevent synchronization drift.
+To maintain co-op match integrity over mobile network variations, replication checks are run continuously:
 
-### 2.1 Simulated Network Latency Profiles
-Tests are run using Unreal Engine's net emulation settings (`NetEmulationSettings` in `DefaultEngine.ini`):
-*   **Profile 1 (Typical)**: Latency: 50ms, Packet Loss: 0.5%, Jitter: 5ms.
-*   **Profile 2 (High Jitter)**: Latency: 120ms, Packet Loss: 2.0%, Jitter: 15ms.
-*   **Profile 3 (Lossy)**: Latency: 80ms, Packet Loss: 5.0%, Jitter: 8ms.
+### 2.1 Emulated Latency Profiles
+*   **Profile 1 (Cellular Typical)**: Latency: 60ms, Packet Loss: 0.5%, Jitter: 5ms.
+*   **Profile 2 (Cellular Lossy)**: Latency: 100ms, Packet Loss: 3.0%, Jitter: 12ms.
+*   **Profile 3 (Transit/Tunnel)**: Latency: 150ms, Packet Loss: 7.0%, Jitter: 25ms.
 
 ### 2.2 Desynchronization Audits
-*   The server logs ball position coordinate deltas ($X, Y, Z$) against client-side predicted positions every 100ms.
-*   If the coordinate delta exceeds a threshold of $15.0\text{ units}$, the test framework raises a warning.
+*   The Dedicated Server monitors client position predictions. If coordinate discrepancies exceed a threshold of $0.5\text{ tiles}$ due to dropped packets, a reconciliation snap is executed during wave breaks to avoid visual jitter during intense combat.
 
 ---
 
-## 3. UE5 Profiling & Performance Standards
+## 3. On-Device Profiling Standards
 
-To guarantee a stable framerate, the simulation must adhere to the following memory and CPU budgets:
+To preserve thermal limits and prevent battery drain on targeting hardware (Android API 24+, iOS 16+):
 
-### 3.1 Profiling Command Lines
-*   `stat FPS`: Displays current framerate.
-*   `stat Unit`: Breaks down Frame time, Game thread time, Draw (render) time, and GPU time.
-*   `stat Physics`: Tracks Chaos Physics calculation deltas, verifying that substepping does not exceed a 3.0ms budget per frame.
+### 3.1 Memory Allocation Targets
+*   **Android (Android Studio Profiler)**: Heap memory allocations must remain under $120\text{MB}$. Per-frame allocations inside the `GameLoop` thread body must be $0$ (preventing Garbage Collection pauses).
+*   **iOS (Xcode Instruments)**: Active allocations must remain under $100\text{MB}$. ARC release chains are audited to prevent cyclic reference leaks across Swift/Rust FFI borders.
 
-### 3.2 Unreal Insights Integration
-*   Match runs are profiled via *Unreal Insights* to detect memory spikes and CPU stall zones.
-*   **Targets**:
-    *   *Game Thread budget*: $\le 12.0\text{ms}$
-    *   *AI Controller evaluation*: $\le 2.0\text{ms}$ (across all 22 agents)
-    *   *Rendering (Lumen/Nanite)*: $\le 10.0\text{ms}$
+### 3.2 Thread Budget Allocations
+*   *Game Loop update tick*: $\le 3.0\text{ms}$
+*   *Rust Core Simulation FFI update*: $\le 4.0\text{ms}$
+*   *Native presentation rendering*: $\le 8.0\text{ms}$
 
 ---
-*Document Version: 1.0*  
-*Authoritative Reference: design/GDD.md*
+*Document Version: 2.0*  
+*Authoritative Reference: design/game_design_document.md*

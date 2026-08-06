@@ -1,10 +1,10 @@
 // --- Global App State & Event Listeners ---
 document.addEventListener("DOMContentLoaded", () => {
     initTabs();
-    initGrassConfettiBackground();
-    initSoccerPitch();
-    initBehaviorTree();
-    initAudioSimulator();
+    initCherryBlossoms();
+    initFlowFieldSimulator();
+    initOptimizationSimulator();
+    initDynamicAudioSimulator();
     initSprintsRoadmap();
     initQaSuite();
 });
@@ -49,8 +49,8 @@ function initTabs() {
     });
 }
 
-// --- Dynamic Grass Particles Background ---
-function initGrassConfettiBackground() {
+// --- Falling Cherry Blossoms Particles ---
+function initCherryBlossoms() {
     const canvas = document.getElementById("blossoms-canvas");
     const ctx = canvas.getContext("2d");
 
@@ -62,10 +62,10 @@ function initGrassConfettiBackground() {
         height = canvas.height = window.innerHeight;
     });
 
-    const numParticles = 30;
-    const particles = [];
+    const numPetals = 40;
+    const petals = [];
 
-    class GrassFlake {
+    class Petal {
         constructor() {
             this.reset();
             this.y = Math.random() * height;
@@ -74,19 +74,18 @@ function initGrassConfettiBackground() {
         reset() {
             this.x = Math.random() * width;
             this.y = -20;
-            this.width = Math.random() * 3 + 2;
-            this.length = Math.random() * 12 + 6;
-            this.speedY = Math.random() * 1.2 + 0.6;
-            this.speedX = Math.random() * 1.0 - 0.5;
-            this.angle = Math.random() * Math.PI * 2;
-            this.spinSpeed = Math.random() * 0.05 - 0.025;
-            this.opacity = Math.random() * 0.2 + 0.1;
+            this.size = Math.random() * 8 + 6;
+            this.speedY = Math.random() * 1.5 + 0.8;
+            this.speedX = Math.random() * 1.5 - 0.5;
+            this.rotation = Math.random() * 360;
+            this.rotationSpeed = Math.random() * 1.5 - 0.75;
+            this.opacity = Math.random() * 0.4 + 0.3;
         }
 
         update() {
             this.y += this.speedY;
-            this.x += this.speedX + Math.sin(this.y / 40) * 0.3;
-            this.angle += this.spinSpeed;
+            this.x += this.speedX + Math.sin(this.y / 30) * 0.5;
+            this.rotation += this.rotationSpeed;
 
             if (this.y > height + 20 || this.x > width + 20 || this.x < -20) {
                 this.reset();
@@ -96,25 +95,26 @@ function initGrassConfettiBackground() {
         draw() {
             ctx.save();
             ctx.translate(this.x, this.y);
-            ctx.rotate(this.angle);
+            ctx.rotate((this.rotation * Math.PI) / 180);
             ctx.beginPath();
             
-            // Draw a grass blade / confetti strand
-            ctx.rect(-this.width/2, -this.length/2, this.width, this.length);
+            ctx.moveTo(0, 0);
+            ctx.bezierCurveTo(-this.size, -this.size / 2, -this.size / 2, -this.size * 1.5, 0, -this.size);
+            ctx.bezierCurveTo(this.size / 2, -this.size * 1.5, this.size, -this.size / 2, 0, 0);
             
-            ctx.fillStyle = `rgba(56, 176, 0, ${this.opacity})`;
+            ctx.fillStyle = `rgba(255, 183, 197, ${this.opacity})`;
             ctx.fill();
             ctx.restore();
         }
     }
 
-    for (let i = 0; i < numParticles; i++) {
-        particles.push(new GrassFlake());
+    for (let i = 0; i < numPetals; i++) {
+        petals.push(new Petal());
     }
 
     function animate() {
         ctx.clearRect(0, 0, width, height);
-        particles.forEach(p => {
+        petals.forEach(p => {
             p.update();
             p.draw();
         });
@@ -124,371 +124,493 @@ function initGrassConfettiBackground() {
     animate();
 }
 
-// --- Interactive Soccer Pitch Simulator ---
-const PITCH_ROWS = 8;
-const PITCH_COLS = 12;
-let pitchGrid = [];
-let currentSoccerTool = "defender"; // "defender", "attacker", "ball"
-let ballPos = { r: 3, c: 3 };
+// --- Flow Field Simulator ---
+const GRID_SIZE = 12;
+let grid = [];
+let currentTool = "wall"; 
+const spawnPoints = [{x: 0, y: 0}, {x: 0, y: 11}, {x: 11, y: 0}];
+const keepPoint = {x: 5, y: 5};
+let activeEnemies = [];
+let simInterval = null;
 
-function initSoccerPitch() {
-    createSoccerPitch();
-    recalculatePassLanes();
+function initFlowFieldSimulator() {
+    createGrid();
+    recalculateFlowField();
 }
 
-function createSoccerPitch() {
-    const pitchGridEl = document.getElementById("pitch-grid");
-    if (!pitchGridEl) return;
-    pitchGridEl.innerHTML = "";
-    pitchGrid = [];
+function createGrid() {
+    const gridContainer = document.getElementById("sim-grid");
+    if (!gridContainer) return;
+    gridContainer.innerHTML = "";
+    grid = [];
 
-    // Pre-populated actors
-    const initialActors = [
-        { r: 3, c: 3, type: "ball" },
-        { r: 2, c: 1, type: "defender" },
-        { r: 5, c: 2, type: "defender" },
-        { r: 5, c: 5, type: "attacker" },
-        { r: 1, c: 6, type: "attacker" }
-    ];
-
-    for (let r = 0; r < PITCH_ROWS; r++) {
-        pitchGrid[r] = [];
-        for (let c = 0; c < PITCH_COLS; c++) {
-            let initial = initialActors.find(a => a.r === r && a.c === c);
-            let actorType = initial ? initial.type : "clear";
+    for (let r = 0; r < GRID_SIZE; r++) {
+        grid[r] = [];
+        for (let c = 0; c < GRID_SIZE; c++) {
+            let isSpawn = spawnPoints.some(pt => pt.x === r && pt.y === c);
+            let isKeep = keepPoint.x === r && keepPoint.y === c;
             
-            pitchGrid[r][c] = { row: r, col: c, type: actorType };
+            let cellType = "clear";
+            if (isKeep) cellType = "keep";
+            else if (isSpawn) cellType = "spawn";
+
+            grid[r][c] = {
+                row: r,
+                col: c,
+                type: cellType,
+                cost: cellType === "swamp" ? 3.0 : (cellType === "wall" ? 99.0 : 1.0),
+                distance: 9999,
+                vector: {x: 0, y: 0}
+            };
 
             const cellEl = document.createElement("div");
-            cellEl.id = `pitch-cell-${r}-${c}`;
-            cellEl.className = "pitch-cell";
+            cellEl.id = `cell-${r}-${c}`;
+            cellEl.className = "grid-cell";
+            if (isSpawn) cellEl.classList.add("cell-spawn");
+            if (isKeep) cellEl.classList.add("cell-keep");
 
-            if (actorType === "defender") {
-                cellEl.classList.add("cell-defender");
-                cellEl.textContent = "🏃🔴";
-            } else if (actorType === "attacker") {
-                cellEl.classList.add("cell-attacker");
-                cellEl.textContent = "🏃🔵";
-            } else if (actorType === "ball") {
-                cellEl.classList.add("cell-ball");
-                cellEl.textContent = "⚽";
-                ballPos = { r: r, c: c };
-            }
-
-            cellEl.addEventListener("click", () => handlePitchCellClick(r, c));
-            pitchGridEl.appendChild(cellEl);
+            cellEl.addEventListener("mousedown", () => handleCellClick(r, c));
+            gridContainer.appendChild(cellEl);
         }
     }
 }
 
-function setSoccerTool(toolName) {
-    currentSoccerTool = toolName;
+function setTool(toolName) {
+    currentTool = toolName;
     document.querySelectorAll(".btn-tool").forEach(btn => btn.classList.remove("active"));
     
-    let btnId = "tool-defender";
-    if (toolName === "attacker") btnId = "tool-attacker";
-    if (toolName === "ball") btnId = "tool-ball";
-    document.getElementById(btnId).classList.add("active");
+    let btnId = "tool-wall";
+    if (toolName === "swamp") btnId = "tool-swamp";
+    if (toolName === "clear") btnId = "tool-clear";
+    const btn = document.getElementById(btnId);
+    if (btn) btn.classList.add("active");
 }
 
-function handlePitchCellClick(r, c) {
-    const cellEl = document.getElementById(`pitch-cell-${r}-${c}`);
-    const previousType = pitchGrid[r][c].type;
+function handleCellClick(r, c) {
+    if (grid[r][c].type === "keep" || grid[r][c].type === "spawn") return;
 
-    // Reset current element
-    if (previousType === "ball") {
-        // Can't delete ball, must move it
-        if (currentSoccerTool !== "ball") return;
-    }
-
-    // Apply tool changes
-    if (currentSoccerTool === "defender") {
-        if (previousType === "defender") {
-            pitchGrid[r][c].type = "clear";
-            cellEl.classList.remove("cell-defender");
-            cellEl.textContent = "";
-        } else {
-            clearCell(r, c);
-            pitchGrid[r][c].type = "defender";
-            cellEl.classList.add("cell-defender");
-            cellEl.textContent = "🏃🔴";
-        }
-    } else if (currentSoccerTool === "attacker") {
-        if (previousType === "attacker") {
-            pitchGrid[r][c].type = "clear";
-            cellEl.classList.remove("cell-attacker");
-            cellEl.textContent = "";
-        } else {
-            clearCell(r, c);
-            pitchGrid[r][c].type = "attacker";
-            cellEl.classList.add("cell-attacker");
-            cellEl.textContent = "🏃🔵";
-        }
-    } else if (currentSoccerTool === "ball") {
-        // Remove previous ball representation
-        const prevBallEl = document.getElementById(`pitch-cell-${ballPos.r}-${ballPos.c}`);
-        if (prevBallEl) {
-            prevBallEl.classList.remove("cell-ball");
-            prevBallEl.textContent = "";
-            pitchGrid[ballPos.r][ballPos.c].type = "clear";
-        }
-
-        clearCell(r, c);
-        ballPos = { r: r, c: c };
-        pitchGrid[r][c].type = "ball";
-        cellEl.classList.add("cell-ball");
-        cellEl.textContent = "⚽";
-    }
-
-    recalculatePassLanes();
-}
-
-function clearCell(r, c) {
-    const el = document.getElementById(`pitch-cell-${r}-${c}`);
-    el.className = "pitch-cell";
-    el.textContent = "";
-    pitchGrid[r][c].type = "clear";
-}
-
-function resetSoccerPitch() {
-    createSoccerPitch();
-    recalculatePassLanes();
-}
-
-// Clears dynamic vector line visualizers and draws updated passing options
-function recalculatePassLanes() {
-    // Clear old lines
-    document.querySelectorAll(".pass-viability-line").forEach(l => l.remove());
-
-    const pitchContainer = document.getElementById("pitch-grid");
-    if (!pitchContainer) return;
-    const rect = pitchContainer.getBoundingClientRect();
-    const cellW = rect.width / PITCH_COLS;
-    const cellH = rect.height / PITCH_ROWS;
-
-    // Center of ball coordinate
-    const ballX = ballPos.c * cellW + cellW/2;
-    const ballY = ballPos.r * cellH + cellH/2;
-
-    // Scan for attackers
-    for (let r = 0; r < PITCH_ROWS; r++) {
-        for (let c = 0; c < PITCH_COLS; c++) {
-            if (pitchGrid[r][c].type === "attacker") {
-                const targetX = c * cellW + cellW/2;
-                const targetY = r * cellH + cellH/2;
-
-                // Verify if any defender intersects the direct pass vector line
-                let passesBlock = checkPassBlocked(ballPos, {r: r, c: c});
-
-                // Calculate distance and angles for drawing line
-                let dist = Math.hypot(targetX - ballX, targetY - ballY);
-                let angle = Math.atan2(targetY - ballY, targetX - ballX) * 180 / Math.PI;
-
-                const line = document.createElement("div");
-                line.className = "pass-viability-line";
-                line.style.width = `${dist}px`;
-                line.style.left = `${ballX}px`;
-                line.style.top = `${ballY}px`;
-                line.style.transform = `rotate(${angle}deg)`;
-
-                if (passesBlock) {
-                    // Blocked pass: draw red line
-                    line.style.background = "linear-gradient(90deg, var(--accent-red) 0%, rgba(217,4,41,0.2) 100%)";
-                    line.style.boxShadow = "0 0 5px var(--accent-red-glow)";
-                }
-
-                pitchContainer.appendChild(line);
-            }
-        }
-    }
-}
-
-// Verifies if a defender intersects the path line using simple ray-to-box checks
-function checkPassBlocked(start, end) {
-    let blocked = false;
+    const cellEl = document.getElementById(`cell-${r}-${c}`);
     
-    // Look for any defender cell
-    for (let r = 0; r < PITCH_ROWS; r++) {
-        for (let c = 0; c < PITCH_COLS; c++) {
-            if (pitchGrid[r][c].type === "defender") {
-                // Approximate line-intersection by checks along vector segments
-                let steps = 15;
-                for (let i = 1; i < steps; i++) {
-                    let t = i / steps;
-                    let checkR = Math.round(start.r + (end.r - start.r) * t);
-                    let checkC = Math.round(start.c + (end.c - start.c) * t);
-
-                    if (checkR === r && checkC === c) {
-                        blocked = true;
-                        break;
-                    }
-                }
-            }
+    if (currentTool === "wall") {
+        if (grid[r][c].type === "wall") {
+            grid[r][c].type = "clear";
+            grid[r][c].cost = 1.0;
+            cellEl.classList.remove("cell-wall");
+        } else {
+            grid[r][c].type = "wall";
+            grid[r][c].cost = 99.0;
+            cellEl.classList.remove("cell-swamp");
+            cellEl.classList.add("cell-wall");
         }
-        if (blocked) break;
+    } else if (currentTool === "swamp") {
+        if (grid[r][c].type === "swamp") {
+            grid[r][c].type = "clear";
+            grid[r][c].cost = 1.0;
+            cellEl.classList.remove("cell-swamp");
+        } else {
+            grid[r][c].type = "swamp";
+            grid[r][c].cost = 3.0;
+            cellEl.classList.remove("cell-wall");
+            cellEl.classList.add("cell-swamp");
+        }
+    } else if (currentTool === "clear") {
+        grid[r][c].type = "clear";
+        grid[r][c].cost = 1.0;
+        cellEl.classList.remove("cell-wall", "cell-swamp");
     }
-    return blocked;
+
+    recalculateFlowField();
 }
 
-// Simple dynamic movement of ball to first open teammate
-function simulatePassingPlay() {
-    let targetAttacker = null;
-
-    // Search for first unblocked attacker
-    for (let r = 0; r < PITCH_ROWS; r++) {
-        for (let c = 0; c < PITCH_COLS; c++) {
-            if (pitchGrid[r][c].type === "attacker") {
-                if (!checkPassBlocked(ballPos, {r: r, c: c})) {
-                    targetAttacker = {r: r, c: c};
-                    break;
-                }
-            }
+function recalculateFlowField() {
+    for (let r = 0; r < GRID_SIZE; r++) {
+        for (let c = 0; c < GRID_SIZE; c++) {
+            grid[r][c].distance = 9999;
+            grid[r][c].vector = {x: 0, y: 0};
         }
-        if (targetAttacker) break;
     }
 
-    if (!targetAttacker) {
-        alert("All passing lanes are currently blocked by opponent defenders! Adjust player positions.");
+    let queue = [];
+    grid[keepPoint.x][keepPoint.y].distance = 0;
+    queue.push(grid[keepPoint.x][keepPoint.y]);
+
+    while (queue.length > 0) {
+        let current = queue.shift();
+        
+        let neighbors = getNeighbors(current.row, current.col);
+        neighbors.forEach(n => {
+            if (n.type === "wall") return;
+
+            let tentativeDist = current.distance + n.cost;
+            if (tentativeDist < n.distance) {
+                n.distance = tentativeDist;
+                queue.push(n);
+            }
+        });
+    }
+
+    for (let r = 0; r < GRID_SIZE; r++) {
+        for (let c = 0; c < GRID_SIZE; c++) {
+            const cell = grid[r][c];
+            const cellEl = document.getElementById(`cell-${r}-${c}`);
+            if (!cellEl) continue;
+            
+            const oldArrow = cellEl.querySelector(".cell-arrow");
+            if (oldArrow) oldArrow.remove();
+
+            if (cell.type === "wall" || cell.type === "keep") {
+                continue;
+            }
+
+            let neighbors = getNeighbors(r, c);
+            let minDistance = cell.distance;
+            let targetCell = null;
+
+            neighbors.forEach(n => {
+                if (n.type !== "wall" && n.distance < minDistance) {
+                    minDistance = n.distance;
+                    targetCell = n;
+                }
+            });
+
+            if (targetCell) {
+                let dx = targetCell.col - c;
+                let dy = targetCell.row - r;
+                cell.vector = {x: dx, y: dy};
+
+                const arrowEl = document.createElement("span");
+                arrowEl.className = "cell-arrow";
+                
+                let arrowChar = "→";
+                if (dx === 0 && dy === -1) arrowChar = "↑";
+                else if (dx === 0 && dy === 1) arrowChar = "↓";
+                else if (dx === -1 && dy === 0) arrowChar = "←";
+                else if (dx === -1 && dy === -1) arrowChar = "↖";
+                else if (dx === 1 && dy === -1) arrowChar = "↗";
+                else if (dx === -1 && dy === 1) arrowChar = "↙";
+                else if (dx === 1 && dy === 1) arrowChar = "↘";
+
+                arrowEl.textContent = arrowChar;
+                cellEl.appendChild(arrowEl);
+            }
+        }
+    }
+}
+
+function getNeighbors(r, c) {
+    let neighbors = [];
+    const dirs = [
+        {dr: -1, dc: 0},  {dr: 1, dc: 0},
+        {dr: 0, dc: -1},  {dr: 0, dc: 1},
+        {dr: -1, dc: -1}, {dr: -1, dc: 1},
+        {dr: 1, dc: -1},  {dr: 1, dc: 1}
+    ];
+
+    dirs.forEach(d => {
+        let nr = r + d.dr;
+        let nc = c + d.dc;
+        if (nr >= 0 && nr < GRID_SIZE && nc >= 0 && nc < GRID_SIZE) {
+            neighbors.push(grid[nr][nc]);
+        }
+    });
+
+    return neighbors;
+}
+
+function clearSimMap() {
+    activeEnemies.forEach(e => e.el.remove());
+    activeEnemies = [];
+    if (simInterval) clearInterval(simInterval);
+
+    createGrid();
+    recalculateFlowField();
+}
+
+function spawnEnemies() {
+    if (simInterval) clearInterval(simInterval);
+
+    const gridContainer = document.getElementById("sim-grid");
+    if (!gridContainer) return;
+    const containerRect = gridContainer.getBoundingClientRect();
+    const cellWidth = containerRect.width / GRID_SIZE;
+
+    spawnPoints.forEach((spawn, idx) => {
+        setTimeout(() => {
+            createEnemyNode(spawn.row, spawn.col, cellWidth, gridContainer);
+        }, idx * 400);
+
+        setTimeout(() => {
+            createEnemyNode(spawn.row, spawn.col, cellWidth, gridContainer);
+        }, idx * 400 + 800);
+    });
+
+    simInterval = setInterval(() => {
+        updateEnemies(cellWidth);
+    }, 150);
+}
+
+function createEnemyNode(r, c, cellWidth, container) {
+    const el = document.createElement("div");
+    el.className = "enemy-dot";
+    el.style.left = `${c * cellWidth + cellWidth/2}px`;
+    el.style.top = `${r * cellWidth + cellWidth/2}px`;
+    container.appendChild(el);
+
+    activeEnemies.push({ r: r, c: c, el: el, active: true });
+}
+
+function updateEnemies(cellWidth) {
+    if (activeEnemies.length === 0) {
+        clearInterval(simInterval);
         return;
     }
 
-    // Move ball visually
-    const cellW = document.getElementById("pitch-grid").getBoundingClientRect().width / PITCH_COLS;
-    const cellH = document.getElementById("pitch-grid").getBoundingClientRect().height / PITCH_ROWS;
+    activeEnemies.forEach(enemy => {
+        if (!enemy.active) return;
 
-    // Transition ball element
-    const prevBallEl = document.getElementById(`pitch-cell-${ballPos.r}-${ballPos.c}`);
-    const nextBallEl = document.getElementById(`pitch-cell-${targetAttacker.r}-${targetAttacker.c}`);
+        if (enemy.r === keepPoint.x && enemy.c === keepPoint.y) {
+            enemy.el.remove();
+            enemy.active = false;
+            return;
+        }
 
-    if (prevBallEl && nextBallEl) {
-        prevBallEl.classList.remove("cell-ball");
-        prevBallEl.textContent = "";
-        pitchGrid[ballPos.r][ballPos.c].type = "clear";
+        const cell = grid[enemy.r][enemy.c];
+        if (cell.type === "wall") {
+            enemy.active = false;
+            enemy.el.remove();
+            return;
+        }
 
-        ballPos = { r: targetAttacker.r, c: targetAttacker.c };
-        pitchGrid[ballPos.r][ballPos.c].type = "ball";
-        nextBallEl.classList.add("cell-ball");
-        nextBallEl.textContent = "⚽";
-        
-        recalculatePassLanes();
-    }
-}
+        let nextR = enemy.r + cell.vector.y;
+        let nextC = enemy.c + cell.vector.x;
 
-// --- Tab 2: Tech - Behavior Tree Visualizer ---
-function initBehaviorTree() {
-    updateBehaviorTree();
-}
-
-function updateBehaviorTree() {
-    const hasBall = document.getElementById("toggle-has-ball").value === "1";
-    const inRange = document.getElementById("toggle-in-range").value === "1";
-    const teammateOpen = document.getElementById("toggle-teammate-open").value === "1";
-
-    document.getElementById("val-has-ball").textContent = hasBall ? "Yes" : "No";
-    document.getElementById("val-in-range").textContent = inRange ? "Yes" : "No";
-    document.getElementById("val-teammate-open").textContent = teammateOpen ? "Yes" : "No";
-
-    // Reset node colors
-    const nodes = ["node-root", "node-selector", "node-possession", "node-shoot", "node-pass", "node-dribble", "node-loose", "node-intercept", "node-defensive", "node-mark"];
-    nodes.forEach(n => {
-        const el = document.getElementById(n);
-        if (el) el.classList.remove("active");
+        if (nextR >= 0 && nextR < GRID_SIZE && nextC >= 0 && nextC < GRID_SIZE) {
+            enemy.r = nextR;
+            enemy.c = nextC;
+            enemy.el.style.left = `${enemy.c * cellWidth + cellWidth/2}px`;
+            enemy.el.style.top = `${enemy.r * cellWidth + cellWidth/2}px`;
+        } else {
+            enemy.active = false;
+            enemy.el.remove();
+        }
     });
 
-    // Traverse Behavior Tree decisions based on inputs
-    document.getElementById("node-root").classList.add("active");
-    document.getElementById("node-selector").classList.add("active");
+    activeEnemies = activeEnemies.filter(e => e.active);
+}
 
-    if (hasBall) {
-        document.getElementById("node-possession").classList.add("active");
-        if (inRange) {
-            document.getElementById("node-shoot").classList.add("active");
-        } else if (teammateOpen) {
-            document.getElementById("node-pass").classList.add("active");
-        } else {
-            document.getElementById("node-dribble").classList.add("active");
-        }
-    } else {
-        // If opponent has ball (simulated default off-possession state)
-        // If teammate open acts as ball loose flag in this simulator interface
-        if (teammateOpen) {
-            document.getElementById("node-loose").classList.add("active");
-            document.getElementById("node-intercept").classList.add("active");
-        } else {
-            document.getElementById("node-defensive").classList.add("active");
-            document.getElementById("node-mark").classList.add("active");
+// --- Tab 2: Technical Blueprint - Genetic Algorithm ---
+let gaGen = 0;
+let gaBestFitness = 0;
+let gaAvgFitness = 0;
+const GA_GRID_SIZE = 8;
+let gaGridData = [];
+
+function initOptimizationSimulator() {
+    createGaGrid();
+    resetGa();
+}
+
+function createGaGrid() {
+    const gaGridEl = document.getElementById("ga-grid");
+    if (!gaGridEl) return;
+    gaGridEl.innerHTML = "";
+    gaGridData = [];
+
+    for (let r = 0; r < GA_GRID_SIZE; r++) {
+        gaGridData[r] = [];
+        for (let c = 0; c < GA_GRID_SIZE; c++) {
+            let type = "clear";
+            if (r === 0 && c === 0) type = "spawn";
+            else if (r === GA_GRID_SIZE - 1 && c === GA_GRID_SIZE - 1) type = "keep";
+
+            gaGridData[r][c] = { row: r, col: c, type: type };
+
+            const cellEl = document.createElement("div");
+            cellEl.id = `ga-cell-${r}-${c}`;
+            cellEl.className = "ga-cell";
+            if (type === "spawn") {
+                cellEl.classList.add("ga-spawn");
+                cellEl.textContent = "⛩️";
+            } else if (type === "keep") {
+                cellEl.classList.add("ga-keep");
+                cellEl.textContent = "🏰";
+            }
+            gaGridEl.appendChild(cellEl);
         }
     }
 }
 
-// --- Tab 3: Audio - MetaSound Excitement Waveform ---
-function initAudioSimulator() {
+function resetGa() {
+    gaGen = 0;
+    gaBestFitness = 0;
+    gaAvgFitness = 0.0;
+    
+    document.getElementById("ga-generation").textContent = gaGen;
+    document.getElementById("ga-best-fitness").textContent = gaBestFitness;
+    document.getElementById("ga-avg-fitness").textContent = gaAvgFitness.toFixed(1);
+
+    for (let r = 0; r < GA_GRID_SIZE; r++) {
+        for (let c = 0; c < GA_GRID_SIZE; c++) {
+            const cell = gaGridData[r][c];
+            if (cell.type !== "spawn" && cell.type !== "keep") {
+                cell.type = "clear";
+                const cellEl = document.getElementById(`ga-cell-${r}-${c}`);
+                if (cellEl) {
+                    cellEl.className = "ga-cell";
+                    cellEl.textContent = "";
+                }
+            }
+        }
+    }
+}
+
+function runGaGeneration() {
+    gaGen++;
+    document.getElementById("ga-generation").textContent = gaGen;
+
+    let targetBest = 14;
+    let targetAvg = 10.5;
+
+    if (gaGen >= 1 && gaGen < 5) {
+        targetBest = 16;
+        targetAvg = 12.2;
+    } else if (gaGen >= 5 && gaGen < 15) {
+        targetBest = 20;
+        targetAvg = 15.6;
+    } else if (gaGen >= 15 && gaGen < 30) {
+        targetBest = 24;
+        targetAvg = 19.8;
+    } else {
+        targetBest = 28;
+        targetAvg = 23.4;
+    }
+
+    let noise = Math.random() * 1.5 - 0.75;
+    gaBestFitness = targetBest;
+    gaAvgFitness = targetAvg + noise;
+
+    document.getElementById("ga-best-fitness").textContent = gaBestFitness;
+    document.getElementById("ga-avg-fitness").textContent = gaAvgFitness.toFixed(1);
+
+    for (let r = 0; r < GA_GRID_SIZE; r++) {
+        for (let c = 0; c < GA_GRID_SIZE; c++) {
+            const cell = gaGridData[r][c];
+            if (cell.type !== "spawn" && cell.type !== "keep") {
+                cell.type = "clear";
+                const cellEl = document.getElementById(`ga-cell-${r}-${c}`);
+                if (cellEl) {
+                    cellEl.className = "ga-cell";
+                    cellEl.textContent = "";
+                }
+            }
+        }
+    }
+
+    let wallCoords = [];
+    let pathCoords = [];
+
+    if (gaGen < 5) {
+        wallCoords = [{r: 1, c: 2}, {r: 2, c: 5}, {r: 4, c: 1}, {r: 5, c: 6}, {r: 6, c: 3}];
+        pathCoords = [{r: 0, c: 1}, {r: 1, c: 1}, {r: 2, c: 1}, {r: 3, c: 1}, {r: 3, c: 2}, {r: 3, c: 3}, {r: 3, c: 4}, {r: 3, c: 5}, {r: 4, c: 5}, {r: 5, c: 5}, {r: 6, c: 5}, {r: 7, c: 5}, {r: 7, c: 6}];
+    } else if (gaGen < 15) {
+        wallCoords = [{r: 1, c: 2}, {r: 2, c: 2}, {r: 3, c: 2}, {r: 5, c: 5}, {r: 6, c: 5}, {r: 4, c: 5}];
+        pathCoords = [{r: 0, c: 1}, {r: 0, c: 2}, {r: 0, c: 3}, {r: 1, c: 3}, {r: 2, c: 3}, {r: 3, c: 3}, {r: 4, c: 3}, {r: 4, c: 4}, {r: 4, c: 6}, {r: 5, c: 6}, {r: 6, c: 6}, {r: 7, c: 6}];
+    } else if (gaGen < 30) {
+        wallCoords = [
+            {r: 1, c: 0}, {r: 1, c: 1}, {r: 1, c: 2}, {r: 1, c: 3}, {r: 1, c: 4}, {r: 1, c: 5},
+            {r: 4, c: 2}, {r: 4, c: 3}, {r: 4, c: 4}, {r: 4, c: 5}, {r: 4, c: 6}, {r: 4, c: 7}
+        ];
+        pathCoords = [
+            {r: 0, c: 1}, {r: 0, c: 2}, {r: 0, c: 3}, {r: 0, c: 4}, {r: 0, c: 5}, {r: 0, c: 6}, {r: 1, c: 6}, {r: 2, c: 6}, {r: 3, c: 6}, {r: 3, c: 5}, {r: 3, c: 4}, {r: 3, c: 3}, {r: 3, c: 2}, {r: 3, c: 1}, {r: 4, c: 1}, {r: 5, c: 1}, {r: 6, c: 1}, {r: 7, c: 1}, {r: 7, c: 2}, {r: 7, c: 3}, {r: 7, c: 4}, {r: 7, c: 5}, {r: 7, c: 6}
+        ];
+    } else {
+        wallCoords = [
+            {r: 1, c: 0}, {r: 1, c: 1}, {r: 1, c: 2}, {r: 1, c: 3}, {r: 1, c: 4}, {r: 1, c: 5}, {r: 1, c: 6},
+            {r: 4, c: 1}, {r: 4, c: 2}, {r: 4, c: 3}, {r: 4, c: 4}, {r: 4, c: 5}, {r: 4, c: 6}, {r: 4, c: 7},
+            {r: 6, c: 0}, {r: 6, c: 1}
+        ];
+        pathCoords = [
+            {r: 0, c: 1}, {r: 0, c: 2}, {r: 0, c: 3}, {r: 0, c: 4}, {r: 0, c: 5}, {r: 0, c: 6}, {r: 0, c: 7}, {r: 1, c: 7}, {r: 2, c: 7}, {r: 3, c: 7}, {r: 3, c: 6}, {r: 3, c: 5}, {r: 3, c: 4}, {r: 3, c: 3}, {r: 3, c: 2}, {r: 3, c: 1}, {r: 3, c: 0}, {r: 4, c: 0}, {r: 5, c: 0}, {r: 5, c: 1}, {r: 5, c: 2}, {r: 5, c: 3}, {r: 5, c: 4}, {r: 5, c: 5}, {r: 5, c: 6}, {r: 6, c: 6}, {r: 7, c: 6}
+        ];
+    }
+
+    wallCoords.forEach(w => {
+        gridCellTypeSet(w.r, w.c, "wall", "ga-cell ga-wall");
+    });
+
+    pathCoords.forEach(p => {
+        gridCellTypeSet(p.r, p.c, "path", "ga-cell ga-path");
+        const cellEl = document.getElementById(`ga-cell-${p.r}-${p.c}`);
+        if (cellEl) cellEl.textContent = "🔸";
+    });
+}
+
+function gridCellTypeSet(r, c, type, className) {
+    if (r >= 0 && r < GA_GRID_SIZE && c >= 0 && c < GA_GRID_SIZE) {
+        gaGridData[r][c].type = type;
+        const cellEl = document.getElementById(`ga-cell-${r}-${c}`);
+        if (cellEl) cellEl.className = className;
+    }
+}
+
+// --- Tab 3: Acoustic Design - MetaSound Excitement Waveform ---
+function initDynamicAudioSimulator() {
     const waveContainer = document.getElementById("audio-wave-bar");
     if (!waveContainer) return;
     
     waveContainer.innerHTML = "";
-    // Create 20 visual audio frequency bars
     for (let i = 0; i < 20; i++) {
         const bar = document.createElement("div");
         bar.className = "wave-bar";
         bar.id = `wave-bar-${i}`;
         waveContainer.appendChild(bar);
     }
-    updateAudioSim();
+    updateDynamicAudioSim();
     animateWave();
 }
 
-let waveHeights = Array(20).fill(10);
+function updateDynamicAudioSim() {
+    const enemies = parseInt(document.getElementById("slider-enemies").value);
+    const healthLoss = parseInt(document.getElementById("slider-healthloss").value);
+    const boss = parseInt(document.getElementById("slider-boss").value);
 
-function updateAudioSim() {
-    const prox = parseInt(document.getElementById("slider-proximity").value);
-    const tension = parseInt(document.getElementById("slider-tension").value);
-    const bigPlay = parseInt(document.getElementById("slider-bigplay").value);
+    document.getElementById("val-enemies").textContent = `${enemies}`;
+    document.getElementById("val-healthloss").textContent = `${healthLoss}%`;
 
-    document.getElementById("val-proximity").textContent = `${prox}m`;
-    
-    let tensionText = "Low";
-    if (tension > 40 && tension <= 75) tensionText = "Moderate";
-    if (tension > 75) tensionText = "Critical Match Point";
-    document.getElementById("val-tension").textContent = tensionText;
-
-    let bigPlayText = "None";
-    let playModifier = 0.0;
-    if (bigPlay === 1) {
-        bigPlayText = "Tactical Tackle";
-        playModifier = 0.2;
-    } else if (bigPlay === 2) {
-        bigPlayText = "GOAL INBOUND!";
-        playModifier = 0.5;
+    let bossText = "None";
+    let bossMod = 0.0;
+    if (boss === 1) {
+        bossText = "Tengu Yokai";
+        bossMod = 0.15;
+    } else if (boss === 2) {
+        bossText = "Gashadokuro Boss";
+        bossMod = 0.4;
     }
-    document.getElementById("val-bigplay").textContent = bigPlayText;
+    document.getElementById("val-boss").textContent = bossText;
 
-    // Excitement E = w1*(100-prox)/100 + w2*tension/100 + w3*playModifier
-    let goalProxVal = (100 - prox) / 100;
-    let tensionVal = tension / 100;
-    let excitement = (goalProxVal * 0.4) + (tensionVal * 0.2) + playModifier;
+    // Excitement E = enemies*0.01 + healthLoss*0.003 + bossMod
+    let excitement = (enemies * 0.008) + (healthLoss * 0.003) + bossMod;
     excitement = Math.min(1.0, Math.max(0.0, excitement));
 
     document.getElementById("audio-excitement-val").textContent = excitement.toFixed(2);
 
-    let state = "Idle Murmur";
-    let desc = "Synthesizing ambient murmurs and distant chatter.";
+    let state = "Day Preparation";
+    let desc = "Playing ambient forest wind, rustling bamboo, and soft Shakuhachi flute loops.";
     let activeClass = "";
 
-    if (excitement > 0.35 && excitement <= 0.7) {
-        state = "Anticipation";
-        desc = "Stitching mid-level crowd cheers and rhythmic clapping updates.";
+    if (excitement > 0.25 && excitement <= 0.6) {
+        state = "Night Defense";
+        desc = "Triggering light Taiko percussion tracks and dynamic Shamisen riffs.";
         activeClass = "active-gold";
-    } else if (excitement > 0.7) {
-        state = "Peak Roar";
-        desc = "Triggering MetaSound stadium roar sample stitches and dynamic whistle peaks!";
+    } else if (excitement > 0.6) {
+        state = "Peak Siege Roar";
+        desc = "Executing heavy, rapid Taiko drum rolls and sweeping battle vocal loops!";
         activeClass = "active-warn";
     }
 
     document.getElementById("audio-state-text").textContent = state;
     document.getElementById("audio-desc-text").textContent = desc;
 
-    // Apply color indicators to wave bars
     for (let i = 0; i < 20; i++) {
         const bar = document.getElementById(`wave-bar-${i}`);
         if (bar) {
@@ -497,19 +619,17 @@ function updateAudioSim() {
         }
     }
 
-    // Cache excitement scale for animator
     window.cachedExcitement = excitement;
 }
 
 function animateWave() {
-    let E = window.cachedExcitement || 0.24;
+    let E = window.cachedExcitement || 0.05;
     
     for (let i = 0; i < 20; i++) {
         const bar = document.getElementById(`wave-bar-${i}`);
         if (bar) {
-            // Frequency calculation based on excitement index
             let base = 5 + E * 40;
-            let variance = Math.random() * (15 + E * 35);
+            let variance = Math.random() * (10 + E * 30);
             let height = base + variance;
             bar.style.height = `${Math.min(75, height)}px`;
         }
@@ -523,66 +643,55 @@ function animateWave() {
 // --- Tab 4: Production - Sprints Roadmap ---
 const sprintsData = {
     1: {
-        title: "Sprint 1: Base Physics & Setup",
+        title: "Sprint 1: Native Interface Parity",
         timeline: "Weeks 1-2 (Phase 1)",
         goals: [
-            "Initialize custom Actor hierarchy extending GameModeBase and GameStateBase.",
-            "Integrate Chaos substepping config files with 200Hz evaluation loops.",
-            "Verify ball collision boundaries in stadium meshes."
+            "Synchronize active GameLoop states across Swift and Kotlin codebases.",
+            "Write JSON configuration loaders for static level layouts.",
+            "Verify Canvas and SpriteKit resolution resizing operations."
         ],
-        deps: "Unreal Engine 5 physics subsystem init."
+        deps: "Base platform templates integration."
     },
     2: {
-        title: "Sprint 2: AI Systems & NavMesh",
+        title: "Sprint 2: Rust Simulation Core & ECS",
         timeline: "Weeks 5-6 (Phase 2)",
         goals: [
-            "Scaffold NavMesh volume constraints across the pitch parameters.",
-            "Write C++ threat checking systems inside UAISensorComponent.",
-            "Deploy spatial hash grid coordinates bucket systems for O(1) query lookups."
+            "Build headless simulation engine using the Rust hecs ECS crate.",
+            "Expose simulation controls through UniFFI FFI bindings.",
+            "Write zero-copy binary state serializers using the rkyv format."
         ],
-        deps: "Completed character models and default mesh constraints."
+        deps: "Completed FFI bindings mapping schemas."
     },
     3: {
-        title: "Sprint 3: GUI Overlays & Controls",
+        title: "Sprint 3: Cooperative Netcode & Sockets",
         timeline: "Weeks 9-10 (Phase 3)",
         goals: [
-            "Write match HUD scoreboards and managers consoles.",
-            "Bind team strategy posture sliders directly to tactical directives.",
-            "Replicate GameState variables for match clocks and scores."
+            "Establish UDP packet delivery and delta replication buffers.",
+            "Define latency-graduated matchmaking rules inside AWS GameLift FlexMatch.",
+            "Build automatic fallback protocols for Spot Instance expirations."
         ],
-        deps: "Replicated C++ base variables in AAISoccerGameState."
+        deps: "Completed Rust core binary serialization schemas."
     },
     4: {
-        title: "Sprint 4: Lumen Profiles & Audio Attenuation",
+        title: "Sprint 4: ML PCG Systems & Personalization",
         timeline: "Weeks 13-14 (Phase 4)",
         goals: [
-            "Configure Lumen global reflections profiles for night match lights.",
-            "Design MetaSound stadium excitation chains and low-pass curves.",
-            "Integrate net impact velocity sound triggers."
+            "Deploy offline PCGRL (PPO) map generators alongside WFC solvers.",
+            "Integrate Imitation-Adversarial difficulty modulators.",
+            "Wire Contextual Bandit (LinUCB) dynamic dynamic store pricing models."
         ],
-        deps: "Dynamic mesh assets and physics net bounds."
-    },
-    5: {
-        title: "Sprint 5: CPU Profiling & Launch Prep",
-        timeline: "Weeks 17-18 (Phase 5)",
-        goals: [
-            "Throttle Behavior Tree ticks to prevent CPU frame spikes.",
-            "Run automated headless Stress Test routines to check AI logic bounds.",
-            "Review memory allocations using Unreal Insights."
-        ],
-        deps: "Completed match play systems and simulation triggers."
+        deps: "Replicated game telemetry databases."
     }
 };
 
 function initSprintsRoadmap() {
-    showSprint(1); // Show default sprint
+    showSprint(1);
 }
 
 function showSprint(id) {
     const panel = document.getElementById("sprint-info-panel");
     const data = sprintsData[id];
 
-    // Set buttons active
     document.querySelectorAll(".sprint-nav-btn").forEach((btn, idx) => {
         if (idx === id - 1) btn.classList.add("active");
         else btn.classList.remove("active");
@@ -626,8 +735,7 @@ function updateQaSim() {
     const coordinateDelta = document.getElementById("qa-coordinate-delta");
     const logs = document.getElementById("qa-logs");
 
-    // Recalculate drift: drift coordinate delta = ping * 0.1 + loss * 2.0 + jitter * 0.5
-    let drift = (ping * 0.08) + (loss * 1.5) + (jitter * 0.4);
+    let drift = (ping * 0.05) + (loss * 1.2) + (jitter * 0.3);
     coordinateDelta.textContent = `${drift.toFixed(1)} units`;
 
     let logsContent = `[SYSTEM] Profiling diagnostics...<br>`;
@@ -635,21 +743,21 @@ function updateQaSim() {
     if (ping > 120 || loss > 2.0 || jitter > 15) {
         banner.className = "alert-banner warning";
         statusText.textContent = "⚠️ REPLICATION DESYNC DETECTED";
-        syncState.textContent = "Simulation Drift";
+        syncState.textContent = "Replication Drift";
         coordinateDelta.className = "highlight";
         coordinateDelta.style.color = "var(--accent-red)";
         
-        logsContent += `[WARNING] Ping: ${ping}ms exceeds substepping threshold.<br>`;
-        logsContent += `[ERROR] Desync delta: ${drift.toFixed(1)} units. Triggering position interpolation snap.<br>`;
+        logsContent += `[WARNING] Net ping: ${ping}ms exceeds substepping threshold.<br>`;
+        logsContent += `[ERROR] Desync delta: ${drift.toFixed(1)} units. Snap client prediction position.<br>`;
     } else {
         banner.className = "alert-banner";
-        statusText.textContent = "🟢 SYSTEM SYNCHRONIZED";
+        statusText.textContent = "🟢 REPLICATION SYNCHRONIZED";
         syncState.textContent = "Perfect Parity";
         coordinateDelta.className = "highlight";
         coordinateDelta.style.color = "var(--accent-green)";
         
-        logsContent += `[CLIENT] Connection stable. Replicating AAISoccerGameState variables.<br>`;
-        logsContent += `[SYSTEM] Thread parity: OK. Chaos Substeps: 0.005s.<br>`;
+        logsContent += `[FFI] UniFFI byte transfer checks completed.<br>`;
+        logsContent += `[SYSTEM] Delta packets: OK. Jitter: ${jitter}ms.<br>`;
     }
 
     logs.innerHTML = logsContent;

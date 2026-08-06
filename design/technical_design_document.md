@@ -1,93 +1,62 @@
-# Technical Design Document (TDD): AI Soccer Simulator (AISS)
-*C++ Class Structures, Behavior Trees, and Performance Profiling for Unreal Engine 5*
+# Technical Design Document (TDD): Mobile Fortress
+*Headless Rust Core, UniFFI Bindings, rkyv Serialization, and Flow-Field Pathfinding*
 
 ---
 
 ## 1. System Architecture
 
-The AI Soccer Simulator is built on a custom game framework extending Unreal Engine 5 C++ classes. The architecture separates match governance, agent AI controllers, and character actors.
+Mobile Fortress uses a cross-platform architectural model: presentation layers are native for maximum UX fidelity, while game simulation, pathfinding, and economics are unified in a headless Rust core.
 
 ```mermaid
-classDiagram
-    AAISoccerGameMode <|-- AAISoccerGameState
-    AAISoccerGameState *-- AAISoccerBall : Replicates Pos
-    AAISoccerAIController --> AAISoccerPlayerAgent : Possesses
-    AAISoccerAIController *-- UBehaviorTreeComponent : Runs Decision Tree
-    AAISoccerPlayerAgent *-- UAISensorComponent : Spatial Querying
+graph TD
+    A[Android Client: Compose/SurfaceView] -->|FFI via UniFFI| B[Shared Rust Simulation Core]
+    C[iOS Client: SwiftUI/SpriteKit] -->|FFI via UniFFI| B
+    B -->|ECS Simulation| D[hecs ECS Engine]
+    B -->|Pathfinding| E[Flow Field Engine]
+    B -->|Serialization| F[rkyv Opaque Buffer]
 ```
 
-### 1.1 Core C++ Classes
-1.  **`AAISoccerGameMode`**:
-    *   *Inherits from*: `AGameModeBase`
-    *   *Responsibility*: Governs global match rules, referee triggers, and transitions between game states (Kickoff, Active Play, Set Piece). Runs server-side logic only.
-2.  **`AAISoccerGameState`**:
-    *   *Inherits from*: `AGameStateBase`
-    *   *Responsibility*: Replicates match timer, scoreboards, and current active formations. Broadcasts events to client viewports.
-3.  **`AAISoccerBall`**:
-    *   *Inherits from*: `AActor`
-    *   *Responsibility*: Physics actor representing the soccer ball. Employs Chaos Physics with custom substepping enabled for exact velocity and spin vectors. Tracks current owner pointer.
-4.  **`AAISoccerPlayerAgent`**:
-    *   *Inherits from*: `ACharacter`
-    *   *Responsibility*: Physical agent representation on the pitch. Contains attributes (Stamina, Acceleration, Positioning, DribbleSkill, PassingAccuracy). Includes a `UAISensorComponent` for local threat detection.
-5.  **`AAISoccerAIController`**:
-    *   *Inherits from*: `AAIController`
-    *   *Responsibility*: Owns the Behavior Tree and Blackboard components. Directs the pathfinding and state executions of a single possessed `AAISoccerPlayerAgent`.
+### 1.1 Core Components
+1.  **Shared Rust Simulation Core (`core/`)**:
+    *   Written in Rust, exposing a pure C-ABI FFI.
+    *   Implements the Entity-Component-System (ECS) pattern using the `hecs` crate.
+    *   Governs all game state modifications, wave progress, collision tracking, and path updates.
+2.  **UniFFI Scaffolding**:
+    *   Generates idiomatic Kotlin bindings for Android and Swift bindings for iOS.
+    *   Enables cross-boundary calls and callbacks.
+3.  **Zero-Copy Serialization (`rkyv`)**:
+    *   Encodes state changes into dense binary byte arrays.
+    *   Clients traverse the `RustBuffer` without allocation, eliminating parsing overhead.
 
 ---
 
-## 2. AI Behavior Trees & Blackboard Configurations
+## 2. Dynamic Flow-Field Pathfinding
 
-Every player agent runs a customized Behavior Tree that processes tactical roles (Attacker, Midfielder, Defender, Goalkeeper) dynamically.
+To navigate hundreds of dynamic entities on mobile CPU threads, the Rust core runs a vector gradient pathfinder:
 
-### 2.1 Blackboard Keys
+### 2.1 Dijkstra Cost Map
+*   Terrain tiles are mapped to costs: open path ($1.0$), slow/purified zone ($2.5$), blockage ($\infty$).
+*   Dijkstra's algorithm propagates costs outward from the Keep ($C(T) = 0$):
+    $$C(p) = \min_{n \in \text{Neighbors}(p)} \left( C(n) + \text{Cost}(p \to n) \right)$$
 
-| Key | Type | Description |
-| :--- | :--- | :--- |
-| `BallActor` | `Object (AActor)` | Reference to the game ball. |
-| `CurrentRole` | `Enum (ETacticalRole)` | Defender, Attacker, Goalkeeper, Support. |
-| `TargetLocation` | `Vector` | Target destination vector for NavMesh movement. |
-| `OpenRecipient` | `Object (AAISoccerPlayerAgent)` | Best passing target candidate. |
-| `IsBallOwner` | `Bool` | Checked if the possessed character is currently dribbling the ball. |
-
-### 2.2 Behavior Tree Topology
-
-```
-ROOT
- └── Selector
-      ├── Sequence [Has Ball]
-      │    ├── Selector
-      │    │    ├── Sequence [In Shooting Range]
-      │    │    │    └── Task: ShootBall
-      │    │    ├── Sequence [Teammate Free & Forward]
-      │    │    │    └── Task: PassBall
-      │    │    └── Task: DribbleTowardGoal
-      ├── Sequence [Ball Is Loose]
-      │    └── Task: InterceptBall
-      └── Sequence [Defensive Phase]
-           ├── Task: MarkTargetPlayer
-           └── Task: PositionInFormation
-```
+### 2.2 Gradient Vector Field
+*   For each tile, a normalized directional vector pointing to the neighbor with the minimum cost is pre-calculated:
+    $$V(p) = -\nabla C(p)$$
+*   Entities determine their velocity simply by indexing the vector of their current grid coordinate, reducing traversal pathing from $O(N^2)$ to $O(1)$.
 
 ---
 
-## 3. Performance & Optimization Targets
+## 3. Network Synchronization & AWS GameLift
 
-To simulate 22 dynamic agents, real-time physics, and stadium rendering at **60 FPS** (16.6ms frame budget), AISS applies strict optimization profiling:
+AISS features a Server-Authoritative State Synchronization model:
 
-### 3.1 AI Tick Throttling
-*   Behavior Tree tasks do not run on `Tick`. Decision nodes execute on a timer:
-    *   **Attacker/Ball Handler**: Ticks at 10Hz (every 100ms).
-    *   **Off-ball defenders**: Ticks at 5Hz (every 200ms).
-*   Pathfinding NavMesh updates are spaced to avoid concurrent calculation spikes on the same frame.
+### 3.1 Session Matchmaking (FlexMatch)
+*   AWS GameLift FlexMatch groups players based on latency telemetry beacons. Lobbies prioritize low latency (<50ms) before relaxing restrictions to 90ms and 120ms during low concurrency hours.
 
-### 3.2 Physics Substepping
-*   Unreal Engine's Chaos Physics operates with substepping enabled:
-    *   **Substep Delta Time**: `0.005s` (200Hz tick rate for the physics body of the ball).
-    *   This guarantees that high-velocity shots do not clip through player collision sweeps or goal bounds.
-
-### 3.3 Spatial Hashing
-*   Rather than calculating $O(N^2)$ distance vectors between all 22 players, the pitch uses a 2D spatial hash grid. Agents query their local spatial bucket for threats or passing paths, keeping lookup complexity to $O(1)$.
+### 3.2 Spot Instance Management
+*   Fleets run on 70% Spot Instances (`c5.large`/`c5.xlarge`) to reduce operational costs.
+*   If a termination warning is issued, GameLift placement queues divert new sessions to backup On-Demand fleets, and active matches are allowed a 2-minute clean migration window.
 
 ---
-*Document Version: 1.0*  
-*Authoritative Reference: design/GDD.md*
+*Document Version: 2.0*  
+*Authoritative Reference: design/game_design_document.md*

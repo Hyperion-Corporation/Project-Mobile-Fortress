@@ -1,35 +1,35 @@
-# Pitch Deck: AI Soccer Simulator (AISS)
+# Pitch Deck: Mobile Fortress
 *Unique Selling Proposition, Demographics, and Technical Innovations*
 
 ---
 
 ## 1. Product Vision & Value Proposition
 
-**AI Soccer Simulator (AISS)** introduces a new sub-genre: a high-fidelity tactical match simulation where player intervention is purely managerial, and team success is driven by advanced autonomous AI design rather than micro-controller inputs.
+**Mobile Fortress** merges tactical, real-time cooperative 2D tower defense with a persistent 4X clan territory control game set in 1520s Sengoku Japan.
 
 ```
 +--------------------------------------------------------------+
 |                  CORE VALUE PROPOSITION                      |
 +--------------------------------------------------------------+
 |                                                              |
-|   Zero-Input Gameplay        Hyper-Realistic Physics         |
-|   - Real-time management     - Substepped ball trajectories  |
-|   - Tactical changes only    - Procedural motion matching    |
+|   Cooperative TD Combat      Persistent 4X Clan Map          |
+|   - Real-time placement      - Capture provinces together    |
+|   - Flow Field pathfinding   - Build fortress assets         |
 |                                                              |
 +--------------------------------------------------------------+
 ```
 
-*   **Unique Selling Proposition (USP)**: A completely hands-off soccer simulation powered by individual player AI agents. Players configure tactics, line-ups, and strategies, then watch the simulation unfold dynamically. The match is a living, unpredictable environment where every bounce, pass, and tackle is physically simulated, and every player agent makes intelligent, split-second tactical decisions.
+*   **Unique Selling Proposition (USP)**: A dual-loop strategy game that bridges the immediate satisfaction of active castle defense with the long-term community obligations of cooperative clan territory conquest. Backed by advanced math optimization models (Flow Fields, WFC PCG, Adversarial DDA) ensuring infinite replayability and seamless performance on mobile hardware.
 
 ---
 
 ## 2. Target Market & Demographics
 
-AISS is designed to capture three overlapping player cohorts:
+Mobile Fortress targets three core mobile player segments:
 
-1.  **Tactical Management Fans**: Players of *Football Manager* who enjoy setting team sheets and tactics but want a more immediate, visually rich, action-oriented 3D representation of their tactical choices.
-2.  **Simulation & Sandbox Enthusiasts**: Gamers who enjoy setting up parameters and observing complex systems interact autonomously (e.g., cell simulations, battle simulators).
-3.  **eSports Spectators**: Viewers who enjoy streaming matches, managing simulated leagues, and running community tournaments.
+1.  **Tower Defense & Tactical Fans**: Players of *Arknights* or *Kingdom Rush* seeking cooperative multiplayer capabilities and deep character gacha options.
+2.  **Mid-Core 4X Strategists**: Players of *Last War* or *Whiteout Survival* who enjoy guild coordination but are fatigued by simple arcade mini-games and want authentic tactical combat.
+3.  **Cozy Base Builders**: Players who enjoy nurturing bases, beautifying structures, and co-op PvE gameplay without stressful PvP destruction (Self-Determination Theory fulfillment).
 
 ---
 
@@ -37,15 +37,15 @@ AISS is designed to capture three overlapping player cohorts:
 
 AISS leverages cutting-edge game development technologies to create a high-performance, responsive simulation:
 
-### 3.1 Real-Time C++ Spatial Influence Mapping
-Unlike traditional sports titles that rely on scripted player positioning, AISS continuously calculates pitch coordinates using a custom 2D influence mapping algorithm. This allows player agents to dynamically recognize passing lanes, spaces to exploit, and gaps to cover in defense.
+### 3.1 Low-CPU Dijkstra Flow-Field Pathfinding
+Standard pathfinders choke when moving hundreds of entities on mobile CPUs. Our shared Rust core computes optimal vectors once per grid, keeping calculation costs at $O(1)$ regardless of entity size.
 
-### 3.2 Motion-Matched Physics Agents
- locomotions blendspaces are replaced with Motion Matching queries, ensuring player characters turn, accelerate, and slide tackle with fluid, realistic weight and momentum.
+### 3.2 Offline Adversarial DDA
+Instead of inflating enemy HP pools, a background Competitive RL agent plays against a clone of the player's strategy, deploying custom wave counters to maintain high strategic tension.
 
-### 3.3 Dynamic MetaSound Acoustics
-Crowd atmosphere changes dynamically based on pitch tension, ball proximity to goal, and scoreboard differences, generating an immersive dynamic soundscape.
+### 3.3 Zero-Overhead UniFFI Rust Core
+Bypasses cross-platform engine overhead by running a headless simulation core in Rust, communicating via zero-copy binary serialization with native Kotlin and Swift UI shells.
 
 ---
-*Document Version: 1.0*  
-*Authoritative Reference: design/GDD.md*
+*Document Version: 2.0*  
+*Authoritative Reference: design/game_design_document.md*

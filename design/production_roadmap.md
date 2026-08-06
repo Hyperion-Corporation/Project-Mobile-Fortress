@@ -1,44 +1,38 @@
-# Production Roadmap: AI Soccer Simulator (AISS)
-*Milestones, Sprint Structures, and Critical Technical Dependencies*
+# Production Roadmap: Mobile Fortress
+*Milestones, Sprint Pipelines, and Shared Technical Dependencies*
 
 ---
 
 ## 1. Project Milestones
 
-The development schedule spans five distinct phases, moving from core physics setup to release-ready optimization:
+The development schedule spans four main phases, moving from platform synchronization to advanced procedural gameplay:
 
 ```
 +-------------------------------------------------------------------------------+
-| PHASE 1: Pre-Production & Physics (Weeks 1-4)                                 |
-| - Setup UE5 C++ class hierarchy. Config Chaos physics substepping for the ball. |
+| PHASE 1: Native Parity & Setups (Weeks 1-4)                                   |
+| - Standardize game-state machine states across both native clients.          |
+| - Build shared levels asset JSON reading framework.                           |
 +-------------------------------------------------------------------------------+
                                        |
                                        v
 +-------------------------------------------------------------------------------+
-| PHASE 2: Autonomous Locomotion & AI (Weeks 5-8)                               |
-| - Implement Motion Matching and pathfinding NavMesh routing.                  |
-| - Design basic Behavior Trees and spatial influence mapping queries.          |
+| PHASE 2: Rust Core Simulation Engine (Weeks 5-8)                              |
+| - Write core ECS simulation in Rust using the hecs library.                   |
+| - Build UniFFI pipeline. Expose state updates as rkyv byte buffers.          |
 +-------------------------------------------------------------------------------+
                                        |
                                        v
 +-------------------------------------------------------------------------------+
-| PHASE 3: Tactical Interface & HUD (Weeks 9-12)                                |
-| - Develop Manager GUI overlays and flat UI HUD structures.                    |
-| - Bind GameState variables to UI components. Set up match control triggers.   |
+| PHASE 3: Cooperative Netcode & AWS (Weeks 9-12)                               |
+| - Integrate UDP socket replication. Implement delta compressed state syncs.   |
+| - Provision AWS GameLift fleets. Deploy FlexMatch rulesets.                   |
 +-------------------------------------------------------------------------------+
                                        |
                                        v
 +-------------------------------------------------------------------------------+
-| PHASE 4: Audio & Environmental Polish (Weeks 13-16)                            |
-| - Set up Lumen lighting profiles and stadium textures.                         |
-| - Build MetaSound crowd excitation and spatial audio attenuation networks.     |
-+-------------------------------------------------------------------------------+
-                                       |
-                                       v
-+-------------------------------------------------------------------------------+
-| PHASE 5: Optimization & Launch (Weeks 17-20)                                  |
-| - Profiling CPU execution. Throttling Behavior Tree tick frequencies.         |
-| - Final packaging checks, telemetry dumps, and server deployment validation.  |
+| PHASE 4: ML & Math Optimizations (Weeks 13-16)                                |
+| - Train and deploy offline PCGRL PPO agent. Deploy WFC local solvers.         |
+| - Integrate Imitation-Adversarial DDA loops and CMAB shop bandits.            |
 +-------------------------------------------------------------------------------+
 ```
 
@@ -48,11 +42,10 @@ The development schedule spans five distinct phases, moving from core physics se
 
 | Sprint | Objective | Deliverables |
 | :--- | :--- | :--- |
-| **Sprint 1** | Physics & Core Loop | Chaos-driven ball physics actor, custom player character hulls, kickoff triggers. |
-| **Sprint 2** | AI Systems | NavMesh setup, basic Behavior Tree with task execution, spatial hash grid lookups. |
-| **Sprint 3** | Manager controls | HUD scoreboards, tactics console panel, Real-time mentality adjustments. |
-| **Sprint 4** | Aesthetics & Audio | Lumen configuration, MetaSound audio attenuation setup, net collision SFX. |
-| **Sprint 5** | Optimization & QA | Throttled AI ticks, memory leak profiling, telemetry log dumps. |
+| **Sprint 1** | Native Alignment | Shared level JSON loading schemas, synchronized menus/play/pause client loops. |
+| **Sprint 2** | Headless Simulation | Rust core hecs ECS simulation, UniFFI FFI bindings, rkyv binary serialization. |
+| **Sprint 3** | Multiplayer Sync | Sockets layer, delta compression vectors, AWS GameLift FlexMatch queue rulesets. |
+| **Sprint 4** | ML Integration | PCGRL (PPO) map editor, WFC constraint solvers, Imitation DDA, CMAB store bandit. |
 
 ---
 
@@ -60,19 +53,19 @@ The development schedule spans five distinct phases, moving from core physics se
 
 ```mermaid
 graph TD
-    A[Setup Chaos Substepping] -->|Requires| B[Physics Engine Init]
-    C[Locomotion Blendspaces] -->|Requires| D[Motion Capture Database]
-    E[AI Behavior Tree Paths] -->|Requires| F[Dynamic NavMesh Bounds]
-    G[HUD Tactical Console] -->|Requires| H[GameState Replication Variables]
+    A[Align State Machines] -->|Requires| B[Native Parity Checks]
+    C[UniFFI Scaffolding] -->|Requires| D[Headless Rust ECS Simulator]
+    E[UDP Delta Replication] -->|Requires| F[rkyv Binary Serializer]
+    G[CMAB dynamic store pricing] -->|Requires| H[User Profiling Logging Databases]
 ```
 
-1.  **AI Pathfinding depends on NavMesh Setup**:
-    AI characters cannot execute navigation tasks until the pitch boundaries have generated NavMesh bounds.
-2.  **Locomotion depends on Motion Matching Database**:
-    Locomotion blendspaces require the complete mocap data file to query motion indexes correctly.
-3.  **UI values depend on replicated State Variables**:
-    The HUD scorecard cannot display correct dynamic team variables until they are replicated in `AAISoccerGameState` and bound.
+1.  **Rust Core Integration depends on Native Alignment**:
+    Before substituting the Canvas and SpriteKit loops with Rust calls, both native clients must execute identical state transitions.
+2.  **Multiplayer Replication depends on rkyv Serialization**:
+    Delta compression replication requires the zero-copy buffer output from rkyv.
+3.  **WFC Map Solvers depend on Tile Adjacency schemas**:
+    The collapse solver cannot run until terrain boundaries have defined constraint weights.
 
 ---
-*Document Version: 1.0*  
-*Authoritative Reference: design/GDD.md*
+*Document Version: 2.0*  
+*Authoritative Reference: design/game_design_document.md*
