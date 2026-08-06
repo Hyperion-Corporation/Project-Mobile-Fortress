@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Mobile Fortress documentation — a Wōkòu-pirate-era cooperative tower-defense game: architecture, design docs, roadmap, and an interactive design hub."
+    />
+    <title>Mobile Fortress Docs</title>
+    <script>
+      // Counterpart to public/404.html's redirect: restores the real deep
+      // link (e.g. /docs/design/game_design_document) from the "?p=" query
+      // string GitHub Pages' 404 fallback encoded it into, via
+      // history.replaceState, before Vue Router boots and reads the URL.
+      (function (l) {
+        if (l.search[1] === "p") {
+          var decoded = l.search
+            .slice(1)
+            .split("&")
+            .map(function (s) {
+              return s.replace(/~and~/g, "&");
+            })
+            .join("?");
+          window.history.replaceState(null, "", l.pathname.slice(0, -1) + decoded.slice(2) + l.hash);
+        }
+      })(window.location);
+    </script>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8F%AF%3C/text%3E%3C/svg%3E"
+    />
+    <script type="module" crossorigin src="/Project-Mobile-Fortress/assets/index-CE5mWfpb.js"></script>
+    <link rel="stylesheet" crossorigin href="/Project-Mobile-Fortress/assets/index-BuACXeEu.css">
+  </head>
+  <body>
+    <div id="app"></div>
+  </body>
+</html>
