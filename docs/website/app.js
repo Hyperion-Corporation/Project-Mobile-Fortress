@@ -8,20 +8,19 @@ const { createRouter, createWebHashHistory, useRoute, useRouter } = VueRouter;
 const REPO = "https://github.com/ACFHarbinger/Project-Mobile-Fortress";
 
 // ---------------------------------------------------------------------
-// Documentation content map — mirrors docs/{index.md,ARCHITECTURE.md,...}
-// one-to-one. `docs/website`'s build step copies those markdown sources
-// into content/<slug>.md (see .github/workflows/docs.yml) so this app can
-// fetch them at runtime.
+// Documentation content map. Routes use concise, stable slugs while `source`
+// points at the Markdown file's real repository path. The deployment workflow
+// mirrors tracked Markdown into content/ with that same directory structure.
 // ---------------------------------------------------------------------
 const docSections = [
     {
         title: "Getting Started",
         items: [
-            { slug: "index", title: "Overview" },
-            { slug: "ARCHITECTURE", title: "Architecture" },
-            { slug: "DEVELOPMENT", title: "Development" },
-            { slug: "TESTING", title: "Testing" },
-            { slug: "GLOSSARY", title: "Glossary" },
+            { slug: "index", source: "docs/index.md", title: "Overview" },
+            { slug: "ARCHITECTURE", source: "docs/ARCHITECTURE.md", title: "Architecture" },
+            { slug: "DEVELOPMENT", source: "docs/DEVELOPMENT.md", title: "Development" },
+            { slug: "TESTING", source: "docs/TESTING.md", title: "Testing" },
+            { slug: "GLOSSARY", source: "docs/GLOSSARY.md", title: "Glossary" },
         ],
     },
     {
@@ -60,12 +59,40 @@ const docSections = [
             { slug: "design/technical_design_document", title: "Technical Design Document" },
         ],
     },
+    {
+        title: "Codebase Guides",
+        items: [
+            { slug: "project/readme", source: "README.md", title: "Repository Guide" },
+            { slug: "project/contributing", source: "git/CONTRIBUTING.md", title: "Contributing" },
+            { slug: "core/readme", source: "core/README.md", title: "Shared Core" },
+            { slug: "core/game-state-machine", source: "core/src/game-state-machine.md", title: "Game State Machine" },
+            { slug: "ios/fonts", source: "ios/MyGame/Resources/Fonts/README.md", title: "iOS Font Assets" },
+            { slug: "devcontainer", source: ".devcontainer/README.md", title: "Development Container" },
+        ],
+    },
+    {
+        title: "Infrastructure",
+        items: [
+            { slug: "infra/docker", source: "infra/docker/README.md", title: "Docker" },
+            { slug: "infra/kubernetes", source: "infra/k8s/README.md", title: "Kubernetes" },
+            { slug: "infra/helm", source: "infra/helm/README.md", title: "Helm" },
+            { slug: "infra/terraform", source: "infra/terraform/README.md", title: "Terraform" },
+            { slug: "infra/ansible", source: "infra/ansible/README.md", title: "Ansible" },
+        ],
+    },
+    {
+        title: "Research",
+        items: [
+            { slug: "research/market", source: "reports/Tower Defense Market Research.md", title: "Tower Defense Market" },
+            { slug: "research/multiplayer", source: "research/Multiplayer Tower Defense Implementation.md", title: "Multiplayer Architecture" },
+        ],
+    },
 ];
 
 const flatDocs = docSections.flatMap((section) =>
     section.items.map((item) => ({ ...item, section: section.title }))
 );
-const knownSlugs = new Set(flatDocs.map((d) => d.slug));
+const docsBySource = new Map(flatDocs.map((d) => [d.source || `docs/${d.slug}.md`, d]));
 
 function findDoc(slug) {
     return flatDocs.find((d) => d.slug === slug) || null;
@@ -79,13 +106,13 @@ function slugify(text) {
         .replace(/(^-|-$)/g, "");
 }
 
-// Resolves a markdown-authored relative link against the *source* doc's
-// repo path (docs/<slug>.md) using the URL parser for correct ../ handling.
-// Internal links (into our known doc set) route via Vue Router; everything
-// else outside docs/ (reports/, research/, android/, .agent/, ...) opens as
-// a GitHub blob link instead of 404ing on the static site.
+// Resolve Markdown links from the current source file's real repository path.
+// Any source represented in the portal stays client-side; other repository
+// links open at GitHub so code references and non-Markdown assets still work.
 function resolveHref(href, currentSlug) {
-    const base = "https://x.invalid/docs/" + currentSlug + ".md";
+    const current = findDoc(currentSlug);
+    const source = current?.source || `docs/${currentSlug}.md`;
+    const base = "https://x.invalid/" + source;
     let target;
     try {
         target = new URL(href, base);
@@ -94,11 +121,9 @@ function resolveHref(href, currentSlug) {
     }
     const pathname = decodeURIComponent(target.pathname).replace(/^\//, "");
     const hash = target.hash || "";
-    if (pathname.startsWith("docs/")) {
-        const candidateSlug = pathname.slice(5).replace(/\.md$/, "");
-        if (knownSlugs.has(candidateSlug)) {
-            return { type: "internal", slug: candidateSlug, hash };
-        }
+    const internal = docsBySource.get(pathname);
+    if (internal) {
+        return { type: "internal", slug: internal.slug, hash };
     }
     return { type: "blob", path: pathname };
 }
@@ -688,7 +713,10 @@ const DocsView = {
         const breadcrumb = computed(() =>
             currentDoc.value ? `${currentDoc.value.section} / ${currentDoc.value.title}` : slug.value
         );
-        const editUrl = computed(() => `${REPO}/edit/main/docs/${slug.value}.md`);
+        const editUrl = computed(() => {
+            const source = currentDoc.value?.source || `docs/${slug.value}.md`;
+            return `${REPO}/edit/main/${source.split("/").map(encodeURIComponent).join("/")}`;
+        });
 
         const docIndex = computed(() => flatDocs.findIndex((d) => d.slug === slug.value));
         const prevDoc = computed(() => (docIndex.value > 0 ? flatDocs[docIndex.value - 1] : null));
@@ -772,7 +800,10 @@ const DocsView = {
             content.value = "";
             headings.splice(0, headings.length);
             try {
-                const res = await fetch(`content/${newSlug}.md`);
+                const doc = findDoc(newSlug);
+                if (!doc) throw new Error("unknown document");
+                const source = doc.source || `docs/${newSlug}.md`;
+                const res = await fetch(`content/${source.split("/").map(encodeURIComponent).join("/")}`);
                 if (!res.ok) throw new Error("not found");
                 const raw = await res.text();
                 const html = marked.parse(raw, { mangle: false, headerIds: false });
