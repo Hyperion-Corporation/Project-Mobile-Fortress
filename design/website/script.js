@@ -40,6 +40,7 @@ function initTabs() {
                 if (href === "#gameplay") tabTarget = "tab-flowfield";
                 if (href === "#netcode") tabTarget = "tab-flowfield"; // Netcode tab uses the grid simulation
                 if (href === "#ai-ml") tabTarget = "tab-dda";
+                if (href === "#optimization") tabTarget = "tab-optimization";
 
                 const targetBtn = document.querySelector(`.tab-btn[data-target="${tabTarget}"]`);
                 if (targetBtn) targetBtn.click();
