@@ -14,8 +14,8 @@ Scope: `ios/MyGame/`, `ios/MyGame.xcodeproj`, `ios/Tests/`.
 
 ## Pending (Mobile Fortress adoption)
 
-- Sengoku-Japan sprite/texture assets (currently solid-color `SKSpriteNode`s) — castle, Ashigaru/Matchlock/Samurai units, Yokai enemies.
-- Rebuild `GameScene`/`GameManager` around the grid-based castle-defense core loop and Flow Field pathfinding (see [`gameplay.md`](gameplay.md)), replacing the current demo entity logic.
+- Wōkòu-era sprite/texture assets (currently solid-color `SKSpriteNode`s) — HQ/outposts, Ming Garrison Spearmen/Fo-lang-ji Cannon Crews/Portuguese Arquebusiers/Veteran Commander units, Wōkòu raider enemies (land and naval).
+- Rebuild `GameScene`/`GameManager` around the grid-based fortress-defense core loop and land/naval Flow Field pathfinding (see [`gameplay.md`](gameplay.md)), replacing the current demo entity logic.
 - Consume the shared Rust core via UniFFI-generated Swift bindings once [`shared_core.md`](shared_core.md) lands, retiring `GameManager`'s standalone state machine in favor of calling into Rust.
 - Haptics (`GameSettings.isHapticsEnabled` is modeled but not yet wired to `UIImpactFeedbackGenerator`).
 - App Store Connect signing/export automation to match Android's `release.yml` fastlane path (see `tools/build/justfile`'s `ios-archive` recipe, which currently only produces an unsigned `.xcarchive`).

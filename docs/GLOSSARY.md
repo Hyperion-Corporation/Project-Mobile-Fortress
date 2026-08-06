@@ -15,11 +15,16 @@
 | `SKScene` | SpriteKit's scene class; its `update(_:)` method is called once per display refresh — the iOS equivalent of Android's `GameLoop` tick, without a hand-rolled thread. |
 | `xcodebuild` | Apple's command-line build tool for Xcode projects — used by `just ios-build`/`ios-test`/`ios-archive` and the `ios-test` CI job. |
 | `.xcarchive` | The archived-build format `xcodebuild archive` produces, the input to exporting a signed `.ipa` for TestFlight/App Store distribution. |
-| `core/` | The shared-assets-and-spec module — canonical raw game data plus a documented (not yet compiled) state-machine/level-schema spec both clients implement independently today. See `core/README.md` and [`moon/roadmaps/shared_core.md`](../moon/roadmaps/shared_core.md) for the planned Rust core. |
-| Flow Field | A vector-field pathfinding technique that computes one movement direction per grid tile (via a Dijkstra distance map) instead of a per-unit path — lets hundreds of siege units navigate for roughly the cost of one pathfinding pass. See [`moon/roadmaps/gameplay.md`](../moon/roadmaps/gameplay.md). |
+| `core/` | The shared-assets-and-spec module — canonical raw game data plus a documented (not yet compiled) state-machine/level-schema spec both clients implement independently today. See `core/README.md` and [`moon/roadmaps/shared_core.md`](moon/roadmaps/shared_core.md) for the planned Rust core. |
+| Flow Field | A vector-field pathfinding technique that computes one movement direction per grid tile (via a Dijkstra distance map) instead of a per-unit path — lets hundreds of siege units navigate for roughly the cost of one pathfinding pass. See [`moon/roadmaps/gameplay.md`](moon/roadmaps/gameplay.md). |
 | ECS | Entity-Component-System — a data-oriented architecture (entities as IDs, components as plain data, systems as stateless functions) used in Mobile Fortress' planned Rust core via `hecs`. |
 | UniFFI | Mozilla's automated multi-language bindings generator, used to bridge the planned Rust core to Kotlin and Swift. |
-| Daimyo | A feudal Japanese lord; in Mobile Fortress, the castle the player defends belongs to a Daimyo. |
-| Ashigaru | Foot-soldier spearmen, one of the basic defensive unit types. |
+| Wōkòu (倭寇) / Wakō | Mixed-ethnicity pirate raider bands (Japanese rōnin, Chinese/Korean smugglers) that raided the East Asian coast in the 1540s–1560s Jiajing era; the antagonists Mobile Fortress is set against. |
+| Main HQ / Citadel | The player's primary fortress; its HP reaching zero is the game-over condition. |
+| Resource Outpost | An inland base structure that generates the currency used to buy/deploy land units; defendable separately from the HQ. |
+| Trading Outpost | A coastal/harbor base structure that generates the currency used to buy/deploy naval units; defendable separately from the HQ. |
+| Fo-lang-ji (Folangji) | A Portuguese-derived breech-loading swivel cannon adopted by the Ming military in this era; one of Mobile Fortress' ranged land units. |
+| Ming Garrison Spearmen | Foot-soldier spearmen, the East Asian primary civilization's basic melee/blocker unit type. |
+| Portuguese Arquebusiers | Matchlock-gunner ranged unit fielded by the supporting Western civilization (Portuguese by default). |
 
-> **TODO:** Expand with further Mobile Fortress domain terms (gacha/hero-commander system, clan/territory meta-game) as those systems are implemented.
+> **TODO:** Expand with further Mobile Fortress domain terms (gacha/hero-commander system, faction/territory meta-game) as those systems are implemented.

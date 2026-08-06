@@ -580,10 +580,10 @@ function updateDynamicAudioSim() {
     let bossText = "None";
     let bossMod = 0.0;
     if (boss === 1) {
-        bossText = "Tengu Yokai";
+        bossText = "Wokou Warlord";
         bossMod = 0.15;
     } else if (boss === 2) {
-        bossText = "Gashadokuro Boss";
+        bossText = "Pirate Fleet Admiral";
         bossMod = 0.4;
     }
     document.getElementById("val-boss").textContent = bossText;

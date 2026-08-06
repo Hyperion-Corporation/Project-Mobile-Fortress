@@ -68,4 +68,4 @@ graph TD
 
 ---
 *Document Version: 2.0*  
-*Authoritative Reference: design/game_design_document.md*
+*Authoritative Reference: docs/design/game_design_document.md*

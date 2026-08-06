@@ -19,7 +19,7 @@
     <header class="navbar">
         <div class="logo">
             <span class="fortress-title">MOBILE FORTRESS</span>
-            <span class="sengoku-tag">戦国攻城</span>
+            <span class="era-tag">嘉靖倭寇 1540s–1560s</span>
         </div>
         <nav class="nav-links">
             <a href="#design" class="active">Design</a>
@@ -27,6 +27,7 @@
             <a href="#audio">Audio</a>
             <a href="#production">Production</a>
             <a href="#qa">QA</a>
+            <a href="docs/">Documentation</a>
         </nav>
     </header>
 
@@ -35,9 +36,9 @@
         <div class="hero-overlay"></div>
         <div class="hero-content">
             <div class="badge">DEVELOPMENT CONSOLE V2.0</div>
-            <h1>Defend the Daimyo's Keep</h1>
+            <h1>Defend the Coastal Fortress</h1>
             <p class="hero-desc">
-                A Sengoku-era Cooperative Tower Defense & 4X Strategy Game combining traditional Ukiyo-e aesthetics with headless Rust core simulation, Dijkstra vector pathfinding, and machine learning difficulty adjustment.
+                A 1540s–1560s Wokou-era Cooperative Tower Defense & 4X Strategy Game — an East Asian coastal power and its Western trading-partner allies combine traditional Ukiyo-e-influenced aesthetics with headless Rust core simulation, Dijkstra vector pathfinding, and machine learning difficulty adjustment to repel pirate raiders by land and sea.
             </p>
             <div class="hero-actions">
                 <a href="#design" class="btn btn-primary">Try Design Simulators</a>
@@ -45,7 +46,7 @@
             </div>
         </div>
         <div class="hero-image-container">
-            <img src="assets/mobile_fortress_banner.jpg" alt="Sengoku Siege: Night of the Blossoms" class="hero-banner-img">
+            <img src="assets/mobile_fortress_banner.jpg" alt="Wokou Raid: Night on the China Coast" class="hero-banner-img">
         </div>
     </section>
 
@@ -79,9 +80,9 @@
                     <div class="grid-3-col">
                         <!-- Left Panel: Text content -->
                         <div class="panel glass col-span-1">
-                            <h2>Sengoku Jidai & Unit Class Design</h2>
+                            <h2>Wokou-Era Coastal Defense & Unit Class Design</h2>
                             <p>
-                                <strong>Mobile Fortress</strong> merges cooperative 2D tower defense combat with a persistent 4X regional territory map. Players deploy spearmen, matchlocks, shamans, and command heroes to cleanse Yokai defilement.
+                                <strong>Mobile Fortress</strong> merges cooperative 2D tower defense combat with a persistent 4X coastal territory map. Players deploy garrison spearmen, Fo-lang-ji cannon crews, Portuguese arquebusiers, war junks, and veteran commanders to repel Wokou pirate raiders by land and sea.
                             </p>
                             <p>
                                 <strong>Flow Field Pathfinding</strong>: Recalculates cost vectors for all units simultaneously, bypassing standard pathfinding bottlenecks.
@@ -95,7 +96,7 @@
                                 </div>
                             </div>
                             <div class="control-group">
-                                <button class="btn btn-primary btn-block" onclick="spawnEnemies()">⚔️ Spawn Ashigaru Wave</button>
+                                <button class="btn btn-primary btn-block" onclick="spawnEnemies()">⚔️ Spawn Wokou Raid Wave</button>
                                 <button class="btn btn-secondary btn-block" onclick="clearSimMap()">🔄 Reset Grid</button>
                             </div>
                         </div>
@@ -105,7 +106,7 @@
                             <div class="grid-simulator-container">
                                 <div class="legend-bar">
                                     <span>⛩️ Spawn</span>
-                                    <span>🏰 Keep (Goal)</span>
+                                    <span>🏰 HQ (Goal)</span>
                                     <span>🧱 Barricade</span>
                                     <span>🌾 Swamp</span>
                                 </div>
@@ -130,7 +131,7 @@
                             
                             <h3 style="margin-top: 1.5rem; margin-bottom: 0.5rem;">Evolve Wall Placements</h3>
                             <p class="panel-desc">
-                                The game runs a Genetic Algorithm (GA) to evolve wall layouts that maximize path length to the keep within budget limits.
+                                The game runs a Genetic Algorithm (GA) to evolve wall layouts that maximize path length to the HQ within budget limits.
                             </p>
                             <div class="panel-dark ga-controls-box" style="margin-top: 1rem;">
                                 <div class="stat-row">
@@ -152,7 +153,7 @@
                         <!-- GA Grid Visualizer -->
                         <div class="panel glass flex-center">
                             <h3>Genetic Algorithm Maze Grid</h3>
-                            <p class="panel-desc" style="margin-bottom: 1rem;">Evolved wall blockages (red) maximize winding pathways (gold) from the spawn (blue) to the keep (purple).</p>
+                            <p class="panel-desc" style="margin-bottom: 1rem;">Evolved wall blockages (red) maximize winding pathways (gold) from the spawn (blue) to the HQ (purple).</p>
                             <div class="ga-grid-container" style="display: flex; justify-content: center;">
                                 <div id="ga-grid" style="display: grid; grid-template-columns: repeat(8, 1fr); gap: 2px; width: 320px; height: 320px; background: rgba(0,0,0,0.3); border: 2px solid var(--border-color); border-radius: 4px; padding: 2px;"></div>
                             </div>
@@ -178,7 +179,7 @@
                                     <input type="range" min="0" max="60" value="2" class="slider" id="slider-enemies" oninput="updateDynamicAudioSim()">
                                 </div>
                                 <div class="slider-group">
-                                    <label>Daimyo Keep Health Loss: <span id="val-healthloss">0%</span></label>
+                                    <label>Fortress HQ Health Loss: <span id="val-healthloss">0%</span></label>
                                     <input type="range" min="0" max="100" value="0" class="slider" id="slider-healthloss" oninput="updateDynamicAudioSim()">
                                 </div>
                                 <div class="slider-group">
@@ -323,7 +324,7 @@
     <!-- Footer -->
     <footer class="footer">
         <p>&copy; 2026 ACFHarbinger. Project Mobile Fortress. All Rights Reserved.</p>
-        <p class="sub-footer">Authoritative Codebase Reference: <a href="file:///.agent/AGENTS.md" class="footer-link">AGENTS.md</a></p>
+        <p class="sub-footer">Authoritative Codebase Reference: <a href="https://github.com/ACFHarbinger/Project-Mobile-Fortress/blob/main/.agent/AGENTS.md" class="footer-link">AGENTS.md</a></p>
     </footer>
 
     <!-- Scripts -->

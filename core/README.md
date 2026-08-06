@@ -36,6 +36,6 @@ independently implement the same states/transitions, and a change to one
 should be mirrored in the other and in `src/game-state-machine.md`.
 
 A real shared core (KMP or Rust/C++) is tracked as a future option in
-[`moon/roadmaps/shared_core.md`](../moon/roadmaps/shared_core.md) — read that
+[`moon/roadmaps/shared_core.md`](../docs/moon/roadmaps/shared_core.md) — read that
 before starting any such migration, since it changes both clients'
 architecture substantially.

@@ -2,7 +2,7 @@
 
 # Mobile Fortress
 
-**A cooperative tower-defense mobile game set in 1520s Sengoku Japan — defend a Daimyo's castle, command Ashigaru, Matchlock gunners, and Samurai hero-commanders, and extend the fight into a clan-based territory meta-game. Built as real, idiomatic Android Studio (Kotlin) and Xcode (Swift) app modules, sharing a planned Rust simulation core, CI/CD, docs, containerization, and LLM agent scaffolding.**
+**A cooperative tower-defense mobile game set during the 1540s–1560s Wōkòu pirate crisis on the East Asian coast — defend a Main HQ and its Resource/Trading Outposts, command an East Asian primary civilization (Ming China by default) alongside a supporting Western civilization (Portuguese by default), and extend the fight into a coastal-territory meta-game. Built as real, idiomatic Android Studio (Kotlin) and Xcode (Swift) app modules, sharing a planned Rust simulation core, CI/CD, docs, containerization, and LLM agent scaffolding.**
 
 <a href="https://github.com/ACFHarbinger/Project-Mobile-Fortress/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/ACFHarbinger/Project-Mobile-Fortress/actions/workflows/ci.yml/badge.svg"></a>
 <a href="https://github.com/ACFHarbinger/Project-Mobile-Fortress/actions/workflows/docs.yml"><img alt="Docs" src="https://github.com/ACFHarbinger/Project-Mobile-Fortress/actions/workflows/docs.yml/badge.svg"></a>
@@ -34,15 +34,15 @@
 
 ## About
 
-**Mobile Fortress** is a cooperative tower-defense mobile game: players defend a Sengoku-era Daimyo's castle against sieging armies, then extend that fight into a light 4X-style clan/territory meta-game. The design targets an underserved market gap identified in [`reports/Tower Defense Market Research.md`](reports/Tower%20Defense%20Market%20Research.md) — a AAA-quality Feudal Japan setting is largely absent from the current top-grossing tower-defense/4X-hybrid charts.
+**Mobile Fortress** is a cooperative tower-defense mobile game: players defend a Wōkòu-pirate-era coastal fortress network — a Main HQ plus Resource Outposts (fund land units) and Trading Outposts (fund naval units) — against raids from land and sea, then extend that fight into a light 4X-style coastal-territory meta-game. The design targets an underserved market gap identified in [`reports/Tower Defense Market Research.md`](reports/Tower%20Defense%20Market%20Research.md) — a AAA-quality, historically grounded 16th-century East Asian setting is largely absent from the current top-grossing tower-defense/4X-hybrid charts.
 
-The game is a **two-platform mobile client**: a Kotlin Android client under [`android/`](android/) and a Swift iOS client under [`ios/`](ios/), each following its platform's official conventions exactly (standard Android Studio / Gradle Kotlin DSL layout, standard Xcode project layout) — Android renders via a `SurfaceView` on a fixed-timestep game loop thread, iOS via a SpriteKit `SKScene`. Both clients are converging on a shared Rust simulation core (ECS via `hecs`, bridged with UniFFI) so Co-Op multiplayer sessions stay deterministic across platforms — see [`research/Multiplayer Tower Defense Implementation.md`](research/Multiplayer%20Tower%20Defense%20Implementation.md) for the full technical rationale and [`moon/roadmaps/shared_core.md`](moon/roadmaps/shared_core.md) for the migration plan. Raw assets and the shared spec live under [`core/`](core/) — see `core/README.md` for exactly what's shared today vs. planned. Around all of that, the repository carries a cross-cutting agentic/DevOps/docs framework (`.agent/`, `docs/`, `moon/`, `.github/`, `infra/`) shared with this org's other project templates.
+The game is a **two-platform mobile client**: a Kotlin Android client under [`android/`](android/) and a Swift iOS client under [`ios/`](ios/), each following its platform's official conventions exactly (standard Android Studio / Gradle Kotlin DSL layout, standard Xcode project layout) — Android renders via a `SurfaceView` on a fixed-timestep game loop thread, iOS via a SpriteKit `SKScene`. Both clients are converging on a shared Rust simulation core (ECS via `hecs`, bridged with UniFFI) so Co-Op multiplayer sessions stay deterministic across platforms — see [`research/Multiplayer Tower Defense Implementation.md`](research/Multiplayer%20Tower%20Defense%20Implementation.md) for the full technical rationale and [`docs/moon/roadmaps/shared_core.md`](docs/moon/roadmaps/shared_core.md) for the migration plan. Raw assets and the shared spec live under [`core/`](core/) — see `core/README.md` for exactly what's shared today vs. planned. Around all of that, the repository carries a cross-cutting agentic/DevOps/docs framework (`.agent/`, `docs/`, `docs/moon/`, `.github/`, `infra/`) shared with this org's other project templates.
 
-See [`moon/ROADMAP.md`](moon/ROADMAP.md) for the full game concept, architecture decisions, and phased delivery plan.
+See [`docs/moon/ROADMAP.md`](docs/moon/ROADMAP.md) for the full game concept, architecture decisions, and phased delivery plan.
 
 ## Why SurfaceView + Canvas (Android) / SpriteKit (iOS)?
 
-This project targets simple, dependency-light 2D game clients (per platform, ahead of the shared Rust core landing) on each platform independently — it is **not** a shared cross-platform engine. Android uses `SurfaceView` + a dedicated fixed-timestep loop thread; iOS uses SpriteKit's own display-link-driven `update(_:)`, with a clamped per-frame delta for the same "don't spiral after a long pause" reason. Jetpack Compose / SwiftUI are used for chrome around each game surface (menus, HUD, settings). For 3D, physics-heavy games, or a genuinely shared cross-platform core, see [`.agent/AGENTS.md`](.agent/AGENTS.md) §1.1, [`docs/adr/0002-rendering-approach.md`](docs/adr/0002-rendering-approach.md), [`docs/adr/0003-ios-rendering-approach.md`](docs/adr/0003-ios-rendering-approach.md), and [`moon/roadmaps/shared_core.md`](moon/roadmaps/shared_core.md).
+This project targets simple, dependency-light 2D game clients (per platform, ahead of the shared Rust core landing) on each platform independently — it is **not** a shared cross-platform engine. Android uses `SurfaceView` + a dedicated fixed-timestep loop thread; iOS uses SpriteKit's own display-link-driven `update(_:)`, with a clamped per-frame delta for the same "don't spiral after a long pause" reason. Jetpack Compose / SwiftUI are used for chrome around each game surface (menus, HUD, settings). For 3D, physics-heavy games, or a genuinely shared cross-platform core, see [`.agent/AGENTS.md`](.agent/AGENTS.md) §1.1, [`docs/adr/0002-rendering-approach.md`](docs/adr/0002-rendering-approach.md), [`docs/adr/0003-ios-rendering-approach.md`](docs/adr/0003-ios-rendering-approach.md), and [`docs/moon/roadmaps/shared_core.md`](docs/moon/roadmaps/shared_core.md).
 
 ## Repository Layout
 
@@ -63,8 +63,10 @@ Project-Mobile-Fortress/
 ├── .github/                   # Issue/PR templates, Dependabot, CI/release/docs workflows
 ├── infra/                     # Optional lightweight backend (leaderboards/cloud save)
 ├── docs/                       # MkDocs site, architecture notes, ADRs
+│   ├── design/                 # GDD, art/audio bibles, pitch deck, production/QA plans, website/
+│   ├── moon/                   # ROADMAP.md, CHANGELOG.md, per-topic roadmaps
+│   └── public/                 # combined interactive design-hub + docs site (deployed to gh-pages)
 ├── git/                        # CONTRIBUTING.md, codecov.yaml
-├── moon/                       # ROADMAP.md, CHANGELOG.md, per-topic roadmaps
 ├── tools/{build,test,validation,ci,docs,infra,reducer,helper}/justfile
 └── justfile                    # root — imports tools/*/justfile as `just` modules
 ```
@@ -80,7 +82,7 @@ Project-Mobile-Fortress/
 | `infra/` | **Optional** lightweight backend scaffolding for leaderboards/cloud save: `docker/`, `k8s/`, `helm/`, `terraform/`, `ansible/` — not needed for an offline game |
 | `docs/` | MkDocs site, architecture notes, ADRs (including the Android and iOS rendering-approach ADRs) |
 | `git/` | `CONTRIBUTING.md` and `codecov.yaml` |
-| `moon/` | `ROADMAP.md`, `CHANGELOG.md`, and per-topic roadmaps (including `ios.md` and `shared_core.md`) |
+| `docs/moon/` | `ROADMAP.md`, `CHANGELOG.md`, and per-topic roadmaps (including `ios.md` and `shared_core.md`) |
 | `tools/*/justfile` | `just` recipe modules — each now covers both platforms where relevant (e.g. `tools/build/justfile` has both Gradle and `xcodebuild` recipes) |
 
 ## Quick Start
@@ -122,7 +124,7 @@ See [`git/CONTRIBUTING.md`](git/CONTRIBUTING.md) for the contribution workflow, 
 ## Releasing
 
 - **Android → Play Store**: see [`.agent/skills/release-to-play-store.md`](.agent/skills/release-to-play-store.md) and [`.github/workflows/release.yml`](.github/workflows/release.yml) — tagging `vX.Y.Z` builds a signed AAB/APK and (optionally, once fastlane credentials are configured) uploads to the Play Console's internal testing track.
-- **iOS → App Store**: not automated yet — see [`moon/roadmaps/ios.md`](moon/roadmaps/ios.md); `just ios-archive` produces an unsigned `.xcarchive` as a starting point.
+- **iOS → App Store**: not automated yet — see [`docs/moon/roadmaps/ios.md`](docs/moon/roadmaps/ios.md); `just ios-archive` produces an unsigned `.xcarchive` as a starting point.
 
 ## License
 

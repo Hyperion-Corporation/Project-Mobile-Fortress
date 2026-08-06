@@ -177,4 +177,4 @@ create-release:
       than the one running this script.)
 
 # iOS release (App Store Connect signing/export) is not automated here --
-# see moon/roadmaps/ios.md.
+# see docs/moon/roadmaps/ios.md.

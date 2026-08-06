@@ -21,7 +21,7 @@ graph LR
 
 ### 1.2 Path Solvability Assertions
 *   **WFC Level Generator checks**:
-    *   *Assert 01*: The Dijkstra map must contain a valid, unblocked pathway from every active spawn gate to the Keep.
+    *   *Assert 01*: The Dijkstra map must contain a valid, unblocked pathway from every active spawn gate to the HQ (and, for naval spawn gates, to the nearest Trading Outpost).
     *   *Assert 02*: No generated layouts can exceed the maximum barricade placement budget.
 
 ---
@@ -55,4 +55,4 @@ To preserve thermal limits and prevent battery drain on targeting hardware (Andr
 
 ---
 *Document Version: 2.0*  
-*Authoritative Reference: design/game_design_document.md*
+*Authoritative Reference: docs/design/game_design_document.md*

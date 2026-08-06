@@ -111,5 +111,5 @@ jobs:
         run: rm -f release.keystore
 
   # iOS release (App Store Connect signing/export) is not automated yet --
-  # see moon/roadmaps/ios.md. `just ios-archive` produces an unsigned
+  # see docs/moon/roadmaps/ios.md. `just ios-archive` produces an unsigned
   # .xcarchive locally on a macOS host as a starting point.

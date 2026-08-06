@@ -1,6 +1,6 @@
 # Architecture
 
-> **TODO:** Expand with Mobile Fortress' actual castle-defense/multiplayer architecture as it's implemented beyond the current inherited client skeletons — see [`moon/ROADMAP.md`](../moon/ROADMAP.md) and [`moon/roadmaps/shared_core.md`](../moon/roadmaps/shared_core.md). This page should stay in sync with the actual `android/app/` and `ios/MyGame/` modules.
+> **TODO:** Expand with Mobile Fortress' actual fortress-defense/multiplayer architecture as it's implemented beyond the current inherited client skeletons — see [`moon/ROADMAP.md`](moon/ROADMAP.md) and [`moon/roadmaps/shared_core.md`](moon/roadmaps/shared_core.md). This page should stay in sync with the actual `android/app/` and `ios/MyGame/` modules.
 
 ## Overview
 

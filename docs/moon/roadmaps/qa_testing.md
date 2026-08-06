@@ -1,6 +1,6 @@
 # QA & Testing Roadmap
 
-Scope: correctness of the shared simulation core, netcode determinism, and the retention benchmarks Mobile Fortress is designed against. See [`reports/Tower Defense Market Research.md`](../../reports/Tower%20Defense%20Market%20Research.md) §"Key Performance Indicators (KPIs) and Retention Benchmarks" for the target metrics below.
+Scope: correctness of the shared simulation core, netcode determinism, and the retention benchmarks Mobile Fortress is designed against. See [`reports/Tower Defense Market Research.md`](../../../reports/Tower%20Defense%20Market%20Research.md) §"Key Performance Indicators (KPIs) and Retention Benchmarks" for the target metrics below.
 
 | # | Item | Effort | Status |
 | --- | --- | --- | --- |
@@ -13,6 +13,6 @@ Scope: correctness of the shared simulation core, netcode determinism, and the r
 | Q7 | Crash reporting (Firebase Crashlytics or similar) wired into release builds, both platforms | S | 📋 Pending |
 | Q8 | Retention analytics instrumentation (D1/D7/D30) with internal targets benchmarked against the midcore-strategy averages: D1 ≈ 42%, D7 ≈ 21%, D30 ≈ 11.5% | M | 📋 Pending |
 | Q9 | Gacha-rate audit tooling: automated verification that displayed probabilities match server-side roll weights (regulatory compliance, see [`monetization.md`](monetization.md)) | M | 📋 Pending |
-| Q10 | Playtesting pass for Day/Night pacing and cognitive-load calibration (avoid the "deep strategy" fatigue noted in Market Research §"Decline of Deep Strategy") | M | 📋 Pending |
+| Q10 | Playtesting pass for Day/Night pacing, land+naval dual-front cognitive load, and calibration (avoid the "deep strategy" fatigue noted in Market Research §"Decline of Deep Strategy") | M | 📋 Pending |
 
 Effort key: S = days, M = 1–2 weeks, L = 3–6 weeks, XL = multi-month/cross-cutting.

@@ -1,6 +1,6 @@
 # Shared Core Roadmap — Rust + UniFFI (decided)
 
-Today `core/` is assets + documentation only — see [`core/README.md`](../../core/README.md). **This decision is now made**: Mobile Fortress requires a real compiled shared simulation core, not documentation-only convention, because Co-Op multiplayer needs bit-identical simulation state across both native clients. See [`research/Multiplayer Tower Defense Implementation.md`](../../research/Multiplayer%20Tower%20Defense%20Implementation.md) §"Architecting the Shared Computational Core" for the full evaluation.
+Today `core/` is assets + documentation only — see [`core/README.md`](../../../core/README.md). **This decision is now made**: Mobile Fortress requires a real compiled shared simulation core, not documentation-only convention, because Co-Op multiplayer needs bit-identical simulation state across both native clients. See [`research/Multiplayer Tower Defense Implementation.md`](../../../research/Multiplayer%20Tower%20Defense%20Implementation.md) §"Architecting the Shared Computational Core" for the full evaluation.
 
 ## Decision: Option B — Rust core via UniFFI
 
