@@ -62,10 +62,10 @@ Project-Mobile-Fortress/
 ├── .devcontainer/             # Dev Container — Android toolchain only, see below
 ├── .github/                   # Issue/PR templates, Dependabot, CI/release/docs workflows
 ├── infra/                     # Optional lightweight backend (leaderboards/cloud save)
-├── docs/                       # MkDocs site, architecture notes, ADRs
-│   ├── design/                 # GDD, art/audio bibles, pitch deck, production/QA plans, website/
+├── docs/                       # architecture notes, ADRs, roadmap, design docs
+│   ├── design/                 # GDD, art/audio bibles, pitch deck, production/QA plans
 │   ├── moon/                   # ROADMAP.md, CHANGELOG.md, per-topic roadmaps
-│   └── public/                 # combined interactive design-hub + docs site (deployed to gh-pages)
+│   └── website/                # Vue 3 SPA: interactive design hub + doc reader (deployed to gh-pages)
 ├── git/                        # CONTRIBUTING.md, codecov.yaml
 ├── tools/{build,test,validation,ci,docs,infra,reducer,helper}/justfile
 └── justfile                    # root — imports tools/*/justfile as `just` modules
@@ -80,7 +80,7 @@ Project-Mobile-Fortress/
 | `.devcontainer/` | VS Code Dev Container with the Android SDK cmdline-tools, JDK 17, emulator deps — **Android only**; iOS requires a native macOS host, see `.devcontainer/README.md` |
 | `.github/` | Issue/PR templates, Dependabot config, GitHub Actions workflows (`ci.yml` runs both an Android job set and a `macos-latest` iOS job; `release.yml` builds the signed Android bundle) |
 | `infra/` | **Optional** lightweight backend scaffolding for leaderboards/cloud save: `docker/`, `k8s/`, `helm/`, `terraform/`, `ansible/` — not needed for an offline game |
-| `docs/` | MkDocs site, architecture notes, ADRs (including the Android and iOS rendering-approach ADRs) |
+| `docs/` | Architecture notes, ADRs (including the Android and iOS rendering-approach ADRs), design docs, roadmap, and `docs/website/` — the Vue 3 interactive design-hub + docs site deployed to GitHub Pages (MkDocs Material remains available locally for browsing the same Markdown) |
 | `git/` | `CONTRIBUTING.md` and `codecov.yaml` |
 | `docs/moon/` | `ROADMAP.md`, `CHANGELOG.md`, and per-topic roadmaps (including `ios.md` and `shared_core.md`) |
 | `tools/*/justfile` | `just` recipe modules — each now covers both platforms where relevant (e.g. `tools/build/justfile` has both Gradle and `xcodebuild` recipes) |

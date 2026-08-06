@@ -20,33 +20,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - run: pip install mkdocs-material
-
-      # Builds the MkDocs reference docs (Architecture, Development, Testing,
-      # Glossary, ADRs, roadmap, changelog, design docs) to ./site, kept
-      # outside docs_dir (docs/) to avoid MkDocs nesting site_dir inside
-      # docs_dir. Not run with --strict: several docs intentionally link
-      # outside docs_dir (e.g. to .agent/, android/, ios/, reports/,
-      # research/) for GitHub browsing, which MkDocs warns about but which
-      # are not broken links on GitHub itself.
-      - run: mkdocs build --config-file docs/mkdocs.yml
-
-      # Assembles the published site: docs/public/ (the combined interactive
-      # design-hub + documentation landing page, committed to the repo) as
-      # the root, with the freshly built MkDocs reference site copied in
-      # under public/docs/ so the "Documentation" nav link resolves.
-      - name: Assemble combined site
+      # docs/website is a static Vue 3 SPA (CDN build, no bundler/npm step)
+      # that fetches its documentation pages as raw markdown at runtime.
+      # Assemble the publish artifact: the app itself at the root, plus a
+      # content/ mirror of every docs/**/*.md source file (excluding the
+      # app's own docs/website/) for it to fetch.
+      - name: Assemble site
         run: |
           set -euo pipefail
           rm -rf gh-pages-out
-          mkdir -p gh-pages-out
-          cp -r docs/public/. gh-pages-out/
-          rm -rf gh-pages-out/docs
-          cp -r site gh-pages-out/docs
+          mkdir -p gh-pages-out gh-pages-out/content
+          cp -r docs/website/. gh-pages-out/
+          rsync -a --prune-empty-dirs \
+            --include='*/' --include='*.md' --exclude='website/**' --exclude='*' \
+            docs/ gh-pages-out/content/
           touch gh-pages-out/.nojekyll
 
       - name: Deploy to gh-pages branch

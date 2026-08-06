@@ -9,7 +9,7 @@ edit_uri: edit/main/docs/
 docs_dir: .
 site_dir: ../site
 exclude_docs: |
-  public/
+  website/
 
 theme:
   name: material
