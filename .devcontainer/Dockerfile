@@ -45,6 +45,6 @@ RUN pip3 install --no-cache-dir pre-commit
 # Create a non-root user for development
 RUN useradd -m -s /bin/bash vscode && chown -R vscode:vscode ${ANDROID_SDK_ROOT}
 USER vscode
-WORKDIR /workspaces/Mobile-Game-Template
+WORKDIR /workspaces/Project-Mobile-Fortress
 
 CMD ["/bin/bash"]

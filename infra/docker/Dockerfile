@@ -1,5 +1,5 @@
 # Placeholder multi-stage build for an optional leaderboards/cloud-save backend.
-# This template ships no backend source code — replace `backend/` with your
+# This repository ships no backend source code yet — replace `backend/` with your
 # actual service (e.g. a small Ktor, Ktor+Exposed, or Node/Express API) before
 # building this image. Delete infra/docker/ entirely if your game is offline-only.
 

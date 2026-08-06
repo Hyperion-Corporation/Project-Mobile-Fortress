@@ -10,7 +10,7 @@ reset := '\033[0m'
 # Clean all Gradle build outputs (android/)
 clean:
     @echo -e "{{yellow}}Cleaning Gradle build outputs (android/)...{{reset}}"
-    ./android/gradlew -p android clean
+    ./gradlew clean
 
 # Clean Xcode build/archive outputs (ios/) — macOS host only
 clean-ios:

@@ -2,7 +2,7 @@ import Foundation
 
 /// Mirrors the Kotlin `GameEngine`/`GameState` split on the Android side: the
 /// SwiftUI-observable state machine driving which top-level screen is shown.
-/// See `app/src/main/java/com/example/gametemplate/engine/GameEngine.kt` for
+/// See `app/src/main/java/com/acfharbinger/mobilefortress/engine/GameEngine.kt` for
 /// the Android counterpart and `.agent/rules/swift.md` for conventions.
 enum GameStateKind: Equatable {
     case menu

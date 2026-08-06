@@ -11,7 +11,7 @@ reset := '\033[0m'
 # Canonical header — imported by root justfile as helper::_print_header
 _print_header:
     @echo -e "{{blue}}╔══════════════════════════════════════════════════════════════════════╗{{reset}}"
-    @echo -e "{{blue}}║                    Mobile-Game-Template Control                     ║{{reset}}"
+    @echo -e "{{blue}}║                    Mobile Fortress Control                     ║{{reset}}"
     @echo -e "{{blue}}╚══════════════════════════════════════════════════════════════════════╝{{reset}}"
 
 # List all available recipes
