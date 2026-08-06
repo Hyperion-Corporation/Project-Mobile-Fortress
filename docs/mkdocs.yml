@@ -47,6 +47,10 @@ nav:
   - Development: DEVELOPMENT.md
   - Testing: TESTING.md
   - Glossary: GLOSSARY.md
+  - Troubleshooting: TROUBLESHOOTING.md
+  - Dependency Policy: DEPENDENCY_POLICY.md
+  - Documentation Standards: DOCUMENTATION_STANDARDS.md
+  - Benchmarks: BENCHMARKS.md
   - Architecture Decisions: adr/
   - Roadmap:
       - Overview: moon/ROADMAP.md
