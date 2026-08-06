@@ -6,7 +6,7 @@ updates:
   # requires a Package.swift/Package.resolved to scan) has nothing to do.
   # Add one under directory "/ios" once the iOS app takes on an SPM package.
   - package-ecosystem: "gradle"
-    directory: "/android"
+    directory: "/"
     schedule:
       interval: "weekly"
       day: "monday"
@@ -15,6 +15,23 @@ updates:
     labels:
       - "dependencies"
       - "gradle"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+
+  # Node/npm — root package.json's npm workspaces cover docs/website/vue
+  # (the documentation site + interactive design hub) and any future JS/TS
+  # package added to "workspaces".
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "npm"
     commit-message:
       prefix: "chore(deps)"
       include: "scope"

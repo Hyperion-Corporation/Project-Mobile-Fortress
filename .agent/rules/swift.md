@@ -1,7 +1,7 @@
 # Swift Rules
 
 - Target Swift 5.0 / iOS 16+, built via Xcode (`ios/MyGame.xcodeproj`) — see [`.agent/workflows/ios_lifecycle.md`](../workflows/ios_lifecycle.md) for the SpriteKit/SwiftUI lifecycle contract.
-- Format/lint with SwiftLint if configured locally (not bundled by default in this template — see `docs/DEVELOPMENT.md` for how to add it) and Xcode's built-in warnings; treat new warnings on touched files as blocking.
+- Format/lint with SwiftLint if configured locally (not bundled by default in this project — see `docs/DEVELOPMENT.md` for how to add it) and Xcode's built-in warnings; treat new warnings on touched files as blocking.
 - Prefer `struct`/`enum` value types over `class` unless you need reference semantics or `SKNode`/`UIKit` inheritance forces a class (`SKSpriteNode` subclasses, `AVAudioPlayer`-owning managers).
 - Use `ObservableObject` + `@Published` for SwiftUI-observable state (`GameManager`) rather than `NotificationCenter` broadcasts, except where bridging out of SpriteKit's non-SwiftUI node tree genuinely requires it (`GameScene` reads `GameManager.shared` directly since `SKScene` isn't part of the view hierarchy).
 - No force-unwraps (`!`) or force-tries (`try!`) outside test code — prefer `guard let`, `if let`, or `try?` with an explicit fallback.

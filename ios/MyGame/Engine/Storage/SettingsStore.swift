@@ -15,7 +15,7 @@ struct GameSettings: Codable, Equatable {
 final class SettingsStore {
     static let shared = SettingsStore()
 
-    private let defaultsKey = "com.mygame.settings"
+    private let defaultsKey = "com.acfharbinger.mobilefortress.settings"
     private let defaults: UserDefaults
 
     init(defaults: UserDefaults = .standard) {
