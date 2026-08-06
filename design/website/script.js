@@ -6,6 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initFlowFieldSimulator();
     initDdaSimulator();
     initBanditSimulator();
+    initOptimizationSimulator();
 });
 
 // --- Tab System ---
@@ -625,4 +626,398 @@ function updateBandit() {
     document.getElementById("math-payout").textContent = selectedDetails.payout;
     document.getElementById("math-bonus").textContent = selectedDetails.bonus;
     document.getElementById("math-total").textContent = selectedDetails.total;
+}
+
+// --- Tab 5: Mathematical Optimization (GA & ACO) ---
+let gaGen = 0;
+let gaBestFitness = 0;
+let gaAvgFitness = 0;
+const GA_GRID_SIZE = 8;
+let gaGridData = [];
+
+function initOptimizationSimulator() {
+    createGaGrid();
+    resetGa();
+    initAcoGraph();
+}
+
+function createGaGrid() {
+    const gaGridEl = document.getElementById("ga-grid");
+    if (!gaGridEl) return;
+    gaGridEl.innerHTML = "";
+    gaGridData = [];
+
+    for (let r = 0; r < GA_GRID_SIZE; r++) {
+        gaGridData[r] = [];
+        for (let c = 0; c < GA_GRID_SIZE; c++) {
+            let type = "clear";
+            if (r === 0 && c === 0) type = "spawn";
+            else if (r === GA_GRID_SIZE - 1 && c === GA_GRID_SIZE - 1) type = "keep";
+
+            gaGridData[r][c] = { row: r, col: c, type: type };
+
+            const cellEl = document.createElement("div");
+            cellEl.id = `ga-cell-${r}-${c}`;
+            cellEl.className = "ga-cell";
+            if (type === "spawn") {
+                cellEl.classList.add("ga-spawn");
+                cellEl.textContent = "⛩️";
+            } else if (type === "keep") {
+                cellEl.classList.add("ga-keep");
+                cellEl.textContent = "🏰";
+            }
+            gaGridEl.appendChild(cellEl);
+        }
+    }
+}
+
+function resetGa() {
+    gaGen = 0;
+    gaBestFitness = 0;
+    gaAvgFitness = 0.0;
+    
+    document.getElementById("ga-generation").textContent = gaGen;
+    document.getElementById("ga-best-fitness").textContent = gaBestFitness;
+    document.getElementById("ga-avg-fitness").textContent = gaAvgFitness.toFixed(1);
+
+    // Clear grid styles except spawn/keep
+    for (let r = 0; r < GA_GRID_SIZE; r++) {
+        for (let c = 0; c < GA_GRID_SIZE; c++) {
+            const cell = gaGridData[r][c];
+            if (cell.type !== "spawn" && cell.type !== "keep") {
+                cell.type = "clear";
+                const cellEl = document.getElementById(`ga-cell-${r}-${c}`);
+                if (cellEl) {
+                    cellEl.className = "ga-cell";
+                    cellEl.textContent = "";
+                }
+            }
+        }
+    }
+}
+
+// Simulated GA optimization steps showing structural convergence
+function runGaGeneration() {
+    gaGen++;
+    document.getElementById("ga-generation").textContent = gaGen;
+
+    // Simulate progress: as gen increases, best fitness converges to optimal winding path
+    let targetBest = 14;
+    let targetAvg = 10.5;
+
+    if (gaGen >= 1 && gaGen < 5) {
+        targetBest = 16;
+        targetAvg = 12.2;
+    } else if (gaGen >= 5 && gaGen < 15) {
+        targetBest = 20;
+        targetAvg = 15.6;
+    } else if (gaGen >= 15 && gaGen < 30) {
+        targetBest = 24;
+        targetAvg = 19.8;
+    } else {
+        targetBest = 28;
+        targetAvg = 23.4;
+    }
+
+    // Slightly fluctuate values to look like active genetic diversity
+    let noise = Math.random() * 1.5 - 0.75;
+    gaBestFitness = targetBest;
+    gaAvgFitness = targetAvg + noise;
+
+    document.getElementById("ga-best-fitness").textContent = gaBestFitness;
+    document.getElementById("ga-avg-fitness").textContent = gaAvgFitness.toFixed(1);
+
+    // Draw the evolved walls and optimal path based on generation stage
+    // Clean old cells first
+    for (let r = 0; r < GA_GRID_SIZE; r++) {
+        for (let c = 0; c < GA_GRID_SIZE; c++) {
+            const cell = gaGridData[r][c];
+            if (cell.type !== "spawn" && cell.type !== "keep") {
+                cell.type = "clear";
+                const cellEl = document.getElementById(`ga-cell-${r}-${c}`);
+                if (cellEl) {
+                    cellEl.className = "ga-cell";
+                    cellEl.textContent = "";
+                }
+            }
+        }
+    }
+
+    // Coordinates of walls for different generation tiers (pre-coded to show convergence)
+    let wallCoords = [];
+    let pathCoords = [];
+
+    if (gaGen < 5) {
+        // Gen 1-4: Random scattered walls
+        wallCoords = [{r: 1, c: 2}, {r: 2, c: 5}, {r: 4, c: 1}, {r: 5, c: 6}, {r: 6, c: 3}];
+        pathCoords = [{r: 0, c: 1}, {r: 1, c: 1}, {r: 2, c: 1}, {r: 3, c: 1}, {r: 3, c: 2}, {r: 3, c: 3}, {r: 3, c: 4}, {r: 3, c: 5}, {r: 4, c: 5}, {r: 5, c: 5}, {r: 6, c: 5}, {r: 7, c: 5}, {r: 7, c: 6}];
+    } else if (gaGen < 15) {
+        // Gen 5-14: Structural blockages forming
+        wallCoords = [{r: 1, c: 2}, {r: 2, c: 2}, {r: 3, c: 2}, {r: 5, c: 5}, {r: 6, c: 5}, {r: 4, c: 5}];
+        pathCoords = [{r: 0, c: 1}, {r: 0, c: 2}, {r: 0, c: 3}, {r: 1, c: 3}, {r: 2, c: 3}, {r: 3, c: 3}, {r: 4, c: 3}, {r: 4, c: 4}, {r: 4, c: 6}, {r: 5, c: 6}, {r: 6, c: 6}, {r: 7, c: 6}];
+    } else if (gaGen < 30) {
+        // Gen 15-29: Double winding paths
+        wallCoords = [
+            {r: 1, c: 0}, {r: 1, c: 1}, {r: 1, c: 2}, {r: 1, c: 3}, {r: 1, c: 4}, {r: 1, c: 5},
+            {r: 4, c: 2}, {r: 4, c: 3}, {r: 4, c: 4}, {r: 4, c: 5}, {r: 4, c: 6}, {r: 4, c: 7}
+        ];
+        pathCoords = [
+            {r: 0, c: 1}, {r: 0, c: 2}, {r: 0, c: 3}, {r: 0, c: 4}, {r: 0, c: 5}, {r: 0, c: 6}, {r: 1, c: 6}, {r: 2, c: 6}, {r: 3, c: 6}, {r: 3, c: 5}, {r: 3, c: 4}, {r: 3, c: 3}, {r: 3, c: 2}, {r: 3, c: 1}, {r: 4, c: 1}, {r: 5, c: 1}, {r: 6, c: 1}, {r: 7, c: 1}, {r: 7, c: 2}, {r: 7, c: 3}, {r: 7, c: 4}, {r: 7, c: 5}, {r: 7, c: 6}
+        ];
+    } else {
+        // Gen 30+: Maximum maze winding within budget (16 walls)
+        wallCoords = [
+            {r: 1, c: 0}, {r: 1, c: 1}, {r: 1, c: 2}, {r: 1, c: 3}, {r: 1, c: 4}, {r: 1, c: 5}, {r: 1, c: 6},
+            {r: 4, c: 1}, {r: 4, c: 2}, {r: 4, c: 3}, {r: 4, c: 4}, {r: 4, c: 5}, {r: 4, c: 6}, {r: 4, c: 7},
+            {r: 6, c: 0}, {r: 6, c: 1}
+        ];
+        pathCoords = [
+            {r: 0, c: 1}, {r: 0, c: 2}, {r: 0, c: 3}, {r: 0, c: 4}, {r: 0, c: 5}, {r: 0, c: 6}, {r: 0, c: 7}, {r: 1, c: 7}, {r: 2, c: 7}, {r: 3, c: 7}, {r: 3, c: 6}, {r: 3, c: 5}, {r: 3, c: 4}, {r: 3, c: 3}, {r: 3, c: 2}, {r: 3, c: 1}, {r: 3, c: 0}, {r: 4, c: 0}, {r: 5, c: 0}, {r: 5, c: 1}, {r: 5, c: 2}, {r: 5, c: 3}, {r: 5, c: 4}, {r: 5, c: 5}, {r: 5, c: 6}, {r: 6, c: 6}, {r: 7, c: 6}
+        ];
+    }
+
+    // Apply classes to UI cells
+    wallCoords.forEach(w => {
+        gridCellTypeSet(w.r, w.c, "wall", "ga-cell ga-wall");
+    });
+
+    pathCoords.forEach(p => {
+        gridCellTypeSet(p.r, p.c, "path", "ga-cell ga-path");
+        const cellEl = document.getElementById(`ga-cell-${p.r}-${p.c}`);
+        if (cellEl) cellEl.textContent = "🔸";
+    });
+}
+
+function gridCellTypeSet(r, c, type, className) {
+    if (r >= 0 && r < GA_GRID_SIZE && c >= 0 && c < GA_GRID_SIZE) {
+        gaGridData[r][c].type = type;
+        const cellEl = document.getElementById(`ga-cell-${r}-${c}`);
+        if (cellEl) cellEl.className = className;
+    }
+}
+
+// Ant Colony Optimization Graph Setup
+const acoNodes = {
+    Kyoto: { name: "Kyoto", x: 40, y: 100, type: "start", role: "Kyoto (Base)" },
+    Mino: { name: "Mino", x: 130, y: 50, type: "prov", role: "Mino" },
+    Owari: { name: "Owari", x: 130, y: 150, type: "prov", role: "Owari" },
+    Kaga: { name: "Kaga", x: 230, y: 50, type: "prov", role: "Kaga" },
+    Mikawa: { name: "Mikawa", x: 230, y: 150, type: "prov", role: "Mikawa" },
+    Echigo: { name: "Echigo", x: 320, y: 100, type: "goal", role: "Echigo (Keep)" }
+};
+
+const acoEdges = [
+    { from: "Kyoto", to: "Mino", dist: 4 },
+    { from: "Kyoto", to: "Owari", dist: 5 },
+    { from: "Mino", to: "Kaga", dist: 4 },
+    { from: "Owari", to: "Mikawa", dist: 5 },
+    { from: "Kaga", to: "Echigo", dist: 4 },
+    { from: "Mikawa", to: "Echigo", dist: 5 },
+    { from: "Mino", to: "Echigo", dist: 14 } // Direct high cost shortcut
+];
+
+let provThreats = {
+    Mino: false,
+    Mikawa: false,
+    Owari: false
+};
+
+function initAcoGraph() {
+    renderAcoNodes();
+    drawAcoEdges();
+    calculateAcoBestPath();
+}
+
+function renderAcoNodes() {
+    const container = document.getElementById("aco-nodes-container");
+    if (!container) return;
+    container.innerHTML = "";
+
+    Object.keys(acoNodes).forEach(key => {
+        const node = acoNodes[key];
+        const nodeEl = document.createElement("div");
+        nodeEl.className = `aco-node node-${key.toLowerCase()}`;
+        nodeEl.style.left = `${node.x}px`;
+        nodeEl.style.top = `${node.y}px`;
+        nodeEl.textContent = key;
+        nodeEl.title = node.role;
+        container.appendChild(nodeEl);
+    });
+}
+
+function drawAcoEdges() {
+    const svg = document.getElementById("aco-svg");
+    if (!svg) return;
+    svg.innerHTML = "";
+
+    acoEdges.forEach((edge, idx) => {
+        const nFrom = acoNodes[edge.from];
+        const nTo = acoNodes[edge.to];
+        
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        line.setAttribute("x1", nFrom.x);
+        line.setAttribute("y1", nFrom.y);
+        line.setAttribute("x2", nTo.x);
+        line.setAttribute("y2", nTo.y);
+        line.setAttribute("stroke", "rgba(255,255,255,0.15)");
+        line.setAttribute("stroke-width", "2");
+        line.id = `aco-edge-${idx}`;
+        svg.appendChild(line);
+    });
+}
+
+function toggleProvince(provName) {
+    provThreats[provName] = !provThreats[provName];
+    
+    // Update button states
+    const btn = document.getElementById(`prov-${provName.toLowerCase()}`);
+    const nodeEl = document.querySelector(`.node-${provName.toLowerCase()}`);
+    
+    if (provThreats[provName]) {
+        if (btn) {
+            btn.classList.add("active");
+            btn.textContent = `${provName}: THREAT`;
+        }
+        if (nodeEl) nodeEl.classList.add("node-threat");
+    } else {
+        if (btn) {
+            btn.classList.remove("active");
+            btn.textContent = `${provName}: Safe`;
+        }
+        if (nodeEl) nodeEl.classList.remove("node-threat");
+    }
+
+    calculateAcoBestPath();
+}
+
+function calculateAcoBestPath() {
+    // Determine edge weights: weight = dist * threat
+    // Threat defaults to 1.0, increases to 10.0 if province is set to High Threat
+    let edgeWeights = acoEdges.map(edge => {
+        let threat = 1.0;
+        if (provThreats[edge.from] || provThreats[edge.to]) {
+            threat = 10.0;
+        }
+        return edge.dist * threat;
+    });
+
+    // 3 main pathways from Kyoto to Echigo
+    // Route 0: Kyoto -> Mino -> Kaga -> Echigo
+    let cost0 = edgeWeights[0] + edgeWeights[2] + edgeWeights[4]; // Kyoto->Mino + Mino->Kaga + Kaga->Echigo
+    // Route 1: Kyoto -> Owari -> Mikawa -> Echigo
+    let cost1 = edgeWeights[1] + edgeWeights[3] + edgeWeights[5]; // Kyoto->Owari + Owari->Mikawa + Mikawa->Echigo
+    // Route 2: Kyoto -> Mino -> Echigo (direct shortcut)
+    let cost2 = edgeWeights[0] + edgeWeights[6]; // Kyoto->Mino + Mino->Echigo
+
+    let pathText = "";
+    let activeEdges = [];
+
+    if (cost0 <= cost1 && cost0 <= cost2) {
+        pathText = "Kyoto ➔ Mino ➔ Kaga ➔ Echigo";
+        activeEdges = [0, 2, 4];
+    } else if (cost1 <= cost0 && cost1 <= cost2) {
+        pathText = "Kyoto ➔ Owari ➔ Mikawa ➔ Echigo";
+        activeEdges = [1, 3, 5];
+    } else {
+        pathText = "Kyoto ➔ Mino ➔ Echigo (Direct)";
+        activeEdges = [0, 6];
+    }
+
+    const displayEl = document.getElementById("aco-path-display");
+    if (displayEl) displayEl.textContent = pathText;
+
+    // Highlights path in SVG edges
+    acoEdges.forEach((edge, idx) => {
+        const line = document.getElementById(`aco-edge-${idx}`);
+        if (line) {
+            if (activeEdges.includes(idx)) {
+                line.setAttribute("stroke", "var(--accent-gold)");
+                line.setAttribute("stroke-width", "4");
+                line.setAttribute("style", "filter: drop-shadow(0 0 5px var(--accent-gold-glow));");
+            } else {
+                line.setAttribute("stroke", "rgba(255,255,255,0.15)");
+                line.setAttribute("stroke-width", "2");
+                line.removeAttribute("style");
+            }
+        }
+    });
+
+    return activeEdges;
+}
+
+// Particle simulation representing ants routing
+function launchAcoConvoys() {
+    const activeEdges = calculateAcoBestPath();
+    const container = document.querySelector(".graph-viewport");
+    if (!container) return;
+    
+    // Spawn ants along the chosen path sequentially
+    let pathNodes = [];
+    if (activeEdges.includes(2)) {
+        pathNodes = ["Kyoto", "Mino", "Kaga", "Echigo"];
+    } else if (activeEdges.includes(3)) {
+        pathNodes = ["Kyoto", "Owari", "Mikawa", "Echigo"];
+    } else {
+        pathNodes = ["Kyoto", "Mino", "Echigo"];
+    }
+
+    for (let i = 0; i < 5; i++) {
+        setTimeout(() => {
+            spawnAntParticle(pathNodes, container);
+        }, i * 300);
+    }
+}
+
+function spawnAntParticle(nodes, container) {
+    const ant = document.createElement("div");
+    ant.className = "aco-ant-particle";
+    
+    let startNode = acoNodes[nodes[0]];
+    ant.style.left = `${startNode.x}px`;
+    ant.style.top = `${startNode.y}px`;
+    container.appendChild(ant);
+
+    let currentStep = 0;
+    
+    function moveNext() {
+        if (currentStep >= nodes.length - 1) {
+            // Reached goal
+            setTimeout(() => ant.remove(), 200);
+            return;
+        }
+
+        let fromNode = acoNodes[nodes[currentStep]];
+        let toNode = acoNodes[nodes[currentStep + 1]];
+        
+        let startX = fromNode.x;
+        let startY = fromNode.y;
+        let endX = toNode.x;
+        let endY = toNode.y;
+
+        let startTime = null;
+        let duration = 600; // ms
+
+        function step(timestamp) {
+            if (!startTime) startTime = timestamp;
+            let progress = (timestamp - startTime) / duration;
+            if (progress > 1.0) progress = 1.0;
+
+            let curX = startX + (endX - startX) * progress;
+            let curY = startY + (endY - startY) * progress;
+
+            ant.style.left = `${curX}px`;
+            ant.style.top = `${curY}px`;
+
+            if (progress < 1.0) {
+                requestAnimationFrame(step);
+            } else {
+                currentStep++;
+                moveNext();
+            }
+        }
+
+        requestAnimationFrame(step);
+    }
+
+    moveNext();
 }

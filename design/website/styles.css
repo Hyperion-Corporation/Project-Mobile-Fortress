@@ -854,6 +854,104 @@ h1, h2, h3, h4 {
     color: var(--text-primary);
 }
 
+/* --- Tab 5: Mathematical Optimization (GA & ACO) --- */
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    margin-bottom: 0.4rem;
+}
+
+.ga-cell {
+    background-color: rgba(22, 25, 34, 0.95);
+    aspect-ratio: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 2px;
+    font-size: 0.65rem;
+}
+
+.ga-cell.ga-spawn {
+    background-color: #1d3557;
+    color: white;
+}
+
+.ga-cell.ga-keep {
+    background-color: #c77dff;
+    color: white;
+}
+
+.ga-cell.ga-wall {
+    background-color: var(--accent-crimson);
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+.ga-cell.ga-path {
+    background-color: rgba(244, 211, 94, 0.15);
+    border: 1px dashed var(--accent-gold);
+}
+
+.aco-node {
+    position: absolute;
+    width: 44px;
+    height: 44px;
+    background-color: rgba(22, 25, 34, 0.95);
+    border: 2px solid var(--text-secondary);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.65rem;
+    font-weight: bold;
+    color: var(--text-primary);
+    cursor: pointer;
+    transform: translate(-50%, -50%);
+    transition: all 0.3s ease;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    z-index: 10;
+}
+
+.aco-node.node-kyoto {
+    background-color: #1d3557;
+    border-color: #457b9d;
+}
+
+.aco-node.node-echigo {
+    background-color: #c77dff;
+    border-color: #e0aaff;
+}
+
+.aco-node.node-threat {
+    border-color: var(--accent-crimson);
+    box-shadow: 0 0 15px var(--accent-crimson-glow);
+    background-color: rgba(217, 4, 41, 0.25);
+}
+
+.aco-node:hover {
+    transform: translate(-50%, -50%) scale(1.1);
+}
+
+.aco-node.node-threat::after {
+    content: '⚠️';
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    font-size: 0.75rem;
+}
+
+.aco-ant-particle {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background-color: var(--accent-gold);
+    border-radius: 50%;
+    box-shadow: 0 0 5px var(--accent-gold-glow);
+    z-index: 9;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+}
+
 /* --- Responsive Adaptations --- */
 @media (max-width: 992px) {
     .hero-section {
@@ -896,3 +994,4 @@ h1, h2, h3, h4 {
         height: 320px;
     }
 }
+

@@ -224,9 +224,59 @@ Where $\lambda(x) = \exp(\gamma^T x)$ scales based on context parameters (e.g., 
 
 ---
 
-## 8. Codebase Analysis & Integration Roadmap
+## 8. Mathematical Optimization Methods (Swarm Intelligence & Evolutionary Algorithms)
 
-### 8.1 Current Codebase State
+To support complex strategic systems in both the 4X Strategic Loop and procedural content generation, Mobile Fortress implements classical mathematical optimization methods alongside its machine learning models.
+
+```
++-------------------------------------------------------------+
+|        Mathematical Optimization Systems Overview           |
++-------------------------------------------------------------+
+|                                                             |
+|   1. Genetic Algorithms (GA)                                |
+|      [Procedural Level Design]                              |
+|      - Optimizes castle wall barricade structures.          |
+|      - Maximizes pathing distance within budget constraint. |
+|                                                             |
+|                             |                               |
+|                             v                               |
+|                                                             |
+|   2. Ant Colony Optimization (ACO)                          |
+|      [4X Strategy Supply Routing]                           |
+|      - Dynamically routes convoys across clan territory.     |
+|      - Balances path distance with local threat levels.      |
+|                                                             |
++-------------------------------------------------------------+
+```
+
+### 8.1 Genetic Algorithms (GA) for Castle Wall Layout Optimization
+In the procedural generation pipeline, creating a challenging layout for defensive levels is formulated as a constrained evolutionary search. The game engine must evolve a layout of static blockages (walls) that maximizes the path distance for enemies while adhering to building budget constraints.
+*   **Chromosome Representation**: A binary array $C = \{c_1, c_2, \dots, c_N\}$ of length $N$ (where $N = \text{Width} \times \text{Height}$ of the grid), where $c_i = 1$ indicates a wall and $c_i = 0$ indicates open ground.
+*   **Fitness Function**: Maximize the shortest path length from spawn points to the Keep while penalizing layouts that exceed the maximum wall budget $B$ or block the path entirely:
+    $$f(C) = \begin{cases} \text{PathLength}(S_{\text{spawn}} \to T_{\text{castle}}) & \text{if } \sum_{i=1}^N c_i \le B \text{ and PathExists}(S \to T) \\ 0 & \text{otherwise} \end{cases}$$
+*   **Operators**:
+    *   *Tournament Selection*: Lobbies of size $k=5$ compete to select parents based on fitness.
+    *   *Uniform Crossover*: Parent chromosomes swap tiles with a probability of $p_c = 0.5$ to combine path features.
+    *   *Spatial Mutation*: Individual bits are flipped with probability $p_m = 0.05$. To maintain spatial coherence, mutation is weighted to expand existing wall clusters rather than scattering random single walls.
+
+### 8.2 Ant Colony Optimization (ACO) for Strategic Supply Line Routing
+In the 4X Strategic Loop, players coordinate raw material convoys (e.g., iron, wood, rations) across dynamic provinces. Ant Colony Optimization is run on the server to automatically determine the optimal paths for supply convoys, bypassing contested provinces and high-threat patrol lines.
+*   **Graph Definition**: The Japan map is represented as a weighted graph $G = (V, E)$, where vertices $V$ are provinces and edges $E$ are connecting trade routes. Each route $(i, j)$ has a distance $d_{ij}$ and a threat modifier $h_{ij} \in [1.0, 10.0]$ representing active enemy skirmish activity.
+*   **State Transition Probability**: A simulated convoy $k$ at province $i$ decides to move to province $j$ based on pheromone concentration $\tau$ and a route visibility heuristic $\eta$:
+    $$p_{ij}^k(t) = \frac{[\tau_{ij}(t)]^\alpha [\eta_{ij}]^\beta}{\sum_{l \in \text{allowed}_k} [\tau_{il}(t)]^\alpha [\eta_{il}]^\beta}$$
+    Where the visibility heuristic is defined as the inverse of path distance scaled by threat:
+    $$\eta_{ij} = \frac{1}{d_{ij} \cdot h_{ij}}$$
+    The parameters $\alpha$ and $\beta$ control the relative influence of historical player success (pheromones) versus static route safety (heuristics).
+*   **Pheromone Evaporation & Deposition**: After all convoys complete traversal, pheromones evaporate, and routes successfully navigated deposit new pheromones proportional to the volume of materials safely delivered:
+    $$\tau_{ij}(t+1) = (1 - \rho)\tau_{ij}(t) + \sum_{k=1}^M \Delta\tau_{ij}^k(t)$$
+    $$\Delta\tau_{ij}^k(t) = \begin{cases} \frac{Q}{\text{TotalCost}_k} & \text{if convoy } k \text{ successfully navigated edge } (i, j) \\ 0 & \text{otherwise} \end{cases}$$
+    Where $\text{TotalCost}_k = \sum d_{ij} \cdot h_{ij}$ along the route, and $Q$ is a scaling constant.
+
+---
+
+## 9. Codebase Analysis & Integration Roadmap
+
+### 9.1 Current Codebase State
 *   **Android (`android/`)**:
     *   Entry: [MainActivity.kt](file:///home/pkhunter/Repositories/Repos/Project-Mobile-Fortress/android/app/src/main/java/com/acfharbinger/mobilefortress/MainActivity.kt) hosting [GameView.kt](file:///home/pkhunter/Repositories/Repos/Project-Mobile-Fortress/android/app/src/main/java/com/acfharbinger/mobilefortress/GameView.kt) (SurfaceView).
     *   Loop: [GameLoop.kt](file:///home/pkhunter/Repositories/Repos/Project-Mobile-Fortress/android/app/src/main/java/com/acfharbinger/mobilefortress/GameLoop.kt) running a fixed-timestep game thread.
@@ -239,13 +289,13 @@ Where $\lambda(x) = \exp(\gamma^T x)$ scales based on context parameters (e.g., 
     *   Contains static asset specifications and basic game state descriptions in [game-state-machine.md](file:///home/pkhunter/Repositories/Repos/Project-Mobile-Fortress/core/src/game-state-machine.md).
     *   No shared compiled library; each app implements logic independently.
 
-### 8.2 Architectural Gaps
+### 9.2 Architectural Gaps
 1.  **Simulation Divergence**: The physics and logical calculations are completely decoupled. Android runs a custom Canvas looping calculation; iOS runs SpriteKit's physics engine.
 2.  **No Netcode Implementation**: Real-time communication structures, UDP bindings, and delta-compression frameworks do not exist.
 3.  **No Shared Simulation Engine**: The planned Rust core needs initialization and integration via UniFFI bindings.
 4.  **No Procedural Assets or ML Models**: The WFC and Reinforcement Learning architectures are completely unrepresented in the code.
 
-### 8.3 Integration Roadmap
+### 9.3 Integration Roadmap
 
 ```
 +-----------------------------------------------------------------------------------+
@@ -271,10 +321,11 @@ Where $\lambda(x) = \exp(\gamma^T x)$ scales based on context parameters (e.g., 
                                          |
                                          v
 +-----------------------------------------------------------------------------------+
-| Phase 4: Machine Learning Core Integration                                         |
+| Phase 4: Machine Learning & Mathematical Optimization Core                         |
 | - Train and deploy offline PCGRL PPO agent. Deploy nested WFC local solvers.      |
 | - Integrate the Imitation-Adversarial DDA loops on local player devices.          |
-| - Wire CMAB (LinUCB) optimization model to the backend store system.              |
+| - Deploy Genetic Algorithms for dynamic layout generation and ACO for supply route |
+|   optimization on server-authoritative matchmaking.                                |
 +-----------------------------------------------------------------------------------+
 ```
 
