@@ -6,7 +6,7 @@ Scope: correctness of the shared simulation core, netcode determinism, and the r
 | --- | --- | --- | --- |
 | Q1 | ~~Unit test skeleton (`GameEngineTest`)~~ / ~~Instrumented test skeleton (`MainActivityTest`)~~ — template baseline | S | ✅ Done |
 | Q2 | CI instrumented-test matrix across API levels (29, 35) | S | ✅ Done |
-| Q3 | Rust core unit + property tests for Flow Field correctness (no unreachable tiles, no path oscillation) and ECS system ordering | L | 📋 Pending |
+| Q3 | C++ core unit + property tests for Flow Field correctness (no unreachable tiles, no path oscillation) and ECS system ordering | L | 📋 Pending |
 | Q4 | Determinism test harness: identical inputs + identical seed must yield bit-identical simulation state across ARM/x86 | L | 📋 Pending |
 | Q5 | Netcode integration tests under simulated latency/jitter/packet loss for server-authoritative sync + client reconciliation | L | 📋 Pending |
 | Q6 | Device farm (Firebase Test Lab) integration for broader Android device/thermal coverage | M | 📋 Pending |

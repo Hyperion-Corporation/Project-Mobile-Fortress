@@ -5,7 +5,7 @@ Scope: server-authoritative Co-Op multiplayer, matchmaking/fleet orchestration, 
 | # | Item | Effort | Status |
 | --- | --- | --- | --- |
 | B1 | `infra/` scaffolding (Docker, k8s, Helm, Terraform, Ansible) | M | ✅ Done |
-| B2 | Server-authoritative game-session service: ingests client inputs, runs the Rust simulation core, broadcasts canonical state with delta compression | XL | 📋 Pending |
+| B2 | Server-authoritative game-session service: ingests client inputs, runs the C++ simulation core, broadcasts canonical state with delta compression | XL | 📋 Pending |
 | B3 | Client-side prediction + server reconciliation for tower placement/unit commands (local render immediately, snap to authoritative state on mismatch) | L | 📋 Pending |
 | B4 | AWS GameLift fleet provisioning for dedicated Co-Op session servers | L | 📋 Pending |
 | B5 | FlexMatch latency-optimized matchmaking: graduated latency policy (e.g. 50ms → 100ms over 120s) to avoid infinite queuing | M | 📋 Pending |

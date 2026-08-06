@@ -34,7 +34,7 @@ Mobile Fortress ships two independent native clients — an Android application 
 
 ## Shared (`core/`)
 
-Raw assets (`core/assets/`) and a documented-but-not-compiled spec (`core/src/`) for the level-data shape and the state-machine shape both clients implement independently. See `core/README.md` and `moon/roadmaps/shared_core.md` for what's real today vs. a future KMP/Rust option.
+Raw assets (`core/assets/`) and a documented-but-not-compiled spec (`core/src/`) for the level-data shape and the state-machine shape both clients implement independently. See `core/README.md` and `moon/roadmaps/shared_core.md` for what's real today vs. a future KMP/C++ option.
 
 ## Data Flow
 

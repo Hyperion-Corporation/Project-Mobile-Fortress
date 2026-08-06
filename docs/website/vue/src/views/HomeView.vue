@@ -47,9 +47,9 @@ const phases = [
     desc: "Synchronize game state kinds across Kotlin Android client and Swift iOS client. Integrate shared levels asset JSON reading schemas.",
   },
   {
-    title: "Phase 2: Rust Core Simulation Engine",
+    title: "Phase 2: C++ Core Simulation Engine",
     date: "Weeks 5-8",
-    desc: "Scaffold headless core simulation using hecs ECS. Establish UniFFI bindings and rkyv zero-copy serialization buffers.",
+    desc: "Scaffold headless core simulation using EnTT ECS. Establish JNI/Swift-C++-interop bindings and FlatBuffers zero-copy serialization buffers.",
   },
   {
     title: "Phase 3: Cooperative Netcode & AWS",
@@ -158,7 +158,7 @@ onUnmounted(() => {
         <h1>Defend the Coastal Fortress</h1>
         <p class="hero-desc">
           A 1540s–1560s Wōkòu-era Cooperative Tower Defense &amp; 4X Strategy Game — an East Asian coastal power and
-          its Western trading-partner allies combine traditional Ukiyo-e-influenced aesthetics with headless Rust
+          its Western trading-partner allies combine traditional Ukiyo-e-influenced aesthetics with headless C++
           core simulation, Dijkstra vector pathfinding, and machine learning difficulty adjustment to repel pirate
           raiders by land and sea.
         </p>

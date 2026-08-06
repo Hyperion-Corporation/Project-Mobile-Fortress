@@ -11,12 +11,12 @@ Mobile Fortress uses automated headless simulation passes combined with on-devic
 graph LR
     A[Build Commit] -->|Trigger| B[Automated Headless Simulation Runs]
     B -->|Verify| C[Dijkstra Path Solvability asserts]
-    B -->|Verify| D[UniFFI FFI serialization boundaries]
+    B -->|Verify| D[JNI/Swift-C++-interop FFI serialization boundaries]
     B -->|Verify| E[Network desync audits]
 ```
 
 ### 1.1 Automated Headless Simulation Runs
-*   **Headless Tests**: The game loop is run in a pure Rust test harness, executing matches without rendering.
+*   **Headless Tests**: The game loop is run in a pure C++ test harness (GoogleTest), executing matches without rendering.
 *   **Stress Checks**: Simulates matches containing 500 simultaneous entities to verify path recalculation speeds and detect CPU bottlenecks.
 
 ### 1.2 Path Solvability Assertions
@@ -46,13 +46,13 @@ To preserve thermal limits and prevent battery drain on targeting hardware (Andr
 
 ### 3.1 Memory Allocation Targets
 *   **Android (Android Studio Profiler)**: Heap memory allocations must remain under $120\text{MB}$. Per-frame allocations inside the `GameLoop` thread body must be $0$ (preventing Garbage Collection pauses).
-*   **iOS (Xcode Instruments)**: Active allocations must remain under $100\text{MB}$. ARC release chains are audited to prevent cyclic reference leaks across Swift/Rust FFI borders.
+*   **iOS (Xcode Instruments)**: Active allocations must remain under $100\text{MB}$. ARC release chains are audited to prevent cyclic reference leaks across Swift/C++ FFI borders.
 
 ### 3.2 Thread Budget Allocations
 *   *Game Loop update tick*: $\le 3.0\text{ms}$
-*   *Rust Core Simulation FFI update*: $\le 4.0\text{ms}$
+*   *C++ Core Simulation FFI update*: $\le 4.0\text{ms}$
 *   *Native presentation rendering*: $\le 8.0\text{ms}$
 
 ---
-*Document Version: 2.0*  
+*Document Version: 2.1*  
 *Authoritative Reference: docs/design/game_design_document.md*

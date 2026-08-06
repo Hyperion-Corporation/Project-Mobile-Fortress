@@ -16,9 +16,9 @@ The development schedule spans four main phases, moving from platform synchroniz
                                        |
                                        v
 +-------------------------------------------------------------------------------+
-| PHASE 2: Rust Core Simulation Engine (Weeks 5-8)                              |
-| - Write core ECS simulation in Rust using the hecs library.                   |
-| - Build UniFFI pipeline. Expose state updates as rkyv byte buffers.          |
+| PHASE 2: C++ Core Simulation Engine (Weeks 5-8)                               |
+| - Write core ECS simulation in C++20 using the EnTT library.                  |
+| - Build JNI/Swift-C++-interop bindings. Expose state updates as FlatBuffers.  |
 +-------------------------------------------------------------------------------+
                                        |
                                        v
@@ -43,7 +43,7 @@ The development schedule spans four main phases, moving from platform synchroniz
 | Sprint | Objective | Deliverables |
 | :--- | :--- | :--- |
 | **Sprint 1** | Native Alignment | Shared level JSON loading schemas, synchronized menus/play/pause client loops. |
-| **Sprint 2** | Headless Simulation | Rust core hecs ECS simulation, UniFFI FFI bindings, rkyv binary serialization. |
+| **Sprint 2** | Headless Simulation | C++ core EnTT ECS simulation, JNI/Swift-C++-interop FFI bindings, FlatBuffers binary serialization. |
 | **Sprint 3** | Multiplayer Sync | Sockets layer, delta compression vectors, AWS GameLift FlexMatch queue rulesets. |
 | **Sprint 4** | ML Integration | PCGRL (PPO) map editor, WFC constraint solvers, Imitation DDA, CMAB store bandit. |
 
@@ -54,18 +54,18 @@ The development schedule spans four main phases, moving from platform synchroniz
 ```mermaid
 graph TD
     A[Align State Machines] -->|Requires| B[Native Parity Checks]
-    C[UniFFI Scaffolding] -->|Requires| D[Headless Rust ECS Simulator]
-    E[UDP Delta Replication] -->|Requires| F[rkyv Binary Serializer]
+    C[JNI/Swift-C++-Interop Scaffolding] -->|Requires| D[Headless C++ EnTT Simulator]
+    E[UDP Delta Replication] -->|Requires| F[FlatBuffers Binary Serializer]
     G[CMAB dynamic store pricing] -->|Requires| H[User Profiling Logging Databases]
 ```
 
-1.  **Rust Core Integration depends on Native Alignment**:
-    Before substituting the Canvas and SpriteKit loops with Rust calls, both native clients must execute identical state transitions.
-2.  **Multiplayer Replication depends on rkyv Serialization**:
-    Delta compression replication requires the zero-copy buffer output from rkyv.
+1.  **C++ Core Integration depends on Native Alignment**:
+    Before substituting the Canvas and SpriteKit loops with C++ core calls, both native clients must execute identical state transitions.
+2.  **Multiplayer Replication depends on FlatBuffers Serialization**:
+    Delta compression replication requires the zero-copy buffer output from FlatBuffers.
 3.  **WFC Map Solvers depend on Tile Adjacency schemas**:
     The collapse solver cannot run until terrain boundaries have defined constraint weights.
 
 ---
-*Document Version: 2.0*  
+*Document Version: 2.1*  
 *Authoritative Reference: docs/design/game_design_document.md*

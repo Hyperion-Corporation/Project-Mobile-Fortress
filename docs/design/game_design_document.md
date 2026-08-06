@@ -91,25 +91,25 @@ To support hundreds of enemy combatants — on land and at sea — simultaneousl
 
 ## 4. Multiplayer Netcode & Cloud Orchestration
 
-Mobile Fortress features a **Server-Authoritative State Synchronization** model running on a headless Rust simulation core, ensuring parity between Android and iOS clients.
+Mobile Fortress features a **Server-Authoritative State Synchronization** model running on a headless C++ simulation core, ensuring parity between Android and iOS clients.
 
 ```mermaid
 sequenceDiagram
     participant ClientA as Android Client (Compose/SurfaceView)
-    participant Server as GameLift Dedicated Server (Rust Core)
+    participant Server as GameLift Dedicated Server (C++ Core)
     participant ClientB as iOS Client (SwiftUI/SpriteKit)
     
     ClientA->>Server: Send Input Payload (Place Archer at x:5, y:2) via UDP
     Note over Server: Tick Simulation (100ms cycle)
     Note over Server: Update Dijkstra Maps & Flow Fields
-    Server-->>ClientA: Broadcast Compressed State Diff (Rkyv Binary)
-    Server-->>ClientB: Broadcast Compressed State Diff (Rkyv Binary)
+    Server-->>ClientA: Broadcast Compressed State Diff (FlatBuffers Binary)
+    Server-->>ClientB: Broadcast Compressed State Diff (FlatBuffers Binary)
     Note over ClientA: Deserialize & Smoothly Interpolate positions
     Note over ClientB: Deserialize & Smoothly Interpolate positions
 ```
 
 ### 4.1 Serialization & Data Transport
-*   **rkyv (Zero-Copy Serialization)**: State updates are serialized into binary formats via Rust's `rkyv` crate. Deserialization overhead on native clients is bypassed by traversing the raw byte stream directly from the FFI memory layout (`RustBuffer`).
+*   **FlatBuffers (Zero-Copy Serialization)**: State updates are serialized into binary formats via Google's FlatBuffers library. Deserialization overhead on native clients is bypassed by traversing the raw byte stream directly from the FFI memory layout.
 *   **Delta Compression**: The server only broadcasts changes (e.g., entity spawns, deaths, position updates) rather than the complete simulation frame, minimizing cellular bandwidth.
 
 ### 4.2 Cloud Orchestration via AWS GameLift FlexMatch
@@ -304,7 +304,7 @@ In the 4X Strategic Loop, players coordinate raw material convoys (e.g., iron, t
 ### 9.2 Architectural Gaps
 1.  **Simulation Divergence**: The physics and logical calculations are completely decoupled. Android runs a custom Canvas looping calculation; iOS runs SpriteKit's physics engine.
 2.  **No Netcode Implementation**: Real-time communication structures, UDP bindings, and delta-compression frameworks do not exist.
-3.  **No Shared Simulation Engine**: The planned Rust core needs initialization and integration via UniFFI bindings.
+3.  **No Shared Simulation Engine**: The planned C++ core needs initialization and integration via JNI (Android) / Swift C++ interop (iOS) bindings.
 4.  **No Procedural Assets or ML Models**: The WFC and Reinforcement Learning architectures are completely unrepresented in the code.
 
 ### 9.3 Integration Roadmap
@@ -318,10 +318,10 @@ In the 4X Strategic Loop, players coordinate raw material convoys (e.g., iron, t
                                          |
                                          v
 +-----------------------------------------------------------------------------------+
-| Phase 2: Rust Core Simulation Engine                                              |
-| - Create Rust crate containing headless ECS simulation and pathfinding (Flow Field)|
-| - Build UniFFI pipeline. Expose simulation states as rkyv byte buffers.           |
-| - Replace native Canvas/SpriteKit update loops with calls to the Rust simulation.  |
+| Phase 2: C++ Core Simulation Engine                                               |
+| - Create C++20 library containing headless ECS simulation and pathfinding (Flow Field)|
+| - Build JNI/Swift-C++-interop bindings. Expose simulation states as FlatBuffers.   |
+| - Replace native Canvas/SpriteKit update loops with calls to the C++ simulation.   |
 +-----------------------------------------------------------------------------------+
                                          |
                                          v
@@ -342,6 +342,6 @@ In the 4X Strategic Loop, players coordinate raw material convoys (e.g., iron, t
 ```
 
 ---
-*Document Version: 3.0*  
+*Document Version: 3.1*  
 *Target Platforms: Android API 24+, iOS 16+*  
 *Authoritative Reference: .agent/AGENTS.md*

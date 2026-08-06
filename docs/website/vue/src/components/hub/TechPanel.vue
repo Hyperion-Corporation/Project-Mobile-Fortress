@@ -105,11 +105,11 @@ onMounted(buildGrid);
   <div class="tab-pane active" id="tab-tech">
     <div class="grid-2-col">
       <div class="panel glass">
-        <h2>Headless Rust Core &amp; FFI Architecture</h2>
-        <p>The simulation engine is isolated within a headless Rust core compiled with FFI bindings using <strong>UniFFI</strong>.</p>
+        <h2>Headless C++ Core &amp; FFI Architecture</h2>
+        <p>The simulation engine is isolated within a headless C++20 core, bound to the native clients via <strong>JNI</strong> (Android) and <strong>Swift C++ interop</strong> (iOS).</p>
         <ul>
-          <li><strong>`hecs` ECS Engine</strong>: contiguously packages components to maximize memory cache hits on mobile processors.</li>
-          <li><strong>`rkyv` Serialization</strong>: generates zero-copy state buffers, bypassing dynamic language parsing overhead.</li>
+          <li><strong>EnTT ECS Engine</strong>: sparse-set component storage that maximizes memory cache hits on mobile processors.</li>
+          <li><strong>FlatBuffers Serialization</strong>: generates zero-copy state buffers, bypassing dynamic language parsing overhead.</li>
         </ul>
 
         <h3 style="margin-top: 1.5rem; margin-bottom: 0.5rem">Evolve Wall Placements</h3>

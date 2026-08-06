@@ -4,7 +4,7 @@ Welcome to the documentation portal for **Mobile Fortress** — a cooperative to
 
 See [`moon/ROADMAP.md`](moon/ROADMAP.md) for the full game concept and phased delivery plan.
 
-This is a two-client repository: a Kotlin Android app (`android/`) and a Swift iOS app (`ios/`), sharing raw assets and a documented spec under `core/` (migrating to a compiled Rust shared core — see [`moon/roadmaps/shared_core.md`](moon/roadmaps/shared_core.md)).
+This is a two-client repository: a Kotlin Android app (`android/`) and a Swift iOS app (`ios/`), sharing raw assets and a documented spec under `core/` (migrating to a compiled C++ shared core — see [`moon/roadmaps/shared_core.md`](moon/roadmaps/shared_core.md)).
 
 ## Where to start
 

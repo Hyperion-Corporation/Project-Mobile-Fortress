@@ -1,6 +1,6 @@
 # Dependency Policy
 
-*Last updated: 2026-08-06. Minimum version requirements, pinning policy, upgrade cadence, and the process for introducing a new dependency, across every stack this repository touches today (Android/Kotlin, iOS/Swift, the `docs/website/vue` Node/TypeScript site, the optional `infra/` backend) and the one it's converging on ([`docs/moon/roadmaps/shared_core.md`](moon/roadmaps/shared_core.md)'s Rust simulation core).*
+*Last updated: 2026-08-06. Minimum version requirements, pinning policy, upgrade cadence, and the process for introducing a new dependency, across every stack this repository touches today (Android/Kotlin, iOS/Swift, the `docs/website/vue` Node/TypeScript site, the optional `infra/` backend) and the one it's converging on ([`docs/moon/roadmaps/shared_core.md`](moon/roadmaps/shared_core.md)'s C++ simulation core).*
 
 ---
 
@@ -28,7 +28,8 @@
 | iOS / Xcode | iOS | iOS 16+ deployment target | SpriteKit + SwiftUI chrome baseline |
 | Node.js | `docs/website/vue` | 20 LTS | Matches `actions/setup-node@v4`'s `node-version` in `.github/workflows/docs.yml` |
 | npm | `docs/website/vue` | 10+ (ships with Node 20) | `package-lock.json` v3 lockfile format |
-| Rust | Shared core (planned) | 1.75+ | `hecs` ECS + `rkyv` zero-copy serialization baseline once [`shared_core.md`](moon/roadmaps/shared_core.md) lands |
+| C++ | Shared core (planned) | C++20 | EnTT ECS + FlatBuffers zero-copy serialization baseline once [`shared_core.md`](moon/roadmaps/shared_core.md) lands |
+| CMake | Shared core (planned) | 3.24+ | Build system for the C++ core, matching this org's `base/`-module convention |
 | Python | `docs/mkdocs.yml` (local `mkdocs serve` only) | 3.11+ | Pinned via root `pyproject.toml` (`mkdocs-material`) — install with `pip install .` |
 
 ---
@@ -52,9 +53,10 @@
 - `docs/website/vue/package.json` uses `^` (caret) ranges for all dependencies — Vue, Vue Router, `markdown-it` and its plugins, `highlight.js`, `mermaid`, and KaTeX are all still pre-1.0-breakage-sensitive enough that patch/minor bumps should go through the normal `npm update` + test cycle rather than being pinned exact.
 - A future second JS/TS package just needs adding to the root `package.json`'s `workspaces` array — the lockfile and `node_modules` hoisting are automatic.
 
-### Rust (planned — `Cargo.lock`)
+### C++ (planned — CMake + vcpkg)
 
-- Once the shared core lands, `Cargo.lock` will be committed for the workspace, per this org's standard binary/library-with-FFI-boundary convention. `Cargo.toml` will use `^` (caret) requirements; UniFFI's generated bindings are sensitive to the `uniffi` crate's minor version matching exactly between the Rust side and the generated Kotlin/Swift — pin `uniffi` itself with `=` once adopted.
+- Once the shared core lands, dependencies (EnTT, FlatBuffers, the test/benchmark toolchain) will be declared in a `vcpkg.json` manifest with a pinned `vcpkg-configuration.json` `builtin-baseline`, both committed — vcpkg's manifest mode is this project's equivalent of a lockfile. `CMakeLists.txt` will consume them via `find_package`, matching this org's `base/`-module convention.
+- The hand-written C ABI shim between the C++ core and its JNI (Android) / Swift-C++-interop (iOS) bindings is the sensitive-version-matching surface UniFFI's generated bindings would have been in a Rust core — bump the C++ core and both platforms' bindings together in the same PR, and treat any ABI-breaking change (struct layout, function signature) as requiring a version bump in the shim's own header comment.
 
 ---
 
@@ -119,6 +121,7 @@ Once approved: add to the correct manifest (`gradle/libs.versions.toml`, `docs/w
 - `mermaid` and `katex` are both lazy-loaded per-page (dynamic `import()`), not bundled into the initial chunk — keep new heavy rendering dependencies lazy the same way rather than adding to the main bundle's parse/execute cost.
 - `highlight.js`'s language grammars are registered individually (`highlight.js/lib/core` + explicit `registerLanguage` calls) rather than importing the "all languages" bundle, to keep the bundle small — add a new language registration rather than switching to the full bundle.
 
-### Shared Rust core (planned)
+### Shared C++ core (planned)
 
-- `hecs` and `rkyv` are the decided choices per [`shared_core.md`](moon/roadmaps/shared_core.md) and the underlying research in [`research/Multiplayer Tower Defense Implementation.md`](research/Multiplayer%20Tower%20Defense%20Implementation.md) — don't introduce a competing ECS or serialization crate without a new ADR superseding that decision.
+- EnTT and FlatBuffers are the decided choices per [`shared_core.md`](moon/roadmaps/shared_core.md) — don't introduce a competing ECS or serialization library without a new ADR superseding that decision. (The underlying research in [`research/Multiplayer Tower Defense Implementation.md`](research/Multiplayer%20Tower%20Defense%20Implementation.md) explored a Rust/`hecs`/`rkyv`/UniFFI approach; `shared_core.md` records why this org's C++ standardization was chosen instead.)
+- New third-party C++ dependencies go through vcpkg's own registry where possible — vendoring or a git submodule is a last resort, since it bypasses the `vcpkg.json` manifest's reproducibility.

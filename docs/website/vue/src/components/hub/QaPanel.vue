@@ -16,7 +16,7 @@ const logs = computed(() =>
       ]
     : [
         "[SYSTEM] Profiling diagnostics...",
-        "[FFI] UniFFI byte transfer checks completed.",
+        "[FFI] JNI/Swift-C++-interop byte transfer checks completed.",
         `[SYSTEM] Delta packets: OK. Jitter: ${jitter.value}ms.`,
       ]
 );
@@ -28,7 +28,7 @@ const logs = computed(() =>
       <div class="panel glass">
         <h2>Automated Headless Audits &amp; Diagnostics</h2>
         <p>
-          Headless Rust simulation passes run stress tests checking for Behavior Tree coordinate drifts, FFI
+          Headless C++ simulation passes run stress tests checking for Behavior Tree coordinate drifts, FFI
           boundary leakages, and network sync bounds.
         </p>
         <div class="panel-dark profile-panel" style="margin-top: 1.5rem">

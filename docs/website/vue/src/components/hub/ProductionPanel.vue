@@ -20,12 +20,12 @@ const sprints: Record<number, Sprint> = {
     deps: "Base platform templates integration.",
   },
   2: {
-    title: "Sprint 2: Rust Simulation Core & ECS",
+    title: "Sprint 2: C++ Simulation Core & ECS",
     timeline: "Weeks 5-6 (Phase 2)",
     goals: [
-      "Build headless simulation engine using the Rust hecs ECS crate.",
-      "Expose simulation controls through UniFFI FFI bindings.",
-      "Write zero-copy binary state serializers using the rkyv format.",
+      "Build headless simulation engine using the C++ EnTT ECS library.",
+      "Expose simulation controls through JNI (Android) and Swift C++ interop (iOS) bindings.",
+      "Write zero-copy binary state serializers using FlatBuffers.",
     ],
     deps: "Completed FFI bindings mapping schemas.",
   },
@@ -37,7 +37,7 @@ const sprints: Record<number, Sprint> = {
       "Define latency-graduated matchmaking rules inside AWS GameLift FlexMatch.",
       "Build automatic fallback protocols for Spot Instance expirations.",
     ],
-    deps: "Completed Rust core binary serialization schemas.",
+    deps: "Completed C++ core binary serialization schemas.",
   },
   4: {
     title: "Sprint 4: ML PCG Systems & Personalization",

@@ -4,7 +4,7 @@
 [![Android](https://img.shields.io/badge/Android-API_24%2B-3DDC84?logo=android&logoColor=white)](https://developer.android.com/)
 [![Swift](https://img.shields.io/badge/Swift-5.0-F05138?logo=swift&logoColor=white)](https://swift.org/)
 [![iOS](https://img.shields.io/badge/iOS-16%2B-000000?logo=apple&logoColor=white)](https://developer.apple.com/ios/)
-[![Rust](https://img.shields.io/badge/Rust-Shared_Core_(planned)-000000?logo=rust&logoColor=white)](https://www.rust-lang.org/)
+[![C++](https://img.shields.io/badge/C%2B%2B20-Shared_Core_(planned)-00599C?logo=cplusplus&logoColor=white)](https://isocpp.org/)
 
 > **Version**: 4.0
 > **Date**: 2026-08-06
@@ -30,7 +30,7 @@ Status markers: ✅ Done · 🚧 In Progress · 📋 Pending
 | **Core loop** | Grid-based tower defense spanning land and sea: deploy Ming Garrison Spearmen, Fo-lang-ji Cannon Crews, Portuguese Arquebusiers, and Veteran Commander heroes along Flow-Field-routed land and naval raid lanes | Market Research §"Technical Underpinnings"; Multiplayer TD Implementation §"Flow Fields" |
 | **Meta-game** | Coastal-territory light-4X layer over a persistent map; synchronous and asynchronous Co-Op defense of shared strongholds | Market Research §"4X Strategy and Tower Defense Fusion" |
 | **Monetization** | Gacha hero-commander banners (Performance Expectancy), cosmetics/skins (Hedonic Motivation), faction-contribution premium currency (Social Influence), frictionless battle pass — Kompu-Gacha-compliant probability disclosure from day one | Market Research §"UTAUT3"; §"Regulatory Pressures" |
-| **Shared core** | Rust simulation core (ECS via `hecs`), bridged to Kotlin/Swift via UniFFI, `rkyv` zero-copy state serialization | Multiplayer TD Implementation §"Rust and UniFFI Paradigm", §"ECS", §"Zero-Copy Serialization" — supersedes the "stay documentation-only" default in [`shared_core.md`](roadmaps/shared_core.md) |
+| **Shared core** | C++20 simulation core (ECS via EnTT), bridged to Kotlin/Swift via JNI/Swift C++ interop, FlatBuffers zero-copy state serialization | Multiplayer TD Implementation §"ECS", §"Zero-Copy Serialization" (originally researched a Rust/UniFFI approach — see [`shared_core.md`](roadmaps/shared_core.md) for why C++ was chosen instead) — supersedes the "stay documentation-only" default |
 | **Multiplayer** | Server-authoritative state sync with client-side prediction/reconciliation; AWS GameLift + FlexMatch for latency-optimized matchmaking and fleet orchestration | Multiplayer TD Implementation §"Server-Authoritative State Synchronization", §"Matchmaking and Fleet Orchestration" |
 | **Procedural content / AI** | Wave Function Collapse for siege-map generation; RL-driven dynamic difficulty adjustment; Contextual Multi-Armed Bandits for offer personalization; survival-analysis churn/LTV modeling | Multiplayer TD Implementation §"Algorithmic PCG", §"Dynamic Difficulty Adjustment", §"Optimizing Monetization and Player Retention" |
 
@@ -40,7 +40,7 @@ Status markers: ✅ Done · 🚧 In Progress · 📋 Pending
 | --- | --- | --- |
 | 0 | Template scaffolding (two native clients, CI/CD, docs, agent tooling) | ✅ Done |
 | 1 | Single-player Wōkòu-era TD core loop (MVP), per-platform | 🚧 In Progress |
-| 2 | Shared Rust simulation core (ECS + UniFFI), replacing per-platform duplicated engine logic | 📋 Pending |
+| 2 | Shared C++ simulation core (ECS + JNI/Swift C++ interop), replacing per-platform duplicated engine logic | 📋 Pending |
 | 3 | Meta-progression: gacha commanders, clan/territory layer, monetization, LiveOps foundations | 📋 Pending |
 | 4 | Server-authoritative Co-Op multiplayer + matchmaking (GameLift/FlexMatch) | 📋 Pending |
 | 5 | Procedural content & ML systems (WFC maps, RL difficulty, CMAB offers, churn prediction) | 📋 Pending |
@@ -56,7 +56,7 @@ See per-topic detail in [`docs/moon/roadmaps/`](roadmaps/):
 - [`ai_systems.md`](roadmaps/ai_systems.md) — Wave Function Collapse procgen, RL dynamic difficulty, CMAB monetization, churn/LTV modeling
 - [`qa_testing.md`](roadmaps/qa_testing.md) — determinism/netcode testing, device coverage, retention benchmarks
 - [`ios.md`](roadmaps/ios.md) — iOS-specific client work
-- [`shared_core.md`](roadmaps/shared_core.md) — Rust/UniFFI shared-core architecture decision (superseded default, now Option B)
+- [`shared_core.md`](roadmaps/shared_core.md) — C++ shared-core architecture decision (superseded default, now Option B)
 
 Completed items move to [`docs/moon/CHANGELOG.md`](CHANGELOG.md).
 

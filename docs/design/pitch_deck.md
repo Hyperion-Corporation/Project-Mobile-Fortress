@@ -38,13 +38,13 @@ Mobile Fortress targets three core mobile player segments:
 Mobile Fortress leverages cutting-edge game development technologies to create a high-performance, responsive simulation:
 
 ### 3.1 Low-CPU Dijkstra Flow-Field Pathfinding (Land + Naval)
-Standard pathfinders choke when moving hundreds of entities on mobile CPUs across both land lanes and coastal waters. Our shared Rust core computes optimal vectors once per grid, keeping calculation costs at $O(1)$ regardless of entity size.
+Standard pathfinders choke when moving hundreds of entities on mobile CPUs across both land lanes and coastal waters. Our shared C++ core computes optimal vectors once per grid, keeping calculation costs at $O(1)$ regardless of entity size.
 
 ### 3.2 Offline Adversarial DDA
 Instead of inflating enemy HP pools, a background Competitive RL agent plays against a clone of the player's strategy, deploying custom wave counters (land raider surges, naval flanking runs) to maintain high strategic tension.
 
-### 3.3 Zero-Overhead UniFFI Rust Core
-Bypasses cross-platform engine overhead by running a headless simulation core in Rust, communicating via zero-copy binary serialization with native Kotlin and Swift UI shells.
+### 3.3 Zero-Overhead C++ Core, Zero-Copy Bindings
+Bypasses cross-platform engine overhead by running a headless simulation core in C++, communicating via zero-copy FlatBuffers serialization with native Kotlin and Swift UI shells.
 
 ---
 *Document Version: 3.0*  

@@ -1,38 +1,39 @@
 # Technical Design Document (TDD): Mobile Fortress
-*Headless Rust Core, UniFFI Bindings, rkyv Serialization, and Flow-Field Pathfinding*
+*Headless C++ Core, JNI/Swift-C++-Interop Bindings, FlatBuffers Serialization, and Flow-Field Pathfinding*
 
 ---
 
 ## 1. System Architecture
 
-Mobile Fortress uses a cross-platform architectural model: presentation layers are native for maximum UX fidelity, while game simulation, pathfinding, and economics are unified in a headless Rust core.
+Mobile Fortress uses a cross-platform architectural model: presentation layers are native for maximum UX fidelity, while game simulation, pathfinding, and economics are unified in a headless C++ core.
 
 ```mermaid
 graph TD
-    A[Android Client: Compose/SurfaceView] -->|FFI via UniFFI| B[Shared Rust Simulation Core]
-    C[iOS Client: SwiftUI/SpriteKit] -->|FFI via UniFFI| B
-    B -->|ECS Simulation| D[hecs ECS Engine]
+    A[Android Client: Compose/SurfaceView] -->|FFI via JNI| B[Shared C++ Simulation Core]
+    C[iOS Client: SwiftUI/SpriteKit] -->|FFI via Swift C++ Interop| B
+    B -->|ECS Simulation| D[EnTT ECS Engine]
     B -->|Pathfinding| E[Flow Field Engine]
-    B -->|Serialization| F[rkyv Opaque Buffer]
+    B -->|Serialization| F[FlatBuffers Zero-Copy Buffer]
 ```
 
 ### 1.1 Core Components
-1.  **Shared Rust Simulation Core (`core/`)**:
-    *   Written in Rust, exposing a pure C-ABI FFI.
-    *   Implements the Entity-Component-System (ECS) pattern using the `hecs` crate.
+1.  **Shared C++ Simulation Core (`core/`)**:
+    *   Written in C++20, exposing a hand-written C ABI shim.
+    *   Implements the Entity-Component-System (ECS) pattern using the [EnTT](https://github.com/skypjack/entt) library.
     *   Governs all game state modifications, wave progress, collision tracking, and path updates.
-2.  **UniFFI Scaffolding**:
-    *   Generates idiomatic Kotlin bindings for Android and Swift bindings for iOS.
+2.  **JNI (Android) / Swift C++ Interop (iOS) Bindings**:
+    *   Android calls into the core through hand-written JNI wrappers over the C ABI shim.
+    *   iOS calls into the core through Swift's native C++ interoperability, falling back to an Objective-C++ shim for anything Swift can't import directly.
     *   Enables cross-boundary calls and callbacks.
-3.  **Zero-Copy Serialization (`rkyv`)**:
+3.  **Zero-Copy Serialization (FlatBuffers)**:
     *   Encodes state changes into dense binary byte arrays.
-    *   Clients traverse the `RustBuffer` without allocation, eliminating parsing overhead.
+    *   Clients traverse the FlatBuffers-backed buffer without allocation, eliminating parsing overhead.
 
 ---
 
 ## 2. Dynamic Flow-Field Pathfinding
 
-To navigate hundreds of dynamic entities on mobile CPU threads, the Rust core runs a vector gradient pathfinder:
+To navigate hundreds of dynamic entities on mobile CPU threads, the C++ core runs a vector gradient pathfinder:
 
 ### 2.1 Dijkstra Cost Map
 *   Terrain tiles are mapped to costs: open path ($1.0$), difficult zone — mudflat/shoal ($2.5$), blockage ($\infty$).
@@ -58,5 +59,5 @@ Mobile Fortress features a **Server-Authoritative State Synchronization** model:
 *   If a termination warning is issued, GameLift placement queues divert new sessions to backup On-Demand fleets, and active matches are allowed a 2-minute clean migration window.
 
 ---
-*Document Version: 2.0*  
+*Document Version: 2.1*  
 *Authoritative Reference: docs/design/game_design_document.md*

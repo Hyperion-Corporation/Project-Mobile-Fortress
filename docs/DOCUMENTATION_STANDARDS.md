@@ -37,7 +37,7 @@ Every new public class/function under `android/app/src/main/java/com/acfharbinge
  *
  * Runs a single grid-wide Dijkstra pass from the goal cell outward — see
  * [docs/moon/roadmaps/gameplay.md] for the algorithm this mirrors from the
- * planned Rust core. Safe to call every frame a placement changes; it is
+ * planned C++ core. Safe to call every frame a placement changes; it is
  * *not* safe to call from the render path (see [game_loop_performance.md]).
  *
  * @param grid the current traversal-cost grid, mutated in place.
