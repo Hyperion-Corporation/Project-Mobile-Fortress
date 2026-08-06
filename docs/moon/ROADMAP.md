@@ -68,7 +68,7 @@ Completed items move to [`docs/moon/CHANGELOG.md`](CHANGELOG.md).
 | --- | --- | --- | --- |
 | T1 | Root scaffolding: LICENSE, README, `.pre-commit-config.yaml`, `.gitignore` | S | ✅ Done |
 | T2 | `.github/` CI/CD: workflows, issue/PR templates, dependabot | M | ✅ Done |
-| T3 | `docs/` documentation portal: MkDocs, ADRs | M | ✅ Done |
+| T3 | Unified Vue documentation and interactive design portal, including ADRs, roadmaps, design documents, codebase guides, research, and `gh-pages` deployment | M | ✅ Done |
 | T4 | `moon/` roadmap and changelog | S | ✅ Done |
 | T5 | `infra/{docker,k8s,helm,terraform,ansible}/` optional backend scaffolding | M | ✅ Done |
 | T6 | `.agent/` LLM coding-agent scaffolding | M | ✅ Done |

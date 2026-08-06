@@ -6,6 +6,8 @@ on:
     branches: [main]
     paths:
       - "docs/**"
+      - "**/*.md"
+      - ".github/workflows/docs.yml"
 
 permissions:
   contents: write
@@ -23,17 +25,20 @@ jobs:
       # docs/website is a static Vue 3 SPA (CDN build, no bundler/npm step)
       # that fetches its documentation pages as raw markdown at runtime.
       # Assemble the publish artifact: the app itself at the root, plus a
-      # content/ mirror of every docs/**/*.md source file (excluding the
-      # app's own docs/website/) for it to fetch.
+      # content/ mirror of the repository's tracked Markdown documentation
+      # (excluding the app itself) for it to fetch without losing the source
+      # paths used by relative links.
       - name: Assemble site
         run: |
           set -euo pipefail
-          rm -rf gh-pages-out
           mkdir -p gh-pages-out gh-pages-out/content
           cp -r docs/website/. gh-pages-out/
-          rsync -a --prune-empty-dirs \
-            --include='*/' --include='*.md' --exclude='website/**' --exclude='*' \
-            docs/ gh-pages-out/content/
+          while IFS= read -r -d '' source; do
+            case "$source" in
+              docs/website/*) continue ;;
+            esac
+            install -D "$source" "gh-pages-out/content/$source"
+          done < <(git ls-files -z '*.md')
           touch gh-pages-out/.nojekyll
 
       - name: Deploy to gh-pages branch
