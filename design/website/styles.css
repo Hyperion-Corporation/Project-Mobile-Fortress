@@ -7,21 +7,23 @@
 }
 
 :root {
-    --bg-dark: #08090c;
-    --bg-panel: rgba(22, 25, 34, 0.7);
-    --bg-panel-solid: #161922;
+    --bg-dark: #07090e;
+    --bg-panel: rgba(14, 18, 29, 0.75);
+    --bg-panel-solid: #0e121d;
     --border-color: rgba(255, 255, 255, 0.08);
     --border-hover: rgba(255, 255, 255, 0.18);
-    --accent-crimson: #d90429;
-    --accent-crimson-glow: rgba(217, 4, 41, 0.4);
-    --accent-gold: #f4d35e;
-    --accent-gold-glow: rgba(244, 211, 94, 0.3);
-    --accent-pink: #ff758f;
-    --accent-pink-glow: rgba(255, 117, 143, 0.3);
+    --accent-blue: #0077b6;
+    --accent-blue-glow: rgba(0, 119, 182, 0.4);
+    --accent-green: #38b000;
+    --accent-green-glow: rgba(56, 176, 0, 0.4);
+    --accent-gold: #ffb703;
+    --accent-gold-glow: rgba(255, 183, 3, 0.3);
+    --accent-red: #d90429;
+    --accent-red-glow: rgba(217, 4, 41, 0.4);
     --text-primary: #f8f9fa;
     --text-secondary: #adb5bd;
     --text-muted: #6c757d;
-    --glass-blur: 12px;
+    --glass-blur: 14px;
 }
 
 body.dark-theme {
@@ -33,7 +35,7 @@ body.dark-theme {
     min-height: 100vh;
 }
 
-/* --- Blossoms Canvas --- */
+/* --- Confetti / Turf Canvas --- */
 #blossoms-canvas {
     position: fixed;
     top: 0;
@@ -62,7 +64,7 @@ h1, h2, h3, h4 {
     align-items: center;
     padding: 1.5rem 5%;
     z-index: 100;
-    background: rgba(8, 9, 12, 0.85);
+    background: rgba(7, 9, 14, 0.85);
     backdrop-filter: blur(8px);
     border-bottom: 1px solid var(--border-color);
 }
@@ -82,7 +84,7 @@ h1, h2, h3, h4 {
 
 .sengoku-tag {
     font-size: 0.75rem;
-    color: var(--accent-crimson);
+    color: var(--accent-green);
     letter-spacing: 4px;
     font-weight: bold;
     margin-top: -2px;
@@ -110,7 +112,7 @@ h1, h2, h3, h4 {
     left: 0;
     width: 0;
     height: 2px;
-    background-color: var(--accent-crimson);
+    background-color: var(--accent-green);
     transition: width 0.3s ease;
 }
 
@@ -143,7 +145,7 @@ h1, h2, h3, h4 {
 }
 
 .panel-dark {
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(0, 0, 0, 0.45);
     border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 1.5rem;
@@ -157,7 +159,7 @@ h1, h2, h3, h4 {
 /* --- Hero Section --- */
 .hero-section {
     position: relative;
-    min-height: 80vh;
+    min-height: 75vh;
     display: grid;
     grid-template-columns: 1.2fr 1fr;
     align-items: center;
@@ -173,7 +175,7 @@ h1, h2, h3, h4 {
 }
 
 .badge {
-    background: var(--accent-crimson);
+    background: var(--accent-green);
     color: white;
     font-size: 0.75rem;
     font-weight: 800;
@@ -181,7 +183,7 @@ h1, h2, h3, h4 {
     border-radius: 50px;
     letter-spacing: 1px;
     margin-bottom: 1.5rem;
-    box-shadow: 0 0 15px var(--accent-crimson-glow);
+    box-shadow: 0 0 15px var(--accent-green-glow);
 }
 
 .badge-success {
@@ -191,7 +193,7 @@ h1, h2, h3, h4 {
 }
 
 .hero-section h1 {
-    font-size: 3.5rem;
+    font-size: 3.2rem;
     line-height: 1.1;
     margin-bottom: 1.5rem;
     text-shadow: 0 2px 10px rgba(0,0,0,0.8);
@@ -223,14 +225,14 @@ h1, h2, h3, h4 {
 }
 
 .btn-primary {
-    background-color: var(--accent-crimson);
+    background-color: var(--accent-green);
     color: var(--text-primary);
-    box-shadow: 0 4px 15px var(--accent-crimson-glow);
+    box-shadow: 0 4px 15px var(--accent-green-glow);
 }
 
 .btn-primary:hover {
     transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(217, 4, 41, 0.6);
+    box-shadow: 0 6px 20px rgba(56, 176, 0, 0.6);
 }
 
 .btn-secondary {
@@ -270,10 +272,10 @@ h1, h2, h3, h4 {
 }
 
 .btn-tool.active {
-    background: rgba(255, 117, 143, 0.15);
-    border-color: var(--accent-pink);
+    background: rgba(0, 119, 182, 0.15);
+    border-color: var(--accent-blue);
     color: var(--text-primary);
-    box-shadow: 0 0 10px rgba(255, 117, 143, 0.2);
+    box-shadow: 0 0 10px rgba(0, 119, 182, 0.2);
 }
 
 /* --- Hero Image --- */
@@ -304,7 +306,7 @@ h1, h2, h3, h4 {
 
 .grid-3-col {
     display: grid;
-    grid-template-columns: 1fr 2fr;
+    grid-template-columns: 1.1fr 2fr;
     gap: 2rem;
 }
 
@@ -330,7 +332,7 @@ h1, h2, h3, h4 {
 
 .tabs-header {
     display: flex;
-    gap: 1rem;
+    gap: 0.8rem;
     margin-bottom: 2rem;
     border-bottom: 1px solid var(--border-color);
     padding-bottom: 1rem;
@@ -340,9 +342,9 @@ h1, h2, h3, h4 {
     background: transparent;
     border: none;
     color: var(--text-secondary);
-    padding: 0.8rem 1.5rem;
+    padding: 0.8rem 1.2rem;
     font-family: 'Cinzel', serif;
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -359,8 +361,8 @@ h1, h2, h3, h4 {
 
 .tab-btn.active {
     color: var(--accent-gold);
-    background: rgba(244, 211, 94, 0.08);
-    box-shadow: inset 0 0 10px rgba(244, 211, 94, 0.1);
+    background: rgba(255, 183, 3, 0.08);
+    box-shadow: inset 0 0 10px rgba(255, 183, 3, 0.1);
 }
 
 .tabs-content {
@@ -381,365 +383,197 @@ h1, h2, h3, h4 {
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* --- Tab 1: Vision - Defender Cards --- */
-.unit-cards-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-}
-
-.unit-card {
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 1.2rem;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    text-align: center;
-}
-
-.unit-card:hover {
-    transform: translateY(-5px);
-    border-color: var(--accent-pink);
-    background: rgba(255, 117, 143, 0.05);
-}
-
-.unit-icon {
-    font-size: 2.2rem;
-    margin-bottom: 0.5rem;
-}
-
-.unit-role {
-    font-size: 0.8rem;
-    color: var(--accent-pink);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-weight: 600;
-}
-
-.unit-details {
-    min-height: 120px;
-    transition: all 0.3s ease;
-}
-
-.quote-box {
-    border-left: 4px solid var(--accent-crimson);
-    padding-left: 1.5rem;
-    margin-top: 1.5rem;
-    font-style: italic;
-    color: var(--text-secondary);
-}
-
-.quote-author {
-    display: block;
-    font-size: 0.85rem;
-    color: var(--text-muted);
-    margin-top: 0.5rem;
-    font-style: normal;
-}
-
-/* --- Tab 2: Flow Field Simulator --- */
-.grid-simulator-container {
+/* --- Tab 1: Design - Soccer Pitch Map --- */
+.pitch-container {
     width: 100%;
     display: flex;
-    flex-direction: column;
-    align-items: center;
+    justify-content: center;
+    padding: 1rem;
 }
 
-.legend-bar {
-    display: flex;
-    gap: 1.5rem;
-    margin-bottom: 1.5rem;
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-    background: rgba(0,0,0,0.2);
-    padding: 0.5rem 1.5rem;
-    border-radius: 20px;
-    border: 1px solid var(--border-color);
-}
-
-.simulator-grid {
+.pitch-grid {
     display: grid;
     grid-template-columns: repeat(12, 1fr);
-    grid-template-rows: repeat(12, 1fr);
+    grid-template-rows: repeat(8, 1fr);
     gap: 2px;
-    width: 460px;
-    height: 460px;
-    background: rgba(255,255,255,0.05);
-    border: 3px solid rgba(0,0,0,0.5);
+    width: 100%;
+    max-width: 580px;
+    aspect-ratio: 1.5;
+    background: linear-gradient(135deg, #134e0a 0%, #0a2f05 100%);
+    border: 4px solid rgba(255, 255, 255, 0.4);
+    box-shadow: inset 0 0 40px rgba(0,0,0,0.6);
     border-radius: 8px;
-    padding: 3px;
+    padding: 4px;
     position: relative;
+    overflow: hidden;
 }
 
-.grid-cell {
-    background-color: rgba(22, 25, 34, 0.95);
-    aspect-ratio: 1;
+/* Draws soccer pitch line markers using CSS */
+.pitch-grid::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 2px;
+    background: rgba(255,255,255,0.3);
+    pointer-events: none;
+}
+
+.pitch-grid::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 80px;
+    height: 80px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
+.pitch-cell {
+    background-color: rgba(255,255,255,0.01);
+    border-radius: 2px;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 0.85rem;
     cursor: pointer;
-    user-select: none;
-    transition: background-color 0.2s ease, transform 0.1s ease;
-    border-radius: 2px;
-    color: rgba(255,255,255,0.15);
-    position: relative;
-}
-
-.grid-cell:hover {
-    background-color: rgba(255, 117, 143, 0.15);
-}
-
-.grid-cell.cell-spawn {
-    background-color: #1d3557;
-    color: white;
-}
-
-.grid-cell.cell-keep {
-    background-color: #c77dff;
-    color: white;
-    animation: pulseKeep 2s infinite alternate;
-}
-
-@keyframes pulseKeep {
-    0% { box-shadow: inset 0 0 10px rgba(199, 125, 255, 0.5); }
-    100% { box-shadow: inset 0 0 20px rgba(199, 125, 255, 0.9); }
-}
-
-.grid-cell.cell-wall {
-    background-color: #2b2d42;
-    border: 1px solid #8d99ae;
-    color: transparent;
-}
-
-.grid-cell.cell-swamp {
-    background-color: #386641;
-    border: 1px solid #6a994e;
-    color: transparent;
-}
-
-.cell-arrow {
-    font-size: 0.8rem;
-    position: absolute;
-    pointer-events: none;
-}
-
-/* Enemy Dots */
-.enemy-dot {
-    position: absolute;
-    width: 10px;
-    height: 10px;
-    background-color: var(--accent-crimson);
-    border-radius: 50%;
-    box-shadow: 0 0 8px var(--accent-crimson-glow);
-    z-index: 20;
-    pointer-events: none;
-    transition: left 0.15s linear, top 0.15s linear;
-    transform: translate(-50%, -50%);
-}
-
-.control-group {
-    margin-bottom: 1.5rem;
-}
-
-.control-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 600;
-}
-
-.info-alert {
-    background: rgba(255, 255, 255, 0.02);
-    border-left: 3px solid var(--accent-pink);
-    padding: 0.8rem 1rem;
-    font-size: 0.8rem;
-    margin-top: 1.5rem;
-    color: var(--text-secondary);
-}
-
-.info-alert code {
-    display: block;
-    background: rgba(0,0,0,0.3);
-    padding: 0.2rem 0.5rem;
-    border-radius: 4px;
-    margin-top: 0.3rem;
-    font-family: monospace;
-}
-
-/* --- Tab 3: Adversarial DDA --- */
-.slider-panel {
-    margin-top: 1.5rem;
-}
-
-.slider-group {
-    margin-bottom: 1.2rem;
-}
-
-.slider-group label {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.9rem;
-    margin-bottom: 0.5rem;
-}
-
-.slider {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 100%;
-    height: 6px;
-    border-radius: 5px;
-    background: rgba(255,255,255,0.1);
-    outline: none;
-    transition: background .3s;
-}
-
-.slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background: var(--accent-crimson);
-    cursor: pointer;
-    box-shadow: 0 0 10px var(--accent-crimson-glow);
-    transition: transform 0.1s ease;
-}
-
-.slider::-webkit-slider-thumb:hover {
-    transform: scale(1.2);
-}
-
-.dda-status-box {
-    width: 100%;
-    padding: 1.5rem;
-}
-
-.dda-bar {
-    margin-bottom: 1.5rem;
-}
-
-.dda-bar span {
-    display: block;
-    font-size: 0.9rem;
-    margin-bottom: 0.4rem;
-}
-
-.progress-container {
-    width: 100%;
-    background-color: rgba(255, 255, 255, 0.05);
-    border-radius: 50px;
-    overflow: hidden;
-    border: 1px solid var(--border-color);
-}
-
-.progress-bar {
-    text-align: right;
-    padding-right: 10px;
-    font-size: 0.75rem;
-    font-weight: 800;
-    color: white;
-    height: 20px;
-    line-height: 20px;
-    background-color: var(--accent-pink);
-    border-radius: 50px;
-    transition: width 0.5s ease;
-}
-
-.progress-bar.warning {
-    background-color: var(--accent-crimson);
-}
-
-.ai-speech {
-    margin-top: 2rem;
-    background: rgba(0,0,0,0.3);
-    border: 1px solid var(--border-color);
-    padding: 1.5rem;
-    border-radius: 8px;
-    position: relative;
-}
-
-.ai-speech strong {
-    color: var(--accent-pink);
-    font-family: 'Cinzel', serif;
-    display: block;
-    margin-bottom: 0.5rem;
-}
-
-.ai-speech p {
-    font-style: italic;
     font-size: 0.95rem;
-    color: var(--text-secondary);
-}
-
-/* --- Tab 4: Monetization (CMAB) --- */
-.recommended-card {
-    background: linear-gradient(135deg, rgba(30, 27, 24, 0.95) 0%, rgba(20, 20, 25, 0.95) 100%);
-    border: 2px solid var(--accent-gold);
-    border-radius: 12px;
-    padding: 2rem;
-    text-align: center;
-    box-shadow: 0 10px 30px rgba(244, 211, 94, 0.15);
-    margin-bottom: 1.5rem;
+    user-select: none;
     position: relative;
-    overflow: hidden;
-    transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+    transition: background-color 0.2s ease;
 }
 
-.recommended-card::before {
-    content: '';
+.pitch-cell:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+.pitch-cell.cell-defender {
+    color: var(--accent-red);
+    text-shadow: 0 0 10px var(--accent-red-glow);
+    font-weight: bold;
+}
+
+.pitch-cell.cell-attacker {
+    color: var(--accent-blue);
+    text-shadow: 0 0 10px var(--accent-blue-glow);
+    font-weight: bold;
+}
+
+.pitch-cell.cell-ball {
+    color: var(--text-primary);
+    font-size: 1.2rem;
+    animation: rotateBall 3s infinite linear;
+}
+
+@keyframes rotateBall {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.pass-viability-line {
     position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(244, 211, 94, 0.1) 0%, transparent 60%);
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent-blue) 0%, var(--accent-green) 100%);
+    box-shadow: 0 0 8px var(--accent-blue-glow);
+    transform-origin: 0 50%;
+    z-index: 5;
     pointer-events: none;
 }
 
-.recommended-card h3 {
-    margin: 1rem 0 0.5rem 0;
-    color: var(--text-primary);
-}
-
-.offer-price {
-    font-size: 2.2rem;
-    font-weight: 800;
-    color: var(--accent-gold);
-    margin: 1rem 0;
-}
-
-.bandit-math-details {
-    background: rgba(0,0,0,0.3);
+/* --- Tab 2: Tech - Behavior Tree Visualizer --- */
+.bt-visualizer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     padding: 1rem;
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
     width: 100%;
 }
 
-.bandit-math-details h5 {
-    color: var(--accent-gold);
-    margin-bottom: 0.5rem;
-    font-size: 0.85rem;
-    letter-spacing: 1px;
-}
-
-.bandit-math-details ul {
-    list-style: none;
+.bt-node {
+    background-color: rgba(0, 0, 0, 0.4);
+    border: 2px solid var(--border-color);
+    border-radius: 6px;
+    padding: 0.5rem 1.2rem;
     font-size: 0.8rem;
-    color: var(--text-secondary);
-}
-
-.bandit-math-details li {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 0.3rem;
-}
-
-.highlight {
-    color: var(--accent-gold);
     font-weight: bold;
+    color: var(--text-secondary);
+    transition: all 0.3s ease;
+}
+
+.bt-node.active {
+    border-color: var(--accent-gold);
+    color: var(--accent-gold);
+    box-shadow: 0 0 12px var(--accent-gold-glow);
+    background-color: rgba(255, 183, 3, 0.05);
+}
+
+.bt-connector {
+    color: var(--text-muted);
+    font-size: 1rem;
+    line-height: 1;
+    margin: 2px 0;
+}
+
+.bt-branches {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+    margin-top: 5px;
+    gap: 0.8rem;
+}
+
+.bt-branch-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    flex-grow: 1;
+}
+
+/* --- Tab 3: Audio - MetaSound Excitement Waveform --- */
+.audio-visualization-box {
+    width: 100%;
+    padding: 1.5rem;
+}
+
+.wave-visualizer-container {
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.4);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+    position: relative;
+}
+
+.audio-wave {
+    width: 90%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 10px;
+}
+
+.wave-bar {
+    width: 4px;
+    background-color: var(--accent-blue);
+    border-radius: 4px;
+    height: 10px;
+    transition: height 0.1s ease, background-color 0.3s ease;
+}
+
+.wave-bar.active-warn {
+    background-color: var(--accent-red);
+}
+
+.wave-bar.active-gold {
+    background-color: var(--accent-gold);
 }
 
 .math-formula {
@@ -753,7 +587,130 @@ h1, h2, h3, h4 {
     border: 1px solid var(--border-color);
 }
 
-/* --- Roadmap --- */
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    margin-bottom: 0.4rem;
+}
+
+.highlight {
+    color: var(--accent-gold);
+}
+
+.ai-speech {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--border-color);
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+.ai-speech strong {
+    color: var(--accent-green);
+    display: block;
+    font-size: 0.85rem;
+    margin-bottom: 0.3rem;
+}
+
+.ai-speech p {
+    font-style: italic;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+/* --- Tab 4: Production - Sprints Dashboard --- */
+.sprints-interactive-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 2rem;
+}
+
+.sprint-header-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.sprint-nav-btn {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    color: var(--text-secondary);
+    font-family: 'Cinzel', serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.3s ease;
+}
+
+.sprint-nav-btn:hover {
+    border-color: var(--border-hover);
+    color: var(--text-primary);
+}
+
+.sprint-nav-btn.active {
+    border-color: var(--accent-green);
+    background: rgba(56, 176, 0, 0.1);
+    color: var(--text-primary);
+    box-shadow: 0 0 10px rgba(56, 176, 0, 0.15);
+}
+
+.sprint-display-panel {
+    min-height: 250px;
+    animation: fadeIn 0.4s ease forwards;
+}
+
+.roadmap-list {
+    list-style: none;
+    font-size: 0.85rem;
+    margin-top: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.roadmap-list li {
+    position: relative;
+    padding-left: 20px;
+    margin-bottom: 0.5rem;
+}
+
+.roadmap-list li::before {
+    content: '✔';
+    position: absolute;
+    left: 0;
+    color: var(--accent-green);
+}
+
+/* --- Tab 5: QA - Net Sync Diagnostics --- */
+.alert-banner {
+    width: 100%;
+    padding: 0.8rem 1.5rem;
+    border-radius: 6px;
+    font-weight: bold;
+    text-align: center;
+    font-size: 0.85rem;
+    border: 1px solid rgba(255,255,255,0.05);
+    background: rgba(56, 176, 0, 0.2);
+    color: #e9f5db;
+    box-shadow: 0 0 10px rgba(56, 176, 0, 0.15);
+    transition: all 0.3s ease;
+}
+
+.alert-banner.warning {
+    background: rgba(217, 4, 41, 0.25);
+    color: #ffccd5;
+    box-shadow: 0 0 15px var(--accent-red-glow);
+    border-color: var(--accent-red);
+    animation: pulseWarn 1s infinite alternate;
+}
+
+@keyframes pulseWarn {
+    0% { transform: scale(1.0); }
+    100% { transform: scale(1.02); }
+}
+
+/* --- Roadmap Vertical Timeline --- */
 .roadmap-section {
     padding: 6rem 0;
 }
@@ -793,8 +750,8 @@ h1, h2, h3, h4 {
     width: 42px;
     height: 42px;
     background: var(--bg-dark);
-    border: 2px solid var(--accent-crimson);
-    color: var(--accent-crimson);
+    border: 2px solid var(--accent-green);
+    color: var(--accent-green);
     border-radius: 50%;
     display: flex;
     justify-content: center;
@@ -802,7 +759,7 @@ h1, h2, h3, h4 {
     font-family: 'Cinzel', serif;
     font-weight: bold;
     font-size: 1.1rem;
-    box-shadow: 0 0 10px var(--accent-crimson-glow);
+    box-shadow: 0 0 10px var(--accent-green-glow);
     z-index: 10;
 }
 
@@ -817,7 +774,7 @@ h1, h2, h3, h4 {
 .timeline-date {
     display: inline-block;
     font-size: 0.8rem;
-    color: var(--accent-pink);
+    color: var(--accent-green);
     font-weight: 700;
     margin-bottom: 0.8rem;
 }
@@ -834,7 +791,7 @@ h1, h2, h3, h4 {
     text-align: center;
     color: var(--text-muted);
     font-size: 0.9rem;
-    background-color: rgba(8, 9, 12, 0.95);
+    background-color: rgba(7, 9, 14, 0.95);
     z-index: 10;
     position: relative;
 }
@@ -845,111 +802,56 @@ h1, h2, h3, h4 {
 }
 
 .footer-link {
-    color: var(--accent-pink);
+    color: var(--accent-green);
     text-decoration: none;
-    border-bottom: 1px dashed var(--accent-pink);
+    border-bottom: 1px dashed var(--accent-green);
 }
 
 .footer-link:hover {
     color: var(--text-primary);
 }
 
-/* --- Tab 5: Mathematical Optimization (GA & ACO) --- */
-.stat-row {
+/* Sliders */
+.slider-panel {
+    margin-top: 1.5rem;
+}
+
+.slider-group {
+    margin-bottom: 1.2rem;
+}
+
+.slider-group label {
     display: flex;
     justify-content: space-between;
     font-size: 0.9rem;
-    margin-bottom: 0.4rem;
+    margin-bottom: 0.5rem;
 }
 
-.ga-cell {
-    background-color: rgba(22, 25, 34, 0.95);
-    aspect-ratio: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border-radius: 2px;
-    font-size: 0.65rem;
-}
-
-.ga-cell.ga-spawn {
-    background-color: #1d3557;
-    color: white;
-}
-
-.ga-cell.ga-keep {
-    background-color: #c77dff;
-    color: white;
-}
-
-.ga-cell.ga-wall {
-    background-color: var(--accent-crimson);
-    border: 1px solid rgba(255,255,255,0.2);
-}
-
-.ga-cell.ga-path {
-    background-color: rgba(244, 211, 94, 0.15);
-    border: 1px dashed var(--accent-gold);
-}
-
-.aco-node {
-    position: absolute;
-    width: 44px;
-    height: 44px;
-    background-color: rgba(22, 25, 34, 0.95);
-    border: 2px solid var(--text-secondary);
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 0.65rem;
-    font-weight: bold;
-    color: var(--text-primary);
-    cursor: pointer;
-    transform: translate(-50%, -50%);
-    transition: all 0.3s ease;
-    box-shadow: 0 0 10px rgba(0,0,0,0.5);
-    z-index: 10;
-}
-
-.aco-node.node-kyoto {
-    background-color: #1d3557;
-    border-color: #457b9d;
-}
-
-.aco-node.node-echigo {
-    background-color: #c77dff;
-    border-color: #e0aaff;
-}
-
-.aco-node.node-threat {
-    border-color: var(--accent-crimson);
-    box-shadow: 0 0 15px var(--accent-crimson-glow);
-    background-color: rgba(217, 4, 41, 0.25);
-}
-
-.aco-node:hover {
-    transform: translate(-50%, -50%) scale(1.1);
-}
-
-.aco-node.node-threat::after {
-    content: '⚠️';
-    position: absolute;
-    top: -8px;
-    right: -8px;
-    font-size: 0.75rem;
-}
-
-.aco-ant-particle {
-    position: absolute;
-    width: 6px;
+.slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
     height: 6px;
-    background-color: var(--accent-gold);
+    border-radius: 5px;
+    background: rgba(255,255,255,0.1);
+    outline: none;
+    transition: background .3s;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
     border-radius: 50%;
-    box-shadow: 0 0 5px var(--accent-gold-glow);
-    z-index: 9;
-    pointer-events: none;
-    transform: translate(-50%, -50%);
+    background: var(--accent-green);
+    cursor: pointer;
+    box-shadow: 0 0 10px var(--accent-green-glow);
+    transition: transform 0.1s ease;
+}
+
+.slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
 }
 
 /* --- Responsive Adaptations --- */
@@ -964,7 +866,7 @@ h1, h2, h3, h4 {
         font-size: 2.8rem;
     }
     
-    .grid-2-col, .grid-3-col {
+    .grid-2-col, .grid-3-col, .sprints-interactive-grid {
         grid-template-columns: 1fr;
     }
     
@@ -988,10 +890,4 @@ h1, h2, h3, h4 {
         flex-wrap: wrap;
         justify-content: center;
     }
-    
-    .simulator-grid {
-        width: 320px;
-        height: 320px;
-    }
 }
-

@@ -1,12 +1,12 @@
 // --- Global App State & Event Listeners ---
 document.addEventListener("DOMContentLoaded", () => {
     initTabs();
-    initCherryBlossoms();
-    initUnitCards();
-    initFlowFieldSimulator();
-    initDdaSimulator();
-    initBanditSimulator();
-    initOptimizationSimulator();
+    initGrassConfettiBackground();
+    initSoccerPitch();
+    initBehaviorTree();
+    initAudioSimulator();
+    initSprintsRoadmap();
+    initQaSuite();
 });
 
 // --- Tab System ---
@@ -25,7 +25,6 @@ function initTabs() {
         });
     });
 
-    // Wires up the main navbar links to activate the corresponding tabs
     const navLinks = document.querySelectorAll(".nav-links a");
     navLinks.forEach(link => {
         link.addEventListener("click", (e) => {
@@ -35,25 +34,23 @@ function initTabs() {
                 navLinks.forEach(l => l.classList.remove("active"));
                 link.classList.add("active");
 
-                // Map navigation link targets to tabs
-                let tabTarget = "tab-vision";
-                if (href === "#gameplay") tabTarget = "tab-flowfield";
-                if (href === "#netcode") tabTarget = "tab-flowfield"; // Netcode tab uses the grid simulation
-                if (href === "#ai-ml") tabTarget = "tab-dda";
-                if (href === "#optimization") tabTarget = "tab-optimization";
+                let tabTarget = "tab-design";
+                if (href === "#tech") tabTarget = "tab-tech";
+                if (href === "#audio") tabTarget = "tab-audio";
+                if (href === "#production") tabTarget = "tab-production";
+                if (href === "#qa") tabTarget = "tab-qa";
 
                 const targetBtn = document.querySelector(`.tab-btn[data-target="${tabTarget}"]`);
                 if (targetBtn) targetBtn.click();
 
-                // Smooth scroll to tabs section
                 document.querySelector(".gdd-tabs-section").scrollIntoView({ behavior: "smooth" });
             }
         });
     });
 }
 
-// --- Falling Cherry Blossoms Particles ---
-function initCherryBlossoms() {
+// --- Dynamic Grass Particles Background ---
+function initGrassConfettiBackground() {
     const canvas = document.getElementById("blossoms-canvas");
     const ctx = canvas.getContext("2d");
 
@@ -65,30 +62,31 @@ function initCherryBlossoms() {
         height = canvas.height = window.innerHeight;
     });
 
-    const numPetals = 40;
-    const petals = [];
+    const numParticles = 30;
+    const particles = [];
 
-    class Petal {
+    class GrassFlake {
         constructor() {
             this.reset();
-            this.y = Math.random() * height; // Distribute initial petals vertically
+            this.y = Math.random() * height;
         }
 
         reset() {
             this.x = Math.random() * width;
             this.y = -20;
-            this.size = Math.random() * 8 + 6;
-            this.speedY = Math.random() * 1.5 + 0.8;
-            this.speedX = Math.random() * 1.5 - 0.5;
-            this.rotation = Math.random() * 360;
-            this.rotationSpeed = Math.random() * 1.5 - 0.75;
-            this.opacity = Math.random() * 0.4 + 0.3;
+            this.width = Math.random() * 3 + 2;
+            this.length = Math.random() * 12 + 6;
+            this.speedY = Math.random() * 1.2 + 0.6;
+            this.speedX = Math.random() * 1.0 - 0.5;
+            this.angle = Math.random() * Math.PI * 2;
+            this.spinSpeed = Math.random() * 0.05 - 0.025;
+            this.opacity = Math.random() * 0.2 + 0.1;
         }
 
         update() {
             this.y += this.speedY;
-            this.x += this.speedX + Math.sin(this.y / 30) * 0.5;
-            this.rotation += this.rotationSpeed;
+            this.x += this.speedX + Math.sin(this.y / 40) * 0.3;
+            this.angle += this.spinSpeed;
 
             if (this.y > height + 20 || this.x > width + 20 || this.x < -20) {
                 this.reset();
@@ -98,27 +96,25 @@ function initCherryBlossoms() {
         draw() {
             ctx.save();
             ctx.translate(this.x, this.y);
-            ctx.rotate((this.rotation * Math.PI) / 180);
+            ctx.rotate(this.angle);
             ctx.beginPath();
             
-            // Draw a cute cherry blossom shape
-            ctx.moveTo(0, 0);
-            ctx.bezierCurveTo(-this.size, -this.size / 2, -this.size / 2, -this.size * 1.5, 0, -this.size);
-            ctx.bezierCurveTo(this.size / 2, -this.size * 1.5, this.size, -this.size / 2, 0, 0);
+            // Draw a grass blade / confetti strand
+            ctx.rect(-this.width/2, -this.length/2, this.width, this.length);
             
-            ctx.fillStyle = `rgba(255, 183, 197, ${this.opacity})`;
+            ctx.fillStyle = `rgba(56, 176, 0, ${this.opacity})`;
             ctx.fill();
             ctx.restore();
         }
     }
 
-    for (let i = 0; i < numPetals; i++) {
-        petals.push(new Petal());
+    for (let i = 0; i < numParticles; i++) {
+        particles.push(new GrassFlake());
     }
 
     function animate() {
         ctx.clearRect(0, 0, width, height);
-        petals.forEach(p => {
+        particles.forEach(p => {
             p.update();
             p.draw();
         });
@@ -128,897 +124,533 @@ function initCherryBlossoms() {
     animate();
 }
 
-// --- Unit Showcase Panel ---
-const unitData = {
-    ashigaru: {
-        title: "Ashigaru Spearmen",
-        role: "Melee Blocker & Crowd Controller",
-        stats: "Health: 7/10 | Damage: 3/10 | Placement Cost: 25 Gold",
-        desc: "Equipped with long Yari spears, these conscripts are deployed directly onto paths. While their damage output is low, their spatial blockage alters flow field coordinates, directing incoming hordes into Matchlock gun lanes."
-    },
-    matchlock: {
-        title: "Matchlock Gunners",
-        role: "High-Caliber Piercing Ranged",
-        stats: "Health: 4/10 | Damage: 9/10 | Placement Cost: 75 Gold",
-        desc: "Introduced by Portuguese traders, Matchlocks deal critical piercing damage in a straight vector line. Requires placement along straight paths and corridors where enemies line up in the vector flow field."
-    },
-    samurai: {
-        title: "Samurai Hero",
-        role: "Mobile Champion",
-        stats: "Health: 9/10 | Damage: 8/10 | Placement Cost: 150 Gold",
-        desc: "Dynamic combat super-units. Samurai are not static towers; they can be commanded to run to any location on the map. Possess large sweeping melee attacks and a cooling ultimate cleave that cleanses defiled ground."
-    },
-    shaman: {
-        title: "Shaman Priestess",
-        role: "Purifier / Support",
-        stats: "Health: 5/10 | Damage: 4/10 | Placement Cost: 60 Gold",
-        desc: "Shamans purify surrounding tiles, reducing local corruption. Enemies traveling over purified tiles experience a 40% speed reduction and take holy damage over time, stabilizing defensive choke points."
-    }
-};
+// --- Interactive Soccer Pitch Simulator ---
+const PITCH_ROWS = 8;
+const PITCH_COLS = 12;
+let pitchGrid = [];
+let currentSoccerTool = "defender"; // "defender", "attacker", "ball"
+let ballPos = { r: 3, c: 3 };
 
-function initUnitCards() {
-    showUnitDetails("ashigaru"); // Set default unit display
+function initSoccerPitch() {
+    createSoccerPitch();
+    recalculatePassLanes();
 }
 
-function showUnitDetails(unitId) {
-    const box = document.getElementById("unit-detail-box");
-    const data = unitData[unitId];
+function createSoccerPitch() {
+    const pitchGridEl = document.getElementById("pitch-grid");
+    if (!pitchGridEl) return;
+    pitchGridEl.innerHTML = "";
+    pitchGrid = [];
 
-    // Fade effect during update
-    box.style.opacity = 0;
-    setTimeout(() => {
-        box.innerHTML = `
-            <h4 style="color: var(--accent-pink); margin-bottom: 0.3rem;">${data.title}</h4>
-            <strong style="font-size: 0.8rem; text-transform: uppercase; color: var(--accent-gold); display: block; margin-bottom: 0.5rem;">${data.role}</strong>
-            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">${data.stats}</p>
-            <p style="font-size: 0.9rem; line-height: 1.5; color: var(--text-secondary);">${data.desc}</p>
-        `;
-        box.style.opacity = 1;
-    }, 150);
-}
+    // Pre-populated actors
+    const initialActors = [
+        { r: 3, c: 3, type: "ball" },
+        { r: 2, c: 1, type: "defender" },
+        { r: 5, c: 2, type: "defender" },
+        { r: 5, c: 5, type: "attacker" },
+        { r: 1, c: 6, type: "attacker" }
+    ];
 
-// --- Interactive Flow Field Simulator ---
-const GRID_SIZE = 12;
-let grid = [];
-let currentTool = "wall"; // "wall", "swamp", "clear"
-const spawnPoints = [{x: 0, y: 0}, {x: 0, y: 11}, {x: 11, y: 0}];
-const keepPoint = {x: 5, y: 5};
-let activeEnemies = [];
-let simInterval = null;
-
-function initFlowFieldSimulator() {
-    createGrid();
-    recalculateFlowField();
-}
-
-function createGrid() {
-    const gridContainer = document.getElementById("sim-grid");
-    gridContainer.innerHTML = "";
-    grid = [];
-
-    for (let r = 0; r < GRID_SIZE; r++) {
-        grid[r] = [];
-        for (let c = 0; c < GRID_SIZE; c++) {
-            let isSpawn = spawnPoints.some(pt => pt.x === r && pt.y === c);
-            let isKeep = keepPoint.x === r && keepPoint.y === c;
+    for (let r = 0; r < PITCH_ROWS; r++) {
+        pitchGrid[r] = [];
+        for (let c = 0; c < PITCH_COLS; c++) {
+            let initial = initialActors.find(a => a.r === r && a.c === c);
+            let actorType = initial ? initial.type : "clear";
             
-            let cellType = "clear";
-            if (isKeep) cellType = "keep";
-            else if (isSpawn) cellType = "spawn";
-
-            grid[r][c] = {
-                row: r,
-                col: c,
-                type: cellType, // "clear", "wall", "swamp", "keep", "spawn"
-                cost: cellType === "swamp" ? 3.0 : (cellType === "wall" ? 99.0 : 1.0),
-                distance: 9999,
-                vector: {x: 0, y: 0}
-            };
+            pitchGrid[r][c] = { row: r, col: c, type: actorType };
 
             const cellEl = document.createElement("div");
-            cellEl.id = `cell-${r}-${c}`;
-            cellEl.className = "grid-cell";
-            if (isSpawn) cellEl.classList.add("cell-spawn");
-            if (isKeep) cellEl.classList.add("cell-keep");
+            cellEl.id = `pitch-cell-${r}-${c}`;
+            cellEl.className = "pitch-cell";
 
-            // Event listener for user interaction
-            cellEl.addEventListener("mousedown", () => handleCellClick(r, c));
-            gridContainer.appendChild(cellEl);
+            if (actorType === "defender") {
+                cellEl.classList.add("cell-defender");
+                cellEl.textContent = "🏃🔴";
+            } else if (actorType === "attacker") {
+                cellEl.classList.add("cell-attacker");
+                cellEl.textContent = "🏃🔵";
+            } else if (actorType === "ball") {
+                cellEl.classList.add("cell-ball");
+                cellEl.textContent = "⚽";
+                ballPos = { r: r, c: c };
+            }
+
+            cellEl.addEventListener("click", () => handlePitchCellClick(r, c));
+            pitchGridEl.appendChild(cellEl);
         }
     }
 }
 
-function setTool(toolName) {
-    currentTool = toolName;
+function setSoccerTool(toolName) {
+    currentSoccerTool = toolName;
     document.querySelectorAll(".btn-tool").forEach(btn => btn.classList.remove("active"));
     
-    let btnId = "tool-wall";
-    if (toolName === "swamp") btnId = "tool-swamp";
-    if (toolName === "clear") btnId = "tool-clear";
+    let btnId = "tool-defender";
+    if (toolName === "attacker") btnId = "tool-attacker";
+    if (toolName === "ball") btnId = "tool-ball";
     document.getElementById(btnId).classList.add("active");
 }
 
-function handleCellClick(r, c) {
-    // Avoid overriding Keep or Spawns
-    if (grid[r][c].type === "keep" || grid[r][c].type === "spawn") return;
+function handlePitchCellClick(r, c) {
+    const cellEl = document.getElementById(`pitch-cell-${r}-${c}`);
+    const previousType = pitchGrid[r][c].type;
 
-    const cellEl = document.getElementById(`cell-${r}-${c}`);
-    
-    if (currentTool === "wall") {
-        if (grid[r][c].type === "wall") {
-            grid[r][c].type = "clear";
-            grid[r][c].cost = 1.0;
-            cellEl.classList.remove("cell-wall");
-        } else {
-            grid[r][c].type = "wall";
-            grid[r][c].cost = 99.0;
-            cellEl.classList.remove("cell-swamp");
-            cellEl.classList.add("cell-wall");
-        }
-    } else if (currentTool === "swamp") {
-        if (grid[r][c].type === "swamp") {
-            grid[r][c].type = "clear";
-            grid[r][c].cost = 1.0;
-            cellEl.classList.remove("cell-swamp");
-        } else {
-            grid[r][c].type = "swamp";
-            grid[r][c].cost = 3.0;
-            cellEl.classList.remove("cell-wall");
-            cellEl.classList.add("cell-swamp");
-        }
-    } else if (currentTool === "clear") {
-        grid[r][c].type = "clear";
-        grid[r][c].cost = 1.0;
-        cellEl.classList.remove("cell-wall", "cell-swamp");
+    // Reset current element
+    if (previousType === "ball") {
+        // Can't delete ball, must move it
+        if (currentSoccerTool !== "ball") return;
     }
 
-    recalculateFlowField();
+    // Apply tool changes
+    if (currentSoccerTool === "defender") {
+        if (previousType === "defender") {
+            pitchGrid[r][c].type = "clear";
+            cellEl.classList.remove("cell-defender");
+            cellEl.textContent = "";
+        } else {
+            clearCell(r, c);
+            pitchGrid[r][c].type = "defender";
+            cellEl.classList.add("cell-defender");
+            cellEl.textContent = "🏃🔴";
+        }
+    } else if (currentSoccerTool === "attacker") {
+        if (previousType === "attacker") {
+            pitchGrid[r][c].type = "clear";
+            cellEl.classList.remove("cell-attacker");
+            cellEl.textContent = "";
+        } else {
+            clearCell(r, c);
+            pitchGrid[r][c].type = "attacker";
+            cellEl.classList.add("cell-attacker");
+            cellEl.textContent = "🏃🔵";
+        }
+    } else if (currentSoccerTool === "ball") {
+        // Remove previous ball representation
+        const prevBallEl = document.getElementById(`pitch-cell-${ballPos.r}-${ballPos.c}`);
+        if (prevBallEl) {
+            prevBallEl.classList.remove("cell-ball");
+            prevBallEl.textContent = "";
+            pitchGrid[ballPos.r][ballPos.c].type = "clear";
+        }
+
+        clearCell(r, c);
+        ballPos = { r: r, c: c };
+        pitchGrid[r][c].type = "ball";
+        cellEl.classList.add("cell-ball");
+        cellEl.textContent = "⚽";
+    }
+
+    recalculatePassLanes();
 }
 
-// Recalculates the Dijkstra distance fields and updates the vector arrows
-function recalculateFlowField() {
-    // 1. Reset distances
-    for (let r = 0; r < GRID_SIZE; r++) {
-        for (let c = 0; c < GRID_SIZE; c++) {
-            grid[r][c].distance = 9999;
-            grid[r][c].vector = {x: 0, y: 0};
-        }
-    }
+function clearCell(r, c) {
+    const el = document.getElementById(`pitch-cell-${r}-${c}`);
+    el.className = "pitch-cell";
+    el.textContent = "";
+    pitchGrid[r][c].type = "clear";
+}
 
-    // 2. Dijkstra Map evaluation using a simple queue BFS
-    let queue = [];
-    grid[keepPoint.x][keepPoint.y].distance = 0;
-    queue.push(grid[keepPoint.x][keepPoint.y]);
+function resetSoccerPitch() {
+    createSoccerPitch();
+    recalculatePassLanes();
+}
 
-    while (queue.length > 0) {
-        let current = queue.shift();
-        
-        let neighbors = getNeighbors(current.row, current.col);
-        neighbors.forEach(n => {
-            if (n.type === "wall") return; // Barriers block path
+// Clears dynamic vector line visualizers and draws updated passing options
+function recalculatePassLanes() {
+    // Clear old lines
+    document.querySelectorAll(".pass-viability-line").forEach(l => l.remove());
 
-            let tentativeDist = current.distance + n.cost;
-            if (tentativeDist < n.distance) {
-                n.distance = tentativeDist;
-                queue.push(n);
-            }
-        });
-    }
+    const pitchContainer = document.getElementById("pitch-grid");
+    if (!pitchContainer) return;
+    const rect = pitchContainer.getBoundingClientRect();
+    const cellW = rect.width / PITCH_COLS;
+    const cellH = rect.height / PITCH_ROWS;
 
-    // 3. Compute Negative Gradient Vector Field
-    for (let r = 0; r < GRID_SIZE; r++) {
-        for (let c = 0; c < GRID_SIZE; c++) {
-            const cell = grid[r][c];
-            const cellEl = document.getElementById(`cell-${r}-${c}`);
-            
-            // Remove previous arrows
-            const oldArrow = cellEl.querySelector(".cell-arrow");
-            if (oldArrow) oldArrow.remove();
+    // Center of ball coordinate
+    const ballX = ballPos.c * cellW + cellW/2;
+    const ballY = ballPos.r * cellH + cellH/2;
 
-            if (cell.type === "wall" || cell.type === "keep") {
-                continue;
-            }
+    // Scan for attackers
+    for (let r = 0; r < PITCH_ROWS; r++) {
+        for (let c = 0; c < PITCH_COLS; c++) {
+            if (pitchGrid[r][c].type === "attacker") {
+                const targetX = c * cellW + cellW/2;
+                const targetY = r * cellH + cellH/2;
 
-            // Find neighboring cell with smallest distance
-            let neighbors = getNeighbors(r, c);
-            let minDistance = cell.distance;
-            let targetCell = null;
+                // Verify if any defender intersects the direct pass vector line
+                let passesBlock = checkPassBlocked(ballPos, {r: r, c: c});
 
-            neighbors.forEach(n => {
-                if (n.type !== "wall" && n.distance < minDistance) {
-                    minDistance = n.distance;
-                    targetCell = n;
+                // Calculate distance and angles for drawing line
+                let dist = Math.hypot(targetX - ballX, targetY - ballY);
+                let angle = Math.atan2(targetY - ballY, targetX - ballX) * 180 / Math.PI;
+
+                const line = document.createElement("div");
+                line.className = "pass-viability-line";
+                line.style.width = `${dist}px`;
+                line.style.left = `${ballX}px`;
+                line.style.top = `${ballY}px`;
+                line.style.transform = `rotate(${angle}deg)`;
+
+                if (passesBlock) {
+                    // Blocked pass: draw red line
+                    line.style.background = "linear-gradient(90deg, var(--accent-red) 0%, rgba(217,4,41,0.2) 100%)";
+                    line.style.boxShadow = "0 0 5px var(--accent-red-glow)";
                 }
-            });
 
-            if (targetCell) {
-                // Calculate directional vector pointing to that node
-                let dx = targetCell.col - c;
-                let dy = targetCell.row - r;
-                cell.vector = {x: dx, y: dy};
-
-                // Add arrow element to UI for visualization
-                const arrowEl = document.createElement("span");
-                arrowEl.className = "cell-arrow";
-                
-                // Determine arrow symbol and angle
-                let arrowChar = "→";
-                if (dx === 0 && dy === -1) arrowChar = "↑";
-                else if (dx === 0 && dy === 1) arrowChar = "↓";
-                else if (dx === -1 && dy === 0) arrowChar = "←";
-                else if (dx === -1 && dy === -1) arrowChar = "↖";
-                else if (dx === 1 && dy === -1) arrowChar = "↗";
-                else if (dx === -1 && dy === 1) arrowChar = "↙";
-                else if (dx === 1 && dy === 1) arrowChar = "↘";
-
-                arrowEl.textContent = arrowChar;
-                cellEl.appendChild(arrowEl);
+                pitchContainer.appendChild(line);
             }
         }
     }
 }
 
-function getNeighbors(r, c) {
-    let neighbors = [];
-    const dirs = [
-        {dr: -1, dc: 0},  {dr: 1, dc: 0},
-        {dr: 0, dc: -1},  {dr: 0, dc: 1},
-        {dr: -1, dc: -1}, {dr: -1, dc: 1},
-        {dr: 1, dc: -1},  {dr: 1, dc: 1}
-    ];
+// Verifies if a defender intersects the path line using simple ray-to-box checks
+function checkPassBlocked(start, end) {
+    let blocked = false;
+    
+    // Look for any defender cell
+    for (let r = 0; r < PITCH_ROWS; r++) {
+        for (let c = 0; c < PITCH_COLS; c++) {
+            if (pitchGrid[r][c].type === "defender") {
+                // Approximate line-intersection by checks along vector segments
+                let steps = 15;
+                for (let i = 1; i < steps; i++) {
+                    let t = i / steps;
+                    let checkR = Math.round(start.r + (end.r - start.r) * t);
+                    let checkC = Math.round(start.c + (end.c - start.c) * t);
 
-    dirs.forEach(d => {
-        let nr = r + d.dr;
-        let nc = c + d.dc;
-        if (nr >= 0 && nr < GRID_SIZE && nc >= 0 && nc < GRID_SIZE) {
-            neighbors.push(grid[nr][nc]);
+                    if (checkR === r && checkC === c) {
+                        blocked = true;
+                        break;
+                    }
+                }
+            }
         }
-    });
-
-    return neighbors;
+        if (blocked) break;
+    }
+    return blocked;
 }
 
-function clearSimMap() {
-    // Clear active animations
-    activeEnemies.forEach(e => e.el.remove());
-    activeEnemies = [];
-    if (simInterval) clearInterval(simInterval);
+// Simple dynamic movement of ball to first open teammate
+function simulatePassingPlay() {
+    let targetAttacker = null;
 
-    createGrid();
-    recalculateFlowField();
-}
+    // Search for first unblocked attacker
+    for (let r = 0; r < PITCH_ROWS; r++) {
+        for (let c = 0; c < PITCH_COLS; c++) {
+            if (pitchGrid[r][c].type === "attacker") {
+                if (!checkPassBlocked(ballPos, {r: r, c: c})) {
+                    targetAttacker = {r: r, c: c};
+                    break;
+                }
+            }
+        }
+        if (targetAttacker) break;
+    }
 
-// Animated Wave Spawning using computed vectors
-function spawnEnemies() {
-    if (simInterval) clearInterval(simInterval);
-
-    const gridContainer = document.getElementById("sim-grid");
-    const containerRect = gridContainer.getBoundingClientRect();
-    const cellWidth = containerRect.width / GRID_SIZE;
-
-    // Spawn 3 waves from each active spawn gate
-    spawnPoints.forEach((spawn, idx) => {
-        setTimeout(() => {
-            createEnemyNode(spawn.row, spawn.col, cellWidth, gridContainer);
-        }, idx * 400);
-
-        setTimeout(() => {
-            createEnemyNode(spawn.row, spawn.col, cellWidth, gridContainer);
-        }, idx * 400 + 800);
-    });
-
-    // Run ticks simulation
-    simInterval = setInterval(() => {
-        updateEnemies(cellWidth);
-    }, 150);
-}
-
-function createEnemyNode(r, c, cellWidth, container) {
-    const el = document.createElement("div");
-    el.className = "enemy-dot";
-    
-    // Position relatively
-    el.style.left = `${c * cellWidth + cellWidth/2}px`;
-    el.style.top = `${r * cellWidth + cellWidth/2}px`;
-    
-    container.appendChild(el);
-
-    activeEnemies.push({
-        r: r,
-        c: c,
-        el: el,
-        active: true
-    });
-}
-
-function updateEnemies(cellWidth) {
-    if (activeEnemies.length === 0) {
-        clearInterval(simInterval);
+    if (!targetAttacker) {
+        alert("All passing lanes are currently blocked by opponent defenders! Adjust player positions.");
         return;
     }
 
-    activeEnemies.forEach(enemy => {
-        if (!enemy.active) return;
+    // Move ball visually
+    const cellW = document.getElementById("pitch-grid").getBoundingClientRect().width / PITCH_COLS;
+    const cellH = document.getElementById("pitch-grid").getBoundingClientRect().height / PITCH_ROWS;
 
-        // Reach Goal
-        if (enemy.r === keepPoint.x && enemy.c === keepPoint.y) {
-            enemy.el.remove();
-            enemy.active = false;
-            return;
-        }
+    // Transition ball element
+    const prevBallEl = document.getElementById(`pitch-cell-${ballPos.r}-${ballPos.c}`);
+    const nextBallEl = document.getElementById(`pitch-cell-${targetAttacker.r}-${targetAttacker.c}`);
 
-        const cell = grid[enemy.r][enemy.c];
+    if (prevBallEl && nextBallEl) {
+        prevBallEl.classList.remove("cell-ball");
+        prevBallEl.textContent = "";
+        pitchGrid[ballPos.r][ballPos.c].type = "clear";
+
+        ballPos = { r: targetAttacker.r, c: targetAttacker.c };
+        pitchGrid[ballPos.r][ballPos.c].type = "ball";
+        nextBallEl.classList.add("cell-ball");
+        nextBallEl.textContent = "⚽";
         
-        // Blocked case: recalculate if blocked
-        if (cell.type === "wall") {
-            enemy.active = false;
-            enemy.el.remove();
-            return;
-        }
+        recalculatePassLanes();
+    }
+}
 
-        // Apply vector changes
-        let nextR = enemy.r + cell.vector.y;
-        let nextC = enemy.c + cell.vector.x;
+// --- Tab 2: Tech - Behavior Tree Visualizer ---
+function initBehaviorTree() {
+    updateBehaviorTree();
+}
 
-        if (nextR >= 0 && nextR < GRID_SIZE && nextC >= 0 && nextC < GRID_SIZE) {
-            enemy.r = nextR;
-            enemy.c = nextC;
+function updateBehaviorTree() {
+    const hasBall = document.getElementById("toggle-has-ball").value === "1";
+    const inRange = document.getElementById("toggle-in-range").value === "1";
+    const teammateOpen = document.getElementById("toggle-teammate-open").value === "1";
 
-            // Move animated node
-            enemy.el.style.left = `${enemy.c * cellWidth + cellWidth/2}px`;
-            enemy.el.style.top = `${enemy.r * cellWidth + cellWidth/2}px`;
+    document.getElementById("val-has-ball").textContent = hasBall ? "Yes" : "No";
+    document.getElementById("val-in-range").textContent = inRange ? "Yes" : "No";
+    document.getElementById("val-teammate-open").textContent = teammateOpen ? "Yes" : "No";
+
+    // Reset node colors
+    const nodes = ["node-root", "node-selector", "node-possession", "node-shoot", "node-pass", "node-dribble", "node-loose", "node-intercept", "node-defensive", "node-mark"];
+    nodes.forEach(n => {
+        const el = document.getElementById(n);
+        if (el) el.classList.remove("active");
+    });
+
+    // Traverse Behavior Tree decisions based on inputs
+    document.getElementById("node-root").classList.add("active");
+    document.getElementById("node-selector").classList.add("active");
+
+    if (hasBall) {
+        document.getElementById("node-possession").classList.add("active");
+        if (inRange) {
+            document.getElementById("node-shoot").classList.add("active");
+        } else if (teammateOpen) {
+            document.getElementById("node-pass").classList.add("active");
         } else {
-            enemy.active = false;
-            enemy.el.remove();
+            document.getElementById("node-dribble").classList.add("active");
         }
-    });
-
-    // Clean up inactive enemies
-    activeEnemies = activeEnemies.filter(e => e.active);
-}
-
-// --- Adversarial DDA Simulator ---
-function initDdaSimulator() {
-    updateDda();
-}
-
-function updateDda() {
-    const reactionVal = parseInt(document.getElementById("slider-reaction").value);
-    const hoardingVal = parseInt(document.getElementById("slider-hoarding").value);
-    const shortrangeVal = parseInt(document.getElementById("slider-shortrange").value);
-
-    // Update labels
-    document.getElementById("val-reaction").textContent = `${reactionVal}ms`;
-    document.getElementById("val-hoarding").textContent = `${hoardingVal}%`;
-    document.getElementById("val-shortrange").textContent = `${shortrangeVal}%`;
-
-    // Compute metrics
-    // Clone fit is higher when playstyle is extreme (very fast or very slow reaction, high hoard)
-    let cloneFit = Math.min(98, Math.round(50 + (hoardingVal/2) + (shortrangeVal/4)));
-    
-    // Threat intensity adjusts to challenge user
-    // High hoarding or fast reaction increases threat to keep tension active
-    let threatVal = Math.round(30 + (1500 - reactionVal)/30 + (hoardingVal/3) + (shortrangeVal/5));
-    threatVal = Math.min(99, Math.max(10, threatVal));
-
-    document.getElementById("bar-clone").style.width = `${cloneFit}%`;
-    document.getElementById("bar-clone").textContent = `${cloneFit}%`;
-    
-    document.getElementById("bar-threat").style.width = `${threatVal}%`;
-    document.getElementById("bar-threat").textContent = `${threatVal}%`;
-
-    // Dynamic response text based on settings
-    let responseText = "Observing user. Standard waves deployed.";
-    if (reactionVal > 900) {
-        responseText = "User reaction times are sluggish. Deploying fast-moving Tengu Yokai waves and sudden spatial flanking raids to challenge lateral coverage.";
-    } else if (hoardingVal > 60) {
-        responseText = "User is hoarding gold coins rather than upgrading defenses. Deploying early armor-plated Gashadokuro siege boss to force combat spending.";
-    } else if (shortrangeVal > 80) {
-        responseText = "User places mostly short-range melee Ashigaru spearmen. Modulating waves to spawn long-range Oni archers and flying spirits that bypass path blockages.";
-    } else if (reactionVal < 300 && shortrangeVal < 40) {
-        responseText = "User has hyper-active reaction speeds and spreads range coverage effectively. Competition Agent is executing a heavy split-lane siege containing high-HP minibosses.";
     } else {
-        responseText = "Optimizing threat boundaries to maintain Flow State. Balanced distribution of standard melee and ranged Yokai groups deployed.";
+        // If opponent has ball (simulated default off-possession state)
+        // If teammate open acts as ball loose flag in this simulator interface
+        if (teammateOpen) {
+            document.getElementById("node-loose").classList.add("active");
+            document.getElementById("node-intercept").classList.add("active");
+        } else {
+            document.getElementById("node-defensive").classList.add("active");
+            document.getElementById("node-mark").classList.add("active");
+        }
     }
-
-    document.getElementById("dda-tactical-response").textContent = responseText;
 }
 
-// --- Monetization (CMAB) Simulator ---
-const offers = [
-    {
-        title: "Samurai Warlord Starter Package",
-        price: "$4.99",
-        desc: "Equip your Samurai Hero with legendary armor and visual particle effects, providing early damage increases during tactical loops.",
-        baseVal: 0.6
-    },
-    {
-        title: "Matchlock Marksman Special Offer",
-        price: "$2.99",
-        desc: "Instant resources package containing 500 gold coins and a rare Matchlock Blueprint to quickly counter linear lanes.",
-        baseVal: 0.4
-    },
-    {
-        title: "Shaman Purification Blessing",
-        price: "$0.99",
-        desc: "Cozy progress booster that speeds up Shaman healing rates by 25% for 3 days. Includes an exclusive blossom cherry cosmetic.",
-        baseVal: 0.3
-    },
-    {
-        title: "Daimyo's Golden Castle Skin",
-        price: "$9.99",
-        desc: "Transform your central Keep into a glowing gold monument with custom historical audio themes. Pure premium aesthetic skin.",
-        baseVal: 0.2
-    }
-];
-
-function initBanditSimulator() {
-    updateBandit();
-}
-
-function updateBandit() {
-    const retentionVal = parseInt(document.getElementById("slider-retention").value);
-    const deficitVal = parseInt(document.getElementById("slider-deficit").value);
-    const favVal = parseInt(document.getElementById("slider-fav").value);
-
-    // Update labels
-    let phase = "D1 Onboarding";
-    if (retentionVal > 3 && retentionVal <= 14) phase = `D${retentionVal} Retained`;
-    if (retentionVal > 14) phase = `D${retentionVal} Core Veteran`;
-    document.getElementById("val-retention").textContent = phase;
-
-    let deficit = "Low Deficit";
-    if (deficitVal === 1) deficit = "Medium Deficit";
-    if (deficitVal === 2) deficit = "Severe Gold Deficit";
-    document.getElementById("val-deficit").textContent = deficit;
-
-    let favClass = "Samurai Champion";
-    if (favVal === 1) favClass = "Matchlock Gunners";
-    if (favVal === 2) favClass = "Shaman Priestess";
-    if (favVal === 3) favClass = "Cosmetics/Decorative";
-    document.getElementById("val-fav").textContent = favClass;
-
-    // Simulate LinUCB calculations for each offer
-    // context vector: x = [retention_phase, gold_deficit, favorite_class_usage]
-    let maxScore = -1;
-    let selectedOffer = null;
-    let selectedDetails = {};
-
-    offers.forEach((offer, idx) => {
-        let expectedPayout = offer.baseVal;
-        
-        // Context rules logic matching vectors
-        if (idx === 0) { // Samurai Warlord
-            expectedPayout += (retentionVal < 5) ? 0.3 : 0.05;
-            expectedPayout += (favVal === 0) ? 0.4 : 0.0;
-        } else if (idx === 1) { // Matchlock Special
-            expectedPayout += (deficitVal === 2) ? 0.5 : 0.1;
-            expectedPayout += (favVal === 1) ? 0.3 : 0.0;
-        } else if (idx === 2) { // Shaman Blessing
-            expectedPayout += (retentionVal > 14) ? 0.4 : 0.1;
-            expectedPayout += (favVal === 2) ? 0.4 : 0.0;
-        } else if (idx === 3) { // Castle Skin
-            expectedPayout += (retentionVal > 10) ? 0.6 : -0.2;
-            expectedPayout += (favVal === 3) ? 0.5 : 0.0;
-        }
-
-        // Add simulated pseudo-random exploration bonus (alpha * sqrt(var))
-        let explorationBonus = 0.1 + Math.sin(idx * 45 + retentionVal) * 0.1;
-        explorationBonus = Math.max(0.05, Math.min(0.3, explorationBonus));
-        
-        let score = expectedPayout + explorationBonus;
-
-        if (score > maxScore) {
-            maxScore = score;
-            selectedOffer = offer;
-            selectedDetails = {
-                payout: expectedPayout.toFixed(2),
-                bonus: explorationBonus.toFixed(2),
-                total: score.toFixed(2)
-            };
-        }
-    });
-
-    // Update UI elements
-    document.getElementById("offer-title").textContent = selectedOffer.title;
-    document.getElementById("offer-price").textContent = selectedOffer.price;
-    document.getElementById("offer-desc").textContent = selectedOffer.desc;
+// --- Tab 3: Audio - MetaSound Excitement Waveform ---
+function initAudioSimulator() {
+    const waveContainer = document.getElementById("audio-wave-bar");
+    if (!waveContainer) return;
     
-    document.getElementById("math-payout").textContent = selectedDetails.payout;
-    document.getElementById("math-bonus").textContent = selectedDetails.bonus;
-    document.getElementById("math-total").textContent = selectedDetails.total;
-}
-
-// --- Tab 5: Mathematical Optimization (GA & ACO) ---
-let gaGen = 0;
-let gaBestFitness = 0;
-let gaAvgFitness = 0;
-const GA_GRID_SIZE = 8;
-let gaGridData = [];
-
-function initOptimizationSimulator() {
-    createGaGrid();
-    resetGa();
-    initAcoGraph();
-}
-
-function createGaGrid() {
-    const gaGridEl = document.getElementById("ga-grid");
-    if (!gaGridEl) return;
-    gaGridEl.innerHTML = "";
-    gaGridData = [];
-
-    for (let r = 0; r < GA_GRID_SIZE; r++) {
-        gaGridData[r] = [];
-        for (let c = 0; c < GA_GRID_SIZE; c++) {
-            let type = "clear";
-            if (r === 0 && c === 0) type = "spawn";
-            else if (r === GA_GRID_SIZE - 1 && c === GA_GRID_SIZE - 1) type = "keep";
-
-            gaGridData[r][c] = { row: r, col: c, type: type };
-
-            const cellEl = document.createElement("div");
-            cellEl.id = `ga-cell-${r}-${c}`;
-            cellEl.className = "ga-cell";
-            if (type === "spawn") {
-                cellEl.classList.add("ga-spawn");
-                cellEl.textContent = "⛩️";
-            } else if (type === "keep") {
-                cellEl.classList.add("ga-keep");
-                cellEl.textContent = "🏰";
-            }
-            gaGridEl.appendChild(cellEl);
-        }
+    waveContainer.innerHTML = "";
+    // Create 20 visual audio frequency bars
+    for (let i = 0; i < 20; i++) {
+        const bar = document.createElement("div");
+        bar.className = "wave-bar";
+        bar.id = `wave-bar-${i}`;
+        waveContainer.appendChild(bar);
     }
+    updateAudioSim();
+    animateWave();
 }
 
-function resetGa() {
-    gaGen = 0;
-    gaBestFitness = 0;
-    gaAvgFitness = 0.0;
+let waveHeights = Array(20).fill(10);
+
+function updateAudioSim() {
+    const prox = parseInt(document.getElementById("slider-proximity").value);
+    const tension = parseInt(document.getElementById("slider-tension").value);
+    const bigPlay = parseInt(document.getElementById("slider-bigplay").value);
+
+    document.getElementById("val-proximity").textContent = `${prox}m`;
     
-    document.getElementById("ga-generation").textContent = gaGen;
-    document.getElementById("ga-best-fitness").textContent = gaBestFitness;
-    document.getElementById("ga-avg-fitness").textContent = gaAvgFitness.toFixed(1);
+    let tensionText = "Low";
+    if (tension > 40 && tension <= 75) tensionText = "Moderate";
+    if (tension > 75) tensionText = "Critical Match Point";
+    document.getElementById("val-tension").textContent = tensionText;
 
-    // Clear grid styles except spawn/keep
-    for (let r = 0; r < GA_GRID_SIZE; r++) {
-        for (let c = 0; c < GA_GRID_SIZE; c++) {
-            const cell = gaGridData[r][c];
-            if (cell.type !== "spawn" && cell.type !== "keep") {
-                cell.type = "clear";
-                const cellEl = document.getElementById(`ga-cell-${r}-${c}`);
-                if (cellEl) {
-                    cellEl.className = "ga-cell";
-                    cellEl.textContent = "";
-                }
-            }
-        }
+    let bigPlayText = "None";
+    let playModifier = 0.0;
+    if (bigPlay === 1) {
+        bigPlayText = "Tactical Tackle";
+        playModifier = 0.2;
+    } else if (bigPlay === 2) {
+        bigPlayText = "GOAL INBOUND!";
+        playModifier = 0.5;
     }
-}
+    document.getElementById("val-bigplay").textContent = bigPlayText;
 
-// Simulated GA optimization steps showing structural convergence
-function runGaGeneration() {
-    gaGen++;
-    document.getElementById("ga-generation").textContent = gaGen;
+    // Excitement E = w1*(100-prox)/100 + w2*tension/100 + w3*playModifier
+    let goalProxVal = (100 - prox) / 100;
+    let tensionVal = tension / 100;
+    let excitement = (goalProxVal * 0.4) + (tensionVal * 0.2) + playModifier;
+    excitement = Math.min(1.0, Math.max(0.0, excitement));
 
-    // Simulate progress: as gen increases, best fitness converges to optimal winding path
-    let targetBest = 14;
-    let targetAvg = 10.5;
+    document.getElementById("audio-excitement-val").textContent = excitement.toFixed(2);
 
-    if (gaGen >= 1 && gaGen < 5) {
-        targetBest = 16;
-        targetAvg = 12.2;
-    } else if (gaGen >= 5 && gaGen < 15) {
-        targetBest = 20;
-        targetAvg = 15.6;
-    } else if (gaGen >= 15 && gaGen < 30) {
-        targetBest = 24;
-        targetAvg = 19.8;
-    } else {
-        targetBest = 28;
-        targetAvg = 23.4;
+    let state = "Idle Murmur";
+    let desc = "Synthesizing ambient murmurs and distant chatter.";
+    let activeClass = "";
+
+    if (excitement > 0.35 && excitement <= 0.7) {
+        state = "Anticipation";
+        desc = "Stitching mid-level crowd cheers and rhythmic clapping updates.";
+        activeClass = "active-gold";
+    } else if (excitement > 0.7) {
+        state = "Peak Roar";
+        desc = "Triggering MetaSound stadium roar sample stitches and dynamic whistle peaks!";
+        activeClass = "active-warn";
     }
 
-    // Slightly fluctuate values to look like active genetic diversity
-    let noise = Math.random() * 1.5 - 0.75;
-    gaBestFitness = targetBest;
-    gaAvgFitness = targetAvg + noise;
+    document.getElementById("audio-state-text").textContent = state;
+    document.getElementById("audio-desc-text").textContent = desc;
 
-    document.getElementById("ga-best-fitness").textContent = gaBestFitness;
-    document.getElementById("ga-avg-fitness").textContent = gaAvgFitness.toFixed(1);
-
-    // Draw the evolved walls and optimal path based on generation stage
-    // Clean old cells first
-    for (let r = 0; r < GA_GRID_SIZE; r++) {
-        for (let c = 0; c < GA_GRID_SIZE; c++) {
-            const cell = gaGridData[r][c];
-            if (cell.type !== "spawn" && cell.type !== "keep") {
-                cell.type = "clear";
-                const cellEl = document.getElementById(`ga-cell-${r}-${c}`);
-                if (cellEl) {
-                    cellEl.className = "ga-cell";
-                    cellEl.textContent = "";
-                }
-            }
+    // Apply color indicators to wave bars
+    for (let i = 0; i < 20; i++) {
+        const bar = document.getElementById(`wave-bar-${i}`);
+        if (bar) {
+            bar.className = "wave-bar";
+            if (activeClass) bar.classList.add(activeClass);
         }
     }
 
-    // Coordinates of walls for different generation tiers (pre-coded to show convergence)
-    let wallCoords = [];
-    let pathCoords = [];
-
-    if (gaGen < 5) {
-        // Gen 1-4: Random scattered walls
-        wallCoords = [{r: 1, c: 2}, {r: 2, c: 5}, {r: 4, c: 1}, {r: 5, c: 6}, {r: 6, c: 3}];
-        pathCoords = [{r: 0, c: 1}, {r: 1, c: 1}, {r: 2, c: 1}, {r: 3, c: 1}, {r: 3, c: 2}, {r: 3, c: 3}, {r: 3, c: 4}, {r: 3, c: 5}, {r: 4, c: 5}, {r: 5, c: 5}, {r: 6, c: 5}, {r: 7, c: 5}, {r: 7, c: 6}];
-    } else if (gaGen < 15) {
-        // Gen 5-14: Structural blockages forming
-        wallCoords = [{r: 1, c: 2}, {r: 2, c: 2}, {r: 3, c: 2}, {r: 5, c: 5}, {r: 6, c: 5}, {r: 4, c: 5}];
-        pathCoords = [{r: 0, c: 1}, {r: 0, c: 2}, {r: 0, c: 3}, {r: 1, c: 3}, {r: 2, c: 3}, {r: 3, c: 3}, {r: 4, c: 3}, {r: 4, c: 4}, {r: 4, c: 6}, {r: 5, c: 6}, {r: 6, c: 6}, {r: 7, c: 6}];
-    } else if (gaGen < 30) {
-        // Gen 15-29: Double winding paths
-        wallCoords = [
-            {r: 1, c: 0}, {r: 1, c: 1}, {r: 1, c: 2}, {r: 1, c: 3}, {r: 1, c: 4}, {r: 1, c: 5},
-            {r: 4, c: 2}, {r: 4, c: 3}, {r: 4, c: 4}, {r: 4, c: 5}, {r: 4, c: 6}, {r: 4, c: 7}
-        ];
-        pathCoords = [
-            {r: 0, c: 1}, {r: 0, c: 2}, {r: 0, c: 3}, {r: 0, c: 4}, {r: 0, c: 5}, {r: 0, c: 6}, {r: 1, c: 6}, {r: 2, c: 6}, {r: 3, c: 6}, {r: 3, c: 5}, {r: 3, c: 4}, {r: 3, c: 3}, {r: 3, c: 2}, {r: 3, c: 1}, {r: 4, c: 1}, {r: 5, c: 1}, {r: 6, c: 1}, {r: 7, c: 1}, {r: 7, c: 2}, {r: 7, c: 3}, {r: 7, c: 4}, {r: 7, c: 5}, {r: 7, c: 6}
-        ];
-    } else {
-        // Gen 30+: Maximum maze winding within budget (16 walls)
-        wallCoords = [
-            {r: 1, c: 0}, {r: 1, c: 1}, {r: 1, c: 2}, {r: 1, c: 3}, {r: 1, c: 4}, {r: 1, c: 5}, {r: 1, c: 6},
-            {r: 4, c: 1}, {r: 4, c: 2}, {r: 4, c: 3}, {r: 4, c: 4}, {r: 4, c: 5}, {r: 4, c: 6}, {r: 4, c: 7},
-            {r: 6, c: 0}, {r: 6, c: 1}
-        ];
-        pathCoords = [
-            {r: 0, c: 1}, {r: 0, c: 2}, {r: 0, c: 3}, {r: 0, c: 4}, {r: 0, c: 5}, {r: 0, c: 6}, {r: 0, c: 7}, {r: 1, c: 7}, {r: 2, c: 7}, {r: 3, c: 7}, {r: 3, c: 6}, {r: 3, c: 5}, {r: 3, c: 4}, {r: 3, c: 3}, {r: 3, c: 2}, {r: 3, c: 1}, {r: 3, c: 0}, {r: 4, c: 0}, {r: 5, c: 0}, {r: 5, c: 1}, {r: 5, c: 2}, {r: 5, c: 3}, {r: 5, c: 4}, {r: 5, c: 5}, {r: 5, c: 6}, {r: 6, c: 6}, {r: 7, c: 6}
-        ];
-    }
-
-    // Apply classes to UI cells
-    wallCoords.forEach(w => {
-        gridCellTypeSet(w.r, w.c, "wall", "ga-cell ga-wall");
-    });
-
-    pathCoords.forEach(p => {
-        gridCellTypeSet(p.r, p.c, "path", "ga-cell ga-path");
-        const cellEl = document.getElementById(`ga-cell-${p.r}-${p.c}`);
-        if (cellEl) cellEl.textContent = "🔸";
-    });
+    // Cache excitement scale for animator
+    window.cachedExcitement = excitement;
 }
 
-function gridCellTypeSet(r, c, type, className) {
-    if (r >= 0 && r < GA_GRID_SIZE && c >= 0 && c < GA_GRID_SIZE) {
-        gaGridData[r][c].type = type;
-        const cellEl = document.getElementById(`ga-cell-${r}-${c}`);
-        if (cellEl) cellEl.className = className;
+function animateWave() {
+    let E = window.cachedExcitement || 0.24;
+    
+    for (let i = 0; i < 20; i++) {
+        const bar = document.getElementById(`wave-bar-${i}`);
+        if (bar) {
+            // Frequency calculation based on excitement index
+            let base = 5 + E * 40;
+            let variance = Math.random() * (15 + E * 35);
+            let height = base + variance;
+            bar.style.height = `${Math.min(75, height)}px`;
+        }
     }
+
+    setTimeout(() => {
+        requestAnimationFrame(animateWave);
+    }, 120);
 }
 
-// Ant Colony Optimization Graph Setup
-const acoNodes = {
-    Kyoto: { name: "Kyoto", x: 40, y: 100, type: "start", role: "Kyoto (Base)" },
-    Mino: { name: "Mino", x: 130, y: 50, type: "prov", role: "Mino" },
-    Owari: { name: "Owari", x: 130, y: 150, type: "prov", role: "Owari" },
-    Kaga: { name: "Kaga", x: 230, y: 50, type: "prov", role: "Kaga" },
-    Mikawa: { name: "Mikawa", x: 230, y: 150, type: "prov", role: "Mikawa" },
-    Echigo: { name: "Echigo", x: 320, y: 100, type: "goal", role: "Echigo (Keep)" }
+// --- Tab 4: Production - Sprints Roadmap ---
+const sprintsData = {
+    1: {
+        title: "Sprint 1: Base Physics & Setup",
+        timeline: "Weeks 1-2 (Phase 1)",
+        goals: [
+            "Initialize custom Actor hierarchy extending GameModeBase and GameStateBase.",
+            "Integrate Chaos substepping config files with 200Hz evaluation loops.",
+            "Verify ball collision boundaries in stadium meshes."
+        ],
+        deps: "Unreal Engine 5 physics subsystem init."
+    },
+    2: {
+        title: "Sprint 2: AI Systems & NavMesh",
+        timeline: "Weeks 5-6 (Phase 2)",
+        goals: [
+            "Scaffold NavMesh volume constraints across the pitch parameters.",
+            "Write C++ threat checking systems inside UAISensorComponent.",
+            "Deploy spatial hash grid coordinates bucket systems for O(1) query lookups."
+        ],
+        deps: "Completed character models and default mesh constraints."
+    },
+    3: {
+        title: "Sprint 3: GUI Overlays & Controls",
+        timeline: "Weeks 9-10 (Phase 3)",
+        goals: [
+            "Write match HUD scoreboards and managers consoles.",
+            "Bind team strategy posture sliders directly to tactical directives.",
+            "Replicate GameState variables for match clocks and scores."
+        ],
+        deps: "Replicated C++ base variables in AAISoccerGameState."
+    },
+    4: {
+        title: "Sprint 4: Lumen Profiles & Audio Attenuation",
+        timeline: "Weeks 13-14 (Phase 4)",
+        goals: [
+            "Configure Lumen global reflections profiles for night match lights.",
+            "Design MetaSound stadium excitation chains and low-pass curves.",
+            "Integrate net impact velocity sound triggers."
+        ],
+        deps: "Dynamic mesh assets and physics net bounds."
+    },
+    5: {
+        title: "Sprint 5: CPU Profiling & Launch Prep",
+        timeline: "Weeks 17-18 (Phase 5)",
+        goals: [
+            "Throttle Behavior Tree ticks to prevent CPU frame spikes.",
+            "Run automated headless Stress Test routines to check AI logic bounds.",
+            "Review memory allocations using Unreal Insights."
+        ],
+        deps: "Completed match play systems and simulation triggers."
+    }
 };
 
-const acoEdges = [
-    { from: "Kyoto", to: "Mino", dist: 4 },
-    { from: "Kyoto", to: "Owari", dist: 5 },
-    { from: "Mino", to: "Kaga", dist: 4 },
-    { from: "Owari", to: "Mikawa", dist: 5 },
-    { from: "Kaga", to: "Echigo", dist: 4 },
-    { from: "Mikawa", to: "Echigo", dist: 5 },
-    { from: "Mino", to: "Echigo", dist: 14 } // Direct high cost shortcut
-];
-
-let provThreats = {
-    Mino: false,
-    Mikawa: false,
-    Owari: false
-};
-
-function initAcoGraph() {
-    renderAcoNodes();
-    drawAcoEdges();
-    calculateAcoBestPath();
+function initSprintsRoadmap() {
+    showSprint(1); // Show default sprint
 }
 
-function renderAcoNodes() {
-    const container = document.getElementById("aco-nodes-container");
-    if (!container) return;
-    container.innerHTML = "";
+function showSprint(id) {
+    const panel = document.getElementById("sprint-info-panel");
+    const data = sprintsData[id];
 
-    Object.keys(acoNodes).forEach(key => {
-        const node = acoNodes[key];
-        const nodeEl = document.createElement("div");
-        nodeEl.className = `aco-node node-${key.toLowerCase()}`;
-        nodeEl.style.left = `${node.x}px`;
-        nodeEl.style.top = `${node.y}px`;
-        nodeEl.textContent = key;
-        nodeEl.title = node.role;
-        container.appendChild(nodeEl);
+    // Set buttons active
+    document.querySelectorAll(".sprint-nav-btn").forEach((btn, idx) => {
+        if (idx === id - 1) btn.classList.add("active");
+        else btn.classList.remove("active");
     });
+
+    panel.style.opacity = 0;
+    setTimeout(() => {
+        let goalsList = data.goals.map(g => `<li>${g}</li>`).join("");
+        panel.innerHTML = `
+            <h4 style="color: var(--accent-gold); margin-bottom: 0.3rem;">${data.title}</h4>
+            <span style="font-size: 0.8rem; color: var(--accent-green); font-weight: bold; display: block; margin-bottom: 0.8rem;">${data.timeline}</span>
+            <strong style="font-size: 0.85rem; color: var(--text-primary);">Sprint Deliverables Checklist:</strong>
+            <ul class="roadmap-list">
+                ${goalsList}
+            </ul>
+            <div style="margin-top: 1rem; border-top: 1px solid var(--border-color); padding-top: 0.8rem; font-size: 0.8rem; color: var(--text-muted);">
+                <strong>Technical Dependencies:</strong> ${data.deps}
+            </div>
+        `;
+        panel.style.opacity = 1;
+    }, 120);
 }
 
-function drawAcoEdges() {
-    const svg = document.getElementById("aco-svg");
-    if (!svg) return;
-    svg.innerHTML = "";
+// --- Tab 5: QA - Net Sync Diagnostics ---
+function initQaSuite() {
+    updateQaSim();
+}
 
-    acoEdges.forEach((edge, idx) => {
-        const nFrom = acoNodes[edge.from];
-        const nTo = acoNodes[edge.to];
+function updateQaSim() {
+    const ping = parseInt(document.getElementById("slider-ping").value);
+    const loss = parseInt(document.getElementById("slider-loss").value);
+    const jitter = parseInt(document.getElementById("slider-jitter").value);
+
+    document.getElementById("val-ping").textContent = `${ping}ms`;
+    document.getElementById("val-loss").textContent = `${loss.toFixed(1)}%`;
+    document.getElementById("val-jitter").textContent = `${jitter}ms`;
+
+    const banner = document.getElementById("qa-alert-banner");
+    const statusText = document.getElementById("qa-alert-status");
+    const syncState = document.getElementById("qa-sync-state");
+    const coordinateDelta = document.getElementById("qa-coordinate-delta");
+    const logs = document.getElementById("qa-logs");
+
+    // Recalculate drift: drift coordinate delta = ping * 0.1 + loss * 2.0 + jitter * 0.5
+    let drift = (ping * 0.08) + (loss * 1.5) + (jitter * 0.4);
+    coordinateDelta.textContent = `${drift.toFixed(1)} units`;
+
+    let logsContent = `[SYSTEM] Profiling diagnostics...<br>`;
+    
+    if (ping > 120 || loss > 2.0 || jitter > 15) {
+        banner.className = "alert-banner warning";
+        statusText.textContent = "⚠️ REPLICATION DESYNC DETECTED";
+        syncState.textContent = "Simulation Drift";
+        coordinateDelta.className = "highlight";
+        coordinateDelta.style.color = "var(--accent-red)";
         
-        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-        line.setAttribute("x1", nFrom.x);
-        line.setAttribute("y1", nFrom.y);
-        line.setAttribute("x2", nTo.x);
-        line.setAttribute("y2", nTo.y);
-        line.setAttribute("stroke", "rgba(255,255,255,0.15)");
-        line.setAttribute("stroke-width", "2");
-        line.id = `aco-edge-${idx}`;
-        svg.appendChild(line);
-    });
-}
-
-function toggleProvince(provName) {
-    provThreats[provName] = !provThreats[provName];
-    
-    // Update button states
-    const btn = document.getElementById(`prov-${provName.toLowerCase()}`);
-    const nodeEl = document.querySelector(`.node-${provName.toLowerCase()}`);
-    
-    if (provThreats[provName]) {
-        if (btn) {
-            btn.classList.add("active");
-            btn.textContent = `${provName}: THREAT`;
-        }
-        if (nodeEl) nodeEl.classList.add("node-threat");
+        logsContent += `[WARNING] Ping: ${ping}ms exceeds substepping threshold.<br>`;
+        logsContent += `[ERROR] Desync delta: ${drift.toFixed(1)} units. Triggering position interpolation snap.<br>`;
     } else {
-        if (btn) {
-            btn.classList.remove("active");
-            btn.textContent = `${provName}: Safe`;
-        }
-        if (nodeEl) nodeEl.classList.remove("node-threat");
-    }
-
-    calculateAcoBestPath();
-}
-
-function calculateAcoBestPath() {
-    // Determine edge weights: weight = dist * threat
-    // Threat defaults to 1.0, increases to 10.0 if province is set to High Threat
-    let edgeWeights = acoEdges.map(edge => {
-        let threat = 1.0;
-        if (provThreats[edge.from] || provThreats[edge.to]) {
-            threat = 10.0;
-        }
-        return edge.dist * threat;
-    });
-
-    // 3 main pathways from Kyoto to Echigo
-    // Route 0: Kyoto -> Mino -> Kaga -> Echigo
-    let cost0 = edgeWeights[0] + edgeWeights[2] + edgeWeights[4]; // Kyoto->Mino + Mino->Kaga + Kaga->Echigo
-    // Route 1: Kyoto -> Owari -> Mikawa -> Echigo
-    let cost1 = edgeWeights[1] + edgeWeights[3] + edgeWeights[5]; // Kyoto->Owari + Owari->Mikawa + Mikawa->Echigo
-    // Route 2: Kyoto -> Mino -> Echigo (direct shortcut)
-    let cost2 = edgeWeights[0] + edgeWeights[6]; // Kyoto->Mino + Mino->Echigo
-
-    let pathText = "";
-    let activeEdges = [];
-
-    if (cost0 <= cost1 && cost0 <= cost2) {
-        pathText = "Kyoto ➔ Mino ➔ Kaga ➔ Echigo";
-        activeEdges = [0, 2, 4];
-    } else if (cost1 <= cost0 && cost1 <= cost2) {
-        pathText = "Kyoto ➔ Owari ➔ Mikawa ➔ Echigo";
-        activeEdges = [1, 3, 5];
-    } else {
-        pathText = "Kyoto ➔ Mino ➔ Echigo (Direct)";
-        activeEdges = [0, 6];
-    }
-
-    const displayEl = document.getElementById("aco-path-display");
-    if (displayEl) displayEl.textContent = pathText;
-
-    // Highlights path in SVG edges
-    acoEdges.forEach((edge, idx) => {
-        const line = document.getElementById(`aco-edge-${idx}`);
-        if (line) {
-            if (activeEdges.includes(idx)) {
-                line.setAttribute("stroke", "var(--accent-gold)");
-                line.setAttribute("stroke-width", "4");
-                line.setAttribute("style", "filter: drop-shadow(0 0 5px var(--accent-gold-glow));");
-            } else {
-                line.setAttribute("stroke", "rgba(255,255,255,0.15)");
-                line.setAttribute("stroke-width", "2");
-                line.removeAttribute("style");
-            }
-        }
-    });
-
-    return activeEdges;
-}
-
-// Particle simulation representing ants routing
-function launchAcoConvoys() {
-    const activeEdges = calculateAcoBestPath();
-    const container = document.querySelector(".graph-viewport");
-    if (!container) return;
-    
-    // Spawn ants along the chosen path sequentially
-    let pathNodes = [];
-    if (activeEdges.includes(2)) {
-        pathNodes = ["Kyoto", "Mino", "Kaga", "Echigo"];
-    } else if (activeEdges.includes(3)) {
-        pathNodes = ["Kyoto", "Owari", "Mikawa", "Echigo"];
-    } else {
-        pathNodes = ["Kyoto", "Mino", "Echigo"];
-    }
-
-    for (let i = 0; i < 5; i++) {
-        setTimeout(() => {
-            spawnAntParticle(pathNodes, container);
-        }, i * 300);
-    }
-}
-
-function spawnAntParticle(nodes, container) {
-    const ant = document.createElement("div");
-    ant.className = "aco-ant-particle";
-    
-    let startNode = acoNodes[nodes[0]];
-    ant.style.left = `${startNode.x}px`;
-    ant.style.top = `${startNode.y}px`;
-    container.appendChild(ant);
-
-    let currentStep = 0;
-    
-    function moveNext() {
-        if (currentStep >= nodes.length - 1) {
-            // Reached goal
-            setTimeout(() => ant.remove(), 200);
-            return;
-        }
-
-        let fromNode = acoNodes[nodes[currentStep]];
-        let toNode = acoNodes[nodes[currentStep + 1]];
+        banner.className = "alert-banner";
+        statusText.textContent = "🟢 SYSTEM SYNCHRONIZED";
+        syncState.textContent = "Perfect Parity";
+        coordinateDelta.className = "highlight";
+        coordinateDelta.style.color = "var(--accent-green)";
         
-        let startX = fromNode.x;
-        let startY = fromNode.y;
-        let endX = toNode.x;
-        let endY = toNode.y;
-
-        let startTime = null;
-        let duration = 600; // ms
-
-        function step(timestamp) {
-            if (!startTime) startTime = timestamp;
-            let progress = (timestamp - startTime) / duration;
-            if (progress > 1.0) progress = 1.0;
-
-            let curX = startX + (endX - startX) * progress;
-            let curY = startY + (endY - startY) * progress;
-
-            ant.style.left = `${curX}px`;
-            ant.style.top = `${curY}px`;
-
-            if (progress < 1.0) {
-                requestAnimationFrame(step);
-            } else {
-                currentStep++;
-                moveNext();
-            }
-        }
-
-        requestAnimationFrame(step);
+        logsContent += `[CLIENT] Connection stable. Replicating AAISoccerGameState variables.<br>`;
+        logsContent += `[SYSTEM] Thread parity: OK. Chaos Substeps: 0.005s.<br>`;
     }
 
-    moveNext();
+    logs.innerHTML = logsContent;
 }

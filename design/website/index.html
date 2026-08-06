@@ -3,31 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mobile Fortress - Interactive Game Design Document</title>
+    <title>AI Soccer Simulator - Interactive Development Hub</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <!-- Main Styles -->
     <link rel="stylesheet" href="styles.css">
 </head>
 <body class="dark-theme">
-    <!-- Falling Cherry Blossoms Canvas Background -->
+    <!-- Falling Stadium Confetti / Grass Particles Background -->
     <canvas id="blossoms-canvas"></canvas>
 
     <!-- Header Navigation -->
     <header class="navbar">
         <div class="logo">
-            <span class="fortress-title">MOBILE FORTRESS</span>
-            <span class="sengoku-tag">戦国攻城</span>
+            <span class="fortress-title">AI SOCCER SIMULATOR</span>
+            <span class="sengoku-tag">UE5 AUTONOMOUS PITCH</span>
         </div>
         <nav class="nav-links">
-            <a href="#vision" class="active">Vision</a>
-            <a href="#gameplay">Gameplay & Flow Fields</a>
-            <a href="#netcode">Netcode & Cloud</a>
-            <a href="#ai-ml">AI & Machine Learning</a>
-            <a href="#optimization">Optimization Methods</a>
-            <a href="#roadmap">Roadmap</a>
+            <a href="#design" class="active">Design</a>
+            <a href="#tech">Tech</a>
+            <a href="#audio">Audio</a>
+            <a href="#production">Production</a>
+            <a href="#qa">QA</a>
         </nav>
     </header>
 
@@ -35,18 +34,18 @@
     <section class="hero-section">
         <div class="hero-overlay"></div>
         <div class="hero-content">
-            <div class="badge">DESIGN SPECIFICATION V2.0</div>
-            <h1>Defend the Daimyo's Keep</h1>
+            <div class="badge">DEVELOPMENT CONSOLE V1.0</div>
+            <h1>Autonomous UE5 Match Simulator</h1>
             <p class="hero-desc">
-                A Sengoku-era Cooperative Tower Defense & 4X Strategy Game combining traditional Ukiyo-e aesthetics with state-of-the-art vector pathfinding and machine learning engines.
+                An advanced Unreal Engine 5 simulation architecture combining C++ spatial influence mapping, motion-matched locomotion, and MetaSound stadium crowd acoustics.
             </p>
             <div class="hero-actions">
-                <a href="#gameplay" class="btn btn-primary">Try Interactive Simulator</a>
-                <a href="../game_design_document.md" target="_blank" class="btn btn-secondary">Read Raw GDD</a>
+                <a href="#design" class="btn btn-primary">Try Design Simulators</a>
+                <a href="../game_design_document.md" target="_blank" class="btn btn-secondary">Read GDD Spec</a>
             </div>
         </div>
         <div class="hero-image-container">
-            <img src="assets/mobile_fortress_banner.jpg" alt="Sengoku Siege: Night of the Blossoms" class="hero-banner-img">
+            <img src="assets/soccer_simulator_banner.jpg" alt="AI Soccer Simulator Stadium" class="hero-banner-img">
         </div>
     </section>
 
@@ -56,267 +55,230 @@
         <!-- Tab System for GDD Exploration -->
         <section class="gdd-tabs-section">
             <div class="tabs-header">
-                <button class="tab-btn active" data-target="tab-vision">
-                    <span class="icon">🏮</span> Vision & Theme
+                <button class="tab-btn active" data-target="tab-design">
+                    <span class="icon">⚽</span> Design Hub
                 </button>
-                <button class="tab-btn" data-target="tab-flowfield">
-                    <span class="icon">🌀</span> Flow Field Simulator
+                <button class="tab-btn" data-target="tab-tech">
+                    <span class="icon">⚙️</span> Technical Blueprint
                 </button>
-                <button class="tab-btn" data-target="tab-dda">
-                    <span class="icon">🧠</span> Adversarial DDA
+                <button class="tab-btn" data-target="tab-audio">
+                    <span class="icon">🔊</span> Acoustic Design
                 </button>
-                <button class="tab-btn" data-target="tab-monetization">
-                    <span class="icon">💰</span> CMAB Dynamic Pricing
+                <button class="tab-btn" data-target="tab-production">
+                    <span class="icon">📅</span> Production Roadmap
                 </button>
-                <button class="tab-btn" data-target="tab-optimization">
-                    <span class="icon">🧬</span> Optimization Methods
+                <button class="tab-btn" data-target="tab-qa">
+                    <span class="icon">🔬</span> QA Test Suite
                 </button>
             </div>
 
             <div class="tabs-content">
                 
-                <!-- Tab: Vision & Theme -->
-                <div class="tab-pane active" id="tab-vision">
-                    <div class="grid-2-col">
-                        <div class="panel glass">
-                            <h2>The Sengoku Jidai & Yokai Corruption</h2>
-                            <p>
-                                Set in the 1520s, <strong>Mobile Fortress</strong> transports players to a historically inspired, mythological feudal Japan. Players do not just build stationary stone towers; they deploy ashigaru spearmen, matchlock gunners, and recruit legendary Samurai heroes to fight back invading hordes of Yokai.
-                            </p>
-                            <p>
-                                The thematic aesthetic is rooted heavily in <strong>Ukiyo-e (woodblock print)</strong> art style. Bold inks, vintage paper textures, and dynamic water ripples create a tactile representation of classic Japanese prints.
-                            </p>
-                            <div class="quote-box">
-                                <p>"The environment itself reacts to purification. As you purge the Yokai defilement, the land shifts from monochromatic ash to vibrant, hand-painted watercolor."</p>
-                                <span class="quote-author">— Art Director Specification</span>
-                            </div>
-                        </div>
-
-                        <div class="panel glass flex-center">
-                            <h3>Deployable Defender Classes</h3>
-                            <div class="unit-cards-grid">
-                                <div class="unit-card" onclick="showUnitDetails('ashigaru')">
-                                    <div class="unit-icon">🌾</div>
-                                    <h4>Ashigaru Spearmen</h4>
-                                    <span class="unit-role">Melee Blocker</span>
-                                </div>
-                                <div class="unit-card" onclick="showUnitDetails('matchlock')">
-                                    <div class="unit-icon">🔫</div>
-                                    <h4>Matchlock Gunner</h4>
-                                    <span class="unit-role">Piercing Ranged</span>
-                                </div>
-                                <div class="unit-card" onclick="showUnitDetails('samurai')">
-                                    <div class="unit-icon">⚔️</div>
-                                    <h4>Samurai Hero</h4>
-                                    <span class="unit-role">Mobile Champion</span>
-                                </div>
-                                <div class="unit-card" onclick="showUnitDetails('shaman')">
-                                    <div class="unit-icon">🌸</div>
-                                    <h4>Shaman Priestess</h4>
-                                    <span class="unit-role">Support & Purifier</span>
-                                </div>
-                            </div>
-                            <div id="unit-detail-box" class="unit-details panel-dark">
-                                <p>Select a defender class above to view active attributes and combat roles.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tab: Flow Field Pathfinding Simulator -->
-                <div class="tab-pane" id="tab-flowfield">
+                <!-- Tab: Design Hub -->
+                <div class="tab-pane active" id="tab-design">
                     <div class="grid-3-col">
-                        <!-- Controls panel -->
+                        <!-- Left Panel: Text content -->
                         <div class="panel glass col-span-1">
-                            <h3>Simulation Controls</h3>
-                            <p class="panel-desc">
-                                In Mobile Fortress, enemies don't path individually. The map maintains a global Dijkstra grid and a normalized vector flow field. Placing a wall or blocker recalculates the flow for all units instantly.
+                            <h2>Core Gameplay & Pitch Design</h2>
+                            <p>
+                                <strong>AI Soccer Simulator (AISS)</strong> replaces micro-control inputs with macro tactical management. Managers coordinate team sheets, positional roles, and real-time mentality triggers, watching the physics-based match unfold.
+                            </p>
+                            <p>
+                                <strong>Pass Viability Mapping</strong>: Player agents continuously calculate spaces and interception threats. You can test the vector calculation in the simulator.
                             </p>
                             <div class="control-group">
                                 <label>Brush Tool:</label>
                                 <div class="btn-group">
-                                    <button class="btn btn-sm btn-tool active" id="tool-wall" onclick="setTool('wall')">🧱 Place Barricade</button>
-                                    <button class="btn btn-sm btn-tool" id="tool-swamp" onclick="setTool('swamp')">🌾 Slow Swamp (Cost: 3)</button>
-                                    <button class="btn btn-sm btn-tool" id="tool-clear" onclick="setTool('clear')">🧹 Clear Tile</button>
+                                    <button class="btn btn-sm btn-tool active" id="tool-defender" onclick="setSoccerTool('defender')">🔴 Opponent Defender</button>
+                                    <button class="btn btn-sm btn-tool" id="tool-attacker" onclick="setSoccerTool('attacker')">🔵 Free Attacker</button>
+                                    <button class="btn btn-sm btn-tool" id="tool-ball" onclick="setSoccerTool('ball')">⚽ Move Ball</button>
                                 </div>
                             </div>
                             <div class="control-group">
-                                <button class="btn btn-primary btn-block" onclick="spawnEnemies()">⚔️ Spawn Ashigaru Wave</button>
-                                <button class="btn btn-secondary btn-block" onclick="clearSimMap()">🔄 Reset Grid</button>
-                            </div>
-                            <div class="info-alert">
-                                <strong>Dijkstra Math:</strong>
-                                <code>C(p) = min(C(n) + Cost)</code>
-                                <br>
-                                <strong>Vector Gradient:</strong>
-                                <code>V(p) = -∇C(p)</code>
+                                <button class="btn btn-primary btn-block" onclick="simulatePassingPlay()">🥅 Simulate Pass Execution</button>
+                                <button class="btn btn-secondary btn-block" onclick="resetSoccerPitch()">🔄 Reset Pitch</button>
                             </div>
                         </div>
 
-                        <!-- The Grid Simulator -->
+                        <!-- Right Panel: Pitch Simulator -->
                         <div class="panel glass col-span-2 flex-center">
-                            <div class="grid-simulator-container">
-                                <div class="legend-bar">
-                                    <span>⛩️ Spawn</span>
-                                    <span>🏰 Keep (Goal)</span>
-                                    <span>🧱 Barricade</span>
-                                    <span>🌾 Swamp</span>
-                                </div>
-                                <div id="sim-grid" class="simulator-grid"></div>
+                            <h3>Real-Time Pass Viability Map</h3>
+                            <p class="panel-desc" style="margin-bottom: 1rem;">Click on the grid to place opponents (threat zones) or teammates to recalculate pass lines from the ball.</p>
+                            <div class="pitch-container">
+                                <div class="pitch-grid" id="pitch-grid"></div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Tab: Adversarial DDA -->
-                <div class="tab-pane" id="tab-dda">
+                <!-- Tab: Technical Blueprint -->
+                <div class="tab-pane" id="tab-tech">
                     <div class="grid-2-col">
                         <div class="panel glass">
-                            <h3>Imitation vs. Competition Agent</h3>
+                            <h2>C++ Class & Decision Architecture</h2>
                             <p>
-                                Rather than inflating health pools, Mobile Fortress uses a dual-agent Reinforcement Learning model to modulate challenge:
+                                High-performance gameplay ticks are coordinated through custom C++ classes extending the Unreal Engine 5 framework:
                             </p>
                             <ul>
-                                <li><strong>Imitation Agent (Clone)</strong>: Tracks player placement velocity, response to breaches, and upgrade habits, learning to copy the player.</li>
-                                <li><strong>Competition Agent (Tactician)</strong>: Searches for tactical counters to the clone's setup and adapts enemy wave mixtures dynamically.</li>
+                                <li><strong>`AAISoccerPlayerAgent`</strong>: Extends `ACharacter`, manages attributes (stamina, positioning) and queries.</li>
+                                <li><strong>`AAISoccerAIController`</strong>: Runs the Behavior Tree execution loop.</li>
                             </ul>
-                            <div class="panel-dark slider-panel">
-                                <h4>Adjust Player Metrics</h4>
+                            <div class="panel-dark slider-panel" style="margin-top: 1.5rem;">
+                                <h4>Configure Agent Context Variables</h4>
                                 <div class="slider-group">
-                                    <label>Reaction Time (Slowing Breaches): <span id="val-reaction">500ms</span></label>
-                                    <input type="range" min="150" max="1500" value="500" class="slider" id="slider-reaction" oninput="updateDda()">
+                                    <label>Has Ball Possession: <span id="val-has-ball">No</span></label>
+                                    <input type="range" min="0" max="1" value="0" class="slider" id="toggle-has-ball" oninput="updateBehaviorTree()">
                                 </div>
                                 <div class="slider-group">
-                                    <label>Resource Hoarding Ratio: <span id="val-hoarding">30%</span></label>
-                                    <input type="range" min="0" max="100" value="30" class="slider" id="slider-hoarding" oninput="updateDda()">
+                                    <label>In Shooting Range: <span id="val-in-range">No</span></label>
+                                    <input type="range" min="0" max="1" value="0" class="slider" id="toggle-in-range" oninput="updateBehaviorTree()">
                                 </div>
                                 <div class="slider-group">
-                                    <label>Short-range Placement Preference: <span id="val-shortrange">70%</span></label>
-                                    <input type="range" min="10" max="100" value="70" class="slider" id="slider-shortrange" oninput="updateDda()">
+                                    <label>Teammate Open & Forward: <span id="val-teammate-open">No</span></label>
+                                    <input type="range" min="0" max="1" value="0" class="slider" id="toggle-teammate-open" oninput="updateBehaviorTree()">
                                 </div>
                             </div>
                         </div>
 
                         <div class="panel glass flex-center">
-                            <h3>Live Threat Calibration</h3>
-                            <div class="dda-status-box">
-                                <div class="dda-bar">
-                                    <span>Imitation Clone Fit:</span>
-                                    <div class="progress-container"><div id="bar-clone" class="progress-bar" style="width: 65%;">65%</div></div>
-                                </div>
-                                <div class="dda-bar">
-                                    <span>Yokai Threat Intensity:</span>
-                                    <div class="progress-container"><div id="bar-threat" class="progress-bar warning" style="width: 45%;">45%</div></div>
-                                </div>
-                                <div class="ai-speech">
-                                    <strong>Competition Agent Strategy:</strong>
-                                    <p id="dda-tactical-response">Analyzing playstyle...</p>
+                            <h3>Live Behavior Tree Traversal</h3>
+                            <p class="panel-desc">Watch how the AI controller traverses the Behavior Tree in real-time based on the blackboard context keys above.</p>
+                            <div class="bt-visualizer panel-dark">
+                                <div class="bt-node root" id="node-root">ROOT</div>
+                                <div class="bt-connector">│</div>
+                                <div class="bt-node selector" id="node-selector">SELECTOR</div>
+                                <div class="bt-branches">
+                                    <div class="bt-branch-col">
+                                        <div class="bt-node sequence" id="node-possession">POSSESSION PHASE</div>
+                                        <div class="bt-node task" id="node-shoot">Task: ShootBall</div>
+                                        <div class="bt-node task" id="node-pass">Task: PassBall</div>
+                                        <div class="bt-node task" id="node-dribble">Task: Dribble</div>
+                                    </div>
+                                    <div class="bt-branch-col">
+                                        <div class="bt-node sequence" id="node-loose">BALL LOOSE PHASE</div>
+                                        <div class="bt-node task" id="node-intercept">Task: Intercept</div>
+                                    </div>
+                                    <div class="bt-branch-col">
+                                        <div class="bt-node sequence" id="node-defensive">DEFENSIVE PHASE</div>
+                                        <div class="bt-node task" id="node-mark">Task: MarkTarget</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Tab: CMAB Dynamic Pricing -->
-                <div class="tab-pane" id="tab-monetization">
+                <!-- Tab: Acoustic Design -->
+                <div class="tab-pane" id="tab-audio">
                     <div class="grid-2-col">
                         <div class="panel glass">
-                            <h3>Contextual Multi-Armed Bandits (LinUCB)</h3>
+                            <h2>MetaSounds Stadium Crowds</h2>
                             <p>
-                                Personalizing storefront offers maximizes lifetime value (LTV). Our contextual bandit evaluates player parameters ($x_t$) and selects the offer that maximizes the confidence bound:
+                                AISS implements dynamic spatial stadium acoustics. The soundscape is built on a <strong>MetaSound Controller</strong> that monitors pitch event data to determine crowd excitation curves:
                             </p>
                             <p class="math-formula">
-                                $$a_t = \arg\max_{a} \left( x_{t, a}^T \hat{\theta}_a + \alpha \sqrt{x_{t, a}^T A_a^{-1} x_{t, a}} \right)$$
+                                $$E = w_1 \cdot \text{GoalProximity} + w_2 \cdot \text{Tension} + w_3 \cdot \text{Goals}$$
                             </p>
                             <div class="panel-dark profile-panel">
-                                <h4>Configure User Profile Context</h4>
+                                <h4>Acoustic Context Modulators</h4>
                                 <div class="slider-group">
-                                    <label>Player Retention Phase: <span id="val-retention">D7 Active</span></label>
-                                    <input type="range" min="1" max="30" value="7" class="slider" id="slider-retention" oninput="updateBandit()">
+                                    <label>Ball Proximity to Goal: <span id="val-proximity">50m</span></label>
+                                    <input type="range" min="0" max="100" value="50" class="slider" id="slider-proximity" oninput="updateAudioSim()">
                                 </div>
                                 <div class="slider-group">
-                                    <label>Gold Coin Deficit: <span id="val-deficit">Low</span></label>
-                                    <input type="range" min="0" max="2" value="0" class="slider" id="slider-deficit" oninput="updateBandit()">
+                                    <label>Match Tension Metric: <span id="val-tension">Low</span></label>
+                                    <input type="range" min="0" max="100" value="20" class="slider" id="slider-tension" oninput="updateAudioSim()">
                                 </div>
                                 <div class="slider-group">
-                                    <label>Favorite Unit Class: <span id="val-fav">Samurai</span></label>
-                                    <input type="range" min="0" max="3" value="0" class="slider" id="slider-fav" oninput="updateBandit()">
+                                    <label>Recent Big Play Trigger: <span id="val-bigplay">None</span></label>
+                                    <input type="range" min="0" max="2" value="0" class="slider" id="slider-bigplay" oninput="updateAudioSim()">
                                 </div>
                             </div>
                         </div>
 
                         <div class="panel glass flex-center">
-                            <h3>Recommended Store Offer</h3>
-                            <div class="bandit-response-box">
-                                <div class="recommended-card" id="recommended-offer-card">
-                                    <div class="badge badge-success">RECOMMENDED OFFER</div>
-                                    <h3 id="offer-title">Samurai Warlord Starter Bundle</h3>
-                                    <div class="offer-price" id="offer-price">$4.99</div>
-                                    <p id="offer-desc">Unlock dynamic combat perks and visual cosmetic effects for your Samurai Champion.</p>
+                            <h3>Live Excitement Waveform</h3>
+                            <div class="audio-visualization-box panel-dark">
+                                <div class="wave-visualizer-container">
+                                    <div class="audio-wave" id="audio-wave-bar"></div>
                                 </div>
-                                <div class="bandit-math-details">
-                                    <h5>LinUCB Score Breakdown:</h5>
-                                    <ul>
-                                        <li>Expected Payout ($x_t^T \hat{\theta}_a$): <strong id="math-payout">0.82</strong></li>
-                                        <li>Exploration Bonus ($\alpha \sqrt{\dots}$): <strong id="math-bonus">0.24</strong></li>
-                                        <li>Total UCB Score: <strong id="math-total" class="highlight">1.06</strong></li>
-                                    </ul>
+                                <div class="stat-row" style="margin-top: 1rem;">
+                                    <span>Crowd State:</span> <strong id="audio-state-text" class="highlight">Idle Murmur</strong>
+                                </div>
+                                <div class="stat-row">
+                                    <span>Calculated Excitement ($E$):</span> <strong id="audio-excitement-val">0.24</strong>
+                                </div>
+                                <div class="ai-speech" style="margin-top: 1rem;">
+                                    <strong>Active MetaSound Trigger:</strong>
+                                    <p id="audio-desc-text">Synthesizing ambient murmurs and distant chatter.</p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Tab: Mathematical Optimization -->
-                <div class="tab-pane" id="tab-optimization">
-                    <div class="grid-2-col">
-                        <!-- Genetic Algorithm Panel -->
-                        <div class="panel glass">
-                            <h3>Genetic Algorithm (GA) Castle Maze Evolution</h3>
-                            <p class="panel-desc">
-                                Evolving defensive wall configurations. The algorithm seeks to maximize the path distance from the top-left spawn node to the bottom-right Keep node, subject to a wall budget.
-                            </p>
-                            <div class="panel-dark ga-controls-box">
-                                <div class="stat-row">
-                                    <span>Generation:</span> <strong id="ga-generation">0</strong>
-                                </div>
-                                <div class="stat-row">
-                                    <span>Best Fitness (Path Length):</span> <strong id="ga-best-fitness">0</strong>
-                                </div>
-                                <div class="stat-row">
-                                    <span>Average Fitness:</span> <strong id="ga-avg-fitness">0.0</strong>
-                                </div>
-                                <div class="btn-row" style="margin-top: 1rem; display: flex; gap: 0.5rem;">
-                                    <button class="btn btn-sm btn-primary" id="btn-run-ga" onclick="runGaGeneration()">🧬 Evolve Gen</button>
-                                    <button class="btn btn-sm btn-secondary" onclick="resetGa()">🔄 Reset GA</button>
-                                </div>
+                <!-- Tab: Production Roadmap -->
+                <div class="tab-pane" id="tab-production">
+                    <div class="panel glass">
+                        <h2>Development Sprints & Milestones</h2>
+                        <p class="panel-desc" style="margin-bottom: 2rem;">Click on any sprint milestone below to view deliverables, active checklists, and technical dependencies.</p>
+                        
+                        <div class="sprints-interactive-grid">
+                            <div class="sprint-header-buttons">
+                                <button class="sprint-nav-btn active" onclick="showSprint(1)">Sprint 1: Base Physics</button>
+                                <button class="sprint-nav-btn" onclick="showSprint(2)">Sprint 2: AI Systems</button>
+                                <button class="sprint-nav-btn" onclick="showSprint(3)">Sprint 3: GUI Overlays</button>
+                                <button class="sprint-nav-btn" onclick="showSprint(4)">Sprint 4: Lumen & Audio</button>
+                                <button class="sprint-nav-btn" onclick="showSprint(5)">Sprint 5: Optimization</button>
                             </div>
-                            <div class="ga-grid-container" style="margin-top: 1rem; display: flex; justify-content: center;">
-                                <div id="ga-grid" style="display: grid; grid-template-columns: repeat(8, 1fr); gap: 2px; width: 220px; height: 220px; background: rgba(0,0,0,0.3); border: 2px solid var(--border-color); border-radius: 4px; padding: 2px;"></div>
+                            
+                            <div class="sprint-display-panel panel-dark" id="sprint-info-panel">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab: QA Test Suite -->
+                <div class="tab-pane" id="tab-qa">
+                    <div class="grid-2-col">
+                        <div class="panel glass">
+                            <h2>QA Profiling & Net Diagnostics</h2>
+                            <p>
+                                Continuous integration sweeps run headless matches to verify Behavior Tree stability, coordinate replications, and Chaos physics substepping bounds.
+                            </p>
+                            <div class="panel-dark profile-panel" style="margin-top: 1rem;">
+                                <h4>Network Latency Profiler</h4>
+                                <div class="slider-group">
+                                    <label>Simulated Latency (Ping): <span id="val-ping">50ms</span></label>
+                                    <input type="range" min="10" max="300" value="50" class="slider" id="slider-ping" oninput="updateQaSim()">
+                                </div>
+                                <div class="slider-group">
+                                    <label>Packet Loss Ratio: <span id="val-loss">0.0%</span></label>
+                                    <input type="range" min="0" max="100" value="0" class="slider" id="slider-loss" oninput="updateQaSim()">
+                                </div>
+                                <div class="slider-group">
+                                    <label>Jitter (ms): <span id="val-jitter">5ms</span></label>
+                                    <input type="range" min="0" max="50" value="5" class="slider" id="slider-jitter" oninput="updateQaSim()">
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Ant Colony Optimization Panel -->
-                        <div class="panel glass">
-                            <h3>Ant Colony Route Optimization</h3>
-                            <p class="panel-desc">
-                                Finding the safest supply routes on the strategic province map. Ants lay pheromones on routes based on distance and dynamic skirmish threats. Toggle province status and launch convoys.
-                            </p>
-                            <div class="province-toggles-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 1rem;">
-                                <button class="btn btn-sm btn-tool" id="prov-mino" onclick="toggleProvince('Mino')">Mino: Safe</button>
-                                <button class="btn btn-sm btn-tool" id="prov-mikawa" onclick="toggleProvince('Mikawa')">Mikawa: Safe</button>
-                                <button class="btn btn-sm btn-tool" id="prov-owari" onclick="toggleProvince('Owari')">Owari: Safe</button>
-                            </div>
-                            <div class="graph-viewport panel-dark" style="position: relative; height: 200px; border-radius: 8px; overflow: hidden; margin-bottom: 1rem;">
-                                <!-- Connecting lines representing edges -->
-                                <svg id="aco-svg" style="position: absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;"></svg>
-                                <!-- Nodes representing provinces -->
-                                <div id="aco-nodes-container"></div>
-                            </div>
-                            <div style="display: flex; gap: 0.5rem; align-items: center;">
-                                <button class="btn btn-sm btn-primary" id="btn-run-aco" onclick="launchAcoConvoys()">🚚 Launch Convoys</button>
-                                <div class="info-alert" style="margin: 0; padding: 0.4rem 0.8rem; font-size: 0.75rem; flex-grow: 1;">
-                                    <strong>Selected Safe Path:</strong> <span id="aco-path-display">Kyoto ➔ Mino ➔ Echigo</span>
+                        <div class="panel glass flex-center">
+                            <h3>Replication Sync Diagnostics</h3>
+                            <div class="qa-status-box">
+                                <div class="alert-banner" id="qa-alert-banner">
+                                    <span id="qa-alert-status">🟢 SYSTEM SYNCHRONIZED</span>
+                                </div>
+                                <div class="stat-row" style="margin-top: 1rem;">
+                                    <span>Sync Status:</span> <strong id="qa-sync-state">Perfect Parity</strong>
+                                </div>
+                                <div class="stat-row">
+                                    <span>Positional Coordinate Delta:</span> <strong id="qa-coordinate-delta" class="highlight">0.0 units</strong>
+                                </div>
+                                <div class="panel-dark" style="margin-top: 1rem; font-family: monospace; font-size: 0.75rem; height: 100px; overflow-y: auto;" id="qa-logs">
+                                    [SYSTEM] Diagnostics loaded.<br>
+                                    [CLIENT] Dynamic prediction active.
                                 </div>
                             </div>
                         </div>
@@ -328,38 +290,38 @@
 
         <!-- Technical Roadmap Timeline -->
         <section class="roadmap-section" id="roadmap">
-            <h2 class="section-title">Development Roadmap</h2>
+            <h2 class="section-title">Matchday Architecture Roadmap</h2>
             <div class="timeline">
                 <div class="timeline-item">
                     <div class="timeline-badge">1</div>
                     <div class="timeline-panel glass">
-                        <h3>Phase 1: Native Skeleton & Parity</h3>
-                        <span class="timeline-date">Q3 2026</span>
-                        <p>Establish baseline game-state parity between iOS SpriteKit and Android SurfaceView loops. Create unified asset JSON reading schemas.</p>
+                        <h3>Phase 1: Pre-Production & Physics</h3>
+                        <span class="timeline-date">Weeks 1-4</span>
+                        <p>Set up UE5 C++ class structures. Initialize Chaos physics substepping for fast-moving ball trajectories.</p>
                     </div>
                 </div>
                 <div class="timeline-item">
                     <div class="timeline-badge">2</div>
                     <div class="timeline-panel glass">
-                        <h3>Phase 2: Rust Headless Core & UniFFI</h3>
-                        <span class="timeline-date">Q4 2026</span>
-                        <p>Write core simulation in Rust. Implement Entity-Component-System (ECS) with hecs. Expose FFI bindings using UniFFI and Rkyv serialization.</p>
+                        <h3>Phase 2: Autonomous Locomotion & AI</h3>
+                        <span class="timeline-date">Weeks 5-8</span>
+                        <p>Build Motion Matching locomotor databases and pitch NavMesh boundaries. Implement spatial influence mapping grids.</p>
                     </div>
                 </div>
                 <div class="timeline-item">
                     <div class="timeline-badge">3</div>
                     <div class="timeline-panel glass">
-                        <h3>Phase 3: Real-Time Netcode & AWS GameLift</h3>
-                        <span class="timeline-date">Q1 2027</span>
-                        <p>Build server-authoritative UDP state synchronization. Write FlexMatch configurations on AWS GameLift to optimize match queues and spot instances.</p>
+                        <h3>Phase 3: Tactical Overlays & HUD</h3>
+                        <span class="timeline-date">Weeks 9-12</span>
+                        <p>Develop Manager strategy panels and pitch radar systems. Wire GameState variables to HUD indicators.</p>
                     </div>
                 </div>
                 <div class="timeline-item">
                     <div class="timeline-badge">4</div>
                     <div class="timeline-panel glass">
-                        <h3>Phase 4: ML Models & Content Generation</h3>
-                        <span class="timeline-date">Q2 2027</span>
-                        <p>Deploy WFC and PCGRL level synthesis. Wire continuous PPO agents for dynamic difficulty adjustment and contextual bandits for storefronts.</p>
+                        <h3>Phase 4: Dynamic Audio & Environments</h3>
+                        <span class="timeline-date">Weeks 13-16</span>
+                        <p>Establish Lumen light cycles. Implement MetaSound crowd amplitude models and sound attenuation curves.</p>
                     </div>
                 </div>
             </div>
@@ -369,8 +331,8 @@
 
     <!-- Footer -->
     <footer class="footer">
-        <p>&copy; 2026 ACFHarbinger. Project Mobile Fortress. All Rights Reserved.</p>
-        <p class="sub-footer">Authoritative Codebase Reference: <a href="file:///.agent/AGENTS.md" class="footer-link">AGENTS.md</a></p>
+        <p>&copy; 2026 AISS Development Team. Autonomous Pitch Simulation. All Rights Reserved.</p>
+        <p class="sub-footer">Authoritative Repository Reference: <a href="file:///.agent/AGENTS.md" class="footer-link">AGENTS.md</a></p>
     </footer>
 
     <!-- Scripts -->
