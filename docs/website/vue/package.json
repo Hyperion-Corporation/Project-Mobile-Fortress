@@ -1,0 +1,31 @@
+{
+  "name": "mobile-fortress-docs-website",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Vue 3 documentation portal + interactive design hub for Mobile Fortress.",
+  "scripts": {
+    "prebuild": "node scripts/generate-nav.mjs",
+    "predev": "node scripts/generate-nav.mjs",
+    "dev": "vite",
+    "build": "vue-tsc -b --noCheck && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.0",
+    "markdown-it": "^14.1.0",
+    "markdown-it-anchor": "^9.2.0",
+    "markdown-it-texmath": "^1.0.0",
+    "katex": "^0.16.11",
+    "highlight.js": "^11.11.1",
+    "mermaid": "^11.4.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.1",
+    "js-yaml": "^4.1.0",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.5",
+    "vue-tsc": "^2.2.0"
+  }
+}

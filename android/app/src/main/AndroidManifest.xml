@@ -10,7 +10,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
-        android:theme="@style/Theme.GameTemplate"
+        android:theme="@style/Theme.MobileFortress"
         tools:targetApi="31">
 
         <!--
@@ -24,7 +24,7 @@
             android:name=".MainActivity"
             android:exported="true"
             android:screenOrientation="portrait"
-            android:theme="@style/Theme.GameTemplate">
+            android:theme="@style/Theme.MobileFortress">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

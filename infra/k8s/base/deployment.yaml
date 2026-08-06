@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: game-backend
-          image: ghcr.io/example/mobile-game-template-backend:latest
+          image: ghcr.io/acfharbinger/mobile-fortress-backend:latest
           ports:
             - containerPort: 8080
           envFrom:

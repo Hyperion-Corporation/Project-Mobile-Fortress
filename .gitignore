@@ -1,7 +1,6 @@
 # --- Android (android/) ---
 *.iml
 android/.gradle
-android/local.properties
 android/.idea/caches
 android/.idea/libraries
 android/.idea/modules.xml
@@ -31,7 +30,7 @@ android/.idea/*
 
 # Gradle
 .gradle/
-android/gradle/wrapper/gradle-wrapper.jar.sha256
+gradle/wrapper/gradle-wrapper.jar.sha256
 
 # --- iOS (ios/) ---
 ios/build/
@@ -49,3 +48,7 @@ ios/MyGame.xcodeproj/project.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
 # Env
 .env
 .kotlin/
+node_modules/
+
+# Other stuff
+/**/mobile_fortress_docs_tooling.egg-info
