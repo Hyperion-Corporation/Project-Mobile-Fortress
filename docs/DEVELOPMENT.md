@@ -1,6 +1,6 @@
 # Development Guide
 
-This is a two-client monorepo: Android/Kotlin under [`android/`](../android/) and iOS/Swift under [`ios/`](../ios/), sharing raw assets and a documented spec under [`core/`](../core/) (see `core/README.md` for what's actually shared vs. aspirational).
+This is a two-client monorepo: Android/Kotlin under [`android/`](https://github.com/ACFHarbinger/Project-Mobile-Fortress/tree/main/android) and iOS/Swift under [`ios/`](https://github.com/ACFHarbinger/Project-Mobile-Fortress/tree/main/ios), sharing raw assets and a documented spec under [`core/`](https://github.com/ACFHarbinger/Project-Mobile-Fortress/tree/main/core) (see `core/README.md` for what's actually shared vs. aspirational).
 
 ## Prerequisites (both platforms)
 
@@ -44,7 +44,7 @@ emulator -avd mobile-fortress
 
 ## iOS (`ios/`)
 
-**Requires a native macOS host with Xcode 15+.** There is no Linux devcontainer for iOS — Xcode and the iOS Simulator only run on macOS; see [`.devcontainer/README.md`](../.devcontainer/README.md).
+**Requires a native macOS host with Xcode 15+.** There is no Linux devcontainer for iOS — Xcode and the iOS Simulator only run on macOS; see [`.devcontainer/README.md`](https://github.com/ACFHarbinger/Project-Mobile-Fortress/blob/main/.devcontainer/README.md).
 
 ```bash
 open ios/MyGame.xcodeproj
@@ -61,7 +61,7 @@ No SwiftLint configuration ships by default with this project — add a `.swiftl
 
 ## Containerized Dev Environment
 
-Open the repo in VS Code and choose "Reopen in Container" — see [`.devcontainer/devcontainer.json`](../.devcontainer/devcontainer.json). This container only provisions the **Android** toolchain (Android SDK, JDK 17, emulator deps); it cannot build or run the iOS app. The emulator itself also needs `/dev/kvm` passed through and is best run on the host, not inside the container, for acceptable performance.
+Open the repo in VS Code and choose "Reopen in Container" — see [`.devcontainer/devcontainer.json`](https://github.com/ACFHarbinger/Project-Mobile-Fortress/blob/main/.devcontainer/devcontainer.json). This container only provisions the **Android** toolchain (Android SDK, JDK 17, emulator deps); it cannot build or run the iOS app. The emulator itself also needs `/dev/kvm` passed through and is best run on the host, not inside the container, for acceptable performance.
 
 ## Common Tasks
 

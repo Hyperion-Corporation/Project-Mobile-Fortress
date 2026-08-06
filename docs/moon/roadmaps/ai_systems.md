@@ -10,7 +10,7 @@ Scope: procedural content generation, dynamic difficulty adjustment, and monetiz
 | A4 | Heuristic rule-based Dynamic Difficulty Adjustment (DDA) as the shipping v1 — enemy HP/spawn-rate curves tuned per level, no ML dependency for MVP | M | 📋 Pending |
 | A5 | RL-based continuous-action DDA (post-MVP): agent modulates enemy velocity/spawn timing/pathfinding aggressiveness to hold players in the flow channel | XL | 📋 Pending |
 | A6 | Two-agent (Imitation + Reinforcement Learning) personalized difficulty: an imitation agent clones a player's placement/upgrade heuristics, an adversarial RL agent discovers counter-strategies against the clone | XL | 📋 Pending |
-| A7 | Contextual Multi-Armed Bandit (LinUCB) for personalized store-offer selection — tracked jointly with [`monetization.md`](monetization.md#M11) | XL | 📋 Pending |
+| A7 | Contextual Multi-Armed Bandit (LinUCB) for personalized store-offer selection — tracked jointly with [`monetization.md`](monetization.md) | XL | 📋 Pending |
 | A8 | Human-in-the-loop gate for CMAB pricing recommendations (designer approval required before any live pricing change) | M | 📋 Pending |
 | A9 | Survival-analysis (Weibull) churn/LTV modeling from early-session telemetry | L | 📋 Pending |
 | A10 | Temporal Graph Neural Network (TGNN) over clan Co-Op matchmaking history to detect cascading-churn risk in influential players and trigger retention interventions | XL | 📋 Pending |

@@ -14,7 +14,7 @@
 
 **Mobile Fortress** is a cooperative tower-defense mobile game set during the **1540s–1560s Wōkòu (倭寇) / Wakō pirate crisis** on the East Asian coast: players defend a coastal fortress network — a Main HQ/Citadel, Resource Outposts, and Trading Outposts — against raiding Wōkòu pirate fleets striking by land and sea, then extend that defense into a light 4X-style coastal-territory meta-game. The defending garrison is an East Asian primary civilization (Ming China's coastal garrison by default; Japan or Joseon Korea as alternate settings) reinforced by a supporting Western civilization (Portuguese by default, with Spanish/Dutch/British/French alternates). The design targets the market gap identified in [`reports/Tower Defense Market Research.md`](../reports/Tower%20Defense%20Market%20Research.md) — a AAA-quality, culturally specific East Asian historical setting is conspicuously absent from the current top-grossing TD/4X-hybrid charts — while the client/server/netcode architecture follows the technical blueprint in [`research/Multiplayer Tower Defense Implementation.md`](../research/Multiplayer%20Tower%20Defense%20Implementation.md).
 
-Both source documents live under [`reports/`](../reports/) and [`research/`](../research/) and are the canonical references for the design and technical decisions summarized below — read them before making significant architecture or monetization changes.
+Both source documents live under [`reports/`](../reports/Tower%20Defense%20Market%20Research.md) and [`research/`](../research/Multiplayer%20Tower%20Defense%20Implementation.md) and are the canonical references for the design and technical decisions summarized below — read them before making significant architecture or monetization changes.
 
 This repository started life as a generic two-platform mobile game template; that scaffolding (Android `SurfaceView` skeleton, iOS SpriteKit skeleton, CI/CD, docs, `.agent/` LLM tooling) is now being seeded with Mobile Fortress' actual game design. Completed template groundwork is listed under [Track: Template Scaffolding](#track-template-scaffolding-complete) below and in [`CHANGELOG.md`](CHANGELOG.md); everything else in this document is the real game roadmap.
 
@@ -46,7 +46,7 @@ Status markers: ✅ Done · 🚧 In Progress · 📋 Pending
 | 5 | Procedural content & ML systems (WFC maps, RL difficulty, CMAB offers, churn prediction) | 📋 Pending |
 | 6 | LiveOps, regulatory compliance, regional launch | 📋 Pending |
 
-See per-topic detail in [`docs/moon/roadmaps/`](roadmaps/):
+See per-topic detail in [`docs/moon/roadmaps/`](roadmaps/gameplay.md):
 
 - [`gameplay.md`](roadmaps/gameplay.md) — core TD loop, castle defense, hero commanders, pathfinding
 - [`ui_ux.md`](roadmaps/ui_ux.md) — menus, HUD, clan UI, accessibility

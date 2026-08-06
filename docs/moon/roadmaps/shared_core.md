@@ -1,6 +1,6 @@
 # Shared Core Roadmap — C++ (decided)
 
-Today `core/` is assets + documentation only — see [`core/README.md`](../../../core/README.md). **This decision is now made**: Mobile Fortress requires a real compiled shared simulation core, not documentation-only convention, because Co-Op multiplayer needs bit-identical simulation state across both native clients. See [`research/Multiplayer Tower Defense Implementation.md`](../../research/Multiplayer%20Tower%20Defense%20Implementation.md) §"Architecting the Shared Computational Core" for the full evaluation.
+Today `core/` is assets + documentation only — see [`core/README.md`](https://github.com/ACFHarbinger/Project-Mobile-Fortress/blob/main/core/README.md). **This decision is now made**: Mobile Fortress requires a real compiled shared simulation core, not documentation-only convention, because Co-Op multiplayer needs bit-identical simulation state across both native clients. See [`research/Multiplayer Tower Defense Implementation.md`](../../research/Multiplayer%20Tower%20Defense%20Implementation.md) §"Architecting the Shared Computational Core" for the full evaluation.
 
 ## Decision: Option B — C++ core, bridged via JNI (Android) and Swift C++ interop (iOS)
 
@@ -38,6 +38,6 @@ C++ has no compiler-enforced borrow checker or `Send`/`Sync` marker traits, so t
 | S4 | FlatBuffers-based state snapshot passed across the C ABI boundary as an opaque buffer; native clients render UI-state differentials only | M | 📋 Pending |
 | S5 | Replace Android's `engine/` and iOS's `Engine/`/`Core/GameManager.swift` game-logic bodies with calls into the shared core, keeping native code as the presentation/input layer only — gated on the sanitizer/clang-tidy CI setup in "Trade-offs" above | XL | 📋 Pending |
 | S6 | Async bridging: expose C++ async results (a small callback/promise abstraction, or `std::future` where it fits) to Kotlin coroutines / Swift `async`/`await`, with explicit lifetime/ownership rules at the boundary and ThreadSanitizer coverage — this is exactly the class of bug Rust's `Send`/`Sync` would have caught at compile time, so treat it as higher-risk than a typical async-bridging task | M | 📋 Pending |
-| S7 | Cross-platform determinism test suite (see [`qa_testing.md`](qa_testing.md#Q4)) — fixed-point arithmetic and synchronized PRNGs where floating-point divergence would break lockstep-style sync | L | 📋 Pending |
+| S7 | Cross-platform determinism test suite (see [`qa_testing.md`](qa_testing.md)) — fixed-point arithmetic and synchronized PRNGs where floating-point divergence would break lockstep-style sync | L | 📋 Pending |
 
 Effort key: S = days, M = 1–2 weeks, L = 3–6 weeks, XL = multi-month/cross-cutting.

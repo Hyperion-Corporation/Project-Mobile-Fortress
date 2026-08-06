@@ -77,19 +77,19 @@ export const navTree: NavNode[] = [
     "kind": "section",
     "children": [
       {
-        "title": "1. Record architecture decisions",
+        "title": "0001 Record Architecture Decisions",
         "kind": "md",
         "path": "/adr/0001-record-architecture-decisions",
         "source": "docs/adr/0001-record-architecture-decisions.md"
       },
       {
-        "title": "2. SurfaceView + Canvas for the game surface, Compose for chrome",
+        "title": "0002 Rendering Approach",
         "kind": "md",
         "path": "/adr/0002-rendering-approach",
         "source": "docs/adr/0002-rendering-approach.md"
       },
       {
-        "title": "3. SpriteKit + SwiftUI for the iOS client",
+        "title": "0003 iOS Rendering Approach",
         "kind": "md",
         "path": "/adr/0003-ios-rendering-approach",
         "source": "docs/adr/0003-ios-rendering-approach.md"
@@ -361,17 +361,17 @@ export const searchIndex: { title: string; path: string; source: string }[] = [
     "source": "docs/BENCHMARKS.md"
   },
   {
-    "title": "1. Record architecture decisions",
+    "title": "0001 Record Architecture Decisions",
     "path": "/adr/0001-record-architecture-decisions",
     "source": "docs/adr/0001-record-architecture-decisions.md"
   },
   {
-    "title": "2. SurfaceView + Canvas for the game surface, Compose for chrome",
+    "title": "0002 Rendering Approach",
     "path": "/adr/0002-rendering-approach",
     "source": "docs/adr/0002-rendering-approach.md"
   },
   {
-    "title": "3. SpriteKit + SwiftUI for the iOS client",
+    "title": "0003 iOS Rendering Approach",
     "path": "/adr/0003-ios-rendering-approach",
     "source": "docs/adr/0003-ios-rendering-approach.md"
   },

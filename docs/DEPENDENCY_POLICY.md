@@ -20,10 +20,10 @@
 
 | Stack | Runtime | Minimum Version | Rationale |
 | --- | --- | --- | --- |
-| Kotlin | Android | 2.0.20 | Current `kotlin-android` plugin baseline, see [`.agent/AGENTS.md`](../.agent/AGENTS.md) §2 |
+| Kotlin | Android | 2.0.20 | Current `kotlin-android` plugin baseline, see [`.agent/AGENTS.md`](https://github.com/ACFHarbinger/Project-Mobile-Fortress/blob/main/.agent/AGENTS.md) §2 |
 | Android Gradle Plugin (AGP) | Android | 8.5.2 | `com.android.application` baseline |
 | Gradle | Android | 8.7 (wrapper-pinned) | Always invoke via `./gradlew`, never a bare `gradle` |
-| Android SDK | Android | compileSdk/targetSdk 35, minSdk 24 | ~97% device coverage as of 2026; see [`.agent/AGENTS.md`](../.agent/AGENTS.md) §2 |
+| Android SDK | Android | compileSdk/targetSdk 35, minSdk 24 | ~97% device coverage as of 2026; see [`.agent/AGENTS.md`](https://github.com/ACFHarbinger/Project-Mobile-Fortress/blob/main/.agent/AGENTS.md) §2 |
 | Swift | iOS | 5.0 | `ios/MyGame.xcodeproj` baseline |
 | iOS / Xcode | iOS | iOS 16+ deployment target | SpriteKit + SwiftUI chrome baseline |
 | Node.js | `docs/website/vue` | 20 LTS | Matches `actions/setup-node@v4`'s `node-version` in `.github/workflows/docs.yml` |
@@ -38,7 +38,7 @@
 
 ### Android (`gradle/libs.versions.toml`)
 
-- All Gradle dependency versions live in the version catalog (`gradle/libs.versions.toml`), never hardcoded inline in a `build.gradle.kts` — see [`.agent/rules/kotlin.md`](../.agent/rules/kotlin.md).
+- All Gradle dependency versions live in the version catalog (`gradle/libs.versions.toml`), never hardcoded inline in a `build.gradle.kts` — see [`.agent/rules/kotlin.md`](https://github.com/ACFHarbinger/Project-Mobile-Fortress/blob/main/.agent/rules/kotlin.md).
 - The Gradle wrapper (`gradle/wrapper/gradle-wrapper.properties`) pins the exact Gradle distribution; AGP's version must stay within that Gradle version's supported range (check the [AGP/Gradle compatibility matrix](https://developer.android.com/studio/releases/gradle-plugin#updating-gradle) before bumping either independently).
 
 ### iOS (Swift Package Manager)
@@ -108,8 +108,8 @@ Once approved: add to the correct manifest (`gradle/libs.versions.toml`, `docs/w
 
 ### Android
 
-- Keep Jetpack Compose (used for menu/HUD chrome only, per [`.agent/AGENTS.md`](../.agent/AGENTS.md) §1.1) on the BOM version aligned with the pinned Kotlin version — mismatches are a common source of opaque compiler errors.
-- `SurfaceView`/`GameLoop` deliberately has zero third-party dependencies — see [`.agent/rules/game_loop_performance.md`](../.agent/rules/game_loop_performance.md) for why a hand-rolled thread beats pulling in a game-loop library here.
+- Keep Jetpack Compose (used for menu/HUD chrome only, per [`.agent/AGENTS.md`](https://github.com/ACFHarbinger/Project-Mobile-Fortress/blob/main/.agent/AGENTS.md) §1.1) on the BOM version aligned with the pinned Kotlin version — mismatches are a common source of opaque compiler errors.
+- `SurfaceView`/`GameLoop` deliberately has zero third-party dependencies — see [`.agent/rules/game_loop_performance.md`](https://github.com/ACFHarbinger/Project-Mobile-Fortress/blob/main/.agent/rules/game_loop_performance.md) for why a hand-rolled thread beats pulling in a game-loop library here.
 
 ### iOS
 

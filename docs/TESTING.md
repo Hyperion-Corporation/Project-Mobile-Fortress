@@ -18,8 +18,8 @@
 
 ## Coverage
 
-Android coverage is uploaded to [Codecov](https://codecov.io/); thresholds are configured in [`git/codecov.yaml`](../git/codecov.yaml). iOS coverage is not currently collected/uploaded — add `-enableCodeCoverage YES` to the `ios-test` CI step and a coverage-export step if you want parity.
+Android coverage is uploaded to [Codecov](https://codecov.io/); thresholds are configured in [`git/codecov.yaml`](https://github.com/ACFHarbinger/Project-Mobile-Fortress/blob/main/codecov.yaml). iOS coverage is not currently collected/uploaded — add `-enableCodeCoverage YES` to the `ios-test` CI step and a coverage-export step if you want parity.
 
 ## Writing Tests
 
-See [`.agent/rules/testing_qa.md`](../.agent/rules/testing_qa.md) and [`.agent/workflows/testing_qa.md`](../.agent/workflows/testing_qa.md) for Android edge cases that need explicit coverage (surface teardown mid-frame, process-death-and-restore, rotation while paused vs. running), and [`.agent/rules/swift.md`](../.agent/rules/swift.md) / [`.agent/workflows/ios_lifecycle.md`](../.agent/workflows/ios_lifecycle.md) for the iOS equivalents (scene backgrounding, save/restore).
+See [`.agent/rules/testing_qa.md`](https://github.com/ACFHarbinger/Project-Mobile-Fortress/blob/main/.agent/rules/testing_qa.md) and [`.agent/workflows/testing_qa.md`](https://github.com/ACFHarbinger/Project-Mobile-Fortress/blob/main/.agent/workflows/testing_qa.md) for Android edge cases that need explicit coverage (surface teardown mid-frame, process-death-and-restore, rotation while paused vs. running), and [`.agent/rules/swift.md`](https://github.com/ACFHarbinger/Project-Mobile-Fortress/blob/main/.agent/rules/swift.md) / [`.agent/workflows/ios_lifecycle.md`](https://github.com/ACFHarbinger/Project-Mobile-Fortress/blob/main/.agent/workflows/ios_lifecycle.md) for the iOS equivalents (scene backgrounding, save/restore).

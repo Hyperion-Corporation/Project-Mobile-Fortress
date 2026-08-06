@@ -68,7 +68,7 @@ SwiftUI Scene lifecycle ──▶ GameContainerView (SpriteView) ──▶ GameS
 
 ## Rendering Approach
 
-See [ADR 0002](adr/0002-rendering-approach.md) for the Android rationale (`SurfaceView` + `Canvas` over Compose Canvas or a full game engine) and [ADR 0003](adr/0003-ios-rendering-approach.md) for the iOS rationale (SpriteKit over Metal-from-scratch or a cross-platform engine), plus [`.agent/AGENTS.md`](../.agent/AGENTS.md) §1.1 for when to swap either out.
+See [ADR 0002](adr/0002-rendering-approach.md) for the Android rationale (`SurfaceView` + `Canvas` over Compose Canvas or a full game engine) and [ADR 0003](adr/0003-ios-rendering-approach.md) for the iOS rationale (SpriteKit over Metal-from-scratch or a cross-platform engine), plus [`.agent/AGENTS.md`](https://github.com/ACFHarbinger/Project-Mobile-Fortress/blob/main/.agent/AGENTS.md) §1.1 for when to swap either out.
 
 ## Optional Backend
 
@@ -76,4 +76,4 @@ If leaderboards or cloud save are added, both apps talk to the backend only thro
 
 ## Architecture Decision Records
 
-Significant, hard-to-reverse decisions are recorded under [`docs/adr/`](adr/) using the [Michael Nygard ADR format](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions).
+Significant, hard-to-reverse decisions are recorded under [`docs/adr/`](adr/0001-record-architecture-decisions.md) using the [Michael Nygard ADR format](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions).

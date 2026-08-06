@@ -1,17 +1,17 @@
 # Troubleshooting Guide
 
-*Last updated: 2026-08-06. Covers Android/Gradle build failures, the Dev Container, iOS/Xcode build failures (macOS host required), CI, and the `docs/website/vue` documentation site. See [`docs/DEVELOPMENT.md`](DEVELOPMENT.md) for first-time setup and [`.agent/rules/`](../.agent/rules/) for the coding conventions these failures usually trace back to.*
+*Last updated: 2026-08-06. Covers Android/Gradle build failures, the Dev Container, iOS/Xcode build failures (macOS host required), CI, and the `docs/website/vue` documentation site. See [`docs/DEVELOPMENT.md`](DEVELOPMENT.md) for first-time setup and [`.agent/rules/`](https://github.com/ACFHarbinger/Project-Mobile-Fortress/tree/main/.agent/rules) for the coding conventions these failures usually trace back to.*
 
 ---
 
 ## Table of Contents
 
-- [Android / Gradle](#android--gradle)
+- [Android / Gradle](#android-gradle)
 - [Dev Container](#dev-container)
-- [iOS / Xcode](#ios--xcode)
+- [iOS / Xcode](#ios-xcode)
 - [GitHub Actions CI](#github-actions-ci)
 - [Documentation Site (`docs/website/vue`)](#documentation-site-docswebsitevue)
-- [Game Loop / Frame-Drop Symptoms](#game-loop--frame-drop-symptoms)
+- [Game Loop / Frame-Drop Symptoms](#game-loop-frame-drop-symptoms)
 - [Getting Further Help](#getting-further-help)
 
 ---
@@ -55,7 +55,7 @@ just lint-check   # ./gradlew lint ktlintCheck
 
 ### `SurfaceHolder.lockCanvas()` returns `null` / app crashes on rotation
 
-This is the documented `GameLoop` lifecycle hazard, not a build problem — see [`.agent/rules/android_lifecycle.md`](../.agent/rules/android_lifecycle.md) and [`.agent/rules/game_loop_performance.md`](../.agent/rules/game_loop_performance.md). The loop thread must stop in `surfaceDestroyed` and restart in `surfaceCreated`; a leaked thread across a rotation is the #1 cause of this crash class.
+This is the documented `GameLoop` lifecycle hazard, not a build problem — see [`.agent/rules/android_lifecycle.md`](https://github.com/ACFHarbinger/Project-Mobile-Fortress/blob/main/.agent/rules/android_lifecycle.md) and [`.agent/rules/game_loop_performance.md`](https://github.com/ACFHarbinger/Project-Mobile-Fortress/blob/main/.agent/rules/game_loop_performance.md). The loop thread must stop in `surfaceDestroyed` and restart in `surfaceCreated`; a leaked thread across a rotation is the #1 cause of this crash class.
 
 ---
 
@@ -67,7 +67,7 @@ The Dev Container (`.devcontainer/devcontainer.json`) provisions the Android SDK
 
 ### iOS work is impossible inside the container
 
-This is expected, not a bug — the Dev Container is Linux-only (Android toolchain only). iOS/Xcode builds require a native macOS host or a `macos-latest` CI runner; see [`.agent/AGENTS.md`](../.agent/AGENTS.md) §7 "Known Constraints".
+This is expected, not a bug — the Dev Container is Linux-only (Android toolchain only). iOS/Xcode builds require a native macOS host or a `macos-latest` CI runner; see [`.agent/AGENTS.md`](https://github.com/ACFHarbinger/Project-Mobile-Fortress/blob/main/.agent/AGENTS.md) §7 "Known Constraints".
 
 ---
 
@@ -92,7 +92,7 @@ xcodebuild test -project ios/MyGame.xcodeproj -scheme MyGame \
 
 ### App doesn't pause/save state on backgrounding
 
-See [`.agent/workflows/ios_lifecycle.md`](../.agent/workflows/ios_lifecycle.md) — `GameScene`/`AppDelegate` must pause gameplay and persist state on backgrounding; the OS can kill the app at any time without a `applicationWillTerminate` guarantee.
+See [`.agent/workflows/ios_lifecycle.md`](https://github.com/ACFHarbinger/Project-Mobile-Fortress/blob/main/.agent/workflows/ios_lifecycle.md) — `GameScene`/`AppDelegate` must pause gameplay and persist state on backgrounding; the OS can kill the app at any time without a `applicationWillTerminate` guarantee.
 
 ---
 
@@ -143,7 +143,7 @@ Both render client-side after the Markdown is injected into the DOM — check th
 
 ## Game Loop / Frame-Drop Symptoms
 
-These aren't build failures but are common enough to document here rather than re-derive per incident. See [`.agent/rules/game_loop_performance.md`](../.agent/rules/game_loop_performance.md) for the full rules and anti-pattern examples; short version:
+These aren't build failures but are common enough to document here rather than re-derive per incident. See [`.agent/rules/game_loop_performance.md`](https://github.com/ACFHarbinger/Project-Mobile-Fortress/blob/main/.agent/rules/game_loop_performance.md) for the full rules and anti-pattern examples; short version:
 
 | Symptom | Usual cause |
 | --- | --- |
@@ -155,6 +155,6 @@ These aren't build failures but are common enough to document here rather than r
 
 ## Getting Further Help
 
-1. Check [`docs/ARCHITECTURE.md`](ARCHITECTURE.md) and the relevant [`docs/adr/`](adr/) record — the issue may be a known, deliberate tradeoff.
-2. Search [`docs/moon/CHANGELOG.md`](moon/CHANGELOG.md) for whether the affected area has shipped yet — several systems described in [`docs/moon/ROADMAP.md`](moon/ROADMAP.md) are still pre-implementation (see [`.agent/AGENTS.md`](../.agent/AGENTS.md) §7 "Known Constraints").
+1. Check [`docs/ARCHITECTURE.md`](ARCHITECTURE.md) and the relevant [`docs/adr/`](adr/0001-record-architecture-decisions.md) record — the issue may be a known, deliberate tradeoff.
+2. Search [`docs/moon/CHANGELOG.md`](moon/CHANGELOG.md) for whether the affected area has shipped yet — several systems described in [`docs/moon/ROADMAP.md`](moon/ROADMAP.md) are still pre-implementation (see [`.agent/AGENTS.md`](https://github.com/ACFHarbinger/Project-Mobile-Fortress/blob/main/.agent/AGENTS.md) §7 "Known Constraints").
 3. Open a GitHub issue with the exact command, full error output, and platform (OS, Android API level / iOS+Xcode version, or "Dev Container").

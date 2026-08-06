@@ -2,7 +2,7 @@
 
 *Last updated: 2026-08-06.*
 
-> **TODO:** No automated benchmark suite exists yet — this document records the **target budgets and planned instrumentation**, not measured results. Neither native client ships the real Mobile Fortress core loop today (see [`.agent/AGENTS.md`](../.agent/AGENTS.md) §7 "Known Constraints"); benchmarking the inherited template skeletons (a bouncing-entity demo on Android, a top-down shooter skeleton on iOS) wouldn't be representative of anything. This doc will gain real numbers as [`docs/moon/roadmaps/performance.md`](moon/roadmaps/performance.md)'s items land — track it there, not here, for status.
+> **TODO:** No automated benchmark suite exists yet — this document records the **target budgets and planned instrumentation**, not measured results. Neither native client ships the real Mobile Fortress core loop today (see [`.agent/AGENTS.md`](https://github.com/ACFHarbinger/Project-Mobile-Fortress/blob/main/.agent/AGENTS.md) §7 "Known Constraints"); benchmarking the inherited template skeletons (a bouncing-entity demo on Android, a top-down shooter skeleton on iOS) wouldn't be representative of anything. This doc will gain real numbers as [`docs/moon/roadmaps/performance.md`](moon/roadmaps/performance.md)'s items land — track it there, not here, for status.
 
 ---
 
@@ -23,7 +23,7 @@
 | Frame time (Android, mid-range device) | ≤ 16.6ms (60fps) sustained during a full siege wave (hundreds of concurrent units) | [`docs/moon/roadmaps/performance.md`](moon/roadmaps/performance.md) P3/P4; Market Research's hardware-democratization findings (sub-$100 devices, P8) |
 | Frame time (iOS) | ≤ 16.6ms (60fps), matching SpriteKit's display-link cadence | Parity with Android target |
 | Flow Field recompute | Amortized across frames for large grids; no single-frame spike from a tower placement | [`docs/moon/roadmaps/performance.md`](moon/roadmaps/performance.md) P3 |
-| Per-frame heap allocation (update/render hot path) | Zero | [`.agent/rules/game_loop_performance.md`](../.agent/rules/game_loop_performance.md) — allocation churn is the most common cause of GC/ARC-driven frame drops |
+| Per-frame heap allocation (update/render hot path) | Zero | [`.agent/rules/game_loop_performance.md`](https://github.com/ACFHarbinger/Project-Mobile-Fortress/blob/main/.agent/rules/game_loop_performance.md) — allocation churn is the most common cause of GC/ARC-driven frame drops |
 | Cold start (Android, Baseline Profiles) | Meaningfully faster than JIT-only cold start | [`docs/moon/roadmaps/performance.md`](moon/roadmaps/performance.md) P6 |
 | JNI/Swift-C++-interop FFI round-trip (once the C++ core lands) | Zero-copy via FlatBuffers; no per-frame (de)serialization allocation | [`docs/moon/roadmaps/performance.md`](moon/roadmaps/performance.md) P5; [`docs/moon/roadmaps/shared_core.md`](moon/roadmaps/shared_core.md) |
 | Co-Op netcode state sync | Within GameLift FlexMatch's latency-graduated matchmaking thresholds (see [`research/Multiplayer Tower Defense Implementation.md`](research/Multiplayer%20Tower%20Defense%20Implementation.md) §"Matchmaking and Fleet Orchestration") | [`docs/moon/roadmaps/backend.md`](moon/roadmaps/backend.md) |
@@ -65,7 +65,7 @@ adb shell am start -n com.acfharbinger.mobilefortress/.MainActivity
 xcrun xctrace record --template 'Time Profiler' --launch ios/MyGame.xcodeproj
 ```
 
-See [`.agent/rules/game_loop_performance.md`](../.agent/rules/game_loop_performance.md)'s closing note on both platforms: profile before "optimizing" — most naive frame-drop reports trace back to allocation or an accidental main-thread blocking call, not raw compute cost.
+See [`.agent/rules/game_loop_performance.md`](https://github.com/ACFHarbinger/Project-Mobile-Fortress/blob/main/.agent/rules/game_loop_performance.md)'s closing note on both platforms: profile before "optimizing" — most naive frame-drop reports trace back to allocation or an accidental main-thread blocking call, not raw compute cost.
 
 ---
 
