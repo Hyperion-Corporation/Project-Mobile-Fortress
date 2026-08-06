@@ -4,8 +4,26 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
+    paths:
+      - "android/**"
+      - "ios/**"
+      - "core/**"
+      - "gradle/**"
+      - ".github/workflows/ci.yml"
+      - "build.gradle.kts"
+      - "settings.gradle.kts"
+      - "justfile"
   pull_request:
     branches: [main]
+    paths:
+      - "android/**"
+      - "ios/**"
+      - "core/**"
+      - "gradle/**"
+      - ".github/workflows/ci.yml"
+      - "build.gradle.kts"
+      - "settings.gradle.kts"
+      - "justfile"
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}

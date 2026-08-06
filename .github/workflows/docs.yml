@@ -3,6 +3,18 @@ name: Docs
 on:
     push:
         branches: [main]
+        paths:
+            - "docs/**"
+            - "scripts/**"
+            - ".github/workflows/docs.yml"
+            - "*.md"
+    pull_request:
+        branches: [main]
+        paths:
+            - "docs/**"
+            - "scripts/**"
+            - ".github/workflows/docs.yml"
+            - "*.md"
     workflow_dispatch:
         inputs:
             reason:
@@ -59,6 +71,7 @@ jobs:
                   SITE_BASE: /${{ github.event.repository.name }}/
 
             - name: Deploy to GitHub Pages
+              if: github.event_name == 'push' && github.ref == 'refs/heads/main'
               uses: peaceiris/actions-gh-pages@v4
               with:
                   github_token: ${{ secrets.GITHUB_TOKEN }}
