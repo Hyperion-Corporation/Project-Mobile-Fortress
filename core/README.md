@@ -26,7 +26,7 @@ Android (`android/`) and iOS (`ios/`) clients.
 turns anything in `core/src/` into code either client links against. Kotlin
 and Swift have no natural shared-compilation boundary without real
 engineering investment (Kotlin Multiplatform targeting an iOS framework, or a
-Rust/C++ core with Kotlin/JNI + Swift/C bindings, are the two realistic
+C++ core with Kotlin/JNI + Swift C++ interop bindings, are the two realistic
 options). Neither is set up here — doing so properly is a multi-week project
 in its own right, not something to bolt on as a template default. Until then,
 "shared logic" (the state-machine shape in particular — see
@@ -35,7 +35,7 @@ in its own right, not something to bolt on as a template default. Until then,
 independently implement the same states/transitions, and a change to one
 should be mirrored in the other and in `src/game-state-machine.md`.
 
-A real shared core (KMP or Rust/C++) is tracked as a future option in
-[`moon/roadmaps/shared_core.md`](../moon/roadmaps/shared_core.md) — read that
+A real shared core (KMP or C++) is tracked as a future option in
+[`moon/roadmaps/shared_core.md`](../docs/moon/roadmaps/shared_core.md) — read that
 before starting any such migration, since it changes both clients'
 architecture substantially.

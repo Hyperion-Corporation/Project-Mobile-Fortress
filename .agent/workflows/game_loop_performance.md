@@ -10,7 +10,7 @@ Applies to Android's `android/app/.../GameLoop.kt`, `GameEngine.kt`, `engine/ent
 
 ## Steps
 
-1. Read [`.agent/rules/game_loop_performance.md`](../rules/game_loop_performance.md) before touching `GameLoop.kt` (Android) or `GameScene.swift` (iOS) — these are the most failure-sensitive files in the template; a subtle regression here degrades every frame of every session.
+1. Read [`.agent/rules/game_loop_performance.md`](../rules/game_loop_performance.md) before touching `GameLoop.kt` (Android) or `GameScene.swift` (iOS) — these are the most failure-sensitive files in the codebase; a subtle regression here degrades every frame of every session.
 2. Reproduce/baseline first: on Android, run `just install` on a real mid-range device if available (the emulator's GPU/CPU profile is not representative), profile with Perfetto or the CPU Profiler. On iOS, run on a real device via Xcode if available, profile with Instruments' Time Profiler. Confirm the actual bottleneck before changing code, on either platform.
 3. If adding a new entity type, verify its update/render methods allocate nothing per call — Android: pool any objects it needs (e.g. `Rect`, `Paint`) at construction time; iOS: avoid creating `SKAction`/`SKTexture` instances inside `update(_:)`, only at node-spawn time.
 4. Android: if touching the accumulator loop, keep the catch-up step cap intact and add/update a unit test asserting the loop doesn't spiral under a simulated long frame. iOS: if touching the delta clamp, keep `GameConstants.maxFrameDelta` intact and add/update an XCTest exercising a simulated long gap (see [`.agent/rules/testing_qa.md`](../rules/testing_qa.md)).

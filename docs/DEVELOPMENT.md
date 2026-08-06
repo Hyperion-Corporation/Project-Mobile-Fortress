@@ -23,13 +23,13 @@ just --list
 Open `android/` in Android Studio ("Open" → select `android/`, which contains `settings.gradle.kts`) and let it sync Gradle. Or from the CLI:
 
 ```bash
-./android/gradlew -p android tasks
+./gradlew tasks
 ```
 
 ### Running the Android app
 
 ```bash
-just install     # ./android/gradlew installDebug onto a connected device/emulator
+just install     # ./gradlew installDebug onto a connected device/emulator
 ```
 
 Or run/debug directly from Android Studio's device toolbar.
@@ -38,8 +38,8 @@ Or run/debug directly from Android Studio's device toolbar.
 
 ```bash
 sdkmanager "system-images;android-35;google_apis;x86_64"
-avdmanager create avd -n game-template -k "system-images;android-35;google_apis;x86_64"
-emulator -avd game-template
+avdmanager create avd -n mobile-fortress -k "system-images;android-35;google_apis;x86_64"
+emulator -avd mobile-fortress
 ```
 
 ## iOS (`ios/`)
@@ -57,7 +57,7 @@ just ios-build     # xcodebuild ... -destination 'generic/platform=iOS Simulator
 just ios-test       # xcodebuild ... test
 ```
 
-No SwiftLint configuration ships by default with this template — add a `.swiftlint.yml` under `ios/` and wire it into `tools/validation/justfile`'s `ios-check` recipe if you want stricter enforcement than the compiler's own warnings.
+No SwiftLint configuration ships by default with this project — add a `.swiftlint.yml` under `ios/` and wire it into `tools/validation/justfile`'s `ios-check` recipe if you want stricter enforcement than the compiler's own warnings.
 
 ## Containerized Dev Environment
 

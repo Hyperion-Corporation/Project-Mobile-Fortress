@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Mobile Fortress Docs</title>
+    <script>
+      // GitHub Pages serves this file for any unmatched deep link (e.g. a
+      // refresh on /docs/design/game_design_document) since it can't run
+      // Vue Router's server-side rewrite. Re-encode the path into a query
+      // string on the real index.html and let the inline script there
+      // (see index.html) restore it via history.replaceState before Vue
+      // Router boots. Pattern: https://github.com/rafgraph/spa-github-pages
+      var l = window.location;
+      l.replace(
+        l.protocol +
+          "//" +
+          l.hostname +
+          (l.port ? ":" + l.port : "") +
+          l.pathname.split("/").slice(0, 2).join("/") +
+          "/?p=/" +
+          l.pathname.slice(1).split("/").slice(1).join("/").replace(/&/g, "~and~") +
+          (l.search ? "&q=" + l.search.slice(1).replace(/&/g, "~and~") : "") +
+          l.hash
+      );
+    </script>
+  </head>
+  <body></body>
+</html>
