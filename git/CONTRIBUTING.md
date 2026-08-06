@@ -1,15 +1,15 @@
-# Contributing to Mobile-Game-Template
+# Contributing to Mobile Fortress
 
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.0-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org/)
 [![Android](https://img.shields.io/badge/Android-API_24%2B-3DDC84?logo=android&logoColor=white)](https://developer.android.com/)
 [![Swift](https://img.shields.io/badge/Swift-5.0-F05138?logo=swift&logoColor=white)](https://swift.org/)
 [![iOS](https://img.shields.io/badge/iOS-16%2B-000000?logo=apple&logoColor=white)](https://developer.apple.com/ios/)
-[![CI](https://github.com/ACFHarbinger/Mobile-Game-Template/actions/workflows/ci.yml/badge.svg)](https://github.com/ACFHarbinger/Mobile-Game-Template/actions/workflows/ci.yml)
+[![CI](https://github.com/ACFHarbinger/Project-Mobile-Fortress/actions/workflows/ci.yml/badge.svg)](https://github.com/ACFHarbinger/Project-Mobile-Fortress/actions/workflows/ci.yml)
 
 > **Version**: 2.0
 > **Last Updated**: 2026-08-03
 
-Thank you for your interest in contributing! This document covers setup, style, and the PR process for repositories generated from this template.
+Thank you for your interest in contributing to Mobile Fortress! This document covers setup, style, and the PR process.
 
 ---
 
@@ -37,8 +37,8 @@ Thank you for your interest in contributing! This document covers setup, style, 
 ### 1.2 Clone and bootstrap
 
 ```bash
-git clone https://github.com/<org>/<repo>.git
-cd <repo>
+git clone https://github.com/ACFHarbinger/Project-Mobile-Fortress.git
+cd Project-Mobile-Fortress
 just --list
 ```
 

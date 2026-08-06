@@ -6,6 +6,6 @@
 > against the same cluster/namespace.
 
 ```bash
-helm lint infra/helm/mobile-game-template
-helm install mobile-game-template infra/helm/mobile-game-template -f infra/helm/mobile-game-template/values.yaml
+helm lint infra/helm/mobile-fortress
+helm install mobile-fortress infra/helm/mobile-fortress -f infra/helm/mobile-fortress/values.yaml
 ```

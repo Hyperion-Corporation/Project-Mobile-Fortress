@@ -7,11 +7,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.gametemplate"
+    namespace = "com.acfharbinger.mobilefortress"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.gametemplate"
+        applicationId = "com.acfharbinger.mobilefortress"
         minSdk = 24
         targetSdk = 35
         versionCode = 1

@@ -1,16 +1,14 @@
 name: Docs
 
 on:
-  workflow_dispatch:
   push:
     branches: [main]
-    paths:
-      - "docs/**"
-
-permissions:
-  contents: read
-  pages: write
-  id-token: write
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "Why are you running this?"
+        required: false
+        default: "Manual trigger"
 
 concurrency:
   group: docs-${{ github.ref }}
@@ -19,14 +17,44 @@ concurrency:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
-      - run: pip install mkdocs-material
-      - run: mkdocs build --config-file docs/mkdocs.yml --strict
-      - uses: actions/upload-pages-artifact@v3
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
         with:
-          path: site
-      - uses: actions/deploy-pages@v4
+          node-version: "20"
+          cache: npm
+
+      # Root package.json declares docs/website/vue as an npm workspace —
+      # a single `npm ci` at the repo root resolves and hoists its
+      # dependencies (and any future JS/TS package added to "workspaces").
+      - name: Install dependencies
+        run: npm ci
+
+      # docs/website/vue is a Vite + Vue 3 + TypeScript SPA: every
+      # docs/**/*.md (plus the curated repo-wide guides in
+      # scripts/generate-nav.mjs's EXTRA_SECTIONS) is bundled at build time
+      # via import.meta.glob — no separate runtime content mirror needed.
+      # SITE_BASE matches the GitHub Pages project-site subpath so built
+      # asset URLs (and the 404.html deep-link redirect) resolve correctly.
+      - name: Build docs
+        run: npm run build --workspace docs/website/vue
+        env:
+          SITE_BASE: /${{ github.event.repository.name }}/
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs/website/vue/dist
+          publish_branch: gh-pages

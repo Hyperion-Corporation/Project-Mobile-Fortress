@@ -12,12 +12,12 @@ reset := '\033[0m'
 # Run unit tests (JVM, fast)
 unit:
     @echo -e "{{cyan}}Running JVM unit tests (android/)...{{reset}}"
-    ./android/gradlew -p android testDebugUnitTest
+    ./gradlewtestDebugUnitTest
 
 # Run instrumented tests on a connected device/emulator
 instrumented:
     @echo -e "{{cyan}}Running instrumented tests on connected device/emulator (android/)...{{reset}}"
-    ./android/gradlew -p android connectedDebugAndroidTest
+    ./gradlewconnectedDebugAndroidTest
 
 # --- iOS ---
 # Requires a macOS host with a booted/available simulator — see .devcontainer/README.md.

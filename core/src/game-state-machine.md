@@ -30,4 +30,4 @@ Android's `GameEngine` currently only tracks a single bouncing `Ball` and has
 no win/lose condition, so it has no real "Game Over" state yet — the table
 above marks that explicitly rather than pretending parity that doesn't exist.
 Bringing Android's state machine to full parity with iOS's is tracked in
-[`moon/roadmaps/shared_core.md`](../../moon/roadmaps/shared_core.md).
+[`moon/roadmaps/shared_core.md`](../../docs/moon/roadmaps/shared_core.md).

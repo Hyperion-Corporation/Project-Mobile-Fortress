@@ -1,6 +1,6 @@
 # UI (Jetpack Compose) Rules
 
-Applies to `android/app/src/main/java/com/example/gametemplate/ui/` — menus, HUD overlays, settings, pause screens. Does **not** apply to the `SurfaceView` game surface itself (see [`game_loop_performance.md`](game_loop_performance.md)).
+Applies to `android/app/src/main/java/com/acfharbinger/mobilefortress/ui/` — menus, HUD overlays, settings, pause screens. Does **not** apply to the `SurfaceView` game surface itself (see [`game_loop_performance.md`](game_loop_performance.md)).
 
 - Keep Compose screens presentation-only; game/business logic belongs in `engine/` or a `ViewModel`, called into from Composables — never inline gameplay logic in a `@Composable` body.
 - Every interactive control (buttons, sliders for settings) needs a content description for accessibility (`Modifier.semantics` / `contentDescription`) — not just a touch target.

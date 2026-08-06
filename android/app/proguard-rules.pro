@@ -21,11 +21,11 @@
 -keepclasseswithmembers class kotlinx.serialization.json.** {
     kotlinx.serialization.KSerializer serializer(...);
 }
--keep,includedescriptorclasses class com.example.gametemplate.**$$serializer { *; }
--keepclassmembers class com.example.gametemplate.** {
+-keep,includedescriptorclasses class com.acfharbinger.mobilefortress.**$$serializer { *; }
+-keepclassmembers class com.acfharbinger.mobilefortress.** {
     *** Companion;
 }
--keepclasseswithmembers class com.example.gametemplate.** {
+-keepclasseswithmembers class com.acfharbinger.mobilefortress.** {
     kotlinx.serialization.KSerializer serializer(...);
 }
 
