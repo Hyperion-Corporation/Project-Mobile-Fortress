@@ -41,7 +41,7 @@ jobs:
           name: unit-test-results
           path: android/app/build/test-results/testDebugUnitTest/
 
-      - uses: codecov/codecov-action@v4
+      - uses: codecov/codecov-action@v7
         with:
           files: android/app/build/reports/jacoco/**/*.xml
           fail_ci_if_error: false
