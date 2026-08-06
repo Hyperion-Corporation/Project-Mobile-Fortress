@@ -2,7 +2,7 @@
 
 ## Summary
 
-<!-- What does this PR change and why? Link the roadmap item (moon/ROADMAP.md or a module roadmap in moon/roadmaps/). -->
+<!-- What does this PR change and why? Link the roadmap item (docs/moon/ROADMAP.md or a module roadmap in docs/moon/roadmaps/). -->
 
 ## Affected Area(s)
 
@@ -32,4 +32,4 @@
 - [ ] `just ios-check` and `just ios-test` pass (iOS) — requires a macOS host, see `.devcontainer/README.md`.
 - [ ] No allocations introduced in a per-frame update/render hot path (Android `GameLoop`, iOS `GameScene.update(_:)`) — see `.agent/rules/game_loop_performance.md`.
 - [ ] If this changes shared behavior (state machine, level schema), `core/src/game-state-machine.md` or `core/src/level-schema.json` updated and both platforms kept in sync.
-- [ ] Docs / roadmap / `moon/CHANGELOG.md` updated where the public surface changed.
+- [ ] Docs / roadmap / `docs/moon/CHANGELOG.md` updated where the public surface changed.

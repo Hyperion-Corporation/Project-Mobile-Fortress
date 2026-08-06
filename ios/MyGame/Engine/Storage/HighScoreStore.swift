@@ -14,7 +14,7 @@ struct HighScoreEntry: Codable, Identifiable {
 final class HighScoreStore {
     static let shared = HighScoreStore()
 
-    private let defaultsKey = "com.mygame.highscores"
+    private let defaultsKey = "com.acfharbinger.mobilefortress.highscores"
     private let maxEntries = 10
     private let defaults: UserDefaults
 

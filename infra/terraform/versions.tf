@@ -14,7 +14,7 @@ terraform {
   }
 
   # backend "s3" {
-  #   bucket = "mobile-game-template-tfstate"
+  #   bucket = "mobile-fortress-tfstate"
   #   key    = "backend/terraform.tfstate"
   #   region = "us-east-1"
   # }

@@ -1,8 +1,8 @@
 # tools/build/justfile
-# Gradle (android/) and Xcode (ios/) build/install recipes. Gradle is always
-# invoked via the wrapper script directly (./android/gradlew), never a bare
-# `gradle` or a `cd android &&` — the wrapper resolves its own project
-# directory from its own path, so this works unchanged from the repo root.
+# Gradle (android/app/) and Xcode (ios/) build/install recipes. Gradle is
+# always invoked via the root wrapper script directly (./gradlew), never a
+# bare `gradle` — the Gradle root lives at the repo root (settings.gradle.kts)
+# with :app mapped to android/app/, so no -p/cd is needed.
 
 set shell := ["bash", "-c"]
 set working-directory := '../..'
@@ -14,17 +14,17 @@ reset := '\033[0m'
 
 # Assemble the debug APK
 debug:
-    @echo -e "{{cyan}}Assembling debug APK (android/)...{{reset}}"
-    ./android/gradlew -p android assembleDebug
+    @echo -e "{{cyan}}Assembling debug APK (android/app/)...{{reset}}"
+    ./gradlew assembleDebug
 
 # Assemble a signed release App Bundle (.aab) for the Play Store
 release:
-    @echo -e "{{cyan}}Assembling release bundle (android/)...{{reset}}"
-    ./android/gradlew -p android bundleRelease
+    @echo -e "{{cyan}}Assembling release bundle (android/app/)...{{reset}}"
+    ./gradlew bundleRelease
 
 # Install the debug build on a connected device/emulator
 install:
-    ./android/gradlew -p android installDebug
+    ./gradlew installDebug
 
 # --- iOS ---
 # xcodebuild requires a macOS host — see .devcontainer/README.md.
