@@ -39,7 +39,7 @@ repos:
       - id: ktlint
         name: ktlint (android/app/)
         language: system
-        entry: bash -c './android/gradlew -p android ktlintCheck'
+        entry: bash -c './gradlew ktlintCheck'
         files: ^android/app/.*\.kt$
         pass_filenames: false
 
@@ -49,7 +49,7 @@ repos:
       - id: android-lint
         name: Android Lint (android/app/)
         language: system
-        entry: bash -c './android/gradlew -p android lintDebug'
+        entry: bash -c './gradlew lintDebug'
         files: ^android/app/src/main/.*\.(kt|xml)$
         pass_filenames: false
 

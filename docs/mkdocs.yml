@@ -1,13 +1,15 @@
-site_name: Mobile-Game-Template Documentation
+site_name: Mobile Fortress Documentation
 site_description: >-
-  Documentation portal for repositories generated from Mobile-Game-Template.
+  Documentation portal for Mobile Fortress, a cooperative Wōkòu-pirate-era coastal tower-defense mobile game.
 site_author: ACFHarbinger
-repo_url: https://github.com/ACFHarbinger/Mobile-Game-Template
-repo_name: ACFHarbinger/Mobile-Game-Template
+repo_url: https://github.com/ACFHarbinger/Project-Mobile-Fortress
+repo_name: ACFHarbinger/Project-Mobile-Fortress
 edit_uri: edit/main/docs/
 
 docs_dir: .
 site_dir: ../site
+exclude_docs: |
+  website/
 
 theme:
   name: material
@@ -45,4 +47,31 @@ nav:
   - Development: DEVELOPMENT.md
   - Testing: TESTING.md
   - Glossary: GLOSSARY.md
+  - Troubleshooting: TROUBLESHOOTING.md
+  - Dependency Policy: DEPENDENCY_POLICY.md
+  - Documentation Standards: DOCUMENTATION_STANDARDS.md
+  - Benchmarks: BENCHMARKS.md
   - Architecture Decisions: adr/
+  - Roadmap:
+      - Overview: moon/ROADMAP.md
+      - Changelog: moon/CHANGELOG.md
+      - Gameplay: moon/roadmaps/gameplay.md
+      - UI/UX: moon/roadmaps/ui_ux.md
+      - Performance: moon/roadmaps/performance.md
+      - Monetization: moon/roadmaps/monetization.md
+      - Backend: moon/roadmaps/backend.md
+      - AI Systems: moon/roadmaps/ai_systems.md
+      - QA & Testing: moon/roadmaps/qa_testing.md
+      - iOS: moon/roadmaps/ios.md
+      - Shared Core: moon/roadmaps/shared_core.md
+  - Design:
+      - Game Design Document: design/game_design_document.md
+      - Art Bible: design/art_bible.md
+      - Audio Design: design/audio_design_document.md
+      - Pitch Deck: design/pitch_deck.md
+      - Production Roadmap: design/production_roadmap.md
+      - QA Test Plan: design/qa_test_plan.md
+      - Technical Design Document: design/technical_design_document.md
+  - Research:
+      - Tower Defense Market: reports/Tower Defense Market Research.md
+      - Multiplayer Architecture: research/Multiplayer Tower Defense Implementation.md

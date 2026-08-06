@@ -10,6 +10,6 @@ Drop custom `.ttf`/`.otf` game fonts in this directory, then:
    add a `Theme.swift` token (see `UI/Theme/Theme.swift`) so screens don't
    hardcode font names directly.
 
-No binary font files are bundled with the template — ship your own or use a
+No binary font files are bundled by default — ship your own or use a
 system font (`.rounded` design, as `Theme`/the menu screens currently do) until
 you add one.
