@@ -2,8 +2,8 @@
 
 | Layer | Location | Framework | Command |
 | --- | --- | --- | --- |
-| Android unit tests (JVM) | `android/app/src/test/` | JUnit 4 + `kotlin.test` | `./android/gradlew testDebugUnitTest` (`just unit-test`) |
-| Android instrumented tests (on-device) | `android/app/src/androidTest/` | JUnit 4 + Espresso + Compose UI test | `./android/gradlew connectedDebugAndroidTest` (`just test-instrumented`) |
+| Android unit tests (JVM) | `android/app/src/test/` | JUnit 4 + `kotlin.test` | `./gradlew testDebugUnitTest` (`just unit-test`) |
+| Android instrumented tests (on-device) | `android/app/src/androidTest/` | JUnit 4 + Espresso + Compose UI test | `./gradlew connectedDebugAndroidTest` (`just test-instrumented`) |
 | iOS unit tests | `ios/Tests/` | XCTest | `xcodebuild ... test` (`just ios-test`) |
 
 ## What goes where
