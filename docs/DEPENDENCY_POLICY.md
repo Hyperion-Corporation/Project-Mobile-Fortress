@@ -123,5 +123,5 @@ Once approved: add to the correct manifest (`gradle/libs.versions.toml`, `docs/w
 
 ### Shared C++ core (planned)
 
-- EnTT and FlatBuffers are the decided choices per [`shared_core.md`](moon/roadmaps/shared_core.md) — don't introduce a competing ECS or serialization library without a new ADR superseding that decision. (The underlying research in [`research/Multiplayer Tower Defense Implementation.md`](research/Multiplayer%20Tower%20Defense%20Implementation.md) explored a Rust/`hecs`/`rkyv`/UniFFI approach; `shared_core.md` records why this org's C++ standardization was chosen instead.)
+- EnTT and FlatBuffers are the decided choices per [`shared_core.md`](moon/roadmaps/shared_core.md) — don't introduce a competing ECS or serialization library without a new ADR superseding that decision. (The underlying research in [`moon/research/Multiplayer Tower Defense Implementation.md`](moon/research/Multiplayer%20Tower%20Defense%20Implementation.md) explored a Rust/`hecs`/`rkyv`/UniFFI approach; `shared_core.md` records why this org's C++ standardization was chosen instead.)
 - New third-party C++ dependencies go through vcpkg's own registry where possible — vendoring or a git submodule is a last resort, since it bypasses the `vcpkg.json` manifest's reproducibility.

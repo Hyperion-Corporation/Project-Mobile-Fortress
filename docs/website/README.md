@@ -17,7 +17,7 @@ The actual project lives in [`vue/`](vue/) — see [`vue/README.md`](vue/README.
   - `docs/adr/` — Architecture Decision Records (auto-expanded from the directory, titled from each file's own `# H1`).
   - `docs/moon/` — the roadmap and changelog.
   - `docs/design/` — the Game Design Document, art bible, audio design doc, pitch deck, production roadmap, QA test plan, technical design document.
-  - `docs/reports/` and `docs/research/` — the market-gap and technical-architecture research write-ups the roadmap is built on.
+  - `docs/moon/reports/` and `docs/moon/research/` — the market-gap and technical-architecture research write-ups the roadmap is built on.
   - A curated set of guides that live *outside* `docs/` — the root `README.md`, `git/CONTRIBUTING.md`, `core/README.md` and `core/src/game-state-machine.md`, infra runbooks (`infra/{docker,k8s,helm,terraform,ansible}/README.md`), and `.devcontainer/README.md`.
 
 ## Running it locally

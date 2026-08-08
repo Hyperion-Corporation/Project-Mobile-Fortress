@@ -76,5 +76,5 @@ nav:
       - QA Test Plan: design/qa_test_plan.md
       - Technical Design Document: design/technical_design_document.md
   - Research:
-      - Tower Defense Market: reports/Tower Defense Market Research.md
-      - Multiplayer Architecture: research/Multiplayer Tower Defense Implementation.md
+      - Tower Defense Market: moon/reports/Tower Defense Market Research.md
+      - Multiplayer Architecture: moon/research/Multiplayer Tower Defense Implementation.md

@@ -1,6 +1,6 @@
 # AI & Procedural Systems Roadmap
 
-Scope: procedural content generation, dynamic difficulty adjustment, and monetization/retention ML — the "frontier" systems from [`research/Multiplayer Tower Defense Implementation.md`](../../research/Multiplayer%20Tower%20Defense%20Implementation.md) §"Algorithmic Procedural Content Generation", §"Deep Learning for Dynamic Difficulty Adjustment", and §"Optimizing Monetization and Player Retention". These are post-MVP: they assume the core loop ([`gameplay.md`](gameplay.md)) and shared C++ core ([`shared_core.md`](shared_core.md)) already exist.
+Scope: procedural content generation, dynamic difficulty adjustment, and monetization/retention ML — the "frontier" systems from [`research/Multiplayer Tower Defense Implementation.md`](../research/Multiplayer%20Tower%20Defense%20Implementation.md) §"Algorithmic Procedural Content Generation", §"Deep Learning for Dynamic Difficulty Adjustment", and §"Optimizing Monetization and Player Retention". These are post-MVP: they assume the core loop ([`gameplay.md`](gameplay.md)) and shared C++ core ([`shared_core.md`](shared_core.md)) already exist.
 
 | # | Item | Effort | Status |
 | --- | --- | --- | --- |

@@ -223,14 +223,14 @@ export const navTree: NavNode[] = [
       {
         "title": "Tower Defense Market",
         "kind": "md",
-        "path": "/reports/Tower Defense Market Research",
-        "source": "docs/reports/Tower Defense Market Research.md"
+        "path": "/moon/reports/Tower Defense Market Research",
+        "source": "docs/moon/reports/Tower Defense Market Research.md"
       },
       {
         "title": "Multiplayer Architecture",
         "kind": "md",
-        "path": "/research/Multiplayer Tower Defense Implementation",
-        "source": "docs/research/Multiplayer Tower Defense Implementation.md"
+        "path": "/moon/research/Multiplayer Tower Defense Implementation",
+        "source": "docs/moon/research/Multiplayer Tower Defense Implementation.md"
       }
     ]
   },
@@ -467,13 +467,13 @@ export const searchIndex: { title: string; path: string; source: string }[] = [
   },
   {
     "title": "Tower Defense Market",
-    "path": "/reports/Tower Defense Market Research",
-    "source": "docs/reports/Tower Defense Market Research.md"
+    "path": "/moon/reports/Tower Defense Market Research",
+    "source": "docs/moon/reports/Tower Defense Market Research.md"
   },
   {
     "title": "Multiplayer Architecture",
-    "path": "/research/Multiplayer Tower Defense Implementation",
-    "source": "docs/research/Multiplayer Tower Defense Implementation.md"
+    "path": "/moon/research/Multiplayer Tower Defense Implementation",
+    "source": "docs/moon/research/Multiplayer Tower Defense Implementation.md"
   },
   {
     "title": "Repository Guide",
