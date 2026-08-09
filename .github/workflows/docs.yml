@@ -59,7 +59,7 @@ jobs:
             - name: Install dependencies
               run: npm ci
 
-            # docs/website is a Vite + Vue 3 + TypeScript SPA: every
+            # docs/website is a Vite + React 19 + TypeScript SPA: every
             # docs/**/*.md (plus the curated repo-wide guides in
             # scripts/generate-nav.mjs's EXTRA_SECTIONS) is bundled at build time
             # via import.meta.glob — no separate runtime content mirror needed.

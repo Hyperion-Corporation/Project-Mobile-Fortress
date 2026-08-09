@@ -14,10 +14,7 @@
     "site:build": "npm run build --workspace docs/website",
     "site:preview": "npm run preview --workspace docs/website",
     "site:nav": "node docs/website/scripts/generate-nav.mjs",
-    "nuxt:dev": "npm run nuxt:dev --workspace docs/website",
-    "nuxt:build": "npm run nuxt:build --workspace docs/website",
-    "nuxt:generate": "npm run nuxt:generate --workspace docs/website",
-    "nuxt:preview": "npm run nuxt:preview --workspace docs/website",
-    "nuxt:prepare": "npm run nuxt:prepare --workspace docs/website"
+    "next:dev": "npm run next:dev --workspace docs/website",
+    "next:build": "npm run next:build --workspace docs/website"
   }
 }

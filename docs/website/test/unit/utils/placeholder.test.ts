@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readStoredTheme } from '../../../src/libraries/vuex/services/persistence';
+import { readStoredTheme } from '../../../src/libraries/redux/services/persistence';
 
 describe('utils', () => {
   it('defaults theme to dark when storage is empty', () => {
