@@ -10,7 +10,15 @@
     "dev": "vite",
     "build": "vue-tsc -b --noCheck && vite build",
     "preview": "vite preview",
-    "lint": "eslint -c stack/eslint/eslint.config.js ."
+    "lint": "eslint -c stack/eslint/eslint.config.js .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:unit": "vitest run test/unit",
+    "test:integration": "vitest run test/integration",
+    "cypress:open": "cypress open --config-file test/cypress/cypress.config.js",
+    "cypress:run": "cypress run --config-file test/cypress/cypress.config.js",
+    "cypress:e2e": "cypress run --config-file test/cypress/cypress.config.js --spec \"test/cypress/e2e/**/*.cy.js\"",
+    "cypress:smoke": "cypress run --config-file test/cypress/cypress.config.js --spec \"test/cypress/smoke/**/*.cy.js\""
   },
   "dependencies": {
     "@tanstack/vue-form": "^1.33.4",
@@ -27,15 +35,22 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",
+    "@testing-library/vue": "^8.1.0",
     "@typescript-eslint/eslint-plugin": "^8.66.0",
     "@typescript-eslint/parser": "^8.66.0",
     "@vitejs/plugin-vue": "^5.2.1",
+    "@vue/test-utils": "^2.4.11",
+    "cypress": "^15.20.0",
     "eslint": "^9.39.5",
     "eslint-plugin-vue": "^10.10.0",
     "globals": "^17.9.0",
+    "happy-dom": "^20.11.2",
     "js-yaml": "^4.1.0",
+    "jsdom": "^29.1.1",
+    "msw": "^2.15.0",
     "typescript": "^5.7.2",
     "vite": "^6.0.5",
+    "vitest": "^4.1.10",
     "vue-eslint-parser": "^10.4.1",
     "vue-tsc": "^2.2.0"
   }

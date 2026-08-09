@@ -120,3 +120,22 @@ npm run lint                 # ESLint via stack/eslint/eslint.config.js
 cd stack/nuxt && npm install && npm run dev   # optional Nuxt app
 ```
 
+## Tests
+
+Shared harness under [`test/`](test/):
+
+| Path | Role |
+| --- | --- |
+| `test/unit/` | Components + utils (Vitest) |
+| `test/integration/` | Integration tests + MSW `mocks/` |
+| `test/cypress/e2e/` | End-to-end browser flows |
+| `test/cypress/smoke/` | Fast smoke specs |
+
+```bash
+npm test
+npm run test:unit
+npm run test:integration
+npm run dev   # terminal 1
+npm run cypress:smoke   # terminal 2
+```
+
