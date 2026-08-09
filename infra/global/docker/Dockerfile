@@ -3,12 +3,12 @@
 # actual service (e.g. a small Ktor, Ktor+Exposed, or Node/Express API) before
 # building this image. Delete infra/global/docker/ entirely if your game is offline-only.
 
-FROM eclipse-temurin:17-jdk-jammy AS build
+FROM eclipse-temurin:25-jdk-jammy AS build
 WORKDIR /src
 # COPY backend/ .
 # RUN ./gradlew installDist
 
-FROM eclipse-temurin:17-jre-jammy AS runtime
+FROM eclipse-temurin:25-jre-jammy AS runtime
 WORKDIR /app
 RUN useradd -m -s /bin/bash appuser
 USER appuser
