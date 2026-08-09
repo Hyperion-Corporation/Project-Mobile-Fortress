@@ -41,7 +41,7 @@ jobs:
           java-version: "17"
 
       - name: Cache Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v6
 
       - name: ktlint
         run: ./gradlew ktlintCheck
@@ -73,7 +73,7 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
       - name: Assemble debug APK
         run: ./gradlew assembleDebug
       - uses: actions/upload-artifact@v4
@@ -93,7 +93,7 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
 
       - name: Enable KVM group perms
         run: |
