@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { useIntersect } from "../../../hooks/useIntersect";
+import { siteBaseUrl } from "../../../utils/baseUrl";
 import "./CoastalFlowFieldWrapper.css";
 
 export default function CoastalFlowFieldWrapper({
@@ -16,8 +17,8 @@ export default function CoastalFlowFieldWrapper({
 
   useIntersect(sectionRef, () => setInView(true), { once: true, threshold: 0.2 });
 
-  // public/ assets need BASE_URL when deployed under a GitHub Pages subpath.
-  const islandSrc = `${import.meta.env.BASE_URL}astro-island/index.html`;
+  // public/ assets need the site base when deployed under a GitHub Pages subpath.
+  const islandSrc = `${siteBaseUrl()}astro-island/index.html`;
 
   return (
     <section className="astro-island-wrap" data-in-view={inView ? "true" : "false"} ref={sectionRef}>

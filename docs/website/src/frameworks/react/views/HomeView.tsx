@@ -9,6 +9,7 @@ import CoastalFlowFieldWrapper from "../../astro/components/CoastalFlowFieldWrap
 import UnitRosterBoard from "../UnitRosterBoard";
 import ConvergenceChartWrapper from "../../aurelia/ConvergenceChartWrapper";
 import ApolloLorePanel from "../../apollo/ApolloLorePanel";
+import { siteBaseUrl } from "../../../utils/baseUrl";
 
 interface Tab {
   id: string;
@@ -103,11 +104,11 @@ export default function HomeView() {
 
   const ActiveComponent = useMemo(() => TABS.find((t) => t.id === activeTab)!.component, [activeTab]);
 
-  // public/ assets must be prefixed with BASE_URL by hand when referenced as
-  // a plain string (unlike index.html's own src="...", Vite doesn't rewrite
-  // string literals) — otherwise this 404s once deployed under the GitHub
-  // Pages project-site subpath (SITE_BASE).
-  const bannerSrc = import.meta.env.BASE_URL + "assets/mobile_fortress_banner.jpg";
+  // public/ assets must be prefixed with the site base by hand when
+  // referenced as a plain string (unlike index.html's own src="...", Vite
+  // doesn't rewrite string literals) — otherwise this 404s once deployed
+  // under the GitHub Pages project-site subpath (SITE_BASE).
+  const bannerSrc = siteBaseUrl() + "assets/mobile_fortress_banner.jpg";
 
   function scrollToHub() {
     document.getElementById("design-hub")?.scrollIntoView({ behavior: "smooth" });
