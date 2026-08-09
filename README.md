@@ -127,7 +127,7 @@ Select the `MyGame` scheme and an iOS Simulator destination, then Run (⌘R). Or
 
 ### Documentation website
 
-The interactive design hub + full-repo documentation portal at [`docs/website/`](docs/website/) — see [`docs/website/README.md`](docs/website/README.md) for site content and app layout (`src/frameworks/vue`). `docs/website` is an npm workspace declared in the root `package.json`, so every command below targets it with `-w`/`--workspace` instead of `cd`-ing in:
+The interactive design hub + full-repo documentation portal at [`docs/website/`](docs/website/) — see [`docs/website/README.md`](docs/website/README.md) for site content and app layout (`src/views`, `src/styles`, `src/frameworks/vue/components`). `docs/website` is an npm workspace declared in the root `package.json`, so every command below targets it with `-w`/`--workspace` instead of `cd`-ing in:
 
 ```bash
 npm install                              # installs deps for every npm workspace (currently just docs/website)
