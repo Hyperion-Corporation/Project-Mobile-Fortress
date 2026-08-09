@@ -71,6 +71,7 @@ nav:
       - iOS: moon/roadmaps/ios.md
       - Shared Core: moon/roadmaps/shared_core.md
       - Multi-Framework Platform: moon/roadmaps/multi_framework_platform.md
+      - Multi-Framework Authoring Guide: moon/roadmaps/multi_framework_authoring_guide.md
   - Design:
       - Game Design Document: design/game_design_document.md
       - Art Bible: design/art_bible.md

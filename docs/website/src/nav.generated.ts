@@ -189,6 +189,12 @@ export const navTree: NavNode[] = [
         "kind": "md",
         "path": "/moon/roadmaps/multi_framework_platform",
         "source": "docs/moon/roadmaps/multi_framework_platform.md"
+      },
+      {
+        "title": "Multi-Framework Authoring Guide",
+        "kind": "md",
+        "path": "/moon/roadmaps/multi_framework_authoring_guide",
+        "source": "docs/moon/roadmaps/multi_framework_authoring_guide.md"
       }
     ]
   },
@@ -463,6 +469,11 @@ export const searchIndex: { title: string; path: string; source: string }[] = [
     "title": "Multi-Framework Platform",
     "path": "/moon/roadmaps/multi_framework_platform",
     "source": "docs/moon/roadmaps/multi_framework_platform.md"
+  },
+  {
+    "title": "Multi-Framework Authoring Guide",
+    "path": "/moon/roadmaps/multi_framework_authoring_guide",
+    "source": "docs/moon/roadmaps/multi_framework_authoring_guide.md"
   },
   {
     "title": "Game Design Document",
