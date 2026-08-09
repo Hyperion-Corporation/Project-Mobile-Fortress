@@ -1,0 +1,26 @@
+---
+import CoastalFlowField from '../CoastalFlowField.astro';
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Coastal flow field — Mobile Fortress</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: transparent;
+      }
+      body {
+        padding: 0.25rem;
+      }
+    </style>
+  </head>
+  <body>
+    <CoastalFlowField seed={1540} resolution={14} showSea={true} />
+  </body>
+</html>

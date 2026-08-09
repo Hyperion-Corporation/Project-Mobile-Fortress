@@ -65,12 +65,13 @@ onUnmounted(() => window.removeEventListener("keydown", onKeydown));
 
   <Teleport to="body">
     <div v-if="open" class="search-overlay" @click.self="closeSearch">
-      <div class="search-modal">
+      <div class="search-modal" v-click-outside="closeSearch">
         <div class="search-input-row">
           <svg viewBox="0 0 20 20" width="16" height="16" fill="none"><circle cx="9" cy="9" r="6" stroke="currentColor" stroke-width="1.8" /><path d="M17 17l-3.5-3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" /></svg>
           <input
             ref="inputRef"
             v-model="query"
+            v-focus="open"
             type="text"
             placeholder="Search pages by title or path…"
             autocomplete="off"

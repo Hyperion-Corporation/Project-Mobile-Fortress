@@ -1,0 +1,387 @@
+---
+/**
+ * CoastalFlowField — Astro island visualizing land/sea raid lanes for
+ * Mobile Fortress (Wōkòu-era coastal TD). Deterministic flow-field arrows
+ * illustrate Dijkstra-style vector pathing from sea approaches toward the
+ * citadel, matching design-hub / gameplay roadmap concepts without shipping
+ * the C++ simulation core.
+ */
+interface Props {
+  /** Deterministic seed for layout (stable static export). */
+  seed?: number;
+  /** Grid resolution along each axis. */
+  resolution?: number;
+  /** Show naval approach vectors. */
+  showSea?: boolean;
+  /** Accessible title. */
+  title?: string;
+  /** Optional subtitle shown under the title. */
+  subtitle?: string;
+}
+
+const {
+  seed = 1540,
+  resolution = 14,
+  showSea = true,
+  title = 'Coastal flow field',
+  subtitle = 'Land & sea raid lanes converging on the citadel (illustrative path vectors)',
+} = Astro.props;
+
+/** Mulberry32 — tiny seeded PRNG for build-time determinism. */
+function mulberry32(a: number) {
+  return function next() {
+    let t = (a += 0x6d2b79f5);
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+const rand = mulberry32(seed);
+const width = 720;
+const height = 360;
+const cellW = width / resolution;
+const cellH = height / resolution;
+
+// Citadel sits inland (right-center); sea is the left third of the map.
+const citadel = { x: width * 0.78, y: height * 0.48 };
+const seaEdge = width * 0.28;
+
+type Arrow = {
+  x: number;
+  y: number;
+  angle: number;
+  kind: 'land' | 'sea';
+  strength: number;
+};
+
+const arrows: Arrow[] = [];
+
+for (let gy = 0; gy < resolution; gy++) {
+  for (let gx = 0; gx < resolution; gx++) {
+    const cx = (gx + 0.5) * cellW;
+    const cy = (gy + 0.5) * cellH;
+    const dx = citadel.x - cx;
+    const dy = citadel.y - cy;
+    const dist = Math.hypot(dx, dy) || 1;
+    // Base field points toward the citadel; add mild curl noise for lanes.
+    const noise = (rand() - 0.5) * 0.55;
+    const baseAngle = Math.atan2(dy, dx) + noise;
+    const kind: 'land' | 'sea' = cx < seaEdge ? 'sea' : 'land';
+    if (kind === 'sea' && !showSea) continue;
+    // Soften arrows very near the citadel (HQ footprint).
+    if (dist < 36) continue;
+    arrows.push({
+      x: cx,
+      y: cy,
+      angle: baseAngle,
+      kind,
+      strength: Math.min(1, 48 / dist + 0.35),
+    });
+  }
+}
+
+// Sample raid paths (polyline polylines) for storytelling overlays.
+function samplePath(startY: number, sea: boolean): string {
+  const pts: string[] = [];
+  let x = sea ? 12 : seaEdge + 8;
+  let y = startY;
+  for (let i = 0; i < 28; i++) {
+    pts.push(`${x.toFixed(1)},${y.toFixed(1)}`);
+    const dx = citadel.x - x;
+    const dy = citadel.y - y;
+    const ang = Math.atan2(dy, dx) + (rand() - 0.5) * 0.35;
+    x += Math.cos(ang) * 18;
+    y += Math.sin(ang) * 18;
+    if (Math.hypot(citadel.x - x, citadel.y - y) < 28) break;
+  }
+  pts.push(`${citadel.x},${citadel.y}`);
+  return pts.join(' ');
+}
+
+const landPaths = [height * 0.25, height * 0.55, height * 0.78].map((y) => samplePath(y, false));
+const seaPaths = showSea
+  ? [height * 0.35, height * 0.65].map((y) => samplePath(y, true))
+  : [];
+
+const islandId = `cff-${seed}-${resolution}`;
+---
+
+<section
+  class="coastal-flow-field"
+  id={islandId}
+  data-seed={seed}
+  aria-labelledby={`${islandId}-title`}
+>
+  <header class="cff-header">
+    <div>
+      <p class="cff-kicker">Astro island · design hub</p>
+      <h2 id={`${islandId}-title`}>{title}</h2>
+      <p class="cff-sub">{subtitle}</p>
+    </div>
+    <ul class="cff-legend" aria-label="Legend">
+      <li><span class="swatch land"></span> Land approach vectors</li>
+      {showSea && <li><span class="swatch sea"></span> Naval approach vectors</li>}
+      <li><span class="swatch path"></span> Sample raid lanes</li>
+      <li><span class="swatch hq"></span> Citadel / Main HQ</li>
+    </ul>
+  </header>
+
+  <div class="cff-stage">
+    <svg
+      viewBox={`0 0 ${width} ${height}`}
+      role="img"
+      aria-describedby={`${islandId}-desc`}
+      class="cff-svg"
+    >
+      <title>{title}</title>
+      <desc id={`${islandId}-desc`}>
+        Deterministic flow-field diagram of land and sea raid approaches converging on a coastal citadel.
+        Arrows indicate pathfinding direction for tower-defense lane design; illustrative only.
+      </desc>
+
+      <!-- Sea / land background -->
+      <rect x="0" y="0" width={seaEdge} height={height} class="band sea-band" />
+      <rect x={seaEdge} y="0" width={width - seaEdge} height={height} class="band land-band" />
+      <line x1={seaEdge} y1="0" x2={seaEdge} y2={height} class="coast-line" />
+
+      <!-- Sample paths -->
+      {seaPaths.map((pts) => (
+        <polyline points={pts} class="raid-path sea-path" />
+      ))}
+      {landPaths.map((pts) => (
+        <polyline points={pts} class="raid-path land-path" />
+      ))}
+
+      <!-- Flow arrows -->
+      {arrows.map((a) => {
+        const len = 10 + a.strength * 8;
+        const x2 = a.x + Math.cos(a.angle) * len;
+        const y2 = a.y + Math.sin(a.angle) * len;
+        return (
+          <g class:list={['arrow', a.kind]} data-kind={a.kind}>
+            <line x1={a.x} y1={a.y} x2={x2} y2={y2} />
+            <circle cx={a.x} cy={a.y} r="1.4" />
+          </g>
+        );
+      })}
+
+      <!-- Citadel -->
+      <g class="citadel" transform={`translate(${citadel.x}, ${citadel.y})`}>
+        <circle r="22" class="hq-ring" />
+        <rect x="-10" y="-10" width="20" height="20" rx="3" class="hq-body" />
+        <text y="36" text-anchor="middle" class="hq-label">Citadel</text>
+      </g>
+    </svg>
+
+    <aside class="cff-panel" aria-live="polite">
+      <h3>Lane read-out</h3>
+      <p data-readout>
+        Hover a vector region to inspect lane kind. Flow points toward the citadel for tower placement along
+        land corridors and Fo-lang-ji coastal arcs.
+      </p>
+      <dl>
+        <div><dt>Seed</dt><dd>{seed}</dd></div>
+        <div><dt>Resolution</dt><dd>{resolution}×{resolution}</dd></div>
+        <div><dt>Vectors</dt><dd data-count>{arrows.length}</dd></div>
+      </dl>
+    </aside>
+  </div>
+
+  <p class="cff-note">
+    Built as a static Astro island (MFP5): no game-core authority — pure design visualization for the docs hub.
+  </p>
+</section>
+
+<style>
+  .coastal-flow-field {
+    --cff-ink: #1e293b;
+    --cff-muted: #64748b;
+    --cff-sea: #0ea5e9;
+    --cff-land: #ca8a04;
+    --cff-path: #f43f5e;
+    --cff-hq: #fbbf24;
+    --cff-panel: color-mix(in srgb, var(--surface, #0f172a) 92%, transparent);
+    color: var(--text, var(--cff-ink));
+    background: var(--surface, #0b1220);
+    border: 1px solid var(--border, rgba(148, 163, 184, 0.25));
+    border-radius: 14px;
+    padding: 1.25rem 1.35rem 1rem;
+    margin: 1.5rem 0;
+  }
+  .cff-header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 2rem;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+  .cff-kicker {
+    margin: 0 0 0.25rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted, var(--cff-muted));
+  }
+  .cff-header h2 {
+    margin: 0;
+    font-size: 1.25rem;
+  }
+  .cff-sub {
+    margin: 0.35rem 0 0;
+    color: var(--text-muted, var(--cff-muted));
+    font-size: 0.92rem;
+    max-width: 36rem;
+  }
+  .cff-legend {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.35rem;
+    font-size: 0.82rem;
+    color: var(--text-muted, var(--cff-muted));
+  }
+  .cff-legend li {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+  .swatch {
+    width: 0.85rem;
+    height: 0.85rem;
+    border-radius: 3px;
+    display: inline-block;
+  }
+  .swatch.land { background: var(--cff-land); }
+  .swatch.sea { background: var(--cff-sea); }
+  .swatch.path { background: var(--cff-path); }
+  .swatch.hq { background: var(--cff-hq); }
+
+  .cff-stage {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(12rem, 15rem);
+    gap: 1rem;
+  }
+  @media (max-width: 800px) {
+    .cff-stage { grid-template-columns: 1fr; }
+  }
+  .cff-svg {
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+    display: block;
+    background: #020617;
+  }
+  .band.sea-band { fill: rgba(14, 165, 233, 0.12); }
+  .band.land-band { fill: rgba(202, 138, 4, 0.08); }
+  .coast-line {
+    stroke: rgba(148, 163, 184, 0.45);
+    stroke-width: 1.5;
+    stroke-dasharray: 4 4;
+  }
+  .raid-path {
+    fill: none;
+    stroke: var(--cff-path);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 0.75;
+  }
+  .raid-path.sea-path { stroke: #38bdf8; }
+  .arrow line {
+    stroke-width: 1.25;
+    stroke-linecap: round;
+  }
+  .arrow.land line, .arrow.land circle { stroke: var(--cff-land); fill: var(--cff-land); }
+  .arrow.sea line, .arrow.sea circle { stroke: var(--cff-sea); fill: var(--cff-sea); }
+  .arrow.is-hot line { stroke-width: 2.25; filter: drop-shadow(0 0 4px currentColor); }
+  .hq-ring {
+    fill: rgba(251, 191, 36, 0.12);
+    stroke: var(--cff-hq);
+    stroke-width: 2;
+  }
+  .hq-body {
+    fill: rgba(251, 191, 36, 0.85);
+    stroke: #78350f;
+    stroke-width: 1;
+  }
+  .hq-label {
+    fill: #fde68a;
+    font-size: 11px;
+    font-family: system-ui, sans-serif;
+  }
+  .cff-panel {
+    background: var(--cff-panel);
+    border: 1px solid var(--border, rgba(148, 163, 184, 0.2));
+    border-radius: 10px;
+    padding: 0.85rem 1rem;
+    font-size: 0.88rem;
+  }
+  .cff-panel h3 {
+    margin: 0 0 0.5rem;
+    font-size: 0.95rem;
+  }
+  .cff-panel p { margin: 0 0 0.75rem; color: var(--text-muted, var(--cff-muted)); }
+  .cff-panel dl {
+    display: grid;
+    gap: 0.35rem;
+    margin: 0;
+  }
+  .cff-panel dl div {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .cff-panel dt { color: var(--text-muted, var(--cff-muted)); }
+  .cff-panel dd { margin: 0; font-variant-numeric: tabular-nums; }
+  .cff-note {
+    margin: 0.75rem 0 0;
+    font-size: 0.78rem;
+    color: var(--text-muted, var(--cff-muted));
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .arrow.is-hot line { filter: none; }
+  }
+</style>
+
+<script>
+  // Lightweight client enhancement: highlight nearby vectors on pointer move.
+  const root = document.currentScript?.previousElementSibling?.closest?.('.coastal-flow-field')
+    ?? document.querySelector('.coastal-flow-field');
+  if (root) {
+    const svg = root.querySelector('.cff-svg');
+    const readout = root.querySelector('[data-readout]');
+    const arrows = Array.from(root.querySelectorAll('.arrow'));
+
+    function clearHot() {
+      arrows.forEach((a) => a.classList.remove('is-hot'));
+    }
+
+    svg?.addEventListener('pointermove', (event) => {
+      const e = event as PointerEvent;
+      const target = (e.target as Element | null)?.closest?.('.arrow');
+      clearHot();
+      if (!target) {
+        if (readout) {
+          readout.textContent =
+            'Hover a vector region to inspect lane kind. Flow points toward the citadel for tower placement along land corridors and Fo-lang-ji coastal arcs.';
+        }
+        return;
+      }
+      target.classList.add('is-hot');
+      const kind = target.getAttribute('data-kind') === 'sea' ? 'Naval' : 'Land';
+      if (readout) {
+        readout.textContent = `${kind} approach vector — place towers along this corridor to intersect Wōkòu raid flow before the citadel ring.`;
+      }
+    });
+
+    svg?.addEventListener('pointerleave', () => {
+      clearHot();
+      if (readout) {
+        readout.textContent =
+          'Hover a vector region to inspect lane kind. Flow points toward the citadel for tower placement along land corridors and Fo-lang-ji coastal arcs.';
+      }
+    });
+  }
+</script>

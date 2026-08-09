@@ -8,9 +8,9 @@ Goal: evolve the **Vue 3 + Vite documentation portal** (`docs/website/`) into a 
 
 | Layer | Path / state | Notes |
 | --- | --- | --- |
-| Vue host | `docs/website/` package; `src/main.ts` + `src/views` + `src/styles` | Design hub + docs portal; components under `src/frameworks/vue/components` |
+| Vue host | `docs/website/` package; `src/main.ts` + `src/views` + `src/styles` | Design hub + docs portal; components under `src/frameworks/vue/components`; custom directives in `src/directives/` |
 | React | — | **Not present** in the website package (research: R3F for 3D modules) |
-| Astro | — | **Not present** |
+| Astro | `src/frameworks/astro/CoastalFlowField.astro` + Vue iframe wrapper; `npm run build:astro` → `public/astro-island/` | Seeded coastal raid-lane flow field (MFP5 foundation) |
 | Aurelia | — | **Not present** |
 | GraphQL / Apollo | — | **Not present** |
 | WASM | — | **Not present** in website; shared **C++** core planned for game clients ([`shared_core.md`](shared_core.md)) |
@@ -25,7 +25,7 @@ Goal: evolve the **Vue 3 + Vite documentation portal** (`docs/website/`) into a 
 | MFP2 | Vite multi-framework blueprint: React (plugin), optional Astro/Aurelia packaging, vendor chunking for `vue` / `react` / `three`, singleton WASM load strategy | L | MFP1 | ⬜ |
 | MFP3 | Vue island host utilities: dynamic mount of foreign roots, layout reservation, error fallback, visibility/intent load, unmount cleanup | M | MFP1 | 🔄 |
 | MFP4 | React island path: `createRoot` mount from Vue lifecycle, first R3F or graph demo, heap/WebGL dispose on route leave | L | MFP2, MFP3 | ⬜ |
-| MFP5 | Astro tertiary island (optional): prebuilt static island or content component consumed by host | M | MFP1, MFP3 | ⬜ |
+| MFP5 | Astro tertiary island (optional): prebuilt static island or content component consumed by host | M | MFP1, MFP3 | 🔄 CoastalFlowField island + wrapper |
 | MFP6 | Aurelia tertiary island (optional): host element + DI bootstrap, strict stop on unmount | M | MFP3 | ⬜ |
 | MFP7 | Cross-framework parity kit: one visitor question (e.g. design-hub metric) in Vue + React with shared a11y summary | M | MFP4 | ⬜ |
 | MFP8 | GraphQL schema v1 for **docs/content graph** (design docs, roadmaps, research nodes, hub panel state entities) | M | DOC model | ⬜ |
@@ -59,6 +59,7 @@ docs/website/
     views/                       # pages (HomeView, DocPage)
     styles/                      # theme, markdown, hub
     composables/                 # docs/markdown/theme helpers
+    directives/                  # custom Vue directives (click-outside, focus, intersect)
     frameworks/
       vue/                       # HOST components + shell wrapper
         App.vue
@@ -66,7 +67,10 @@ docs/website/
       react/                     # islands (MFP4)
         components/
         mount.ts
-      astro/                     # optional (MFP5)
+      astro/                     # MFP5 — .astro sources + Vue wrappers
+        CoastalFlowField.astro
+        components/              # CoastalFlowFieldWrapper.vue (iframe host)
+        pages/                   # island entry (index.astro)
       aurelia/                   # optional (MFP6)
       shared/                    # mount helpers, types (no framework imports)
     libraries/
@@ -76,6 +80,8 @@ docs/website/
       schema.graphql
       fragments/
       fixtures/
+  public/
+    astro-island/                # `astro build` output (iframe target)
 ```
 
 ## Work packages
@@ -93,7 +99,9 @@ Formalize that `docs/website/src/frameworks/vue` is the host application. Docume
 - `markRaw` / non-proxied Three objects if using R3F later
 - Budget: React+Three vendor chunk not loaded until island open
 
-**Astro / Aurelia (MFP5–MFP6).** Only after React island path is proven; keep as optional demos of polyglot skill, not production requirements for the game.
+**Astro (MFP5).** `CoastalFlowField.astro` is a real design-hub island (deterministic land/sea raid-lane vectors toward the citadel). Build with `npm run build:astro` (also runs on `prebuild`) into `public/astro-island/`; the Vue host embeds it via `CoastalFlowFieldWrapper` (iframe + `BASE_URL`). Further promotion: typed props bridge, `client:visible` hydration experiments, and budget checks.
+
+**Aurelia (MFP6).** Keep optional until React island path is proven; not a production requirement for the game.
 
 ### MFP8–MFP11 — GraphQL + Apollo
 

@@ -5,6 +5,7 @@ import TechPanel from "../frameworks/vue/components/hub/TechPanel.vue";
 import AudioPanel from "../frameworks/vue/components/hub/AudioPanel.vue";
 import ProductionPanel from "../frameworks/vue/components/hub/ProductionPanel.vue";
 import QaPanel from "../frameworks/vue/components/hub/QaPanel.vue";
+import CoastalFlowFieldWrapper from "../frameworks/astro/components/CoastalFlowFieldWrapper.vue";
 
 interface Tab {
   id: string;
@@ -192,6 +193,9 @@ onUnmounted(() => {
           </keep-alive>
         </div>
       </section>
+
+      <!-- Astro island: coastal flow-field design visualization (MFP5) -->
+      <CoastalFlowFieldWrapper height="460px" />
 
       <section class="roadmap-section">
         <h2 class="section-title">Mobile Fortress Roadmap</h2>

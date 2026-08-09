@@ -50,13 +50,16 @@ npm run dev
 | `public/404.html` | SPA fallback for deep links on GitHub Pages |
 | `vite.config.ts` | `SITE_BASE`, `server.fs.allow` for repo-root Markdown |
 | `scripts/generate-nav.mjs` | Builds `src/nav.generated.ts` from `mkdocs.yml` + extras |
-| `src/main.ts` | App bootstrap |
+| `src/main.ts` | App bootstrap (+ Vuex + custom directives) |
 | `src/router.ts` | Routes: `/` hub, catch-all docs |
 | `src/views/` | `HomeView` (hub) and `DocPage` (Markdown portal) |
 | `src/styles/` | Theme, markdown, hub CSS |
 | `src/composables/` | Docs loading, Markdown pipeline, theme |
+| `src/directives/` | Custom Vue directives (`v-click-outside`, `v-focus`, `v-intersect`) |
 | `src/frameworks/vue/App.vue` | Shell layout wrapper (topbar / sidebar) |
 | `src/frameworks/vue/components/` | Shell chrome + `hub/` interactive panels |
+| `src/frameworks/astro/` | Astro island sources (`CoastalFlowField.astro`) + Vue iframe wrapper |
+| `public/astro-island/` | Prebuilt Astro static island (from `npm run build:astro`) |
 | `src/libraries/form/` | TanStack Form (`@tanstack/vue-form`) helper |
 | `src/libraries/motion/` | Framer Motion variants / re-exports |
 | `src/libraries/router/` | Vue Router factory (`createAppRouter`) |
@@ -69,17 +72,22 @@ npm run build                 # from repo root workspace
 # or
 cd docs/website && npm run build
 
+# Astro island only (also runs automatically on prebuild):
+npm run build:astro
+
 SITE_BASE=/Project-Mobile-Fortress/ npm run build   # production subpath
 ```
 
-Production CI (`.github/workflows/docs.yml`) runs `npm ci && npm run build --workspace docs/website` and publishes `docs/website/dist/` to `gh-pages`.
+Production CI (`.github/workflows/docs.yml`) runs `npm ci && npm run build --workspace docs/website` and publishes `docs/website/dist/` to `gh-pages`. `prebuild` regenerates nav and builds the Astro island into `public/astro-island/` so the home hub iframe has content.
 
 ### Project layout
 
 ```
 docs/website/
 ├── index.html
+├── astro.config.mjs           # Astro island → public/astro-island
 ├── public/
+│   └── astro-island/          # built CoastalFlowField island
 ├── vite.config.ts
 ├── scripts/generate-nav.mjs
 └── src/
@@ -89,17 +97,22 @@ docs/website/
     ├── views/
     ├── styles/
     ├── composables/
+    ├── directives/            # click-outside, focus, intersect
     ├── libraries/
     │   ├── form/                # TanStack Form
     │   ├── motion/              # Framer Motion
     │   ├── router/              # Vue Router helpers
     │   └── vuex/                # Vuex store (not Redux)
     └── frameworks/
-        └── vue/
-            ├── App.vue          # shell wrapper
-            └── components/
-                ├── Sidebar.vue, SearchBox.vue, ThemeToggle.vue, …
-                └── hub/         # design-hub panels
+        ├── vue/
+        │   ├── App.vue          # shell wrapper
+        │   └── components/
+        │       ├── Sidebar.vue, SearchBox.vue, ThemeToggle.vue, …
+        │       └── hub/         # design-hub panels
+        └── astro/
+            ├── CoastalFlowField.astro
+            ├── pages/index.astro
+            └── components/CoastalFlowFieldWrapper.vue
 ```
 
 ### Notable implementation notes
@@ -107,6 +120,8 @@ docs/website/
 - **`nav.generated.ts` is not hand-edited** — regenerated on every `predev` / `prebuild`.
 - **`useDocs.ts` lives under `docs/`**, so `import.meta.glob` keys collapse one `docs/` segment for in-docs sources; `resolveKey()` handles that (see comments in the file). If you change nesting depth, re-verify the glob.
 - **Two documentation front-ends** share `mkdocs.yml` nav: this Vue site and optional `mkdocs serve`.
+- **Custom directives** register via `directivesPlugin` in `main.ts` (used by SearchBox and the Astro island wrapper).
+- **Astro island** is a real static design visual (land/sea raid-lane flow field), not a placeholder — rebuild with `npm run build:astro` when you change `src/frameworks/astro/**`.
 
 ## Tooling packages (`stack/`)
 
