@@ -3,6 +3,13 @@ dist/
 *.local
 *.tsbuildinfo
 
+# stack/next/'s build output (npm run next:build / next:dev) — not part of
+# the primary Vite build/deploy pipeline (dist/ above), regenerated on
+# demand. next-env.d.ts is auto-managed by Next itself (see its own header
+# comment) so it's not hand-edited either.
+.next/
+next-env.d.ts
+
 # public/astro-island/ is committed as real, already-built output (see
 # scripts/build:astro) rather than gitignored — left untouched here.
 
