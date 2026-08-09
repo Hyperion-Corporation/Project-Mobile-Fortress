@@ -139,8 +139,7 @@ docs/website/
 
 ### Notable implementation notes
 
-- **`nav.generated.ts` is not hand-edited** — regenerated on every `predev` / `prebuild`.
-- **`useDocs.ts` lives under `src/hooks/`**, so `import.meta.glob` keys collapse one `docs/` segment for in-docs sources; `resolveKey()` handles that (see comments in the file). If you change nesting depth, re-verify the glob.
+- **`nav.generated.ts` is not hand-edited** — regenerated on every `predev` / `prebuild`, and so is the sibling `src/docs-content.generated.ts` + `src/docs-content/generated/` (gitignored — see `.gitignore`): a static map of one `import()` per navigable doc, keyed by `nav.generated.ts`'s `source` strings, that `src/hooks/useDocs.ts` reads. This replaced a Vite-only `import.meta.glob()` call, which isn't a real API under webpack and threw a runtime error on the `stack/next/` surface — plain, literal `import()` calls code-split identically under both Vite and webpack.
 - **Theme, active hub tab, and search-open state are Redux-owned** (`src/libraries/redux/`) rather than component-local — `src/hooks/useTheme.ts` wraps `useAppSelector`/`useAppDispatch`.
 - **Astro island** is a real static design visual (land/sea raid-lane flow field), not a placeholder — rebuild with `npm run build:astro` when you change `src/frameworks/astro/**`.
 - **`src/stories/`** holds structured lore (Wōkòu crisis, fortress network, allied civilizations) for hub/docs surfaces — not to be confused with `stories/` (root), which holds Storybook stories for `src/frameworks/react/*`. It's also the Apollo island's mock data source.
