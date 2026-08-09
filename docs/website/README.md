@@ -40,7 +40,7 @@ npm run dev
 
 - **New docs page:** add the Markdown under `docs/` and list it in [`docs/mkdocs.yml`](../mkdocs.yml) `nav:`. Run `npm run site:nav` (or any `dev`/`build`) to regenerate the nav.
 - **Repo-wide guide outside `docs/`:** add `{ title, source }` under `EXTRA_SECTIONS` in [`scripts/generate-nav.mjs`](scripts/generate-nav.mjs).
-- **New design-hub panel:** add a SFC under `src/frameworks/vue/components/hub/`, then register it in `src/frameworks/vue/views/HomeView.vue`.
+- **New design-hub panel:** add a SFC under `src/frameworks/vue/components/hub/`, then register it in `src/views/HomeView.vue`.
 
 ## How the app is built
 
@@ -49,12 +49,14 @@ npm run dev
 | `index.html` | Entry HTML + GitHub Pages SPA redirect restore script |
 | `public/404.html` | SPA fallback for deep links on GitHub Pages |
 | `vite.config.ts` | `SITE_BASE`, `server.fs.allow` for repo-root Markdown |
-| `scripts/generate-nav.mjs` | Builds `src/frameworks/vue/nav.generated.ts` from `mkdocs.yml` + extras |
-| `src/main.ts` | App bootstrap; imports the Vue framework entry |
-| `src/frameworks/vue/` | Vue application (router, shell, views, components, composables, styles) |
+| `scripts/generate-nav.mjs` | Builds `src/nav.generated.ts` from `mkdocs.yml` + extras |
+| `src/main.ts` | App bootstrap |
+| `src/router.ts` | Routes: `/` hub, catch-all docs |
+| `src/views/` | `HomeView` (hub) and `DocPage` (Markdown portal) |
+| `src/styles/` | Theme, markdown, hub CSS |
+| `src/composables/` | Docs loading, Markdown pipeline, theme |
+| `src/frameworks/vue/App.vue` | Shell layout wrapper (topbar / sidebar) |
 | `src/frameworks/vue/components/` | Shell chrome + `hub/` interactive panels |
-| `src/frameworks/vue/views/` | `HomeView` (hub) and `DocPage` (Markdown portal) |
-| `src/frameworks/vue/composables/` | Docs loading, Markdown pipeline, theme |
 
 ### Build / deploy
 
@@ -78,17 +80,17 @@ docs/website/
 ├── scripts/generate-nav.mjs
 └── src/
     ├── main.ts
+    ├── router.ts
+    ├── nav.generated.ts       # AUTO-GENERATED
+    ├── views/
+    ├── styles/
+    ├── composables/
     └── frameworks/
         └── vue/
-            ├── App.vue
-            ├── router.ts
-            ├── nav.generated.ts    # AUTO-GENERATED
-            ├── components/
-            │   ├── Sidebar.vue, SearchBox.vue, ThemeToggle.vue, …
-            │   └── hub/            # design-hub panels
-            ├── views/
-            ├── composables/
-            └── styles/
+            ├── App.vue          # shell wrapper
+            └── components/
+                ├── Sidebar.vue, SearchBox.vue, ThemeToggle.vue, …
+                └── hub/         # design-hub panels
 ```
 
 ### Notable implementation notes
