@@ -18,6 +18,12 @@ src/docs-content.generated.ts
 .next/server/
 .next/static/
 .next/types/
+docs/website/.next/app-build-manifest.json
+docs/website/.next/build-manifest.json
+docs/website/.next/prerender-manifest.json
+docs/website/.next/react-loadable-manifest.json
+docs/website/.next/routes-manifest.json
+docs/website/.next/trace
 next-env.d.ts
 
 # public/astro-island/ is committed as real, already-built output (see
