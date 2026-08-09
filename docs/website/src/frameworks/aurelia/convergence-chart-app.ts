@@ -1,9 +1,23 @@
 // Aurelia 2 custom element — no separate .html template file (this package
 // has no aurelia-loader/vite-plugin-aurelia wired up), so the template is
-// defined inline via the @customElement decorator's `template` option, the
-// same mechanism Aurelia's own `au.app()` bootstrapping resolves for the
-// root component either way.
-import { customElement, bindable } from "aurelia";
+// defined inline via the static `$au` resource-definition option, the same
+// mechanism Aurelia's own `au.app()` bootstrapping resolves for the root
+// component either way.
+//
+// Deliberately NOT using the `@customElement`/`@bindable` decorators here:
+// Aurelia 2's decorator-based resource metadata is stored on the class via
+// the TC39 stage-3 decorator-metadata proposal (`Symbol.metadata` — see
+// @aurelia/metadata's `Metadata.get/define`), which only gets populated by
+// *modern* (non-legacy) decorator output. Vite/esbuild happens to emit
+// modern decorators by default, but Next's SWC only supports legacy
+// decorators and ties decorator *parsing* itself to
+// `tsconfig.compilerOptions.experimentalDecorators` (on = legacy parse+
+// transform, off = doesn't parse `@` syntax at all) — there's no tsconfig
+// combination that gets modern semantics out of it. The static `$au`
+// property below is Aurelia's own documented decorator-free equivalent
+// (see `getDefinitionFromStaticAu` in @aurelia/runtime-html): plain data,
+// no decorator transform involved, so it behaves identically under every
+// bundler this site uses (Vite and stack/next/'s webpack).
 import { createSimulationController, type SimulationController } from "../../simulations/context/createSimulationController";
 import { SIMULATION_SCENARIOS } from "../../simulations/scenarios/scenarios";
 import type { SimulationSample } from "../../simulations/repository/types";
@@ -43,14 +57,24 @@ const template = `
   </div>
 
   <svg viewBox="0 0 100 48" preserveAspectRatio="none" role="img" aria-label="GA convergence cost curve">
-    <polyline points.bind="pointsAttr" fill="none" stroke="currentColor" stroke-width="1.4"></polyline>
+    <!-- SVGPolylineElement.points is a getter-only DOM IDL property (an
+         SVGPointList), so the default property.bind heuristic's plain
+         assignment throws — .attr forces Aurelia's attribute-binding
+         command (setAttribute) instead. -->
+    <polyline points.attr="pointsAttr" fill="none" stroke="currentColor" stroke-width="1.4"></polyline>
   </svg>
 </div>
 `;
 
-@customElement({ name: "convergence-chart", template })
 export class ConvergenceChartApp {
-  @bindable autoplay = true;
+  static $au = {
+    type: "custom-element",
+    name: "convergence-chart",
+    template,
+    bindables: ["autoplay"],
+  };
+
+  autoplay = true;
 
   scenarioList = SIMULATION_SCENARIOS;
   scenario = SIMULATION_SCENARIOS[0];
