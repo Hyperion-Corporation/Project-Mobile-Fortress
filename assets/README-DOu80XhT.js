@@ -1,0 +1,1 @@
+const e="# stack/next/\n\nNext.js config for an alternate React-rendered surface over `src/frameworks/react/` — kept for\ntooling parity with `stack/nuxt/`, not part of the default build/deploy pipeline.\n\n```bash\nnpm run next:dev\n```\n";export{e as default};
