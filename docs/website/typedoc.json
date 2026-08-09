@@ -1,0 +1,20 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": [
+    "src/simulations/context/createSimulationController.ts",
+    "src/simulations/generator/convergence.ts",
+    "src/simulations/repository/types.ts",
+    "src/simulations/scenarios/scenarios.ts"
+  ],
+  "out": "../api/typescript",
+  "plugin": ["typedoc-plugin-markdown"],
+  "readme": "none",
+  "entryFileName": "readme.md",
+  "hidePageHeader": true,
+  "hideBreadcrumbs": true,
+  "excludePrivate": true,
+  "excludeInternal": true,
+  "githubPages": false,
+  "skipErrorChecking": true,
+  "name": "Mobile Fortress — TypeScript API (src/simulations)"
+}
