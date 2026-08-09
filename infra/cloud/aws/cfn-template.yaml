@@ -7,7 +7,7 @@ Description: Serverless Backend stack for the Mobile Fortress.
 
 Resources:
   # DynamoDB Database Table
-  Mobile_fortressTable:
+  MobileFortressTable:
     Type: AWS::Serverless::SimpleTable
     Properties:
       PrimaryKey:
@@ -18,7 +18,7 @@ Resources:
         WriteCapacityUnits: 5
 
   # Lambda Function
-  Mobile_fortressFunction:
+  MobileFortressFunction:
     Type: AWS::Serverless::Function
     Properties:
       Handler: handler.lambda_handler
@@ -26,10 +26,10 @@ Resources:
       CodeUri: ./src
       Environment:
         Variables:
-          TABLE_NAME: !Ref Mobile_fortressTable
+          TABLE_NAME: !Ref MobileFortressTable
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Ref Mobile_fortressTable
+            TableName: !Ref MobileFortressTable
       Events:
         ApiEvent:
           Type: Api
