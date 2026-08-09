@@ -52,5 +52,3 @@ node_modules/
 
 # Other stuff
 /**/mobile_fortress_docs_tooling.egg-info
-# Astro generated types/cache
-.astro/
