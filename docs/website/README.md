@@ -2,7 +2,7 @@
 
 Vite + Vue 3 + TypeScript documentation portal and interactive design hub for **Project Mobile Fortress**. Deployed to GitHub Pages from the `gh-pages` branch by [`.github/workflows/docs.yml`](../../.github/workflows/docs.yml).
 
-This package lives at `docs/website/` (not a nested `vue/` subfolder). Vue application code is organized under `src/frameworks/vue/`, matching the host-repo multi-framework layout used by this org's other sites (e.g. github-pages `src/frameworks/{react,vue,astro,aurelia}`).
+This package lives at `docs/website/` (not a nested `vue/` subfolder). Base app modules (`styles/`, `views/`, `composables/`, `router.ts`) sit under `src/` like github-pages; Vue UI components and the shell wrapper live under `src/frameworks/vue/`.
 
 ## What the site is
 

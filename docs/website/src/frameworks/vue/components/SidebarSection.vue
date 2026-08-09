@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import { useRoute } from "vue-router";
-import type { NavNode } from "../nav.generated";
+import type { NavNode } from "../../../nav.generated";
 
 const props = defineProps<{ node: NavNode; depth: number }>();
 const route = useRoute();

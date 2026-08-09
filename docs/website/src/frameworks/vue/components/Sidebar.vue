@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { navTree } from "../nav.generated";
+import { navTree } from "../../../nav.generated";
 import SidebarSection from "./SidebarSection.vue";
 
 defineProps<{ open: boolean }>();

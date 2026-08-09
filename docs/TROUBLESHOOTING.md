@@ -116,7 +116,7 @@ Signing credentials are intentionally never committed — the workflow expects `
 
 ### `npm run build` fails with "Cannot find module '.../nav.generated.ts'" or stale nav content
 
-`src/frameworks/vue/nav.generated.ts` is generated, not hand-written — run the generator directly if the `pre*` npm hooks didn't fire (e.g. you ran `vite build` instead of `npm run build`):
+`src/nav.generated.ts` is generated, not hand-written — run the generator directly if the `pre*` npm hooks didn't fire (e.g. you ran `vite build` instead of `npm run build`):
 
 ```bash
 # from the repository root

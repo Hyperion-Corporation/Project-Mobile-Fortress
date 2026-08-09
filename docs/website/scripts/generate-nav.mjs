@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Generates src/frameworks/vue/nav.generated.ts from two sources of truth:
+// Generates src/nav.generated.ts from two sources of truth:
 //
 //   1. ../mkdocs.yml's `nav:` tree (docs/mkdocs.yml) — the curated
 //      documentation portal shared with the MkDocs Material build. Sources
@@ -11,9 +11,8 @@
 //      and so aren't part of mkdocs's docs_dir. Hand-curated rather than a
 //      full repo walk, to keep the nav deliberate rather than noisy.
 //
-// Never edit src/frameworks/vue/nav.generated.ts by hand — it's overwritten
-// by this script (runs automatically before `dev`/`build` via the npm
-// "pre*" hooks).
+// Never edit src/nav.generated.ts by hand — it's overwritten by this script
+// (runs automatically before `dev`/`build` via the npm "pre*" hooks).
 
 import { readFileSync, writeFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -24,7 +23,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // scripts/ -> website/ -> docs/
 const DOCS_DIR = path.resolve(__dirname, "..", "..");
 const MKDOCS_YML = path.join(DOCS_DIR, "mkdocs.yml");
-const OUT_FILE = path.join(__dirname, "..", "src", "frameworks", "vue", "nav.generated.ts");
+const OUT_FILE = path.join(__dirname, "..", "src", "nav.generated.ts");
 
 // mkdocs.yml may carry PyYAML tags (!!python/name:..., !!python/object/apply:...)
 // for markdown_extensions config we don't care about here. js-yaml can't
@@ -63,7 +62,7 @@ function isExternal(target) {
 
 /** "moon/ROADMAP.md" -> "/moon/ROADMAP" ; "index.md" -> "/docs" (the docs-portal
  * landing page — "/" itself is reserved for the interactive design-hub
- * HomeView, see src/frameworks/vue/router.ts). */
+ * HomeView, see src/router.ts). */
 function slugify(mdPath) {
   const noExt = mdPath.replace(/\.md$/, "");
   if (noExt === "index") return "/docs";

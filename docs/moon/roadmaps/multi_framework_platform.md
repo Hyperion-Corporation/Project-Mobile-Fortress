@@ -8,7 +8,7 @@ Goal: evolve the **Vue 3 + Vite documentation portal** (`docs/website/`) into a 
 
 | Layer | Path / state | Notes |
 | --- | --- | --- |
-| Vue host | `docs/website/` package; `src/main.ts` → `src/frameworks/vue/` | Design hub + docs portal; Vue SFCs under `frameworks/vue/components` and `views` |
+| Vue host | `docs/website/` package; `src/main.ts` + `src/views` + `src/styles` | Design hub + docs portal; components under `src/frameworks/vue/components` |
 | React | — | **Not present** in the website package (research: R3F for 3D modules) |
 | Astro | — | **Not present** |
 | Aurelia | — | **Not present** |
@@ -54,14 +54,15 @@ Goal: evolve the **Vue 3 + Vite documentation portal** (`docs/website/`) into a 
 ```text
 docs/website/
   src/
-    main.ts                      # Vue bootstrap only
+    main.ts                      # bootstrap
+    router.ts, nav.generated.ts
+    views/                       # pages (HomeView, DocPage)
+    styles/                      # theme, markdown, hub
+    composables/                 # docs/markdown/theme helpers
     frameworks/
-      vue/                       # HOST (existing)
-        App.vue, router.ts, nav.generated.ts
-        components/              # shell + hub/
-        views/
-        composables/
-        styles/
+      vue/                       # HOST components + shell wrapper
+        App.vue
+        components/              # shell chrome + hub/
       react/                     # islands (MFP4)
         components/
         mount.ts
