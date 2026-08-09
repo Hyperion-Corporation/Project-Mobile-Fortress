@@ -1,0 +1,94 @@
+.apollo-island-wrap {
+  padding: 1.25rem;
+  margin: 2rem 0 2.5rem;
+}
+
+.apollo-status {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+.apollo-error {
+  color: var(--accent);
+}
+
+.apollo-stats {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1.25rem;
+}
+.apollo-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.apollo-stat-value {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.apollo-stat-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.apollo-lore-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.9rem;
+}
+.apollo-lore-card {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem;
+  background: var(--surface);
+}
+.apollo-lore-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+.apollo-lore-header h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+.apollo-lore-era {
+  font-size: 0.72rem;
+  color: var(--accent);
+  font-weight: 700;
+  white-space: nowrap;
+}
+.apollo-lore-card p {
+  margin: 0 0 0.75rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+.apollo-lore-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.apollo-lore-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+.apollo-tag {
+  font-size: 0.68rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background: var(--surface-hover);
+  color: var(--text-muted);
+}
+.apollo-lore-link {
+  font-size: 0.78rem;
+  color: var(--accent);
+  white-space: nowrap;
+}
