@@ -50,6 +50,8 @@ npm run dev
 | `index.html` | Entry HTML + GitHub Pages SPA redirect restore script |
 | `public/404.html` | SPA fallback for deep links on GitHub Pages |
 | `vite.config.ts` | `SITE_BASE`, `server.fs.allow` for repo-root Markdown |
+| `postcss.config.js` | Tailwind + Autoprefixer |
+| `tailwind.config.js` | Content globs for Vue/Astro; dark mode via `[data-theme="dark"]` |
 | `scripts/generate-nav.mjs` | Builds `src/nav.generated.ts` from `mkdocs.yml` + extras |
 | `src/main.ts` | App bootstrap (+ Vuex + custom directives) |
 | `src/router.ts` | Routes: `/` hub, catch-all docs |
