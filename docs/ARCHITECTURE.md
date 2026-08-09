@@ -72,7 +72,7 @@ See [ADR 0002](adr/0002-rendering-approach.md) for the Android rationale (`Surfa
 
 ## Optional Backend
 
-If leaderboards or cloud save are added, both apps talk to the backend only through a documented REST API (add the schema here once it exists) — never by reaching into backend internals. See `infra/docker/README.md`, `infra/k8s/README.md` for the optional deployment scaffolding.
+If leaderboards or cloud save are added, both apps talk to the backend only through a documented REST API (add the schema here once it exists) — never by reaching into backend internals. See `infra/global/docker/README.md`, `infra/global/k8s/README.md` for the optional deployment scaffolding.
 
 ## Architecture Decision Records
 

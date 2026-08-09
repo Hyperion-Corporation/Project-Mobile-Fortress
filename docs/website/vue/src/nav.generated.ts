@@ -283,32 +283,32 @@ export const navTree: NavNode[] = [
       {
         "title": "Docker",
         "kind": "md",
-        "path": "/repo/infra/docker/README",
-        "source": "infra/docker/README.md"
+        "path": "/repo/infra/global/docker/README",
+        "source": "infra/global/docker/README.md"
       },
       {
         "title": "Kubernetes",
         "kind": "md",
-        "path": "/repo/infra/k8s/README",
-        "source": "infra/k8s/README.md"
+        "path": "/repo/infra/global/k8s/README",
+        "source": "infra/global/k8s/README.md"
       },
       {
         "title": "Helm",
         "kind": "md",
-        "path": "/repo/infra/helm/README",
-        "source": "infra/helm/README.md"
+        "path": "/repo/infra/global/helm/README",
+        "source": "infra/global/helm/README.md"
       },
       {
         "title": "Terraform",
         "kind": "md",
-        "path": "/repo/infra/terraform/README",
-        "source": "infra/terraform/README.md"
+        "path": "/repo/infra/global/terraform/README",
+        "source": "infra/global/terraform/README.md"
       },
       {
         "title": "Ansible",
         "kind": "md",
-        "path": "/repo/infra/ansible/README",
-        "source": "infra/ansible/README.md"
+        "path": "/repo/infra/global/ansible/README",
+        "source": "infra/global/ansible/README.md"
       }
     ]
   }
@@ -507,27 +507,27 @@ export const searchIndex: { title: string; path: string; source: string }[] = [
   },
   {
     "title": "Docker",
-    "path": "/repo/infra/docker/README",
-    "source": "infra/docker/README.md"
+    "path": "/repo/infra/global/docker/README",
+    "source": "infra/global/docker/README.md"
   },
   {
     "title": "Kubernetes",
-    "path": "/repo/infra/k8s/README",
-    "source": "infra/k8s/README.md"
+    "path": "/repo/infra/global/k8s/README",
+    "source": "infra/global/k8s/README.md"
   },
   {
     "title": "Helm",
-    "path": "/repo/infra/helm/README",
-    "source": "infra/helm/README.md"
+    "path": "/repo/infra/global/helm/README",
+    "source": "infra/global/helm/README.md"
   },
   {
     "title": "Terraform",
-    "path": "/repo/infra/terraform/README",
-    "source": "infra/terraform/README.md"
+    "path": "/repo/infra/global/terraform/README",
+    "source": "infra/global/terraform/README.md"
   },
   {
     "title": "Ansible",
-    "path": "/repo/infra/ansible/README",
-    "source": "infra/ansible/README.md"
+    "path": "/repo/infra/global/ansible/README",
+    "source": "infra/global/ansible/README.md"
   }
 ];

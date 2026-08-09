@@ -32,7 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Renamed the Android package `com.example.gametemplate` → `com.acfharbinger.mobilefortress` (directories, `build.gradle.kts` namespace/applicationId, ProGuard rules, manifest, `Theme.GameTemplate` → `Theme.MobileFortress`, app name string) and the iOS bundle identifier `com.example.mygame` → `com.acfharbinger.mobilefortress` (`.pbxproj`, `UserDefaults` keys in `SettingsStore`/`HighScoreStore`).
-- Renamed the optional backend's Helm chart directory `infra/helm/mobile-game-template/` → `infra/helm/mobile-fortress/` (chart name, template helper names, image repository references), and updated matching image references in `infra/ansible/`, `infra/k8s/`, `infra/terraform/`.
+- Renamed the optional backend's Helm chart directory `infra/global/helm/mobile-game-template/` → `infra/global/helm/mobile-fortress/` (chart name, template helper names, image repository references), and updated matching image references in `infra/global/ansible/`, `infra/global/k8s/`, `infra/global/terraform/`.
 - Scrubbed remaining "Mobile-Game-Template"/generic-template wording from `README.md`, `.agent/` (`AGENTS.md`, prompts, rules, skills, workflows), `docs/` (`index.md`, `ARCHITECTURE.md`, `GLOSSARY.md`, `DEVELOPMENT.md`, `mkdocs.yml`, ADRs 0002/0003), `git/CONTRIBUTING.md`, `LICENSE.txt`, `justfile`, `tools/*/justfile`, `.devcontainer/`, and `.github/ISSUE_TEMPLATE/config.yml` — all now describe Mobile Fortress specifically. Historical "template era" framing in `moon/ROADMAP.md`/`CHANGELOG.md` (documenting the repo's actual scaffolding phase) is intentionally kept.
 
 ### Added (template era)

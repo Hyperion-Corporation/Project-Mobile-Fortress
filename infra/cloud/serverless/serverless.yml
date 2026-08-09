@@ -1,4 +1,4 @@
-# cloud/serverless/serverless.yml
+# infra/cloud/serverless/serverless.yml
 # Serverless Framework configuration.
 
 service: polyglot-app-service

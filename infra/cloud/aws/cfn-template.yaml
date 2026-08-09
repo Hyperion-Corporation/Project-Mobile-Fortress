@@ -1,4 +1,4 @@
-# cloud/aws/cfn-template.yaml
+# infra/cloud/aws/cfn-template.yaml
 # CloudFormation template for a serverless infrastructure stack.
 
 AWSTemplateFormatVersion: '2010-09-09'

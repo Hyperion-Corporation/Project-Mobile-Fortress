@@ -1,15 +1,15 @@
 # k8s/
 
 > **Optional.** Only relevant if you deploy the optional leaderboards/cloud-save
-> backend (`infra/docker/`) to a Kubernetes cluster. A purely offline game
+> backend (`infra/global/docker/`) to a Kubernetes cluster. A purely offline game
 > needs none of this.
 
 Kustomize-based Kubernetes manifests: a `base/` layer plus per-environment
 `overlays/`.
 
 ```bash
-kubectl apply -k infra/k8s/overlays/dev
-kubectl apply -k infra/k8s/overlays/prod
+kubectl apply -k infra/global/k8s/overlays/dev
+kubectl apply -k infra/global/k8s/overlays/prod
 ```
 
 | Directory | Purpose |
@@ -19,6 +19,6 @@ kubectl apply -k infra/k8s/overlays/prod
 | `overlays/prod/` | Prod patches: replica count, resource limits, prod host |
 
 > **TODO:** Point the `image:` field in `base/deployment.yaml` at your real
-> container registry once the backend exists (see `infra/docker/`). The Helm
-> chart in `infra/helm/` packages the same resources for teams that prefer
+> container registry once the backend exists (see `infra/global/docker/`). The Helm
+> chart in `infra/global/helm/` packages the same resources for teams that prefer
 > `helm install` over `kubectl apply -k`.

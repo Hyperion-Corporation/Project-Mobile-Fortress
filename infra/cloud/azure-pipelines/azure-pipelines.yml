@@ -1,4 +1,4 @@
-# cloud/azure-pipelines/azure-pipelines.yml
+# infra/cloud/azure-pipelines/azure-pipelines.yml
 # Multi-stage Azure DevOps CI/CD pipeline template.
 
 trigger:
