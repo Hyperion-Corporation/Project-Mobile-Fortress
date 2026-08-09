@@ -7,6 +7,9 @@
     "docs/website/vue"
   ],
   "scripts": {
+    "dev": "npm run dev --workspace docs/website/vue",
+    "build": "npm run build --workspace docs/website/vue",
+    "preview": "npm run preview --workspace docs/website/vue",
     "site:dev": "npm run dev --workspace docs/website/vue",
     "site:build": "npm run build --workspace docs/website/vue",
     "site:preview": "npm run preview --workspace docs/website/vue",
