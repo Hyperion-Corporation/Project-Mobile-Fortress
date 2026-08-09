@@ -6,12 +6,12 @@ const router = createAppRouter({
     {
       path: "/",
       name: "home",
-      component: () => import("./views/HomeView.vue"),
+      component: () => import("./frameworks/vue/views/HomeView.vue"),
     },
     {
       path: "/:pathMatch(.*)*",
       name: "doc",
-      component: () => import("./views/DocPage.vue"),
+      component: () => import("./frameworks/vue/views/DocPage.vue"),
     },
   ],
 });

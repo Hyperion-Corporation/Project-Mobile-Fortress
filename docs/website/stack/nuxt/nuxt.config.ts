@@ -1,9 +1,8 @@
 // Nuxt configuration for the docs website (Vue counterpart to Next.js).
-// This package can host Nuxt islands / an alternate static site alongside
-// the primary Vite + Vue SPA in the parent website package.
+// Canonical config lives here; docs/website/nuxt.config.ts re-exports it
+// (same pattern as eslint.config.js → stack/eslint/).
 //
-// Analogy: github-pages keeps Next config under next/; this repo keeps
-// Nuxt under docs/website/nuxt/.
+// Analogy: github-pages keeps Next config under stack/next/ with a root re-export.
 
 import { defineNuxtConfig } from 'nuxt/config';
 
@@ -27,8 +26,5 @@ export default defineNuxtConfig({
   typescript: {
     strict: true,
     typeCheck: false,
-  },
-  dir: {
-    pages: 'pages',
   },
 });

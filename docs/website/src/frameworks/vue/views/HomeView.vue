@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref, shallowRef, onMounted, onUnmounted } from "vue";
-import DesignPanel from "../frameworks/vue/components/hub/DesignPanel.vue";
-import TechPanel from "../frameworks/vue/components/hub/TechPanel.vue";
-import AudioPanel from "../frameworks/vue/components/hub/AudioPanel.vue";
-import ProductionPanel from "../frameworks/vue/components/hub/ProductionPanel.vue";
-import QaPanel from "../frameworks/vue/components/hub/QaPanel.vue";
-import CoastalFlowFieldWrapper from "../frameworks/astro/components/CoastalFlowFieldWrapper.vue";
+import DesignPanel from "../components/hub/DesignPanel.vue";
+import TechPanel from "../components/hub/TechPanel.vue";
+import AudioPanel from "../components/hub/AudioPanel.vue";
+import ProductionPanel from "../components/hub/ProductionPanel.vue";
+import QaPanel from "../components/hub/QaPanel.vue";
+import CoastalFlowFieldWrapper from "../../astro/components/CoastalFlowFieldWrapper.vue";
 
 interface Tab {
   id: string;

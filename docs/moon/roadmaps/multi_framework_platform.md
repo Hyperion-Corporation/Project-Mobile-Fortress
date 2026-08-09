@@ -8,7 +8,7 @@ Goal: evolve the **Vue 3 + Vite documentation portal** (`docs/website/`) into a 
 
 | Layer | Path / state | Notes |
 | --- | --- | --- |
-| Vue host | `docs/website/` package; `src/main.ts` + `src/views` + `src/styles` | Design hub + docs portal; components under `src/frameworks/vue/components`; custom directives in `src/directives/` |
+| Vue host | `docs/website/` package; `src/main.ts` + `src/styles` + `src/frameworks/vue/{views,components,directives}` | Design hub + docs portal; lore in `src/stories/`; shared modules under configs/constants/enums/hooks/… |
 | React | — | **Not present** in the website package (research: R3F for 3D modules) |
 | Astro | `src/frameworks/astro/CoastalFlowField.astro` + Vue iframe wrapper; `npm run build:astro` → `public/astro-island/` | Seeded coastal raid-lane flow field (MFP5 foundation) |
 | Aurelia | — | **Not present** |
@@ -53,16 +53,26 @@ Goal: evolve the **Vue 3 + Vite documentation portal** (`docs/website/`) into a 
 
 ```text
 docs/website/
+  eslint.config.js               # re-export → stack/eslint
+  nuxt.config.ts                 # re-export → stack/nuxt
+  stack/
+    eslint/
+    nuxt/                        # Nuxt config only (not a full SPA copy)
   src/
     main.ts                      # bootstrap
     router.ts, nav.generated.ts
-    views/                       # pages (HomeView, DocPage)
     styles/                      # theme, markdown, hub
     composables/                 # docs/markdown/theme helpers
-    directives/                  # custom Vue directives (click-outside, focus, intersect)
+    configs/, constants/, enums/
+    hooks/, interfaces/, utils/
+    graphql/                     # schema + fragments (MFP8+)
+    simulations/                 # framework-neutral hub demos
+    stories/                     # game lore catalog
     frameworks/
-      vue/                       # HOST components + shell wrapper
+      vue/                       # HOST — components, views, directives
         App.vue
+        views/                   # HomeView, DocPage
+        directives/              # click-outside, focus, intersect
         components/              # shell chrome + hub/
       react/                     # islands (MFP4)
         components/
@@ -76,10 +86,6 @@ docs/website/
     libraries/
       apollo/                    # client singleton (MFP9)
       wasm/                      # loaders + bindings (MFP12)
-    graphql/
-      schema.graphql
-      fragments/
-      fixtures/
   public/
     astro-island/                # `astro build` output (iframe target)
 ```

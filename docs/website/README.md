@@ -2,7 +2,7 @@
 
 Vite + Vue 3 + TypeScript documentation portal and interactive design hub for **Project Mobile Fortress**. Deployed to GitHub Pages from the `gh-pages` branch by [`.github/workflows/docs.yml`](../../.github/workflows/docs.yml).
 
-This package lives at `docs/website/` (not a nested `vue/` subfolder). Base app modules (`styles/`, `views/`, `composables/`, `router.ts`) sit under `src/` like github-pages; Vue UI components and the shell wrapper live under `src/frameworks/vue/`.
+This package lives at `docs/website/` (not a nested `vue/` subfolder). Shared modules (`styles/`, `composables/`, `configs/`, `stories/`, etc.) sit under `src/`; Vue host UI (`components/`, `views/`, `directives/`) and the shell live under `src/frameworks/vue/`.
 
 ## What the site is
 
@@ -40,7 +40,8 @@ npm run dev
 
 - **New docs page:** add the Markdown under `docs/` and list it in [`docs/mkdocs.yml`](../mkdocs.yml) `nav:`. Run `npm run site:nav` (or any `dev`/`build`) to regenerate the nav.
 - **Repo-wide guide outside `docs/`:** add `{ title, source }` under `EXTRA_SECTIONS` in [`scripts/generate-nav.mjs`](scripts/generate-nav.mjs).
-- **New design-hub panel:** add a SFC under `src/frameworks/vue/components/hub/`, then register it in `src/views/HomeView.vue`.
+- **New design-hub panel:** add a SFC under `src/frameworks/vue/components/hub/`, then register it in `src/frameworks/vue/views/HomeView.vue`.
+- **Lore / stories:** add entries under `src/stories/` and export them from `src/stories/index.ts`.
 
 ## How the app is built
 
@@ -52,11 +53,17 @@ npm run dev
 | `scripts/generate-nav.mjs` | Builds `src/nav.generated.ts` from `mkdocs.yml` + extras |
 | `src/main.ts` | App bootstrap (+ Vuex + custom directives) |
 | `src/router.ts` | Routes: `/` hub, catch-all docs |
-| `src/views/` | `HomeView` (hub) and `DocPage` (Markdown portal) |
 | `src/styles/` | Theme, markdown, hub CSS |
 | `src/composables/` | Docs loading, Markdown pipeline, theme |
-| `src/directives/` | Custom Vue directives (`v-click-outside`, `v-focus`, `v-intersect`) |
+| `src/configs/`, `constants/`, `enums/` | Hub tunables, fortress constants, shared enums |
+| `src/hooks/` | Vue composition hooks (e.g. reduced-motion) |
+| `src/interfaces/`, `utils/` | Shared types and helpers |
+| `src/graphql/` | Docs/content GraphQL schema + fragments (MFP8+) |
+| `src/simulations/` | Framework-neutral hub simulation demos |
+| `src/stories/` | Game lore catalog for the design hub / docs |
 | `src/frameworks/vue/App.vue` | Shell layout wrapper (topbar / sidebar) |
+| `src/frameworks/vue/views/` | `HomeView` (hub) and `DocPage` (Markdown portal) |
+| `src/frameworks/vue/directives/` | Custom Vue directives (`v-click-outside`, `v-focus`, `v-intersect`) |
 | `src/frameworks/vue/components/` | Shell chrome + `hub/` interactive panels |
 | `src/frameworks/astro/` | Astro island sources (`CoastalFlowField.astro`) + Vue iframe wrapper |
 | `public/astro-island/` | Prebuilt Astro static island (from `npm run build:astro`) |
@@ -64,6 +71,7 @@ npm run dev
 | `src/libraries/motion/` | Framer Motion variants / re-exports |
 | `src/libraries/router/` | Vue Router factory (`createAppRouter`) |
 | `src/libraries/vuex/` | Vuex store (actions/mutations/state/store), Redux-shaped layout |
+| `nuxt.config.ts` | Re-exports `stack/nuxt/nuxt.config.ts` (like `eslint.config.js`) |
 
 ### Build / deploy
 
@@ -85,30 +93,36 @@ Production CI (`.github/workflows/docs.yml`) runs `npm ci && npm run build --wor
 ```
 docs/website/
 ├── index.html
+├── eslint.config.js           # re-export → stack/eslint
+├── nuxt.config.ts             # re-export → stack/nuxt
 ├── astro.config.mjs           # Astro island → public/astro-island
 ├── public/
 │   └── astro-island/          # built CoastalFlowField island
+├── stack/
+│   ├── eslint/
+│   └── nuxt/                  # Nuxt config only (not a full website copy)
 ├── vite.config.ts
 ├── scripts/generate-nav.mjs
 └── src/
     ├── main.ts
     ├── router.ts
     ├── nav.generated.ts       # AUTO-GENERATED
-    ├── views/
     ├── styles/
     ├── composables/
-    ├── directives/            # click-outside, focus, intersect
+    ├── configs/, constants/, enums/
+    ├── hooks/, interfaces/, utils/
+    ├── graphql/, simulations/
+    ├── stories/               # game lore
     ├── libraries/
-    │   ├── form/                # TanStack Form
-    │   ├── motion/              # Framer Motion
-    │   ├── router/              # Vue Router helpers
-    │   └── vuex/                # Vuex store (not Redux)
+    │   ├── form/, motion/, router/, vuex/
     └── frameworks/
         ├── vue/
-        │   ├── App.vue          # shell wrapper
+        │   ├── App.vue
+        │   ├── views/           # HomeView, DocPage
+        │   ├── directives/      # click-outside, focus, intersect
         │   └── components/
         │       ├── Sidebar.vue, SearchBox.vue, ThemeToggle.vue, …
-        │       └── hub/         # design-hub panels
+        │       └── hub/
         └── astro/
             ├── CoastalFlowField.astro
             ├── pages/index.astro
@@ -120,19 +134,20 @@ docs/website/
 - **`nav.generated.ts` is not hand-edited** — regenerated on every `predev` / `prebuild`.
 - **`useDocs.ts` lives under `docs/`**, so `import.meta.glob` keys collapse one `docs/` segment for in-docs sources; `resolveKey()` handles that (see comments in the file). If you change nesting depth, re-verify the glob.
 - **Two documentation front-ends** share `mkdocs.yml` nav: this Vue site and optional `mkdocs serve`.
-- **Custom directives** register via `directivesPlugin` in `main.ts` (used by SearchBox and the Astro island wrapper).
+- **Custom directives** live under `src/frameworks/vue/directives/` and register via `directivesPlugin` in `main.ts`.
 - **Astro island** is a real static design visual (land/sea raid-lane flow field), not a placeholder — rebuild with `npm run build:astro` when you change `src/frameworks/astro/**`.
+- **`src/stories/`** holds structured lore (Wōkòu crisis, fortress network, allied civilizations) for hub/docs surfaces.
 
 ## Tooling packages (`stack/`)
 
 | Directory | Role |
 | --- | --- |
-| [`stack/eslint/`](stack/eslint/) | ESLint flat config for this Vite + Vue package |
-| [`stack/nuxt/`](stack/nuxt/) | Nuxt 3 surface (Vue analogue of Next.js under `github-pages/stack/next/`) |
+| [`stack/eslint/`](stack/eslint/) | ESLint flat config; root `eslint.config.js` re-exports it |
+| [`stack/nuxt/`](stack/nuxt/) | Nuxt 3 config; root `nuxt.config.ts` re-exports it (Vue analogue of `stack/next`) |
 
 ```bash
 npm run lint                 # ESLint via stack/eslint/eslint.config.js
-cd stack/nuxt && npm install && npm run dev   # optional Nuxt app
+# Nuxt config only under stack/nuxt — primary product is the Vite SPA
 ```
 
 ## Tests

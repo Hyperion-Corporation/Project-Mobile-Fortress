@@ -1,7 +1,7 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { defineComponent, nextTick } from 'vue';
-import { directivesPlugin } from '../../../src/directives';
+import { directivesPlugin } from '../../../src/frameworks/vue/directives';
 
 describe('custom Vue directives', () => {
   beforeEach(() => {

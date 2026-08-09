@@ -1,0 +1,43 @@
+# Docs/content graph for the Mobile Fortress website (static-export friendly).
+# Live game servers are out of scope — fixtures / MSW only (MFP8–MFP11).
+
+enum OutpostKind {
+  CITADEL
+  RESOURCE
+  TRADING
+}
+
+enum ApproachKind {
+  LAND
+  SEA
+}
+
+type Outpost {
+  id: ID!
+  kind: OutpostKind!
+  label: String!
+  x: Float!
+  y: Float!
+}
+
+type RaidLane {
+  id: ID!
+  approach: ApproachKind!
+  label: String!
+}
+
+type LoreStory {
+  id: ID!
+  title: String!
+  era: String!
+  summary: String!
+  tags: [String!]!
+  docPath: String
+}
+
+type Query {
+  outposts: [Outpost!]!
+  raidLanes: [RaidLane!]!
+  loreStories: [LoreStory!]!
+  loreStory(id: ID!): LoreStory
+}
