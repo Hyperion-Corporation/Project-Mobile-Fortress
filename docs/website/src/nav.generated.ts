@@ -183,6 +183,12 @@ export const navTree: NavNode[] = [
         "kind": "md",
         "path": "/moon/roadmaps/shared_core",
         "source": "docs/moon/roadmaps/shared_core.md"
+      },
+      {
+        "title": "Multi-Framework Platform",
+        "kind": "md",
+        "path": "/moon/roadmaps/multi_framework_platform",
+        "source": "docs/moon/roadmaps/multi_framework_platform.md"
       }
     ]
   },
@@ -452,6 +458,11 @@ export const searchIndex: { title: string; path: string; source: string }[] = [
     "title": "Shared Core",
     "path": "/moon/roadmaps/shared_core",
     "source": "docs/moon/roadmaps/shared_core.md"
+  },
+  {
+    "title": "Multi-Framework Platform",
+    "path": "/moon/roadmaps/multi_framework_platform",
+    "source": "docs/moon/roadmaps/multi_framework_platform.md"
   },
   {
     "title": "Game Design Document",
