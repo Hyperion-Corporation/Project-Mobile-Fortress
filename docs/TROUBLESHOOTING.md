@@ -119,8 +119,9 @@ Signing credentials are intentionally never committed — the workflow expects `
 `src/frameworks/vue/nav.generated.ts` is generated, not hand-written — run the generator directly if the `pre*` npm hooks didn't fire (e.g. you ran `vite build` instead of `npm run build`):
 
 ```bash
-cd docs/website
+# from the repository root
 node docs/website/scripts/generate-nav.mjs
+# or: cd docs/website && node scripts/generate-nav.mjs
 ```
 
 ### Generator throws "duplicate route"

@@ -6,8 +6,8 @@
 [![iOS](https://img.shields.io/badge/iOS-16%2B-000000?logo=apple&logoColor=white)](https://developer.apple.com/ios/)
 [![C++](https://img.shields.io/badge/C%2B%2B20-Shared_Core_(planned)-00599C?logo=cplusplus&logoColor=white)](https://isocpp.org/)
 
-> **Version**: 4.0
-> **Date**: 2026-08-06
+> **Version**: 4.1
+> **Date**: 2026-08-09
 > **Status**: Active development
 
 ## Overview
@@ -45,8 +45,9 @@ Status markers: ✅ Done · 🚧 In Progress · 📋 Pending
 | 4 | Server-authoritative Co-Op multiplayer + matchmaking (GameLift/FlexMatch) | 📋 Pending |
 | 5 | Procedural content & ML systems (WFC maps, RL difficulty, CMAB offers, churn prediction) | 📋 Pending |
 | 6 | LiveOps, regulatory compliance, regional launch | 📋 Pending |
+| 7 | Docs-site multi-framework platform (Vue host + React/WASM islands, GraphQL fixtures) | 📋 Pending |
 
-See per-topic detail in [`docs/moon/roadmaps/`](roadmaps/gameplay.md):
+See per-topic detail in [`docs/moon/roadmaps/`](roadmaps/):
 
 - [`gameplay.md`](roadmaps/gameplay.md) — core TD loop, castle defense, hero commanders, pathfinding
 - [`ui_ux.md`](roadmaps/ui_ux.md) — menus, HUD, clan UI, accessibility
@@ -57,6 +58,7 @@ See per-topic detail in [`docs/moon/roadmaps/`](roadmaps/gameplay.md):
 - [`qa_testing.md`](roadmaps/qa_testing.md) — determinism/netcode testing, device coverage, retention benchmarks
 - [`ios.md`](roadmaps/ios.md) — iOS-specific client work
 - [`shared_core.md`](roadmaps/shared_core.md) — C++ shared-core architecture decision (superseded default, now Option B)
+- [`multi_framework_platform.md`](roadmaps/multi_framework_platform.md) — Vue-host docs site polyglot islands (React/Astro/Aurelia), GraphQL/Apollo, WASM (MFP1–MFP16)
 
 Completed items move to [`docs/moon/CHANGELOG.md`](CHANGELOG.md).
 
@@ -69,8 +71,9 @@ Completed items move to [`docs/moon/CHANGELOG.md`](CHANGELOG.md).
 | T1 | Root scaffolding: LICENSE, README, `.pre-commit-config.yaml`, `.gitignore` | S | ✅ Done |
 | T2 | `.github/` CI/CD: workflows, issue/PR templates, dependabot | M | ✅ Done |
 | T3 | Unified Vue documentation and interactive design portal, including ADRs, roadmaps, design documents, codebase guides, research, and `gh-pages` deployment | M | ✅ Done |
+| T3b | Flatten `docs/website/vue` → `docs/website` and nest Vue sources under `src/frameworks/vue` (github-pages-style frameworks layout) | S | ✅ Done |
 | T4 | `moon/` roadmap and changelog | S | ✅ Done |
-| T5 | `infra/{docker,k8s,helm,terraform,ansible}/` optional backend scaffolding | M | ✅ Done |
+| T5 | `infra/global/{docker,k8s,helm,terraform,ansible}/` optional backend scaffolding (+ cloud/private/server layout) | M | ✅ Done |
 | T6 | `.agent/` LLM coding-agent scaffolding | M | ✅ Done |
 | T7 | Root `justfile` wrapping Gradle + Xcode tasks | S | ✅ Done |
 | T8 | `.devcontainer/` Dev Container definition (Android SDK, JDK 17, emulator) — iOS/Xcode builds require a native macOS host, documented as a known limitation | S | ✅ Done |
@@ -80,3 +83,18 @@ Completed items move to [`docs/moon/CHANGELOG.md`](CHANGELOG.md).
 | T12 | iOS `MyGame` app skeleton under `ios/` (SpriteKit + SwiftUI chrome, feature-parity with Android where the two platforms' scope overlaps) | M | ✅ Done |
 | T13 | iOS `XCTest` unit test skeleton + shared Xcode scheme for CI | S | ✅ Done |
 | T14 | `core/` shared-assets module + documented (non-compiled) state-machine/level-schema spec | S | ✅ Done |
+
+---
+
+## Track: Multi-Framework Docs Platform (planned)
+
+Vue remains the **website host** under `docs/website/src/frameworks/vue`. Research under `docs/moon/research/` (Hybrid Vue/React, Hybrid Micro-Frontend, Vue visualization stack, WASM integration) drives the **MFP1–MFP16** workstream in [`roadmaps/multi_framework_platform.md`](roadmaps/multi_framework_platform.md).
+
+| # | Item | Effort | Status |
+| --- | --- | --- | --- |
+| MFP-B1 | Host/island ADR + frameworks layout (Vue host complete) | S | 🔄 |
+| MFP-B2 | React island mount path + first demo | L | 📋 |
+| MFP-B3 | GraphQL schema + Apollo fixtures (static Pages-safe) | M | 📋 |
+| MFP-B4 | WASM worker stub for a hub compute demo + JS fallback | L | 📋 |
+
+Native game clients (`android/`, `ios/`, `core/`) stay out of scope for MFP unless a shared tooling UI explicitly needs them.
