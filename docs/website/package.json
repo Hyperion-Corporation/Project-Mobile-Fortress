@@ -12,14 +12,17 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "vue": "^3.5.13",
-    "vue-router": "^4.5.0",
+    "@tanstack/vue-form": "^1.33.4",
+    "framer-motion": "^13.0.0",
+    "highlight.js": "^11.11.1",
+    "katex": "^0.16.11",
     "markdown-it": "^14.1.0",
     "markdown-it-anchor": "^9.2.0",
     "markdown-it-texmath": "^1.0.0",
-    "katex": "^0.16.11",
-    "highlight.js": "^11.11.1",
-    "mermaid": "^11.4.1"
+    "mermaid": "^11.4.1",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.0",
+    "vuex": "^4.0.2"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.2.1",

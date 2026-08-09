@@ -57,6 +57,10 @@ npm run dev
 | `src/composables/` | Docs loading, Markdown pipeline, theme |
 | `src/frameworks/vue/App.vue` | Shell layout wrapper (topbar / sidebar) |
 | `src/frameworks/vue/components/` | Shell chrome + `hub/` interactive panels |
+| `src/libraries/form/` | TanStack Form (`@tanstack/vue-form`) helper |
+| `src/libraries/motion/` | Framer Motion variants / re-exports |
+| `src/libraries/router/` | Vue Router factory (`createAppRouter`) |
+| `src/libraries/vuex/` | Vuex store (actions/mutations/state/store), Redux-shaped layout |
 
 ### Build / deploy
 
@@ -85,6 +89,11 @@ docs/website/
     ├── views/
     ├── styles/
     ├── composables/
+    ├── libraries/
+    │   ├── form/                # TanStack Form
+    │   ├── motion/              # Framer Motion
+    │   ├── router/              # Vue Router helpers
+    │   └── vuex/                # Vuex store (not Redux)
     └── frameworks/
         └── vue/
             ├── App.vue          # shell wrapper

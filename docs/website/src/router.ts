@@ -1,18 +1,12 @@
-import { createRouter, createWebHistory } from "vue-router";
+import { createAppRouter } from "./libraries/router/createAppRouter";
 import { searchIndex } from "./nav.generated";
 
-const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
-  scrollBehavior(to, from, savedPosition) {
-    if (savedPosition) return savedPosition;
-    if (to.hash) return { el: to.hash, behavior: "smooth", top: 80 };
-    return { top: 0 };
-  },
+const router = createAppRouter({
   routes: [
     {
       path: "/",
       name: "home",
-      component: () => import("./views/HomeView.vue"), // pages live under src/views
+      component: () => import("./views/HomeView.vue"),
     },
     {
       path: "/:pathMatch(.*)*",
