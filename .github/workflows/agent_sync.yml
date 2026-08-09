@@ -35,13 +35,16 @@ jobs:
         with:
           version: latest
 
-      - name: Install script dependencies (ci extra, skip C++ build)
+      - name: Install script dependencies (ci extra — git/scripts/'s pyyaml/requests/google-genai)
         run: uv sync --frozen --extra ci --no-install-project
 
       - name: Run backlog sync
-        run: uv run python backend/scripts/github/sync_backlog.py
+        # git/scripts/sync_backlog.py imports agent_tools via a relative
+        # import, so it must run as the `git.scripts` package (repo root as
+        # cwd, which is already true for actions/checkout) rather than as a
+        # bare script — see git/README.md.
+        run: uv run python -m git.scripts.sync_backlog
         env:
-          PYTHONPATH: .
           GH_PROJECT_TOKEN: ${{ secrets.PROJECT_ISSUES_TOKEN }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GITHUB_REPOSITORY: ${{ github.repository }}

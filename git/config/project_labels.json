@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema#",
+  "description": "Canonical label taxonomy for Project-Mobile-Fortress. Consumed by sync_backlog.py to validate/create labels and by agent_tools.py to route tickets. Component names mirror .agent/AGENTS.md §3 (Module Boundaries). Status and Priority are NOT represented as labels here — this repo's GitHub Project (17) already has native ProjectV2 single-select fields for both (Status: Backlog/Ready/In progress/Rejected/In review/Done; Priority: P0/P1/P2), which agent_tools.py's resolve_status_field()/resolve_priority_field() target directly. Keeping a parallel status:*/priority:* label taxonomy would let the two representations silently drift, so this file only covers what genuinely has no native-field equivalent: component classification and the roadmap:<topic>/agent:* labels already in use.",
+  "components": [
+    { "name": "component:android",       "color": "3DDC84", "description": "android/ Kotlin client (SurfaceView game loop, Compose menus/HUD)" },
+    { "name": "component:ios",           "color": "000000", "description": "ios/ Swift client (SpriteKit game loop, SwiftUI menus/HUD)" },
+    { "name": "component:core",          "color": "00599C", "description": "core/ shared assets + documented (not yet compiled) state-machine/level spec; future C++ simulation core" },
+    { "name": "component:infra",         "color": "326CE5", "description": "infra/ optional backend scaffolding (Docker, k8s, Helm, Terraform, Ansible)" },
+    { "name": "component:docs-website",  "color": "61DAFB", "description": "docs/website/ React + Vite documentation portal and design hub" },
+    { "name": "component:ci-automation", "color": "C5DEF5", "description": "GitHub Actions workflows, git/ hooks and scripts, repo automation" },
+    { "name": "component:docs",          "color": "BFD4F2", "description": "docs/ content (design docs, roadmaps, ADRs) not specific to docs/website's own code" }
+  ],
+  "agent": [
+    { "name": "agent:generated",   "color": "E4E669", "description": "Ticket authored by sync_backlog.py from ROADMAP.md/CHANGELOG.md" },
+    { "name": "agent:needs-human", "color": "D93F0B", "description": "Agent flagged ambiguity requiring maintainer input (see automation_rules.yaml's flag_only conflict-resolution strategy)" }
+  ]
+}

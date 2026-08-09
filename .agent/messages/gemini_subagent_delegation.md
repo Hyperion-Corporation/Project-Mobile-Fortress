@@ -6,9 +6,9 @@ You have the authority to spawn a Gemini AI subagent via the terminal using the 
 
 **When to Delegate:**
 Invoke the Gemini subagent for:
-*   **Data Pipeline Construction:** Standardizing complex data transformations or parsing large JSON/log files.
-*   **Cross-Language Boilerplate:** Generating binding architectures (e.g., PySide6 to C++, or Python-Rust via Maturin).
-*   **System Architecture:** Extracting structured metrics or designing anomaly detection frameworks from raw execution logs.
+*   **Data Pipeline Construction:** Parsing `docs/moon/ROADMAP.md`/`CHANGELOG.md` tables or large CI/instrumented-test logs into structured summaries (see `git/scripts/sync_backlog.py`, which itself calls Gemini for this).
+*   **Cross-Language Boilerplate:** Generating the JNI (Android) or Swift C++-interop binding architecture between the game clients and the planned shared C++ simulation core (`core/`, see `docs/moon/roadmaps/shared_core.md`).
+*   **System Architecture:** Designing the server-authoritative Co-Op netcode / matchmaking flow (`docs/moon/roadmaps/backend.md`) or extracting structured metrics from Firebase Test Lab / Crashlytics output.
 
 **Execution Syntax:**
 Execute the command in your terminal. Ensure the prompt is enclosed in single quotes.
@@ -20,7 +20,7 @@ Execute the command in your terminal. Ensure the prompt is enclosed in single qu
 3.  **Action-Oriented Verbs:** Start instructions with clear directives like "Analyze," "Generate," or "Extract."
 
 **Example Usage:**
-`agy 'Act as an expert Python GUI developer. Generate a PySide6 layout component for a simulation dashboard. The component must display a Budget Report using a bold styling effect that is subtle, without splitting a single text label into half-bold segments. Constraints: 1. Use object-oriented design. 2. Output only the Python class. Context: [INSERT_CURRENT_UI_STATE]'`
+`agy 'Act as an expert systems architect. Design the JNI binding surface between android/app/'s Kotlin client and a future C++20 shared simulation core (EnTT ECS, FlatBuffers zero-copy state). Keep the FFI surface intentionally small and hand-reviewable — no automated binding generator. Constraints: 1. Output only the interface/header sketch. 2. Note which calls must be off the render thread. Context: [INSERT_CURRENT_GAMELOOP_STATE]'`
 
 **Failure Modes to Avoid:**
 *   **Do not** use unescaped single quotes in the `agy` execution string.

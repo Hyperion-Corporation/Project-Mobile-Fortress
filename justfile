@@ -25,6 +25,7 @@ reset := '\033[0m'
 
 # --- Submodules ---
 
+mod agent 'tools/agent/justfile'
 mod build 'tools/build'
 mod ci 'tools/ci'
 mod docs 'tools/docs'

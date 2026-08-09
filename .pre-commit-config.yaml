@@ -10,6 +10,10 @@
 
 repos:
   # ── General file hygiene ─────────────────────────────────────────────────
+  # check-yaml/check-json run repo-wide (no `files:` filter below), which
+  # already covers git/config/automation_rules.yaml and
+  # project_labels.json's syntax validity — no separate local hook needed
+  # for that (git/hooks/ only carries post-commit; see git/README.md).
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
     hooks:
@@ -68,7 +72,7 @@ repos:
 
   # ── Markdown: link checker ───────────────────────────────────────────────
   - repo: https://github.com/lycheeverse/lychee
-    rev: lychee-v0.15.1
+    rev: lychee-v0.24.2
     hooks:
       - id: lychee
         name: lychee (markdown link check)

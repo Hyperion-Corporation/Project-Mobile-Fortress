@@ -6,9 +6,9 @@ You can deploy a Claude AI subagent via the local terminal using the `claude` CL
 
 **When to Delegate:**
 Invoke the Claude subagent for:
-*   **Deep Refactoring:** Managing strict memory constraints or borrow-checker rules in Rust or C++.
-*   **UI/Frontend Generation:** Generating structured code for complex layouts (e.g., TypeScript/React/Tauri dashboards).
-*   **Granular Code Review:** Performing rigorous audits of custom algorithms or FFmpeg/OpenCV binding logic.
+*   **Deep Refactoring:** Managing RAII/ownership discipline in the planned C++20 shared simulation core (`core/`, EnTT ECS + FlatBuffers — see `docs/moon/roadmaps/shared_core.md`), or Kotlin/Swift game-loop internals (`android/app/.../GameLoop.kt`, `ios/MyGame/Scenes/GameLevel/GameScene.swift`).
+*   **UI/Frontend Generation:** Generating structured TypeScript/React code for `docs/website/` (the multi-framework docs portal — see `docs/moon/roadmaps/multi_framework_platform.md`).
+*   **Granular Code Review:** Performing rigorous audits of Flow Field pathfinding, GA layout optimization, or netcode client-prediction/reconciliation logic.
 
 **Execution Syntax:**
 Run the command in your shell, wrapping the prompt in strong quotes.
@@ -20,7 +20,7 @@ Run the command in your shell, wrapping the prompt in strong quotes.
 3.  **Strict Boundaries:** Specify exact input and output formats (e.g., "Output ONLY valid Rust code inside a single markdown block").
 
 **Example Usage:**
-`claude 'Act as an expert computer vision engineer. Refactor the following Rust OpenCV bindings used for stitching digital anime images (not camera photos) into a continuous panorama. Ensure memory safety and optimize the feature matching step. Wrap your reasoning in <thinking> tags, then provide the refactored code. Code to refactor: [INSERT_CODE_HERE]'`
+`claude 'Act as an expert Android game engineer. Refactor the following Kotlin GameLoop fixed-timestep implementation (SurfaceView + a dedicated thread) to eliminate per-frame allocations in the update/render hot path. Ensure surfaceCreated/surfaceDestroyed still correctly start/stop the thread. Wrap your reasoning in <thinking> tags, then provide the refactored code. Code to refactor: [INSERT_CODE_HERE]'`
 
 **Failure Modes to Avoid:**
 *   **Do not** include single quotes inside the prompt string without escaping them.

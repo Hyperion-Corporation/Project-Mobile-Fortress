@@ -24,7 +24,7 @@ For longer agentic work that may need tools and multiple turns:
 3.  **Strict Boundaries:** Specify format and limits (e.g., "Do not open a PR", "Output ONLY a bullet list of findings", "Modify only files under src/").
 
 **Example Usage:**
-`grok -p 'Act as an expert systems engineer. In the current repository, locate the authentication middleware, identify why refresh tokens are rejected after 24h, and propose a minimal fix. Constraints: 1. Do not modify files. 2. Return a short root-cause analysis and a concrete patch suggestion in a single markdown code block.'`
+`grok -p 'Act as an expert Android engineer. In the current repository, locate GameView.kt/GameLoop.kt, identify why the game thread is not being stopped on surfaceDestroyed (leaking a thread on rotation), and propose a minimal fix. Constraints: 1. Do not modify files. 2. Return a short root-cause analysis and a concrete patch suggestion in a single markdown code block.'`
 
 **Failure Modes to Avoid:**
 *   **Do not** use unescaped single quotes inside the `grok` command string.

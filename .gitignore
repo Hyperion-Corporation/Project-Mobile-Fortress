@@ -50,5 +50,10 @@ ios/MyGame.xcodeproj/project.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
 .kotlin/
 node_modules/
 
+# Python (root pyproject.toml's mkdocs tooling + git/scripts/)
+__pycache__/
+*.pyc
+.venv/
+
 # Other stuff
 /**/mobile_fortress_docs_tooling.egg-info
