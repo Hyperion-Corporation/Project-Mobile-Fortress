@@ -11,7 +11,7 @@
 </br>
 
 <a href="https://github.com/ACFHarbinger/Project-Mobile-Fortress/releases"><img alt="Release" src="https://img.shields.io/github/v/release/ACFHarbinger/Project-Mobile-Fortress?include_prereleases&logo=github&color=blue"></a>
-<a href="LICENSE.md"><img alt="License" src="https://img.shields.io/badge/License-AGPL--3.0%20%2F%20Commercial-blue.svg"></a>
+<a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/License-AGPL--3.0%20%2F%20Commercial-blue.svg"></a>
 <a href="https://github.com/ACFHarbinger/Project-Mobile-Fortress/issues"><img alt="Open Issues" src="https://img.shields.io/github/issues/ACFHarbinger/Project-Mobile-Fortress?color=yellow"></a>
 
 </br>
@@ -165,9 +165,9 @@ This project is dual-licensed under an open-core model:
 
 - **Open source (free) — GNU AGPL-3.0.** Free to use, modify, and
   distribute for hobbyists, students, researchers, non-profits, and any
-  other use that complies with the [AGPL-3.0](LICENSE.md)'s copyleft and
+  other use that complies with the [AGPL-3.0](LICENSE)'s copyleft and
   network source-disclosure terms.
 - **Commercial (paid).** For proprietary, closed-source, or SaaS use that
   can't comply with the AGPL's obligations, a paid
-  [commercial license](LICENSE.txt) is available — contact ACFHarbinger
+  [commercial license](LICENSE) is available — contact ACFHarbinger
   <afonso.fernandes100@gmail.com> for pricing and terms.

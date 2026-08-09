@@ -1,29 +1,33 @@
-This project is dual-licensed under an open-core model.
+========================================================================
+DUAL OPEN-CORE LICENSING MODEL
+========================================================================
 
-  1. FREE / OPEN SOURCE USE — GNU AGPL-3.0
-     You may use, modify, and distribute this software free of charge under
-     the terms of the GNU Affero General Public License v3.0 (reproduced in
-     full below). This track is intended for hobbyists, students,
-     researchers, non-profits, and any other use that can comply with the
-     AGPL's copyleft and network source-disclosure obligations (see
-     Section 13 of the license below).
+This project (Project-Mobile-Fortress) is dual-licensed under an open-core model:
 
-  2. COMMERCIAL USE — paid license required
-     If you want to use this software in a way the AGPL does not permit
-     without releasing your source — for example, embedding it in a
-     proprietary product, offering it as a closed-source hosted/SaaS
-     service, or otherwise using it commercially without complying with the
-     AGPL's obligations — you must obtain a separate commercial license.
-     See LICENSE.txt in this repository, or contact ACFHarbinger
-     <afonso.fernandes100@gmail.com>, for commercial licensing terms and
-     pricing.
+1. FREE / OPEN SOURCE USE — GNU AGPL-3.0
+   You may use, modify, and distribute this software free of charge under
+   the terms of the GNU Affero General Public License v3.0 (reproduced in
+   full below in Section A). This track is intended for researchers, students,
+   hobbyists, non-profits, and any open-source use that complies with the
+   AGPL's copyleft and network source-disclosure obligations (see
+   Section 13 of the AGPL-3.0 license below).
+
+2. COMMERCIAL USE — Paid Commercial License Required
+   If you want to use this software in a way the AGPL-3.0 does not permit
+   without releasing your source code — for example, embedding it in a
+   proprietary product, offering it as a closed-source hosted/SaaS service,
+   or utilizing it commercially in a for-profit enterprise without complying
+   with the AGPL's copyleft obligations — you must obtain a separate
+   commercial license (terms set out below in Section B).
 
 Copyright (c) 2026 ACFHarbinger. All rights reserved except as granted
 under the license terms below.
 
-------------------------------------------------------------------------
+========================================================================
+SECTION A: GNU AFFERO GENERAL PUBLIC LICENSE (AGPL-3.0)
+========================================================================
 
-                    GNU AFFERO GENERAL PUBLIC LICENSE
+GNU AFFERO GENERAL PUBLIC LICENSE
                        Version 3, 19 November 2007
 
  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -684,3 +688,71 @@ specific requirements.
 if any, to sign a "copyright disclaimer" for the program, if necessary.
 For more information on this, and how to apply and follow the GNU AGPL, see
 <https://www.gnu.org/licenses/>.
+
+========================================================================
+SECTION B: COMMERCIAL LICENSE AGREEMENT
+========================================================================
+
+COMMERCIAL LICENSE AGREEMENT
+Project-Mobile-Fortress
+
+Copyright (c) 2026 ACFHarbinger. All rights reserved.
+
+This section governs commercial use of Project-Mobile-Fortress for for-profit
+enterprises or proprietary implementations where compliance with Section A
+(GNU AGPL-3.0) is not desired or applicable.
+
+You need a commercial license if you want to, for example:
+
+  - embed this software in a proprietary or closed-source product;
+  - offer it as part of a hosted or SaaS product without releasing the
+    complete corresponding source code of your modified version, as Section 13
+    of the AGPL-3.0 would otherwise require;
+  - use it in an internal commercial/business tool without complying with
+    the AGPL's copyleft and source-disclosure obligations; or
+  - otherwise use, modify, or distribute it in a way not permitted by the
+    AGPL-3.0.
+
+If none of the above applies to you (e.g. you are a researcher, student,
+hobbyist, or open-source contributor complying with AGPL-3.0), you do not
+need a commercial license — use the software under Section A (AGPL-3.0)
+free of charge.
+
+1. GRANT OF LICENSE
+   Upon payment of the applicable license fee and execution of a signed
+   commercial licensing agreement with the Licensor (ACFHarbinger), the
+   Licensor grants you a non-exclusive, non-transferable, revocable license
+   to use, modify, and distribute the Software for commercial purposes,
+   without the copyleft and source-disclosure obligations of the AGPL-3.0.
+
+2. NO WARRANTY
+   Except as otherwise expressly agreed in writing between you and the
+   Licensor, the Software is provided "AS IS", without warranty of any
+   kind, express or implied, including but not limited to the warranties
+   of merchantability, fitness for a particular purpose, and
+   non-infringement.
+
+3. LIMITATION OF LIABILITY
+   Except as otherwise expressly agreed in writing, in no event shall the
+   Licensor be liable for any claim, damages, or other liability arising
+   from, out of, or in connection with the Software or its use.
+
+4. FEES
+   Commercial license fees, terms, and payment schedules are determined on
+   a per-licensee basis and set out in the applicable signed agreement.
+   Free use for hobbyist, educational, research, and other AGPL-compliant
+   purposes remains available at no cost under Section A (AGPL-3.0) — a
+   commercial license is only required for the commercial use cases
+   described above.
+
+5. TERM AND TERMINATION
+   A commercial license is valid for the term stated in the applicable
+   signed agreement and may be terminated by the Licensor for uncured
+   material breach, including non-payment, as set out in that agreement.
+
+6. HOW TO OBTAIN A COMMERCIAL LICENSE
+   Contact ACFHarbinger <afonso.fernandes100@gmail.com> to discuss
+   commercial licensing, pricing, and terms for Mobile Fortress (Project-Mobile-Fortress).
+
+This file (LICENSE) governs both open-source use under GNU AGPL-3.0 (Section A)
+and commercial use for for-profit enterprises (Section B).

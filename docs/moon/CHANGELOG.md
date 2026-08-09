@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Merged `LICENSE.md` (AGPL-3.0 open track) and `LICENSE.txt` (commercial terms) into a single extensionless `LICENSE` file matching the dual open-core layout used in `Repositories/Templates/*` (Section A AGPL-3.0 + Section B commercial agreement); updated README license links.
 - Slimmed `docs/website/stack/nuxt/`: removed mini-app copies (`app.vue`, `pages/`, local `tsconfig`) and the nested `package.json` so the directory holds Nuxt **config** only, analogous to `github-pages/stack/next/`.
 - Moved `docs/website/src/views/` → `src/frameworks/vue/views/` and `src/directives/` → `src/frameworks/vue/directives/`; updated `main.ts`, `router.ts`, tests, and docs accordingly.
 - Relocated `docs/reports/` → `docs/moon/reports/` and `docs/research/` → `docs/moon/research/`; updated `docs/mkdocs.yml`, navigation configs, and all internal relative path references across the repository.
