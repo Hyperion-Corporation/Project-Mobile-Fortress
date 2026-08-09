@@ -15,6 +15,30 @@ export default [
   js.configs.recommended,
   ...pluginVue.configs['flat/recommended'],
   {
+    // React island components (src/frameworks/react/) and their Storybook
+    // stories — plain TS/TSX, no vue-eslint-parser involved.
+    files: ['**/*.{jsx,tsx}'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+      globals: {
+        ...globals.browser,
+        ...globals.node,
+      },
+      parser: tsparser,
+      parserOptions: {
+        ecmaFeatures: { jsx: true },
+      },
+    },
+    plugins: {
+      '@typescript-eslint': tseslint,
+    },
+    rules: {
+      'no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+    },
+  },
+  {
     files: ['**/*.{js,mjs,cjs,ts,vue}'],
     languageOptions: {
       ecmaVersion: 'latest',
