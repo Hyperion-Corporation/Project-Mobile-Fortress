@@ -54,3 +54,11 @@
   display: block;
   color: var(--accent);
 }
+.aurelia-host .cc-status {
+  margin: 0.6rem 0 0;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+.aurelia-host .cc-status strong {
+  color: var(--text);
+}

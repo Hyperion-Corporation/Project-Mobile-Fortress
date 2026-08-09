@@ -1,0 +1,8 @@
+.convergence-status {
+  margin: -0.5rem 0 1.25rem;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+.convergence-status strong {
+  color: var(--text);
+}

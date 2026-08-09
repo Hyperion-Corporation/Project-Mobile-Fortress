@@ -21,6 +21,7 @@
 import { createSimulationController, type SimulationController } from "../../simulations/context/createSimulationController";
 import { SIMULATION_SCENARIOS } from "../../simulations/scenarios/scenarios";
 import type { SimulationSample } from "../../simulations/repository/types";
+import { convergenceSummary } from "../../simulations/summary";
 
 const WIDTH = 100;
 const HEIGHT = 48;
@@ -63,6 +64,11 @@ const template = `
          command (setAttribute) instead. -->
     <polyline points.attr="pointsAttr" fill="none" stroke="currentColor" stroke-width="1.4"></polyline>
   </svg>
+
+  <!-- MFP7 — cross-framework parity kit: same convergenceSummary() text
+       (src/simulations/summary.ts) the React host's ConvergenceStatus.tsx
+       renders, in a matching role="status" region. -->
+  <p class="cc-status" role="status" aria-live="polite"><strong>Aurelia:</strong> \${statusSummary}</p>
 </div>
 `;
 
@@ -90,6 +96,10 @@ export class ConvergenceChartApp {
   get currentCost(): number | string {
     const sample = this.samples[Math.max(0, this.revealCount - 1)];
     return sample ? sample.cost : "—";
+  }
+
+  get statusSummary(): string {
+    return convergenceSummary(this.samples, this.revealCount);
   }
 
   binding() {

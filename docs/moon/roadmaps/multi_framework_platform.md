@@ -29,7 +29,7 @@ Goal: evolve the **React 19 + Vite documentation portal** (`docs/website/`) into
 | MFP4 | ~~React island path~~ — superseded: React is now the host itself, not a mounted island. `UnitRosterBoard.tsx` is used natively in `HomeView.tsx`. R3F/3D demo work remains open. | L | MFP2, MFP3 | 🔁 reframed — no foreign-root React mount needed; 3D/R3F demo still ⬜ |
 | MFP5 | Astro tertiary island (optional): prebuilt static island or content component consumed by host | M | MFP1, MFP3 | 🔄 CoastalFlowField island + React wrapper |
 | MFP6 | Aurelia tertiary island (optional): host element + DI bootstrap, strict stop on unmount | M | MFP3 | ✅ `convergence-chart-app.ts` + `mount.ts` + React wrapper, visualizes `src/simulations/` |
-| MFP7 | Cross-framework parity kit: one visitor question (e.g. design-hub metric) in React + a second framework with shared a11y summary | M | MFP4 | ⬜ |
+| MFP7 | Cross-framework parity kit: one visitor question (e.g. design-hub metric) in React + a second framework with shared a11y summary | M | MFP4 | ✅ `src/simulations/summary.ts`'s `convergenceSummary()` — one `role="status"` region in React (`ConvergenceStatus.tsx`) and one in the Aurelia island (`convergence-chart-app.ts`'s `statusSummary` getter), both deriving from the same GA-convergence run |
 | MFP8 | GraphQL schema v1 for **docs/content graph** (design docs, roadmaps, research nodes, hub panel state entities) | M | DOC model | ✅ `src/graphql/schema.graphql` — `Outpost`/`RaidLane`/`LoreStory` query fields |
 | MFP9 | Apollo Client singleton (framework-agnostic core under `docs/website/src/frameworks/apollo`) | M | MFP8 | ✅ `src/frameworks/apollo/client.ts` |
 | MFP10 | Framework Apollo adapters: React hooks (`useQuery`); optional Aurelia DI | L | MFP9, MFP4 | 🔄 React (`ApolloLorePanel.tsx`) delivered; Aurelia adapter not attempted |
@@ -37,7 +37,7 @@ Goal: evolve the **React 19 + Vite documentation portal** (`docs/website/`) into
 | MFP12 | WASM toolchain for website compute demos (`wasm-pack`/C++/AssemblyScript), loader module, CI artifact check | L | MFP2 | ⬜ |
 | MFP13 | WASM worker for hub/sim demos (flow-field, GA layout, audio DSP slice) with pure-JS fallback and cancel | L | MFP12 | ⬜ |
 | MFP14 | Bridge narrative: document how website WASM demos relate to future **C++ `core/`** simulation (shared concepts, not shared binary yet) | M | MFP13, shared_core | 🔬 |
-| MFP15 | Test matrix: unit mount/unmount, cache broadcast, Cypress/docs smoke, per-island budgets | L | MFP4, MFP10, MFP13 | 🔄 directive/hook unit tests ported to React Testing Library; cache broadcast + per-island budget checks still ⬜ |
+| MFP15 | Test matrix: unit mount/unmount, cache broadcast, Cypress/docs smoke, per-island budgets | L | MFP4, MFP10, MFP13 | 🔄 directive/hook unit tests ported to React Testing Library; cache broadcast (`test/unit/apollo/cache-broadcast.test.ts`) and per-island gzip budgets (`scripts/check-island-budgets.mjs`, wired into `postbuild`) now ✅; Cypress/docs smoke beyond the ad hoc real-browser checks done while fixing the `stack/next/` surface still ⬜ as a committed spec |
 | MFP16 | Authoring guide: when host vs foreign-root island vs WASM; teardown rules; ADR links | M | MFP7, MFP11, MFP15 | ⬜ |
 
 ## Architecture principles (PMF-specific)
@@ -169,3 +169,4 @@ Per-island gzip budgets; ten mount/unmount leak probes; Cypress smoke that host 
 | --- | --- | --- |
 | 2026-08-09 | R1 | Initial PMF multi-framework roadmap after `docs/website` flatten + `src/frameworks/vue` layout. |
 | 2026-08-09 | R2 | Updated after migrating the docs site's host framework from Vue 3 to React 19, replacing Vuex with Redux (`src/libraries/redux/`), and delivering the Apollo/GraphQL island (MFP8, MFP9, MFP11) against `src/graphql/schema.graphql`. MFP4 and MF-G2 reframed since React is now the host rather than a mounted island; MFP1–MFP3, MFP6 status updated to reflect delivered work. See [`docs/website/APP.md`](../../website/APP.md) for the full rationale. |
+| 2026-08-09 | R3 | Delivered MFP7 (cross-framework a11y parity kit — `src/simulations/summary.ts` shared by React's `ConvergenceStatus.tsx` and the Aurelia island's `statusSummary` getter) and the remainder of MFP15 (Apollo `InMemoryCache` broadcast test; `scripts/check-island-budgets.mjs` per-island gzip budget check wired into `postbuild`). Also wired this roadmap into `docs/mkdocs.yml`'s Roadmap nav section (it existed on disk but wasn't linked from the docs site sidebar). |

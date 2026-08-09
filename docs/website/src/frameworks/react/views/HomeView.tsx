@@ -8,6 +8,7 @@ import QaPanel from "../components/hub/QaPanel";
 import CoastalFlowFieldWrapper from "../../astro/components/CoastalFlowFieldWrapper";
 import UnitRosterBoard from "../UnitRosterBoard";
 import ConvergenceChartWrapper from "../../aurelia/ConvergenceChartWrapper";
+import ConvergenceStatus from "../components/hub/ConvergenceStatus";
 import ApolloLorePanel from "../../apollo/ApolloLorePanel";
 import { siteBaseUrl } from "../../../utils/baseUrl";
 
@@ -215,6 +216,11 @@ export default function HomeView() {
 
         {/* Aurelia island: HQ-layout GA convergence chart (src/simulations/) */}
         <ConvergenceChartWrapper />
+
+        {/* MFP7 — cross-framework parity kit: the same convergenceSummary()
+            text as the Aurelia island's own role="status" region above,
+            rendered natively in React from the same src/simulations/ data. */}
+        <ConvergenceStatus />
 
         {/* Apollo/GraphQL island: docs/content graph (src/graphql/schema.graphql) */}
         <ApolloLorePanel />

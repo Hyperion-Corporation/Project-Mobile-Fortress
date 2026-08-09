@@ -9,6 +9,8 @@
     "predev": "node scripts/generate-nav.mjs",
     "dev": "vite",
     "build": "tsc -b --noCheck && vite build",
+    "postbuild": "node scripts/check-island-budgets.mjs",
+    "check:budgets": "node scripts/check-island-budgets.mjs",
     "build:astro": "astro build || echo 'astro build failed — falling back to committed public/astro-island'",
     "gen:api": "typedoc && node scripts/fix-api-links.mjs",
     "storybook": "storybook dev -p 6006",
