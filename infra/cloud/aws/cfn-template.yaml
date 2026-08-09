@@ -3,11 +3,11 @@
 
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: Serverless Backend stack for the Polyglot App.
+Description: Serverless Backend stack for the Mobile Fortress.
 
 Resources:
   # DynamoDB Database Table
-  PolyglotTable:
+  Mobile_fortressTable:
     Type: AWS::Serverless::SimpleTable
     Properties:
       PrimaryKey:
@@ -18,7 +18,7 @@ Resources:
         WriteCapacityUnits: 5
 
   # Lambda Function
-  PolyglotFunction:
+  Mobile_fortressFunction:
     Type: AWS::Serverless::Function
     Properties:
       Handler: handler.lambda_handler
@@ -26,10 +26,10 @@ Resources:
       CodeUri: ./src
       Environment:
         Variables:
-          TABLE_NAME: !Ref PolyglotTable
+          TABLE_NAME: !Ref Mobile_fortressTable
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Ref PolyglotTable
+            TableName: !Ref Mobile_fortressTable
       Events:
         ApiEvent:
           Type: Api
