@@ -1,13 +1,15 @@
 # stack/nuxt/
 
-Nuxt 3 **configuration package** for the documentation website — the Vue counterpart to
+Nuxt 3 **configuration** for the documentation website — the Vue counterpart to
 `github-pages/stack/next/`.
 
 | Path | Role |
 | --- | --- |
 | `nuxt.config.ts` | Canonical Nuxt config (static Nitro preset, base URL) |
-| `package.json` | Optional isolated Nuxt dependency set for experiments |
 | `../../nuxt.config.ts` | Root re-export (discovery, same pattern as `eslint.config.js`) |
+
+Dependencies and scripts live on the parent website package (`docs/website/package.json`),
+not in this directory.
 
 ## Relationship to the Vite SPA
 
@@ -18,16 +20,27 @@ Nuxt 3 **configuration package** for the documentation website — the Vue count
 
 This directory intentionally does **not** mirror the Vite website root (`app.vue`, `pages/`,
 shared styles). When you need a Nuxt app shell, add Nuxt-only routes under a Nuxt project
-root or extend this package — keep the Vite SPA as the product surface.
+root or extend this config — keep the Vite SPA as the product surface.
 
 ## Usage
 
+From the **repo root** (npm workspaces):
+
 ```bash
-# Config is re-exported at docs/website/nuxt.config.ts
-cd docs/website/stack/nuxt
-npm install
-# Point Nuxt CLI at the parent (root re-export) or this package as needed:
-#   cd docs/website && npx nuxt dev
+npm run nuxt:prepare   # generate .nuxt types
+npm run nuxt:dev
+npm run nuxt:generate  # static output
+npm run nuxt:build
+npm run nuxt:preview
 ```
+
+Or from `docs/website/`:
+
+```bash
+npm run nuxt:dev
+# …
+```
+
+Config is re-exported at `docs/website/nuxt.config.ts` → `stack/nuxt/nuxt.config.ts`.
 
 ESLint for the parent website lives in `../eslint/`.

@@ -147,7 +147,11 @@ docs/website/
 
 ```bash
 npm run lint                 # ESLint via stack/eslint/eslint.config.js
-# Nuxt config only under stack/nuxt — primary product is the Vite SPA
+
+# Nuxt surface (workspace scripts from repo root, or from this package):
+npm run nuxt:prepare
+npm run nuxt:dev
+npm run nuxt:generate
 ```
 
 ## Tests
