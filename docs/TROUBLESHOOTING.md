@@ -1,6 +1,6 @@
 # Troubleshooting Guide
 
-*Last updated: 2026-08-06. Covers Android/Gradle build failures, the Dev Container, iOS/Xcode build failures (macOS host required), CI, and the `docs/website/vue` documentation site. See [`docs/DEVELOPMENT.md`](DEVELOPMENT.md) for first-time setup and [`.agent/rules/`](https://github.com/ACFHarbinger/Project-Mobile-Fortress/tree/main/.agent/rules) for the coding conventions these failures usually trace back to.*
+*Last updated: 2026-08-06. Covers Android/Gradle build failures, the Dev Container, iOS/Xcode build failures (macOS host required), CI, and the `docs/website` documentation site. See [`docs/DEVELOPMENT.md`](DEVELOPMENT.md) for first-time setup and [`.agent/rules/`](https://github.com/ACFHarbinger/Project-Mobile-Fortress/tree/main/.agent/rules) for the coding conventions these failures usually trace back to.*
 
 ---
 
@@ -10,7 +10,7 @@
 - [Dev Container](#dev-container)
 - [iOS / Xcode](#ios-xcode)
 - [GitHub Actions CI](#github-actions-ci)
-- [Documentation Site (`docs/website/vue`)](#documentation-site-docswebsitevue)
+- [Documentation Site (`docs/website`)](#documentation-site-docswebsitevue)
 - [Game Loop / Frame-Drop Symptoms](#game-loop-frame-drop-symptoms)
 - [Getting Further Help](#getting-further-help)
 
@@ -112,15 +112,15 @@ Signing credentials are intentionally never committed — the workflow expects `
 
 ---
 
-## Documentation Site (`docs/website/vue`)
+## Documentation Site (`docs/website`)
 
-### `npm run build` fails with "Cannot find module '../src/nav.generated.ts'" or stale nav content
+### `npm run build` fails with "Cannot find module '.../nav.generated.ts'" or stale nav content
 
-`src/nav.generated.ts` is generated, not hand-written — run the generator directly if the `pre*` npm hooks didn't fire (e.g. you ran `vite build` instead of `npm run build`):
+`src/frameworks/vue/nav.generated.ts` is generated, not hand-written — run the generator directly if the `pre*` npm hooks didn't fire (e.g. you ran `vite build` instead of `npm run build`):
 
 ```bash
-cd docs/website/vue
-node scripts/generate-nav.mjs
+cd docs/website
+node docs/website/scripts/generate-nav.mjs
 ```
 
 ### Generator throws "duplicate route"
@@ -137,7 +137,7 @@ Both render client-side after the Markdown is injected into the DOM — check th
 
 ### `npm run dev` can't read a file "outside of Vite serving allow list"
 
-`vite.config.ts`'s `server.fs.allow` is intentionally scoped to the repo root (four levels up from `docs/website/vue/`) so the dev server can serve `docs/**/*.md` and the curated repo-wide guides — if you've restructured the site's directory nesting, that path needs updating too.
+`vite.config.ts`'s `server.fs.allow` is intentionally scoped to the repo root (four levels up from `docs/website/`) so the dev server can serve `docs/**/*.md` and the curated repo-wide guides — if you've restructured the site's directory nesting, that path needs updating too.
 
 ---
 

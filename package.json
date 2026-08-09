@@ -2,17 +2,17 @@
   "name": "mobile-fortress",
   "version": "0.1.0",
   "private": true,
-  "description": "Mobile Fortress workspace root — npm workspaces for this repo's Node/TypeScript packages (currently just docs/website/vue, the documentation site + interactive design hub).",
+  "description": "Mobile Fortress workspace root \u2014 npm workspaces for this repo's Node/TypeScript packages (currently docs/website, the documentation site + interactive design hub).",
   "workspaces": [
-    "docs/website/vue"
+    "docs/website"
   ],
   "scripts": {
-    "dev": "npm run dev --workspace docs/website/vue",
-    "build": "npm run build --workspace docs/website/vue",
-    "preview": "npm run preview --workspace docs/website/vue",
-    "site:dev": "npm run dev --workspace docs/website/vue",
-    "site:build": "npm run build --workspace docs/website/vue",
-    "site:preview": "npm run preview --workspace docs/website/vue",
-    "site:nav": "node docs/website/vue/scripts/generate-nav.mjs"
+    "dev": "npm run dev --workspace docs/website",
+    "build": "npm run build --workspace docs/website",
+    "preview": "npm run preview --workspace docs/website",
+    "site:dev": "npm run dev --workspace docs/website",
+    "site:build": "npm run build --workspace docs/website",
+    "site:preview": "npm run preview --workspace docs/website",
+    "site:nav": "node docs/website/scripts/generate-nav.mjs"
   }
 }

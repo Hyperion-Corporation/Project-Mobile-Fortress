@@ -3,18 +3,16 @@
 // adding a new page just works once it's listed in mkdocs.yml's nav (or
 // scripts/generate-nav.mjs's EXTRA_SECTIONS) — no manual import needed here.
 //
-// The glob pattern's five ".." reach the repo root from this file's real
-// location (composables/ -> src/ -> vue/ -> website/ -> docs/ -> repo root).
-// BUT this file lives *inside* docs/ itself, so Vite's glob keys — which are
-// Node-style normalized relative paths, not literal "up-prefix + matched
-// suffix" strings — collapse exactly one "docs/" segment (and one ".." step)
-// for every match that is itself under docs/, since going up through docs/
-// and back down into it cancels out (e.g. "../../../../../docs/ARCHITECTURE.md"
-// normalizes to "../../../../ARCHITECTURE.md" — the same path, shorter form).
-// Files outside docs/ (README.md, core/README.md, ...) aren't affected, since
-// reaching them never re-enters docs/. resolveKey() below accounts for this
-// by trying the source both as-is and with a leading "docs/" stripped.
-const rawDocs = import.meta.glob("../../../../../**/*.md", {
+// The glob pattern's six ".." reach the repo root from this file's real
+// location (composables/ -> vue/ -> frameworks/ -> src/ -> website/ -> docs/
+// -> repo root). Because this file lives *inside* docs/ itself, Vite's glob
+// keys — which are Node-style normalized relative paths — collapse exactly
+// one "docs/" segment (and one ".." step) for every match that is itself
+// under docs/, since going up through docs/ and back down into it cancels
+// out. Files outside docs/ (README.md, core/README.md, ...) aren't affected.
+// resolveKey() accounts for this by trying the source both as-is and with a
+// leading "docs/" stripped.
+const rawDocs = import.meta.glob("../../../../../../**/*.md", {
   query: "?raw",
   import: "default",
 }) as Record<string, () => Promise<string>>;

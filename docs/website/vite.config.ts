@@ -11,11 +11,11 @@ export default defineConfig({
   plugins: [vue()],
   server: {
     fs: {
-      // Allow importing markdown from the repo root (four levels up from
-      // this file: vue/ -> website/ -> docs/ -> repo root) — useDocs.ts
-      // bundles docs/**/*.md plus a curated set of repo-wide guides that
-      // live outside docs/.
-      allow: ["../../../.."],
+      // Allow importing markdown from the repo root (two levels up from
+      // this file: website/ -> docs/ -> repo root) — useDocs.ts bundles
+      // docs/**/*.md plus a curated set of repo-wide guides that live
+      // outside docs/.
+      allow: ["../.."],
     },
   },
   build: {

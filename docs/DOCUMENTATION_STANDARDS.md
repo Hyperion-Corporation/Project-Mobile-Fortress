@@ -9,7 +9,7 @@
 - [General Principles](#general-principles)
 - [Kotlin (KDoc)](#kotlin-kdoc)
 - [Swift (DocC)](#swift-docc)
-- [TypeScript / Vue (`docs/website/vue`)](#typescript-vue-docswebsitevue)
+- [TypeScript / Vue (`docs/website`)](#typescript-vue-docswebsitevue)
 - [Markdown Files](#markdown-files)
 - [Where a Fact Belongs](#where-a-fact-belongs)
 - [Enforcement](#enforcement)
@@ -83,7 +83,7 @@ func clampedDelta(_ rawDelta: TimeInterval) -> TimeInterval { ... }
 
 ---
 
-## TypeScript / Vue (`docs/website/vue`)
+## TypeScript / Vue (`docs/website`)
 
 - Exported functions in `src/composables/*.ts` get a `/** ... */` TSDoc-style comment when their behavior isn't obvious from the name and type signature — `useMarkdown.ts`'s `extractToc`/`renderMarkdown`, for example, are self-explanatory and don't need one; `resolveHref`-style link-resolution logic (if reintroduced) would.
 - `.vue` Single-File Components use `<script setup lang="ts">` — prefer well-named `computed`/functions over comments explaining what a block of template markup does.
@@ -95,9 +95,9 @@ func clampedDelta(_ rawDelta: TimeInterval) -> TimeInterval { ... }
 
 - **Title + one-line context.** Every doc under `docs/` starts with an `# H1` title; long-lived reference docs (this one, `TROUBLESHOOTING.md`, `DEPENDENCY_POLICY.md`, `BENCHMARKS.md`) follow it with an italicized "Last updated: YYYY-MM-DD. \<one-sentence scope\>" line so staleness is visible at a glance.
 - **Table of contents for anything past ~100 lines.** Manually maintained (no TOC-generation tooling in this repo) — keep it in sync when adding/removing a `##` heading.
-- **Relative links, repo-root-relative when crossing top-level directories.** Prefer `[text](../other/file.md)` over an absolute GitHub URL when linking within the repository — the [`docs/website/vue`](https://github.com/ACFHarbinger/Project-Mobile-Fortress/tree/main/docs/website/vue) site and GitHub's own file browser both resolve these correctly; absolute `github.com/...` URLs are reserved for linking to a *specific commit/blob* (e.g. the "Edit on GitHub" link the docs site generates) or to another repository entirely.
-- **Mermaid for diagrams, not ASCII art, when the diagram has more than ~4 nodes.** Both [`docs/mkdocs.yml`](https://github.com/ACFHarbinger/Project-Mobile-Fortress/blob/main/docs/mkdocs.yml) (via `mkdocs serve`) and `docs/website/vue` render Mermaid fences (` ```mermaid `) live.
-- **`$...$` / `$$...$$` for math**, rendered via KaTeX in `docs/website/vue` — used throughout [`docs/design/game_design_document.md`](design/game_design_document.md) for the Flow Field, DDA, and monetization-bandit formulas.
+- **Relative links, repo-root-relative when crossing top-level directories.** Prefer `[text](../other/file.md)` over an absolute GitHub URL when linking within the repository — the [`docs/website`](https://github.com/ACFHarbinger/Project-Mobile-Fortress/tree/main/docs/website) site and GitHub's own file browser both resolve these correctly; absolute `github.com/...` URLs are reserved for linking to a *specific commit/blob* (e.g. the "Edit on GitHub" link the docs site generates) or to another repository entirely.
+- **Mermaid for diagrams, not ASCII art, when the diagram has more than ~4 nodes.** Both [`docs/mkdocs.yml`](https://github.com/ACFHarbinger/Project-Mobile-Fortress/blob/main/docs/mkdocs.yml) (via `mkdocs serve`) and `docs/website` render Mermaid fences (` ```mermaid `) live.
+- **`$...$` / `$$...$$` for math**, rendered via KaTeX in `docs/website` — used throughout [`docs/design/game_design_document.md`](design/game_design_document.md) for the Flow Field, DDA, and monetization-bandit formulas.
 
 ---
 
@@ -119,5 +119,5 @@ func clampedDelta(_ rawDelta: TimeInterval) -> TimeInterval { ... }
 ## Enforcement
 
 - `ktlintCheck` / `lint` (Android) and Xcode's build warnings (iOS) catch formatting issues but not doc-comment *presence* — that's a code-review-time check per [`.agent/rules/code_review.md`](https://github.com/ACFHarbinger/Project-Mobile-Fortress/blob/main/.agent/rules/code_review.md).
-- `docs/website/vue`'s `npm run build` runs `vue-tsc` type-checking, which indirectly catches TSDoc `@param`/`@returns` tags that no longer match a changed signature.
+- `docs/website`'s `npm run build` runs `vue-tsc` type-checking, which indirectly catches TSDoc `@param`/`@returns` tags that no longer match a changed signature.
 - `scripts/generate-nav.mjs` fails the `docs-website` CI job outright on a duplicate route or a `mkdocs.yml` nav entry pointing at a missing file — a structural check, not a prose-quality one.

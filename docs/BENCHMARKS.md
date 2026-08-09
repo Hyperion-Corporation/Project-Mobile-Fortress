@@ -38,7 +38,7 @@
 | iOS Instruments trace | `xcodebuild test` + Time Profiler / Core Animation instrument | Frame timing, allocation hotspots | [`docs/moon/roadmaps/performance.md`](moon/roadmaps/performance.md) (iOS parity, no P-number yet) |
 | C++ core micro-benchmarks | [Google Benchmark](https://github.com/google/benchmark) (planned, once the library exists) | ECS iteration throughput, Flow Field recompute cost, FlatBuffers (de)serialization cost | [`docs/moon/roadmaps/shared_core.md`](moon/roadmaps/shared_core.md), [`docs/moon/roadmaps/performance.md`](moon/roadmaps/performance.md) P2/P5 |
 | ARM thermal/battery profiling | Manual pass on representative sub-$100 Android hardware | Sustained-load thermal throttling behavior | [`docs/moon/roadmaps/performance.md`](moon/roadmaps/performance.md) P8 |
-| `docs/website/vue` bundle size | `vite build` output report | Initial JS payload (Mermaid/KaTeX must stay lazy-loaded, see [`docs/DEPENDENCY_POLICY.md`](DEPENDENCY_POLICY.md)) | Not yet gated in CI |
+| `docs/website` bundle size | `vite build` output report | Initial JS payload (Mermaid/KaTeX must stay lazy-loaded, see [`docs/DEPENDENCY_POLICY.md`](DEPENDENCY_POLICY.md)) | Not yet gated in CI |
 
 None of these runners exist in the repository yet — this table is the plan the roadmap items above will implement against, so that when the first suite lands it has an agreed target to report against rather than an arbitrary one invented after the fact.
 

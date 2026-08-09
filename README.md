@@ -64,13 +64,13 @@ Project-Mobile-Fortress/
 ├── docs/                       # architecture notes, ADRs, roadmap, design docs, research
 │   ├── design/                 # GDD, art/audio bibles, pitch deck, production/QA plans
 │   ├── moon/                   # ROADMAP.md, CHANGELOG.md, per-topic roadmaps, reports/, research/
-│   └── website/vue/             # Vite + Vue 3 + TS SPA: interactive design hub + doc reader (deployed to gh-pages)
+│   └── website/             # Vite + Vue 3 + TS SPA: interactive design hub + doc reader (deployed to gh-pages)
 ├── git/                        # CONTRIBUTING.md, codecov.yaml
 ├── tools/{build,test,validation,ci,docs,infra,reducer,helper}/justfile
 ├── justfile                    # root — imports tools/*/justfile as `just` modules
 ├── gradlew, gradle/, build.gradle.kts, settings.gradle.kts, gradle.properties
 │                              # Gradle workspace root (:app → android/app/), so `./gradlew <task>` works from here directly
-├── package.json                 # npm workspaces root (docs/website/vue), so `npm run <script> -w docs/website/vue` works from here directly
+├── package.json                 # npm workspaces root (docs/website), so `npm run <script> -w docs/website` works from here directly
 └── pyproject.toml               # Python tooling deps (mkdocs-material, for local `mkdocs serve` only)
 ```
 
@@ -88,7 +88,7 @@ Project-Mobile-Fortress/
 | `docs/moon/` | `ROADMAP.md`, `CHANGELOG.md`, and per-topic roadmaps (including `ios.md` and `shared_core.md`) |
 | `tools/*/justfile` | `just` recipe modules — each now covers both platforms where relevant (e.g. `tools/build/justfile` has both Gradle and `xcodebuild` recipes) |
 | `gradlew` / `gradle/` / `build.gradle.kts` / `settings.gradle.kts` | The Gradle **workspace root** — `:app` (`android/app/`) is the only module today; a future native module just needs an `include(...)` line here. See [`docs/DEPENDENCY_POLICY.md`](docs/DEPENDENCY_POLICY.md#android-gradlelibsversionstoml). |
-| `package.json` | The npm **workspace root** — declares `docs/website/vue` under `"workspaces"`; a future JS/TS package just needs adding to that array. See [`docs/DEPENDENCY_POLICY.md`](docs/DEPENDENCY_POLICY.md#node--npm-root-package-lockjson-npm-workspaces). |
+| `package.json` | The npm **workspace root** — declares `docs/website` under `"workspaces"`; a future JS/TS package just needs adding to that array. See [`docs/DEPENDENCY_POLICY.md`](docs/DEPENDENCY_POLICY.md#node--npm-root-package-lockjson-npm-workspaces). |
 | `pyproject.toml` | Pins `mkdocs-material` for local `mkdocs serve` — this repo has no Python application code. |
 
 ## Quick Start
@@ -127,14 +127,14 @@ Select the `MyGame` scheme and an iOS Simulator destination, then Run (⌘R). Or
 
 ### Documentation website
 
-The interactive design hub + full-repo documentation portal at [`docs/website/`](docs/website/) — see [`docs/website/README.md`](docs/website/README.md) for what's on it and [`docs/website/vue/README.md`](docs/website/vue/README.md) for implementation notes. `docs/website/vue` is an npm workspace declared in the root `package.json`, so every command below targets it with `-w`/`--workspace` instead of `cd`-ing in:
+The interactive design hub + full-repo documentation portal at [`docs/website/`](docs/website/) — see [`docs/website/README.md`](docs/website/README.md) for what's on it and [`docs/website/README.md`](docs/website/README.md) for implementation notes. `docs/website` is an npm workspace declared in the root `package.json`, so every command below targets it with `-w`/`--workspace` instead of `cd`-ing in:
 
 ```bash
-npm install                              # installs deps for every npm workspace (currently just docs/website/vue)
-npm run dev -w docs/website/vue          # http://localhost:5173, hot-reloading
-npm run build -w docs/website/vue        # type-check (vue-tsc) + production build -> docs/website/vue/dist/
-npm run preview -w docs/website/vue      # serve the production build locally
-node docs/website/vue/scripts/generate-nav.mjs   # regenerate nav.generated.ts after editing docs/mkdocs.yml's nav
+npm install                              # installs deps for every npm workspace (currently just docs/website)
+npm run dev -w docs/website          # http://localhost:5173, hot-reloading
+npm run build -w docs/website        # type-check (vue-tsc) + production build -> docs/website/dist/
+npm run preview -w docs/website      # serve the production build locally
+node docs/website/scripts/generate-nav.mjs   # regenerate nav.generated.ts after editing docs/mkdocs.yml's nav
 ```
 
 Equivalent shorthands are predefined in the root `package.json`: `npm run site:dev`, `npm run site:build`, `npm run site:preview`, `npm run site:nav`.

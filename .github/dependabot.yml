@@ -19,7 +19,7 @@ updates:
       prefix: "chore(deps)"
       include: "scope"
 
-  # Node/npm — root package.json's npm workspaces cover docs/website/vue
+  # Node/npm — root package.json's npm workspaces cover docs/website
   # (the documentation site + interactive design hub) and any future JS/TS
   # package added to "workspaces".
   - package-ecosystem: "npm"

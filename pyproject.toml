@@ -1,7 +1,7 @@
 [project]
 name = "mobile-fortress-docs-tooling"
 version = "0.1.0"
-description = "Python tooling dependencies for Mobile Fortress — currently just MkDocs Material, for local browsing of docs/mkdocs.yml's portal (docs/website/vue is the primary, deployed documentation site; see docs/website/README.md)."
+description = "Python tooling dependencies for Mobile Fortress — currently just MkDocs Material, for local browsing of docs/mkdocs.yml's portal (docs/website is the primary, deployed documentation site; see docs/website/README.md)."
 requires-python = ">=3.11"
 dependencies = [
     "mkdocs-material>=9.5,<10",
