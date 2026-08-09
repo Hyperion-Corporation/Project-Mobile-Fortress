@@ -6,6 +6,8 @@ import AudioPanel from "../components/hub/AudioPanel.vue";
 import ProductionPanel from "../components/hub/ProductionPanel.vue";
 import QaPanel from "../components/hub/QaPanel.vue";
 import CoastalFlowFieldWrapper from "../../astro/components/CoastalFlowFieldWrapper.vue";
+import UnitRosterBoardWrapper from "../components/hub/UnitRosterBoardWrapper.vue";
+import ConvergenceChartWrapper from "../../aurelia/ConvergenceChartWrapper.vue";
 
 interface Tab {
   id: string;
@@ -196,6 +198,12 @@ onUnmounted(() => {
 
       <!-- Astro island: coastal flow-field design visualization (MFP5) -->
       <CoastalFlowFieldWrapper height="460px" />
+
+      <!-- React island: live unit roster browser (src/constants/fortress.ts) -->
+      <UnitRosterBoardWrapper />
+
+      <!-- Aurelia island: HQ-layout GA convergence chart (src/simulations/) -->
+      <ConvergenceChartWrapper />
 
       <section class="roadmap-section">
         <h2 class="section-title">Mobile Fortress Roadmap</h2>

@@ -1,0 +1,15 @@
+/* postcss.config.js already wires tailwindcss into the build, but nothing
+   previously injected Tailwind's actual output — the hub panels' Tailwind
+   utility classes (flex, grid, bg-, text-, rounded-, etc. — see e.g.
+   DesignPanel.vue, TechPanel.vue) were generating no CSS at all until this
+   file existed. Imported first in main.ts so theme.css's hand-written
+   overrides still win the cascade where they conflict.
+
+   Deliberately omits `@tailwind base` (Tailwind's global reset/preflight):
+   this site has been running without it in production the whole time, and
+   turning it on now — as a side effect of restoring the utility classes —
+   would change default margins/list/heading/button rendering sitewide
+   without that being reviewed on its own. If preflight is wanted, it
+   should be a separate, deliberate change with its visual diff checked. */
+@tailwind components;
+@tailwind utilities;

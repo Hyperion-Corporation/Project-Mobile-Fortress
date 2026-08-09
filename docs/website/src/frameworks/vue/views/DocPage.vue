@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted } from "vue";
 import { useRoute } from "vue-router";
-import { searchIndex } from "../../nav.generated";
-import { loadDoc } from "../../composables/useDocs";
-import { renderMarkdown, extractTitle, extractToc, type TocEntry } from "../../composables/useMarkdown";
+import { searchIndex } from "../../../nav.generated";
+import { loadDoc } from "../../../composables/useDocs";
+import { renderMarkdown, extractTitle, extractToc, type TocEntry } from "../../../composables/useMarkdown";
 
 const route = useRoute();
 

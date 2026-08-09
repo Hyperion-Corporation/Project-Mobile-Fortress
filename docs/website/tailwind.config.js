@@ -3,6 +3,9 @@ export default {
   content: [
     './index.html',
     './src/**/*.{vue,js,ts,jsx,tsx,astro}',
+    // React island components (UnitRosterBoard.tsx) and their Storybook
+    // stories also carry Tailwind utility classes.
+    './stories/**/*.{tsx,ts}',
   ],
   // Align with theme toggle: `document.documentElement.dataset.theme`
   darkMode: ['selector', '[data-theme="dark"]'],

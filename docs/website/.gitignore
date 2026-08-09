@@ -2,3 +2,13 @@ node_modules/
 dist/
 *.local
 *.tsbuildinfo
+
+# public/astro-island/ is committed as real, already-built output (see
+# scripts/build:astro) rather than gitignored — left untouched here.
+
+# public/storybook/ is Storybook's build output. Keep the committed
+# fallback index.html tracked (see public/storybook/index.html's comment)
+# so a failed local `storybook build` doesn't leave the link broken; a
+# successful build overwrites it along with everything else.
+public/storybook/*
+!public/storybook/index.html
