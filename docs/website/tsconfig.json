@@ -18,7 +18,6 @@
   "include": [
     "src/**/*.ts",
     "src/**/*.tsx",
-    "src/**/*.vue",
     "src/**/*.d.ts",
     "stories/**/*.tsx",
     ".storybook/**/*.ts",

@@ -32,6 +32,10 @@ export default [
     rules: {
       'no-unused-vars': 'off',
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+      // TypeScript itself catches genuinely undefined identifiers; base
+      // no-undef false-positives on type-only globals (React.CSSProperties,
+      // IntersectionObserverCallback, ...) that only exist in type space.
+      'no-undef': 'off',
     },
   },
 ];

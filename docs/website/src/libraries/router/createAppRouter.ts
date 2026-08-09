@@ -1,31 +1,17 @@
-import {
-  createRouter,
-  createWebHistory,
-  type RouteRecordRaw,
-  type Router,
-} from 'vue-router';
+import { createBrowserRouter, type RouteObject, type DataRouter } from 'react-router-dom';
 
 /**
- * Shared Vue Router factory for the docs website and future multi-framework
+ * Shared React Router factory for the docs website and future multi-framework
  * islands that need a standalone SPA history router (separate from game clients).
  *
- * The primary site router lives at `src/router.ts` and should keep using this
- * helper when routes are extended so history/base options stay consistent.
+ * The primary site router lives at `src/router.tsx` and should keep using this
+ * helper when routes are extended so basename/history options stay consistent.
  */
-export function createAppRouter(options: {
-  routes: RouteRecordRaw[];
-  base?: string;
-}): Router {
-  return createRouter({
-    history: createWebHistory(options.base ?? import.meta.env.BASE_URL),
-    routes: options.routes,
-    scrollBehavior(to, _from, savedPosition) {
-      if (savedPosition) return savedPosition;
-      if (to.hash) return { el: to.hash, behavior: 'smooth', top: 80 };
-      return { top: 0 };
-    },
+export function createAppRouter(options: { routes: RouteObject[]; basename?: string }): DataRouter {
+  return createBrowserRouter(options.routes, {
+    basename: options.basename ?? import.meta.env.BASE_URL,
   });
 }
 
-export { createRouter, createWebHistory } from 'vue-router';
-export type { RouteRecordRaw, Router } from 'vue-router';
+export { createBrowserRouter } from 'react-router-dom';
+export type { RouteObject } from 'react-router-dom';

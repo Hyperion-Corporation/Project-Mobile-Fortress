@@ -12,7 +12,7 @@
       // Counterpart to public/404.html's redirect: restores the real deep
       // link (e.g. /docs/design/game_design_document) from the "?p=" query
       // string GitHub Pages' 404 fallback encoded it into, via
-      // history.replaceState, before Vue Router boots and reads the URL.
+      // history.replaceState, before React Router boots and reads the URL.
       (function (l) {
         if (l.search[1] === "p") {
           var decoded = l.search
@@ -33,6 +33,6 @@
   </head>
   <body>
     <div id="app"></div>
-    <script type="module" src="/src/main.ts"></script>
+    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

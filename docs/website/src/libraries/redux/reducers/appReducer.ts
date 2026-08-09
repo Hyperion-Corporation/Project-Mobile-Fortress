@@ -1,3 +1,4 @@
+import type { Reducer } from 'redux';
 import { initialAppState, type AppState } from '../state/appState';
 import type { AppAction } from '../actions/appActions';
 import {
@@ -7,7 +8,7 @@ import {
   SET_THEME,
 } from '../actions/actionTypes';
 
-export function appReducer(state: AppState = initialAppState, action: AppAction): AppState {
+export const appReducer: Reducer<AppState, AppAction> = (state = initialAppState, action) => {
   switch (action.type) {
     case SET_THEME:
       return { ...state, theme: action.payload };
@@ -20,4 +21,4 @@ export function appReducer(state: AppState = initialAppState, action: AppAction)
     default:
       return state;
   }
-}
+};

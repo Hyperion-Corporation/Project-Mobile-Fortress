@@ -1,8 +1,8 @@
-import { useForm } from '@tanstack/vue-form';
+import { useForm } from '@tanstack/react-form';
 
 /**
- * Shared TanStack Form helper for the Vue docs site.
- * Prefer this over importing `@tanstack/vue-form` directly so defaults
+ * Shared TanStack Form helper for the React docs site.
+ * Prefer this over importing `@tanstack/react-form` directly so defaults
  * stay consistent across hub panels and future islands.
  */
 export function useCustomForm<TValues extends Record<string, unknown>>(options: {
@@ -19,4 +19,4 @@ export function useCustomForm<TValues extends Record<string, unknown>>(options: 
   });
 }
 
-export { useForm } from '@tanstack/vue-form';
+export { useForm } from '@tanstack/react-form';

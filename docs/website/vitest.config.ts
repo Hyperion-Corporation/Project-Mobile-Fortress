@@ -1,9 +1,9 @@
 import { defineConfig } from 'vitest/config';
-import vue from '@vitejs/plugin-vue';
+import react from '@vitejs/plugin-react';
 import { fileURLToPath } from 'node:url';
 
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [react()],
   test: {
     environment: 'jsdom',
     setupFiles: [fileURLToPath(new URL('./test/vitest.setup.ts', import.meta.url))],

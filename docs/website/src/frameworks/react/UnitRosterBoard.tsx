@@ -1,13 +1,13 @@
 import { useMemo, useState } from "react";
 import { UNIT_ROSTER, DEFAULT_CIVILIZATIONS } from "../../constants/fortress";
 import type { CivilizationId, UnitDomain } from "../../interfaces/types";
+import "./UnitRosterBoard.css";
 
 /**
  * Live filterable browser over Mobile Fortress's real unit roster
  * (src/constants/fortress.ts) — the same data src/stories/ and the design
- * docs draw from. This is the island that actually mounts it inside the
- * docs site (see UnitRosterBoardWrapper.vue); Storybook (../../../stories/)
- * documents the component in isolation.
+ * docs draw from. Native React shell component (mounted directly in
+ * HomeView.tsx); Storybook (../../../stories/) documents it in isolation.
  */
 const DOMAINS: Array<{ id: UnitDomain | "all"; label: string; icon: string }> = [
   { id: "all", label: "All domains", icon: "🗺️" },

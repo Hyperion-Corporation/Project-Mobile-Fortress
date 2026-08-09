@@ -1,10 +1,10 @@
 # stack/eslint/
 
-ESLint configuration for the documentation website (Vue 3 + TypeScript).
+ESLint configuration for the documentation website (React 19 + TypeScript).
 
 | File | Role |
 | --- | --- |
-| `eslint.config.js` | Flat config (ESLint 9): `eslint-plugin-vue` + TypeScript |
+| `eslint.config.js` | Flat config (ESLint 9): TypeScript + JSX |
 
 ## Usage
 

@@ -1,8 +1,8 @@
 import type { StorybookConfig } from "@storybook/react-vite";
 
 // Documents Mobile Fortress's React island component(s) in isolation — the
-// same component src/frameworks/vue/components/hub/UnitRosterBoardWrapper.vue
-// mounts live in the design hub. Built standalone into public/storybook/
+// same UnitRosterBoard component the design hub's HomeView.tsx mounts live.
+// Built standalone into public/storybook/
 // (see package.json's build-storybook / prebuild) and linked from the site,
 // rather than embedded as an island itself.
 const config: StorybookConfig = {

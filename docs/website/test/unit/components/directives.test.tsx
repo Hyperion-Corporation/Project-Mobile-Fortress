@@ -1,57 +1,57 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
-import { mount } from '@vue/test-utils';
-import { defineComponent, nextTick } from 'vue';
-import { directivesPlugin } from '../../../src/frameworks/vue/directives';
+import { render, screen, fireEvent, cleanup, act } from '@testing-library/react';
+import { useRef, type RefObject } from 'react';
+import { useClickOutside } from '../../../src/hooks/useClickOutside';
+import { useFocusWhen } from '../../../src/hooks/useFocusWhen';
+import { useIntersect } from '../../../src/hooks/useIntersect';
 
-describe('custom Vue directives', () => {
+describe('custom React shell hooks', () => {
   beforeEach(() => {
     vi.useFakeTimers();
   });
 
   afterEach(() => {
     vi.useRealTimers();
+    cleanup();
   });
 
-  it('v-click-outside invokes handler for outside clicks and skips inside', async () => {
+  it('useClickOutside invokes handler for outside clicks and skips inside', () => {
     const onOutside = vi.fn();
-    const Comp = defineComponent({
-      template: `<div class="host" v-click-outside="onOutside"><button class="inner">in</button></div>`,
-      methods: { onOutside },
-    });
-    const wrapper = mount(Comp, {
-      global: { plugins: [directivesPlugin] },
-      attachTo: document.body,
-    });
 
-    wrapper.find('.inner').element.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    function Host() {
+      const ref = useRef<HTMLDivElement | null>(null);
+      useClickOutside(ref, onOutside);
+      return (
+        <div ref={ref} className="host">
+          <button className="inner">in</button>
+        </div>
+      );
+    }
+
+    render(<Host />);
+
+    fireEvent.click(screen.getByText('in'));
     expect(onOutside).not.toHaveBeenCalled();
 
-    document.body.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-    // capture-phase listener on document
+    fireEvent.click(document.body);
     expect(onOutside).toHaveBeenCalledTimes(1);
-
-    wrapper.unmount();
   });
 
-  it('v-focus focuses the host when the binding is truthy', async () => {
-    const Comp = defineComponent({
-      props: { shouldFocus: { type: Boolean, default: true } },
-      template: `<input data-testid="field" v-focus="shouldFocus" />`,
-    });
-    const wrapper = mount(Comp, {
-      props: { shouldFocus: true },
-      global: { plugins: [directivesPlugin] },
-      attachTo: document.body,
-    });
+  it('useFocusWhen focuses the host when active is true', async () => {
+    function Host({ active }: { active: boolean }) {
+      const ref = useRef<HTMLInputElement | null>(null);
+      useFocusWhen(ref, active);
+      return <input data-testid="field" ref={ref} />;
+    }
 
-    await nextTick();
-    await Promise.resolve(); // queueMicrotask from directive
-    expect(document.activeElement).toBe(wrapper.get('[data-testid="field"]').element);
-
-    wrapper.unmount();
+    render(<Host active />);
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(document.activeElement).toBe(screen.getByTestId('field'));
   });
 
-  it('v-intersect observes the element when IntersectionObserver exists', async () => {
+  it('useIntersect observes the element when IntersectionObserver exists', () => {
     const handler = vi.fn();
     const observe = vi.fn();
     const disconnect = vi.fn();
@@ -74,17 +74,15 @@ describe('custom Vue directives', () => {
     // @ts-expect-error test shim
     globalThis.IntersectionObserver = FakeIO;
 
-    const Comp = defineComponent({
-      template: `<div class="target" v-intersect="onVisible" />`,
-      methods: { onVisible: handler },
-    });
-    const wrapper = mount(Comp, {
-      global: { plugins: [directivesPlugin] },
-      attachTo: document.body,
-    });
+    function Host() {
+      const ref = useRef<HTMLDivElement | null>(null) as RefObject<HTMLDivElement | null>;
+      useIntersect(ref, handler);
+      return <div className="target" ref={ref} />;
+    }
 
+    const { unmount } = render(<Host />);
     expect(observe).toHaveBeenCalled();
-    wrapper.unmount();
+    unmount();
     expect(disconnect).toHaveBeenCalled();
   });
 });
