@@ -1,7 +1,7 @@
-# nuxt/
+# stack/nuxt/
 
 Nuxt 3 package for the documentation website — the **Vue** counterpart to the
-**Next.js** host used on React sites in this org (e.g. `github-pages/next/`).
+**Next.js** host used on React sites in this org (e.g. `github-pages/stack/next/`).
 
 | Path | Role |
 | --- | --- |
@@ -15,12 +15,12 @@ Nuxt 3 package for the documentation website — the **Vue** counterpart to the
 | Surface | Framework | Role |
 | --- | --- | --- |
 | `docs/website/` (parent) | Vite + Vue + Vue Router | Primary design hub + Markdown docs portal |
-| `docs/website/nuxt/` (this dir) | Nuxt 3 | Nuxt/static multi-framework experiments |
+| `docs/website/stack/nuxt/` (this dir) | Nuxt 3 | Nuxt/static multi-framework experiments |
 
 ## Usage
 
 ```bash
-cd docs/website/nuxt
+cd docs/website/stack/nuxt
 npm install
 npm run dev        # Nuxt dev server
 npm run generate   # static output under .output/public

@@ -1,2 +1,2 @@
-/** Re-export flat config from eslint/. */
-export { default } from './eslint/eslint.config.js';
+/** Re-export flat config from stack/eslint/. */
+export { default } from './stack/eslint/eslint.config.js';

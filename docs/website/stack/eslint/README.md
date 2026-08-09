@@ -1,4 +1,4 @@
-# eslint/
+# stack/eslint/
 
 ESLint configuration for the documentation website (Vue 3 + TypeScript).
 
@@ -13,5 +13,5 @@ From `docs/website/`:
 ```bash
 npm run lint
 # or
-npx eslint -c eslint/eslint.config.js .
+npx eslint -c stack/eslint/eslint.config.js .
 ```

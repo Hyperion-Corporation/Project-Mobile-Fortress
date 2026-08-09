@@ -10,7 +10,7 @@ import vueParser from 'vue-eslint-parser';
 /** @type {import('eslint').Linter.Config[]} */
 export default [
   {
-    ignores: ['dist/**', 'node_modules/**', 'nuxt/.nuxt/**', 'nuxt/.output/**', 'src/nav.generated.ts'],
+    ignores: ['dist/**', 'node_modules/**', 'stack/nuxt/.nuxt/**', 'stack/nuxt/.output/**', 'src/nav.generated.ts'],
   },
   js.configs.recommended,
   ...pluginVue.configs['flat/recommended'],
