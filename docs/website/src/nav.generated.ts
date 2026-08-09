@@ -73,6 +73,24 @@ export const navTree: NavNode[] = [
     "source": "docs/BENCHMARKS.md"
   },
   {
+    "title": "Reference",
+    "kind": "section",
+    "children": [
+      {
+        "title": "TypeScript API",
+        "kind": "section",
+        "children": [
+          {
+            "title": "Overview",
+            "kind": "md",
+            "path": "/api/typescript/readme",
+            "source": "docs/api/typescript/readme.md"
+          }
+        ]
+      }
+    ]
+  },
+  {
     "title": "Architecture Decisions",
     "kind": "section",
     "children": [
@@ -359,6 +377,11 @@ export const searchIndex: { title: string; path: string; source: string }[] = [
     "title": "Benchmarks",
     "path": "/BENCHMARKS",
     "source": "docs/BENCHMARKS.md"
+  },
+  {
+    "title": "Overview",
+    "path": "/api/typescript/readme",
+    "source": "docs/api/typescript/readme.md"
   },
   {
     "title": "0001 Record Architecture Decisions",
