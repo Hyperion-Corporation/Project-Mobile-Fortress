@@ -1,5 +1,9 @@
 # Shared Core Roadmap — C++ (decided)
 
+**Owner:** TBD
+
+**2026-08-09 note (multi-agent brainstorm session):** the C++-over-Rust/UniFFI decision was revisited and explicitly reaffirmed by the owner, prioritizing this org's cross-project systems-language consistency over Rust's compile-time FFI/concurrency safety guarantees (see [`.agent/reports/claude/PMF_Analysis_2026-08-09.md`](../../.agent/reports/claude/PMF_Analysis_2026-08-09.md) §3.2/§5.2 for the case that was considered and declined). The mitigations below (sanitizers, `clang-tidy`, RAII discipline) are therefore load-bearing, not optional — this decision has no compiler-enforced safety net to fall back on.
+
 Today `core/` is assets + documentation only — see [`core/README.md`](https://github.com/ACFHarbinger/Project-Mobile-Fortress/blob/main/core/README.md). **This decision is now made**: Mobile Fortress requires a real compiled shared simulation core, not documentation-only convention, because Co-Op multiplayer needs bit-identical simulation state across both native clients. See [`research/Multiplayer Tower Defense Implementation.md`](../research/Multiplayer%20Tower%20Defense%20Implementation.md) §"Architecting the Shared Computational Core" for the full evaluation.
 
 ## Decision: Option B — C++ core, bridged via JNI (Android) and Swift C++ interop (iOS)

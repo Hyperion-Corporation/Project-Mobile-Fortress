@@ -1,5 +1,7 @@
 # UI/UX Roadmap
 
+**Owner:** TBD
+
 Scope: menus, HUD, and faction/social UI for Mobile Fortress. See [`moon/ROADMAP.md`](../ROADMAP.md#game-concept-summary).
 
 | # | Item | Effort | Status |

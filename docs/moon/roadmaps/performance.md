@@ -1,5 +1,7 @@
 # Performance Roadmap
 
+**Owner:** TBD
+
 Scope: keeping hundreds of concurrent siege units, Flow Field recomputation, and Co-Op netcode inside a mobile frame/thermal budget. See [`research/Multiplayer Tower Defense Implementation.md`](../research/Multiplayer%20Tower%20Defense%20Implementation.md) §"Technical Underpinnings" and §"High-Performance State Management and ECS Paradigms".
 
 | # | Item | Effort | Status |

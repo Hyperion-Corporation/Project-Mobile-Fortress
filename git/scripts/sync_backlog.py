@@ -94,6 +94,17 @@ spacing.
 of guessing -- do not invent creates/transitions/closes for it.
 - Never propose closing an issue that is not clearly marked done in the \
 changelog.
+- "body" MUST be a thin pointer, not a restated spec: one line linking to \
+the source roadmap file and item ID (e.g. "See `docs/moon/roadmaps/<file>.md` \
+-- `<ID>` -- for the current deliverable description, effort, and status."), \
+plus one sentence noting it is a pointer, not a spec copy. Do NOT restate the \
+roadmap item's implementation details, technology choices, or effort in the \
+body -- this is a per-issue drift-prevention rule adopted 2026-08-09 after \
+the roadmap's shared-core language changed (Rust to C++) and several issue \
+bodies (S1-S7, P2, P5, Q3, IOS3, IOS7) kept describing Rust/hecs/UniFFI/rkyv \
+for multiple commits because only ticket titles/statuses were being \
+reconciled, never restated body prose. See \
+`docs/moon/roadmaps/repo_automation.md` RA5.
 """
 
 

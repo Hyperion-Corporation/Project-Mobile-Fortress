@@ -70,7 +70,7 @@ nav:
       - QA & Testing: moon/roadmaps/qa_testing.md
       - iOS: moon/roadmaps/ios.md
       - Shared Core: moon/roadmaps/shared_core.md
-      - Multi-Framework Platform: moon/roadmaps/multi_framework_platform.md
+      - Internal Dashboard: moon/roadmaps/internal_dashboard.md
       - Repository Automation: moon/roadmaps/repo_automation.md
   - Design:
       - Game Design Document: design/game_design_document.md

@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed (2026-08-09, multi-agent roadmap brainstorm session)
+
+- `docs/moon/roadmaps/multi_framework_platform.md` renamed to `docs/moon/roadmaps/internal_dashboard.md`: merges the delivered MFP1–MFP16 host/island infrastructure (kept verbatim) with a new Part A (ID1–ID11) covering the internal product/telemetry dashboard vision — absorbs the `product-metrics`-labeled GitHub issues (#120–125). Cross-references updated in `docs/moon/ROADMAP.md`, `docs/mkdocs.yml`, `docs/moon/roadmaps/repo_automation.md`, `.agent/messages/claude_subagent_delegation.md`.
+- `docs/moon/ROADMAP.md`: added a timeboxed "Playable Vertical Slice" track (VS1–VS5, 2026-08-09 → 2026-08-23, Android first) after review found the roadmap had architected Phases 2–7 well ahead of any playable frame of actual gameplay; added per-roadmap-file ownership table (all `TBD` except `ai_systems.md`, owned by ACFHarbinger).
+- `docs/moon/roadmaps/ai_systems.md`: added an Entry gate column for A5, A6, A7, A10 — each now names the required evidence/baseline before implementation starts, rather than being merely marked "not MVP."
+- `docs/moon/roadmaps/shared_core.md`: C++-over-Rust/UniFFI decision explicitly revisited and reaffirmed (owner decision) after independent review argued for Rust's compile-time FFI/concurrency safety; noted the mitigations (sanitizers, `clang-tidy`, RAII discipline) are therefore load-bearing.
+- GitHub issue backlog (all 100 issues): bodies converted to thin pointers (link to the current roadmap row, no restated implementation description) after finding concrete content drift — issues S1–S7, P2, P5, Q3, IOS3, IOS7 still described a Rust/`hecs`/UniFFI/`rkyv` core three commits after `shared_core.md` switched to C++/EnTT, and B4 said "GCP Firebase fleet provisioning" against `backend.md`'s AWS GameLift/FlexMatch. Root cause: `git/scripts/sync_backlog.py`'s `apply_plan` only ever set issue `body` on ticket creation, never on status transitions, so bodies were frozen at creation time regardless of later roadmap edits. `sync_backlog.py`'s `SYSTEM_PROMPT` updated to require thin-pointer bodies for future ticket creation (see `docs/moon/roadmaps/repo_automation.md` RA5).
+- See `.agent/reports/claude/PMF_Analysis_2026-08-09.md` and `.agent/reports/shared/PMF_Shared_Report.md` for the full review and decision record behind these changes.
+
 ### Added
 
 - Website source parity modules under `docs/website/src/`: `configs/`, `constants/`, `enums/`, `graphql/`, `hooks/`, `interfaces/`, `simulations/`, `utils/`, plus `stories/` for structured game lore (Wōkòu crisis, coastal fortress network, allied civilizations).

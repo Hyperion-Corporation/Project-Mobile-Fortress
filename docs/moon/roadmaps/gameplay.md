@@ -1,6 +1,10 @@
 # Gameplay Roadmap
 
+**Owner:** TBD
+
 Scope: the Wōkòu-pirate-era tower-defense core loop and its meta-progression layer. See [`moon/ROADMAP.md`](../ROADMAP.md#game-concept-summary) for the overall concept and [`reports/Tower Defense Market Research.md`](../reports/Tower%20Defense%20Market%20Research.md) for the design rationale.
+
+**2026-08-09 note:** G2/G3/G10 below are the full-scope versions of this loop. A cut-down, timeboxed slice of these three items (naive pathfinding instead of full Flow Field, one lane, no meta-progression) is being built first as the **Playable Vertical Slice** track in [`moon/ROADMAP.md`](../ROADMAP.md#track-playable-vertical-slice-in-progress-2026-08-09--2026-08-23) (VS1–VS5, target 2026-08-23, Android first) — see that section before starting G2/G3/G10 directly.
 
 | # | Item | Effort | Status |
 | --- | --- | --- | --- |

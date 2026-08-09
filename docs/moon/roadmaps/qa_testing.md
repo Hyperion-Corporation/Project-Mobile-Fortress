@@ -1,5 +1,7 @@
 # QA & Testing Roadmap
 
+**Owner:** TBD
+
 Scope: correctness of the shared simulation core, netcode determinism, and the retention benchmarks Mobile Fortress is designed against. See [`reports/Tower Defense Market Research.md`](../reports/Tower%20Defense%20Market%20Research.md) §"Key Performance Indicators (KPIs) and Retention Benchmarks" for the target metrics below.
 
 | # | Item | Effort | Status |

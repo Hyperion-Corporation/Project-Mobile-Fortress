@@ -7,7 +7,7 @@ You can deploy a Claude AI subagent via the local terminal using the `claude` CL
 **When to Delegate:**
 Invoke the Claude subagent for:
 *   **Deep Refactoring:** Managing RAII/ownership discipline in the planned C++20 shared simulation core (`core/`, EnTT ECS + FlatBuffers — see `docs/moon/roadmaps/shared_core.md`), or Kotlin/Swift game-loop internals (`android/app/.../GameLoop.kt`, `ios/MyGame/Scenes/GameLevel/GameScene.swift`).
-*   **UI/Frontend Generation:** Generating structured TypeScript/React code for `docs/website/` (the multi-framework docs portal — see `docs/moon/roadmaps/multi_framework_platform.md`).
+*   **UI/Frontend Generation:** Generating structured TypeScript/React code for `docs/website/` (the multi-framework docs portal and internal dashboard — see `docs/moon/roadmaps/internal_dashboard.md`).
 *   **Granular Code Review:** Performing rigorous audits of Flow Field pathfinding, GA layout optimization, or netcode client-prediction/reconciliation logic.
 
 **Execution Syntax:**

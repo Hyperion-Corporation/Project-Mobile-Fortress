@@ -1,5 +1,7 @@
 # iOS Roadmap
 
+**Owner:** TBD
+
 Scope: `ios/MyGame/`, `ios/MyGame.xcodeproj`, `ios/Tests/`.
 
 ## Done (template scaffolding)
