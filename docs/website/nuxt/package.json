@@ -1,0 +1,19 @@
+{
+  "name": "mobile-fortress-docs-nuxt",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Nuxt surface for the Mobile Fortress docs website (Vue analogue of Next.js).",
+  "scripts": {
+    "dev": "nuxt dev",
+    "build": "nuxt build",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
+  "dependencies": {
+    "nuxt": "^3.15.0",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.0"
+  }
+}

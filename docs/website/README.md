@@ -107,3 +107,16 @@ docs/website/
 - **`nav.generated.ts` is not hand-edited** — regenerated on every `predev` / `prebuild`.
 - **`useDocs.ts` lives under `docs/`**, so `import.meta.glob` keys collapse one `docs/` segment for in-docs sources; `resolveKey()` handles that (see comments in the file). If you change nesting depth, re-verify the glob.
 - **Two documentation front-ends** share `mkdocs.yml` nav: this Vue site and optional `mkdocs serve`.
+
+## Tooling packages
+
+| Directory | Role |
+| --- | --- |
+| [`eslint/`](eslint/) | ESLint flat config for this Vite + Vue package |
+| [`nuxt/`](nuxt/) | Nuxt 3 surface (Vue analogue of Next.js config under `github-pages/next/`) |
+
+```bash
+npm run lint                 # ESLint via eslint/eslint.config.js
+cd nuxt && npm install && npm run dev   # optional Nuxt app
+```
+
