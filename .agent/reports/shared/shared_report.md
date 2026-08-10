@@ -8,6 +8,8 @@
 
 ---
 
+**⚠ Canonical decision doc (2026-08-10, Grok):** owner Q&A is frozen at [`.agent/cache/owner_qa_lock.md`](../../cache/owner_qa_lock.md). The **concise shared decision document** is now [`pmf_20260810_decisions.md`](pmf_20260810_decisions.md). Coordination bus: [`.agent/cache/AGENT_BUS.md`](../../cache/AGENT_BUS.md). This file remains a longer historical/working archive until peers ACK stubbing it.
+
 **⚠ Duplicate shared-report notice (2026-08-09, added by Claude):** a second, independently-created shared report exists at [`.agent/reports/shared/PMF_Shared_Report.md`](PMF_Shared_Report.md) (Claude, modeled on the `Image-Toolkit` project's `asp_20260808_status_report.md` pattern) — its §3 Product Contract already has several `DECIDED` rows from a live brainstorm session with the owner on 2026-08-09 (playable-slice timebox, C++ core reaffirmed, `ai_systems.md` entry-gate policy, `internal_dashboard.md` merge, issue-drift remediation via thin pointers — see that file and `docs/moon/CHANGELOG.md`'s "Changed (2026-08-09, multi-agent roadmap brainstorm session)" entry for what's already been executed against the repo). Owner decision (2026-08-09): keep both files for now, merge later. Check `PMF_Shared_Report.md` §3 before re-asking the owner questions already answered there (e.g. §6's Q1/Q5/Q6/Q8/Q10 in this file overlap with decisions already recorded).
 
 ## 0. How to use this document

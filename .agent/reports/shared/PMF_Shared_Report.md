@@ -4,7 +4,9 @@
 **Owner/editor:** ACFHarbinger
 **Repository under review:** `Project-Mobile-Fortress` (this repo)
 **Document authority:** Owner-authored synthesis and decision record, built from independent agent reports
-**Status:** Claude's independent report delivered and a first decision round completed with the owner (2026-08-09) — §3 Product Contract partially filled. Chat/Codex, Gemini, and Grok have not yet added independent reports.
+**Status:** Claude's independent report delivered and a first decision round completed with the owner (2026-08-09) — §3 Product Contract partially filled. **2026-08-10:** Grok delivered post-Q&A report; new concise decision doc supersedes open rows here where they conflict.
+
+**⚠ Canonical decision doc (2026-08-10, Grok):** owner Q&A freeze [`.agent/cache/owner_qa_lock.md`](../../cache/owner_qa_lock.md); concise decisions [`pmf_20260810_decisions.md`](pmf_20260810_decisions.md); bus [`.agent/cache/AGENT_BUS.md`](../../cache/AGENT_BUS.md). Treat 2026-08-09 product-contract rows that conflict with the lock (e.g. single-lane Android slice date, SurfaceView default, hero gacha) as **SUPERSEDED**. This file remains a longer archive until peers ACK stubbing.
 
 **⚠ Duplicate shared-report notice (2026-08-09, added by Claude):** a second, independently-created shared report exists at [`.agent/reports/shared/shared_report.md`](shared_report.md) (seeded by Chat, expanded by Grok — its own document history records both). Owner decision (2026-08-09): keep both for now, merge later once all four agents have contributed, rather than picking one now. Do not treat either file as sole canonical until that merge happens — cross-check both before assuming a decision recorded in one is missing just because it isn't in the other. `shared_report.md`'s independent analysis (issue-drift table, no-vertical-slice finding, C++-vs-Rust tension) converges closely with this file's — a useful cross-validation signal, not a conflict to resolve by picking a "winner."
 **Purpose:** Reconcile independent Mobile Fortress reports from Claude, Chat/Codex, Gemini, and Grok (and any additional contributor's agents), record the owner's product/architecture decisions, and provide binding input to the final `docs/moon/roadmaps/*.md` set and GitHub issue backlog.
@@ -46,11 +48,12 @@ Use these labels consistently throughout:
 
 | Contributor | Report path | Status |
 | --- | --- | --- |
-| Claude | [`.agent/reports/claude/PMF_Analysis_2026-08-09.md`](../claude/PMF_Analysis_2026-08-09.md) | Delivered (initial pass, pre-brainstorm) |
+| Claude | [`.agent/reports/claude/PMF_Analysis_2026-08-09.md`](../claude/PMF_Analysis_2026-08-09.md) | Delivered (initial pass, pre-brainstorm) — refresh post-Q&A pending |
 | Chat/Codex | `.agent/reports/chat/` | `[TODO]` |
 | Gemini | `.agent/reports/gemini/` | `[TODO]` |
-| Grok | `.agent/reports/grok/` | `[TODO]` |
+| Grok | [`.agent/reports/grok/pmf_20260810_owner_qa_and_direction.md`](../grok/pmf_20260810_owner_qa_and_direction.md) | Delivered (2026-08-10 post-Q&A) |
 | Additional contributor(s) | `.agent/reports/<name>/` | `[TODO — add rows as needed]` |
+| Shared decisions (concise) | [`pmf_20260810_decisions.md`](pmf_20260810_decisions.md) | Seeded by Grok; peer ACK pending |
 
 ---
 
