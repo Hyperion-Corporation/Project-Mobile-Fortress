@@ -1,0 +1,7 @@
+{
+  "name": "mobile-fortress-core",
+  "version": "0.1.0",
+  "dependencies": [
+    "entt"
+  ]
+}

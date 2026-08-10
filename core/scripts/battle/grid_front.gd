@@ -31,39 +31,12 @@ func setup(p_origin: Vector2, p_front: String, p_cols: int = 10, p_rows: int = 6
 
 func _build_visuals() -> void:
 	for c in get_children():
-		c.queue_free()
+		if c is ColorRect:
+			c.queue_free()
 
 	var pal := UnitDefs.PALETTE
-	var base_col: Color = pal["land"] if front_id == "land" else pal["sea"]
-	var deep: Color = pal["land_deep"] if front_id == "land" else pal["sea_deep"]
-
-	_bg = ColorRect.new()
-	_bg.size = Vector2(cols * CELL, rows * CELL)
-	_bg.color = base_col.darkened(0.15)
-	_bg.mouse_filter = Control.MOUSE_FILTER_STOP
-	_bg.gui_input.connect(_on_bg_input)
-	add_child(_bg)
-
-	# Cell grid lines + checker
-	for y in rows:
-		for x in cols:
-			var cell := ColorRect.new()
-			cell.size = Vector2(CELL - 2, CELL - 2)
-			cell.position = Vector2(x * CELL + 1, y * CELL + 1)
-			var tint := 0.0 if (x + y) % 2 == 0 else 0.08
-			cell.color = base_col.lightened(tint)
-			cell.mouse_filter = Control.MOUSE_FILTER_IGNORE
-			add_child(cell)
-
-	# Lane highlight
-	for p in path_cells:
-		var lane := ColorRect.new()
-		lane.size = Vector2(CELL - 8, CELL - 8)
-		lane.position = Vector2(p.x * CELL + 4, p.y * CELL + 4)
-		lane.color = deep.lightened(0.35)
-		lane.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		lane.z_index = 1
-		add_child(lane)
+	# The grid lines and background are now handled by the Isometric TileMap nodes
+	# instantiated in battle.tscn under LandHost and SeaHost.
 
 	_label = Label.new()
 	_label.text = "LAND — Ming coast" if front_id == "land" else "SEA — Portuguese guns"

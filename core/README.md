@@ -36,8 +36,14 @@ Godot → Import → select core/project.godot → Run
 3. Outpost loss is **economic only** (income drops).
 4. Survive ~45s with field clear → victory. Results also go to `user://last_run_results.json`.
 
+## Simulation backend
+
+- **Preferred:** `SimulationCore` GDExtension (`bin/libmobile_fortress_core.so`) — HQ, dual currencies, raider pathing.
+- **Fallback:** pure GDScript if the `.so` is missing.
+- Build native lib: see [`BUILD_CPP.md`](BUILD_CPP.md).
+
 ## Next engineering steps
 
-- Polish VS1 feel (waves from `assets/levels/slice0_dual_front.json`).
+- Outpost loss driven from C++ mid-path events.
 - Promote modular `scenes/battle` when structure helps.
-- S0 spike: godot-cpp / C++ modules for sim (`docs/moon/roadmaps/shared_core.md`).
+- FlatBuffers snapshots (S4); richer EnTT combat systems.

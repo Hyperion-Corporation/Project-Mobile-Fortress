@@ -9,3 +9,16 @@ exports/
 *.app
 .mono/
 data_*/
+*.uid
+
+# C++ / vcpkg build trees (keep committed GDExtension binary under bin/ optional)
+build/
+cmake-build-*/
+_deps/
+vcpkg_installed/
+
+# Local C++ / GDExtension build outputs
+build/
+bin/
+*.gd.uid
+*.gdextension.uid

@@ -1,0 +1,17 @@
+[configuration]
+
+entry_symbol = "mobile_fortress_library_init"
+compatibility_minimum = 4.2
+
+[libraries]
+
+linux.debug.x86_64 = "res://bin/libmobile_fortress_core.so"
+linux.release.x86_64 = "res://bin/libmobile_fortress_core.so"
+windows.debug.x86_64 = "res://bin/libmobile_fortress_core.dll"
+windows.release.x86_64 = "res://bin/libmobile_fortress_core.dll"
+macos.debug = "res://bin/libmobile_fortress_core.dylib"
+macos.release = "res://bin/libmobile_fortress_core.dylib"
+android.debug.x86_64 = "res://bin/libmobile_fortress_core.so"
+android.release.x86_64 = "res://bin/libmobile_fortress_core.so"
+android.debug.arm64 = "res://bin/libmobile_fortress_core.so"
+android.release.arm64 = "res://bin/libmobile_fortress_core.so"

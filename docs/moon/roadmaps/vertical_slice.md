@@ -29,15 +29,15 @@ Ship an **offline**, **dual-front** (land + sea) Wōkòu-era fortress-defense pr
 
 | # | Item | Effort | Status | Notes |
 | --- | --- | --- | --- | --- |
-| VS0 | Godot 4 project as primary game client | M | 🚧 Scaffold playable | Open `core/` in Godot 4.3+ (`main.tscn`) |
-| VS1 | Dual-front grid core loop (G2): land + sea, HQ, basic units | L | 🚧 **Playable prototype** | `core/main.gd` — both fronts, waves, win/lose; modular `scenes/` next |
-| VS2 | Naive pathfinding sufficient for feel (full Flow Field = G3, after fun) | S | 📋 | |
-| VS3 | Touch/drag placement for dual grids | S | 📋 | |
-| VS4 | Build vs combat phase shell (G6 simplified) | M | 📋 | |
-| VS5 | Minimal Resource + Trading Outpost economy (G7 simplified) | M | 📋 | |
-| VS6 | One hero + one cross-front support unit | M | 📋 | |
-| VS7 | Ukiyo-e-readable art pass for slice cast | M | 📋 | |
-| VS8 | Offline save/load + optional static results export for local dashboard | S | 📋 | |
+| VS0 | Godot 4 project as primary game client | M | 🚧 Scaffold playable | Open `core/` (`main.tscn`); Godot 4.7 smoke OK |
+| VS1 | Dual-front grid core loop (G2) | L | 🚧 **Playable + C++ bridge** | `main.gd` + optional `SimulationCore` GDExtension |
+| VS2 | Naive pathfinding (lane waypoints) | S | 🚧 | Paths drawn; C++ advances raiders |
+| VS3 | Touch/click placement for dual grids | S | 🚧 | Build + combat placement |
+| VS4 | Build vs combat phase shell | M | 🚧 | Build timer auto-starts combat |
+| VS5 | Resource + Trading Outpost economy | M | 🚧 | Dual currency + income; economic outpost loss |
+| VS6 | Hero + cross-front support | M | 🚧 | Aura, E ability, hero redeploy travel |
+| VS7 | Ukiyo-e-readable art | M | 🚧 | Palette / isometric diamonds |
+| VS8 | Offline save/load + results export | S | 🚧 | user:// saves + results JSON |
 | VS9 | Android 13+ + iOS 17+ export smoke (Godot export templates) | M | 📋 | iOS CI when macOS collaborator joins |
 | VS10 | Collaborator playtest + “shows promise” decision record | S | 📋 | Exit gate for Phase 1a |
 
