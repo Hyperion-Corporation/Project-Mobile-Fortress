@@ -52,32 +52,50 @@ Multiple agents and the owner may edit this file concurrently:
 
 | Decision area | Status | Owner decision / evidence |
 | --- | --- | --- |
-| Product identity and first shippable slice | `[OWNER TODO]` | |
-| Land/sea dual-front scope for MVP | `[OWNER TODO]` | |
-| Co-op asymmetry and player roles | `[OWNER TODO]` | |
-| Shared-core language and integration strategy | `[OWNER TODO]` | |
-| Offline-first versus online-first delivery | `[OWNER TODO]` | |
-| Monetization policy and whether gacha is retained | `[OWNER TODO]` | |
-| ML/optimization scope and safety/privacy limits | `[OWNER TODO]` | |
-| Website/dashboard scope and data-source policy | `[OWNER TODO]` | |
+| Product identity and first shippable slice | `DECIDED` | Playable offline single-player Wōkòu-era vertical slice that shows promise to the owner and two collaborators. |
+| Land/sea dual-front scope for MVP | `DECIDED` | Both land and sea are mandatory core identity; initial prototype is not land-only. |
+| Co-op asymmetry and player roles | `DECIDED / PROVISIONAL` | Asymmetric land/sea co-op is a launch pillar, local Wi-Fi first, but networking is deferred from the initial prototype. Current preference is one player controlling both fronts with a shared perspective. |
+| Shared-core language and integration strategy | `DECIDED / OPEN` | C++ is firm and Godot 4 is the client direction; Godot↔C++ boundary remains open. Server-authoritative replicated state is sufficient for online play. |
+| Offline-first versus online-first delivery | `DECIDED` | Main campaign must work offline; online-only clans/raids/leaderboards may be unavailable offline. |
+| Monetization policy and whether gacha is retained | `DECIDED` | Cosmetics first; skin lootboxes are acceptable; gameplay-impacting hero/unit gacha is rejected; rewarded ads only. |
+| ML/optimization scope and safety/privacy limits | `DECIDED / PROVISIONAL` | RL DDA and swarm/evo pathing are important research; difficulty starts with hidden RL fine-tuning of baseline intensity. No telemetry after opt-out; offer graduated consent and opt-in anonymized social cohorts. |
+| Website/dashboard scope and data-source policy | `DECIDED` | React website; developer-first dashboard, local/static or batch initially, live Docker deployment later. Reddit/X/App Store ingestion is later research, not core product. |
 
 ### 0.2 Immediate priorities
 
-`[OWNER TODO: Rank no more than five immediate actions.]`
+1. Build the Godot 4 dual-front offline prototype, starting with G2.
+2. Define the playable Wōkòu-era Ming/Portuguese vertical slice and its land/sea loop.
+3. Define the Godot↔C++ integration boundary and shared gameplay data contracts.
+4. Reorganize roadmap items and GitHub issues into milestones, epics, and sub-issues after multi-agent consensus.
+5. Keep the internal dashboard static/local until the prototype produces useful data.
 
 ## 1. Owner Executive Summary
 
 ### 1.1 Overall assessment
 
-`[OWNER TODO]`
+The repository has a substantial design, documentation, and tooling foundation,
+but the first success criterion is still a playable game rather than additional
+planning breadth. The near-term risk is scope: multiplayer, ML, LiveOps,
+monetization, and the website can outgrow the small team before the dual-front
+loop is validated. The next roadmap revision should therefore make the offline
+vertical slice the sequencing anchor while retaining later systems as explicit
+deferred work.
 
 ### 1.2 Product identity
 
-`[OWNER TODO]`
+Mobile Fortress is a historically grounded but accessible fictionalized
+Wōkòu-era cooperative tower-defense game. Its non-disposable identity is the
+land/sea interaction: distinct environments, same-front combat, cross-front
+synergy, specialized support units, heroes/commanders, civilization strengths
+and weaknesses, and resource choices.
 
 ### 1.3 Release definition
 
-`[OWNER TODO]`
+Release the first vertical slice to the owner and two collaborators for a
+qualitative “shows promise” decision. It must run offline, include both fronts,
+use isometric 2.5D presentation with ukiyo-e-readable placeholder art, target
+10–40 units at 30+ FPS, and omit networked co-op, PvP, and live services from
+the first prototype.
 
 ## 2. Review Inputs and Provenance
 
@@ -85,11 +103,11 @@ Multiple agents and the owner may edit this file concurrently:
 
 | Contributor | Report | Owner disposition |
 | --- | --- | --- |
-| Chat / Codex | `.agent/reports/chat/` | `[OWNER TODO]` |
-| Claude | `.agent/reports/claude/` | `[OWNER TODO]` |
-| Gemini | `.agent/reports/gemini/` | `[OWNER TODO]` |
-| Grok | `.agent/reports/grok/` | `[OWNER TODO]` |
-| Owner | Owner-authored additions | `[OWNER TODO]` |
+| Chat / Codex | `.agent/reports/chat/` | Initial post-Q&A report delivered. |
+| Claude | `.agent/reports/claude/` | Review input; final owner disposition pending. |
+| Gemini | `.agent/reports/gemini/` | Review input; final owner disposition pending. |
+| Grok | `.agent/reports/grok/` | Post-Q&A decision input delivered. |
+| Owner | Owner-authored additions | Answers captured in this report. |
 
 ### 2.2 Repository evidence
 
@@ -103,60 +121,74 @@ Multiple agents and the owner may edit this file concurrently:
 
 | Finding / proposal | Verdict | Evidence and reasoning |
 | --- | --- | --- |
-| Current clients are functioning prototypes rather than the described game | `[OWNER TODO]` | |
-| Deterministic shared simulation is valuable for cross-platform/co-op play | `[OWNER TODO]` | |
-| The current C++ plan is preferable to the stale Rust GitHub issues | `[OWNER TODO]` | |
-| The product scope needs a smaller vertical slice before multiplayer/ML/LiveOps | `[OWNER TODO]` | |
-| ML should follow telemetry, baselines, and human-safety gates | `[OWNER TODO]` | |
-| Website multi-framework complexity is justified by a concrete user need | `[OWNER TODO]` | |
-| Gacha and personalized monetization fit the product values and launch risk | `[OWNER TODO]` | |
+| Current clients are functioning prototypes rather than the described game | `DECIDED` | The first deliverable is a new Godot offline prototype; inherited native skeletons are not the target product. |
+| Deterministic shared simulation is valuable for cross-platform/co-op play | `PROVISIONAL` | A shared C++ simulation direction is retained, but strict deterministic lockstep is not required; server-authoritative replication is sufficient later. |
+| The current C++ plan is preferable to the stale Rust GitHub issues | `DECIDED` | C++ is firm; stale Rust issues should be edited or replaced according to scope. |
+| The product scope needs a smaller vertical slice before multiplayer/ML/LiveOps | `DECIDED` | Offline dual-front gameplay comes first; later systems remain deferred rather than removed. |
+| ML should follow telemetry, baselines, and human-safety gates | `DECIDED` | Baseline intensity precedes hidden RL tuning; opt-out means no telemetry; sentiment-driven events begin as dashboard research with human approval. |
+| Website multi-framework complexity is justified by a concrete user need | `PROVISIONAL` | React is current; dashboard work is secondary and local/static first. Retain other frameworks only if they serve a concrete output. |
+| Gacha and personalized monetization fit the product values and launch risk | `MIXED` | Gameplay gacha is rejected. Cosmetic skin lootboxes and opt-in anonymized social personalization remain in scope with privacy safeguards. |
 
 ## 4. Current Implementation Review
 
 ### 4.1 Strengths to keep
 
-`[AGENT/OWNER TODO]`
+Keep the Wōkòu-era dual-front design, the existing documentation/agent
+discipline, the C++ direction, and the internal dashboard concept. Preserve
+offline play as a first-class constraint and historical aesthetics as a visual
+bar while using accessible fictionalization.
 
 ### 4.2 Weaknesses and risks to change
 
-`[AGENT/OWNER TODO]`
+Replace the native SurfaceView/SpriteKit-first implementation assumption with
+Godot 4 as the primary client direction; move implementation effort from broad
+website/ML/backend scaffolding to the offline dual-front slice; and reconcile
+stale Vue/Rust/native-client wording in documentation and issues.
 
 ### 4.3 Implementation alternatives
 
 | Area | Option A | Option B | Option C | Recommendation / gate |
 | --- | --- | --- | --- | --- |
-| Simulation core | C++ | Rust | Kotlin/Swift/KMP | `[TODO]` |
-| Rendering | Native 2D | Shared engine | Full 3D engine | `[TODO]` |
-| Networking | Authoritative server | Lockstep | Turn/phase-based async | `[TODO]` |
-| Analytics | Batch export | Managed telemetry | Self-hosted pipeline | `[TODO]` |
-| Website visualization | React-native | Web components/islands | Separate app | `[TODO]` |
+| Simulation core | C++ | Rust | Kotlin/Swift/KMP | **C++ selected**; integration boundary open |
+| Rendering | Native 2D | Shared engine | Full 3D engine | **Godot 4 selected**; isometric 2.5D first |
+| Networking | Authoritative server | Lockstep | Turn/phase-based async | **Authoritative replication selected** for later online play |
+| Analytics | Batch export | Managed telemetry | Self-hosted pipeline | **Static/local first**; Docker/live later |
+| Website visualization | React-native | Web components/islands | Separate app | **React current**; avoid complexity without concrete need |
 
 ## 5. Product and Architecture Contract
 
 | ID | Decision | Status | Rationale / constraints |
 | --- | --- | --- | --- |
-| C1 | First playable vertical slice | `[OPEN]` | |
-| C2 | Land/sea mechanics included in first slice | `[OPEN]` | |
-| C3 | Co-op role split | `[OPEN]` | |
-| C4 | Shared-core boundary and determinism model | `[OPEN]` | |
-| C5 | Backend and hosting model | `[OPEN]` | |
-| C6 | Privacy, consent, and player-data policy | `[OPEN]` | |
-| C7 | Monetization and non-paying-player experience | `[OPEN]` | |
-| C8 | Website/dashboard launch scope | `[OPEN]` | |
+| C1 | First playable vertical slice | `DECIDED` | Offline dual-front isometric 2.5D prototype that shows promise to the owner and two collaborators. |
+| C2 | Land/sea mechanics included in first slice | `DECIDED` | Both fronts, distinct resources/environments, cross-front synergy, heroes, and specialized units. |
+| C3 | Co-op role split | `DECIDED / PROVISIONAL` | Asymmetric land/sea co-op is a launch pillar; local Wi-Fi first and networking later. Current preference is one player controlling both fronts. |
+| C4 | Shared-core boundary and determinism model | `DECIDED / OPEN` | C++ firm; Godot client; server-authoritative replication later. Exact Godot↔C++ boundary remains open. |
+| C5 | Backend and hosting model | `DECIDED` | No remote backend needed for the first prototype; custom Docker/live dashboard later; cloud alternatives remain acceptable. |
+| C6 | Privacy, consent, and player-data policy | `DECIDED` | No telemetry after opt-out; offer graduated options; social personalization is opt-in and cohort-based/anonymized. |
+| C7 | Monetization and non-paying-player experience | `DECIDED` | Cosmetics first, battle pass later, skin lootboxes acceptable; no gameplay gacha; rewarded ads only. |
+| C8 | Website/dashboard launch scope | `DECIDED` | Developer-first React dashboard, local/static or batch initially; live deployment later. |
 
 ## 6. Roadmap and GitHub Issue Decisions
 
 ### 6.1 Keep
 
-`[OWNER TODO: IDs and reasons]`
+Keep the single-player dual-front vertical slice, C++/Godot direction,
+commanders/heroes, internal developer dashboard, clans as a launch concept,
+and the core land/sea/resource/civilization identity.
 
 ### 6.2 Change or split
 
-`[OWNER TODO: roadmap/issue IDs, replacement wording, dependencies]`
+Reorganize roadmap rows into milestones, epics, and implementation sub-issues.
+Replace or edit stale Rust-era issues with C++ equivalents, make the dual-front
+offline slice the immediate dependency, and add future research issues for
+sentiment-informed events without making them core launch automation.
 
 ### 6.3 Defer, archive, or remove
 
-`[OWNER TODO: IDs and reasons]`
+Defer co-op networking, PvP, settlement capture, live dashboards, RL/CMAB
+automation, public-web ingestion, and broad LiveOps until the offline slice is
+validated. Reject gameplay-impacting hero/unit gacha; retain cosmetic lootboxes
+as a later option.
 
 ### 6.4 Synchronization defects to resolve
 
@@ -167,27 +199,38 @@ Multiple agents and the owner may edit this file concurrently:
 
 ## 7. Validation and Release Gates
 
-`[OWNER/AGENT TODO: define build, gameplay, determinism, performance, privacy, and usability gates.]`
+The first slice should build and run offline on the target platform path, contain
+both fronts in one complete session, sustain the 10–40-unit target at 30+ FPS,
+persist campaign state, and pass qualitative review by the owner and two
+collaborators. Privacy gates must verify opt-out telemetry suppression and
+consent boundaries before analytics or personalization work is enabled.
 
 ## 8. Final Recommendations
 
 ### 8.1 Keep
 
-`[OWNER TODO]`
+Prioritize the playable dual-front Godot prototype, C++ simulation foundation,
+heroes and specialized units, historical-readable art, and a small internal
+dashboard fed by local/static data.
 
 ### 8.2 Change
 
-`[OWNER TODO]`
+Re-sequence the roadmap around G2 and the offline slice; defer multiplayer,
+website expansion, ML automation, and LiveOps; replace stale architecture and
+issue language; and retain future ideas as explicitly demoted work rather than
+quietly treating them as launch requirements.
 
 ### 8.3 Reject or park
 
-`[OWNER TODO]`
+Reject gameplay gacha. Park PvP, settlement capture, remote live dashboards,
+public-web ingestion, and autonomous sentiment-driven balancing until later
+evidence supports them.
 
 ## 9. Final-Pass Consensus
 
 | Contributor | Agrees with structure? | Required changes | Final date |
 | --- | --- | --- | --- |
-| Owner | `[OWNER TODO]` | | |
+| Owner | `[PENDING]` | Owner decisions captured; final synthesis approval pending. | 2026-08-10 |
 | Chat / Codex | `[TODO]` | | |
 | Claude | `[TODO]` | | |
 | Gemini | `[TODO]` | | |
@@ -195,10 +238,15 @@ Multiple agents and the owner may edit this file concurrently:
 
 ## 10. Binding Handoff to Roadmap Authors
 
-`[OWNER TODO]`
+Roadmap authors should use the canonical concise shared synthesis at
+`.agent/reports/shared/pmf_20260810_canonical_shared_report.md`, treat the
+offline dual-front Godot prototype as the immediate milestone, and wait for
+multi-agent consensus before applying roadmap or GitHub issue changes. Grok is
+the final reviewer; the owner closes the resulting work.
 
 ## Changelog
 
 | Date | Contributor | Change |
 | --- | --- | --- |
 | 2026-08-09 | Chat / Codex | Created the initial owner status/review/roadmap decision template, adapted to Mobile Fortress and the repository's concurrent-editing workflow. |
+| 2026-08-10 | Chat / Codex | Filled owner-answer-supported sections from the PMF Q&A; left unresolved mechanics and final consensus sign-off pending. |
