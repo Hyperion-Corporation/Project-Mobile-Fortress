@@ -185,10 +185,10 @@ export const navTree: NavNode[] = [
         "source": "docs/moon/roadmaps/shared_core.md"
       },
       {
-        "title": "Multi-Framework Platform",
+        "title": "Internal Dashboard",
         "kind": "md",
-        "path": "/moon/roadmaps/multi_framework_platform",
-        "source": "docs/moon/roadmaps/multi_framework_platform.md"
+        "path": "/moon/roadmaps/internal_dashboard",
+        "source": "docs/moon/roadmaps/internal_dashboard.md"
       },
       {
         "title": "Repository Automation",
@@ -466,9 +466,9 @@ export const searchIndex: { title: string; path: string; source: string }[] = [
     "source": "docs/moon/roadmaps/shared_core.md"
   },
   {
-    "title": "Multi-Framework Platform",
-    "path": "/moon/roadmaps/multi_framework_platform",
-    "source": "docs/moon/roadmaps/multi_framework_platform.md"
+    "title": "Internal Dashboard",
+    "path": "/moon/roadmaps/internal_dashboard",
+    "source": "docs/moon/roadmaps/internal_dashboard.md"
   },
   {
     "title": "Repository Automation",

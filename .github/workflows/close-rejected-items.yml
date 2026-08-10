@@ -1,0 +1,30 @@
+name: Close Rejected Project Items
+
+on:
+  project_card:
+    types: [moved]
+
+jobs:
+  close-issue-if-rejected:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Column and Close
+        env:
+          GH_TOKEN: ${{ secrets.PROJECT_AUTOMATION_TOKEN }}
+        run: |
+          # 1. Fetch the column name where the card was just dropped
+          COLUMN_NAME=$(curl -s -H "Authorization: token $GH_TOKEN" "${{ github.event.project_card.column_url }}" | jq -r '.name')
+          
+          # 2. If the card was moved to 'Rejected', close the underlying issue
+          if [ "$COLUMN_NAME" = "Rejected" ]; then
+            # Extract the issue API endpoint URL from the card content
+            CONTENT_URL="${{ github.event.project_card.content_url }}"
+            
+            if [ -n "$CONTENT_URL" ] && [ "$CONTENT_URL" != "null" ]; then
+              echo "Item moved to Rejected. Closing underlying issue..."
+              curl -s -X PATCH -H "Authorization: token $GH_TOKEN" \
+                -H "Accept: application/vnd.github.v3+json" \
+                -d '{"state":"closed", "state_reason":"not_planned"}' \
+                "$CONTENT_URL"
+            fi
+          fi
