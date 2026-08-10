@@ -1,25 +1,28 @@
-# iOS Roadmap
+# iOS / Mobile Export Roadmap
 
-**Owner:** TBD
+**Owner:** TBD (macOS CI owned by collaborator when they join)
 
-Scope: `ios/MyGame/`, `ios/MyGame.xcodeproj`, `ios/Tests/`.
+**2026-08-11 note:** Primary game client is **Godot 4** exported to iOS 17+. The existing SpriteKit `ios/MyGame` tree is **legacy template scaffolding** — keep for reference until Godot export replaces it; do not invest in SpriteKit fortress-defense rebuilds.
 
-## Done (template scaffolding)
+## Targets
 
-- SpriteKit `GameScene` with fixed-delta-clamped `update(_:)`, `SKPhysicsContactDelegate`-based collision handling, and `TouchInputHandler`.
-- SwiftUI chrome: `MainMenuView`, `HUDView`, `ShopView`, `GameOverView`, shared `Theme`.
-- `GameManager` (`ObservableObject`) as the single state-machine source of truth — see `core/src/game-state-machine.md` for the cross-platform spec it implements today (pre-C++-core).
-- `HighScoreStore` / `SettingsStore` (`UserDefaults` + `Codable`).
-- `LevelLoader` reading the canonical `core/assets/levels/` JSON, validated against `core/src/level-schema.json`.
-- `XCTest` unit tests for state transitions, high-score ranking/capping, level loading, and player-movement math.
-- Shared Xcode scheme (`xcshareddata/xcschemes/MyGame.xcscheme`) so `xcodebuild -scheme MyGame test` works headlessly in CI (`.github/workflows/ci.yml`'s `ios` job).
+- **iOS 17+** (and Android 13+ on the Godot Android export path)
+- Offline campaign playable; online features optional
 
-## Pending (Mobile Fortress adoption)
+## Done (template scaffolding — historical)
 
-- Wōkòu-era sprite/texture assets (currently solid-color `SKSpriteNode`s) — HQ/outposts, Ming Garrison Spearmen/Fo-lang-ji Cannon Crews/Portuguese Arquebusiers/Veteran Commander units, Wōkòu raider enemies (land and naval).
-- Rebuild `GameScene`/`GameManager` around the grid-based fortress-defense core loop and land/naval Flow Field pathfinding (see [`gameplay.md`](gameplay.md)), replacing the current demo entity logic.
-- Consume the shared C++ core via Swift's native C++ interop (or an Objective-C++ shim where needed) once [`shared_core.md`](shared_core.md) lands, retiring `GameManager`'s standalone state machine in favor of calling into the C++ core.
-- Haptics (`GameSettings.isHapticsEnabled` is modeled but not yet wired to `UIImpactFeedbackGenerator`).
-- App Store Connect signing/export automation to match Android's `release.yml` fastlane path (see `tools/build/justfile`'s `ios-archive` recipe, which currently only produces an unsigned `.xcarchive`).
-- Co-Op networking client: server-authoritative session join, client-side prediction/reconciliation (see [`backend.md`](backend.md)).
-- Bring Android's client to feature parity once both consume the same C++ core, so platform divergence is limited to native UI/UX rather than gameplay logic.
+- SpriteKit `GameScene`, SwiftUI chrome, `GameManager`, level JSON loader, XCTest skeleton, shared scheme for CI.
+
+## Pending (Godot path)
+
+| # | Item | Effort | Status |
+| --- | --- | --- | --- |
+| IOS1 | Godot iOS export project + signing notes | M | 📋 Pending |
+| IOS2 | Touch/UI polish for dual-front isometric controls on iPhone/iPad | M | 📋 Pending |
+| IOS3 | Consume shared C++ sim via godot-cpp/module (not UniFFI) | M | 📋 Pending |
+| IOS4 | Haptics / platform services as needed | S | 📋 Deferred |
+| IOS5 | App Store Connect / export automation on macOS CI | M | 📋 When collaborator joins |
+| IOS6 | Co-Op networking client (post Slice-0) | L | 📋 Deferred |
+| IOS7 | Feature parity with Android Godot export | M | 📋 Ongoing |
+
+Legacy SpriteKit roadmap items (rebuild GameScene as TD, etc.) are **superseded** by Godot dual-front work in [`vertical_slice.md`](vertical_slice.md) and [`gameplay.md`](gameplay.md).

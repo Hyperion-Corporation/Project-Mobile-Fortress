@@ -2,19 +2,24 @@
 
 **Owner:** ACFHarbinger
 
-Scope: procedural content generation, dynamic difficulty adjustment, and monetization/retention ML — the "frontier" systems from [`research/Multiplayer Tower Defense Implementation.md`](../research/Multiplayer%20Tower%20Defense%20Implementation.md) §"Algorithmic Procedural Content Generation", §"Deep Learning for Dynamic Difficulty Adjustment", and §"Optimizing Monetization and Player Retention". These are post-MVP: they assume the core loop ([`gameplay.md`](gameplay.md)) and shared C++ core ([`shared_core.md`](shared_core.md)) already exist.
+Scope: procedural content, dynamic difficulty, pathing research, monetization/retention ML, and sentiment research. Post-MVP systems assume the dual-front loop ([`gameplay.md`](gameplay.md) / [`vertical_slice.md`](vertical_slice.md)) exists first.
 
-| # | Item | Effort | Status | Entry gate (required before implementation starts) |
+**2026-08-11 note:** **Identity research:** RL DDA + swarm/evolutionary pathing. **Important later:** CMAB. **Nice research:** WFC, TGNN. Difficulty UX starts with baseline intensity + **hidden** RL fine-tune; later A/B vs visible controls. Sentiment-driven **in-game events** are research with **HITL** default.
+
+| # | Item | Effort | Status | Entry gate |
 | --- | --- | --- | --- | --- |
-| A1 | Wave Function Collapse (WFC) raid-map generation: tile-based fortress-grounds and coastal layouts with valid path/wall/shoreline adjacency constraints | L | 📋 Pending | Committed — bounded, well-precedented technique; no evidence gate needed |
-| A2 | MILP-augmented WFC to guarantee global solvability (a traversable enemy-spawn-to-HQ path always exists, on both land and sea) | L | 📋 Pending | Committed — correctness requirement of A1, not a speculative addition |
-| A3 | Nested WFC (N-WFC) for large maps, avoiding exponential backtracking | M | 📋 Pending | A1/A2 hit measured backtracking cost on a large map first — don't build N-WFC speculatively |
-| A4 | Heuristic rule-based Dynamic Difficulty Adjustment (DDA) as the shipping v1 — enemy HP/spawn-rate curves tuned per level, no ML dependency for MVP | M | 📋 Pending | Committed — the MVP baseline everything else is measured against |
-| A5 | RL-based continuous-action DDA (post-MVP): agent modulates enemy velocity/spawn timing/pathfinding aggressiveness to hold players in the flow channel | XL | 📋 Pending | **Blocked on evidence:** playtesting/telemetry (see [`qa_testing.md`](qa_testing.md) Q10) must show A4's rule-based curves demonstrably fail to hold a measurable player cohort in a flow-channel proxy metric (e.g. session-abandon rate at specific waves) before RL is justified over more rule-tuning |
-| A6 | Two-agent (Imitation + Reinforcement Learning) personalized difficulty: an imitation agent clones a player's placement/upgrade heuristics, an adversarial RL agent discovers counter-strategies against the clone | XL | 📋 Pending | **Blocked on evidence:** requires A5 shipped and evaluated first — this is a strict superset of A5's complexity/risk, not a parallel option |
-| A7 | Contextual Multi-Armed Bandit (LinUCB) for personalized store-offer selection — tracked jointly with [`monetization.md`](monetization.md) | XL | 📋 Pending | **Blocked on evidence:** requires live store-offer data from a shipped, non-personalized offer flow (M1–M6) as the baseline LinUCB must beat; no player volume yet to learn from |
-| A8 | Human-in-the-loop gate for CMAB pricing recommendations (designer approval required before any live pricing change) | M | 📋 Pending | Committed once A7 starts — this is a safety mechanism for A7, ships alongside it, not after |
-| A9 | Survival-analysis (Weibull) churn/LTV modeling from early-session telemetry | L | 📋 Pending | Committed — standard, well-understood technique; only needs Q8 (retention analytics instrumentation) shipped first for data to model |
-| A10 | Temporal Graph Neural Network (TGNN) over clan Co-Op matchmaking history to detect cascading-churn risk in influential players and trigger retention interventions | XL | 📋 Pending | **Blocked on evidence:** requires (a) Co-Op multiplayer shipped with real clan match history, and (b) A9's simpler survival-analysis model shown insufficient to explain cascading (multi-player) churn before the added complexity of a graph model is justified |
+| A1 | WFC raid-map generation | L | 📋 Research | Nice research — do not block Slice-0 |
+| A2 | MILP-augmented WFC for solvability | L | 📋 Research | After A1 |
+| A3 | Nested WFC for large maps | M | 📋 Research | Only if A1/A2 backtracking costs measured |
+| A4 | Heuristic rule-based DDA (shipping baseline) | M | 📋 Pending | Committed baseline before RL |
+| A5 | RL continuous-action DDA (hidden fine-tune of baseline intensity) | XL | 📋 Pending | **Blocked:** A4 + playtest evidence that rules fail a flow metric |
+| A6 | Two-agent imitation + adversarial RL difficulty | XL | 📋 Deferred | After A5 evaluated |
+| A7 | CMAB (LinUCB) personalized offers — opt-in cohorts | XL | 📋 Deferred | Needs live non-personalized store baseline |
+| A8 | HITL gate for CMAB pricing | M | 📋 With A7 | Safety for A7 |
+| A9 | Survival-analysis churn/LTV | L | 📋 Deferred | Needs Q8 instrumentation |
+| A10 | TGNN cascading-churn | XL | 📋 Research | Needs co-op history + A9 insufficient |
+| A11 | **Swarm / Boids + evolutionary pathing experiments** (client-side; 30 FPS cap OK) | L | 📋 Identity research | Can sandbox after dual-front exists; not server-mandatory for offline |
+| A12 | **Sentiment ingestion → dashboard** (Reddit/X/store reviews) | L | 🔬 Research | Dashboard HITL only initially ([`internal_dashboard.md`](internal_dashboard.md) ID9/ID10) |
+| A13 | **Sentiment-driven automated in-game events** (e.g. global dungeon buffs) | XL | 🔬 Research | **HITL required** until owner approves autonomy; never silent pricing/spawn changes without review |
 
-Effort key: S = days, M = 1–2 weeks, L = 3–6 weeks, XL = multi-month/cross-cutting; the ML items (A5, A6, A7, A10) are explicitly **not MVP** and should not block launch. The Entry gate column is a 2026-08-09 addition (multi-agent brainstorm session, owner-confirmed policy) — do not start an item marked "Blocked on evidence" without first recording the evidence in this file or a linked report.
+Effort key: S = days, M = 1–2 weeks, L = 3–6 weeks, XL = multi-month. ML items A5–A10, A12–A13 must not block Slice-0.

@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed (2026-08-11, multi-agent final pass — Godot dual-front decisions)
+
+- **Engine pivot:** primary game client is **Godot 4** (isometric 2.5D); SurfaceView/SpriteKit demoted to legacy template paths. C++ simulation retained; integration via **godot-cpp and C++ modules** (owner C4). See `roadmaps/shared_core.md`, `roadmaps/ios.md`.
+- **Slice-0 redefined:** offline **dual-front** land+sea prototype that “shows promise”; ukiyo-e-readable art; Ming+Portuguese; 10–40 units @ 30+ FPS; Android 13+ / iOS 17+. Supersedes 2026-08-09 Android-first single-lane 2026-08-23 track. New `roadmaps/vertical_slice.md`.
+- **Co-op design file:** new `roadmaps/co_op_modes.md` — asymmetric land/sea is launch pillar; local Wi‑Fi first; networking after Slice-0; sea-player role documented for schema work.
+- **Monetization:** hero/unit **power gacha rejected**; cosmetics → battle pass → cosmetic skin lootboxes; rewarded ads only (`roadmaps/monetization.md`, `ui_ux.md` U5, `qa_testing.md` Q9).
+- **Backend:** GameLift not mandatory; alternatives OK; no remote backend for Slice-0 (`roadmaps/backend.md`).
+- **AI:** swarm/evo pathing (A11) and sentiment dashboard/events research (A12/A13 HITL) added; identity = RL DDA + swarm (`roadmaps/ai_systems.md`).
+- **Top-level** `docs/moon/ROADMAP.md` rewritten to v5.0 for the above. Decision sources: `.agent/reports/shared/pmf_20260810_canonical_shared_report.md`, admin status report, `.agent/cache/owner_qa_lock.md`.
+- GitHub issues: hygiene plan prepared at `.agent/cache/github_issue_hygiene_20260811.md` (title edits for G2/M1/U5/B4/Q9/S3 + new epics/research A11–A13). Apply with `gh` when network mutations are authorized.
+
 ### Changed (2026-08-09, multi-agent roadmap brainstorm session)
 
 - `docs/moon/roadmaps/multi_framework_platform.md` renamed to `docs/moon/roadmaps/internal_dashboard.md`: merges the delivered MFP1–MFP16 host/island infrastructure (kept verbatim) with a new Part A (ID1–ID11) covering the internal product/telemetry dashboard vision — absorbs the `product-metrics`-labeled GitHub issues (#120–125). Cross-references updated in `docs/moon/ROADMAP.md`, `docs/mkdocs.yml`, `docs/moon/roadmaps/repo_automation.md`, `.agent/messages/claude_subagent_delegation.md`.

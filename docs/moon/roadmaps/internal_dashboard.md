@@ -2,6 +2,8 @@
 
 **IDs:** MFP1–MFP16 (multi-framework platform infrastructure, merged in verbatim below) · ID1–ID11 (dashboard/analytics deliverables, new) · **Status:** 🔄 host/island infrastructure delivered, dashboard layer not started · **Owner:** TBD (ID11 ML-signal sourcing depends on [`ai_systems.md`](ai_systems.md), owned by ACFHarbinger)
 
+**2026-08-11 note:** dashboard remains **developer-first** (players may browse later); **static/local/batch first** — no remote live hosting required until the team needs it. Game work is 75% of capacity; this track is secondary. Sentiment ingestion (ID9/ID10) stays research; automated in-game responses are HITL-gated research in `ai_systems.md` A12/A13.
+
 **2026-08-09 merge note:** this file replaces `multi_framework_platform.md`, which is deleted. The React/Aurelia/Astro/Apollo host-and-island work tracked as MFP1–MFP16 was never an end in itself — it was always building the technical substrate (a controlled polyglot shell that can mount specialized visualization islands without breaking static-hosting or a11y/perf budgets) that this dashboard initiative now needs: developer-facing telemetry, monetization metrics, lore/product tracking, player-feedback ingestion, 3D/data visualization, and zoomable in-game-lore maps, all living on `docs/website/`. The two initiatives are one initiative, tracked in one file from here on. MFP1–MFP16 content below is preserved verbatim (per owner decision, 2026-08-09) as the "how the dashboard is built" section; ID1–ID11 are the new "what the dashboard does" deliverables, including the former `product-metrics`-labeled GitHub issues (#120–125).
 
 ---

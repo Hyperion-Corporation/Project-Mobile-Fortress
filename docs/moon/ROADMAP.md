@@ -1,113 +1,110 @@
 # Mobile Fortress — Roadmap
 
-[![Kotlin](https://img.shields.io/badge/Kotlin-2.0-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org/)
-[![Android](https://img.shields.io/badge/Android-API_24%2B-3DDC84?logo=android&logoColor=white)](https://developer.android.com/)
-[![Swift](https://img.shields.io/badge/Swift-5.0-F05138?logo=swift&logoColor=white)](https://swift.org/)
-[![iOS](https://img.shields.io/badge/iOS-16%2B-000000?logo=apple&logoColor=white)](https://developer.apple.com/ios/)
-[![C++](https://img.shields.io/badge/C%2B%2B20-Shared_Core_(planned)-00599C?logo=cplusplus&logoColor=white)](https://isocpp.org/)
+[![Godot](https://img.shields.io/badge/Godot-4.x-478CBF?logo=godotengine&logoColor=white)](https://godotengine.org/)
+[![C++](https://img.shields.io/badge/C%2B%2B20-Simulation_Core-00599C?logo=cplusplus&logoColor=white)](https://isocpp.org/)
+[![Android](https://img.shields.io/badge/Android-13%2B-3DDC84?logo=android&logoColor=white)](https://developer.android.com/)
+[![iOS](https://img.shields.io/badge/iOS-17%2B-000000?logo=apple&logoColor=white)](https://developer.apple.com/ios/)
 
-> **Version**: 4.2
-> **Date**: 2026-08-09
-> **Status**: Active development
+> **Version**: 5.0  
+> **Date**: 2026-08-11  
+> **Status**: Active development — post multi-agent final pass  
+> **Decision record**: [`.agent/reports/shared/pmf_20260810_canonical_shared_report.md`](../../.agent/reports/shared/pmf_20260810_canonical_shared_report.md) · [admin status report](../../.agent/reports/admin/pmf_20260809_status_report.md)
 
 ## Overview
 
-**Mobile Fortress** is a cooperative tower-defense mobile game set during the **1540s–1560s Wōkòu (倭寇) / Wakō pirate crisis** on the East Asian coast: players defend a coastal fortress network — a Main HQ/Citadel, Resource Outposts, and Trading Outposts — against raiding Wōkòu pirate fleets striking by land and sea, then extend that defense into a light 4X-style coastal-territory meta-game. The defending garrison is an East Asian primary civilization (Ming China's coastal garrison by default; Japan or Joseon Korea as alternate settings) reinforced by a supporting Western civilization (Portuguese by default, with Spanish/Dutch/British/French alternates). The design targets the market gap identified in [`reports/Tower Defense Market Research.md`](reports/Tower%20Defense%20Market%20Research.md) — a AAA-quality, culturally specific East Asian historical setting is conspicuously absent from the current top-grossing TD/4X-hybrid charts — while the client/server/netcode architecture follows the technical blueprint in [`research/Multiplayer Tower Defense Implementation.md`](research/Multiplayer%20Tower%20Defense%20Implementation.md).
+**Mobile Fortress** is a cooperative tower-defense game set during the **1540s–1560s Wōkòu (倭寇) pirate crisis** on the East Asian coast: players defend a coastal fortress network (Main HQ, Resource Outposts, Trading Outposts) against land-and-sea raids, commanding an East Asian primary civilization (**Ming** default) reinforced by a Western supporting civilization (**Portuguese** default).
 
-Both source documents live under [`reports/`](reports/Tower%20Defense%20Market%20Research.md) and [`research/`](research/Multiplayer%20Tower%20Defense%20Implementation.md) and are the canonical references for the design and technical decisions summarized below — read them before making significant architecture or monetization changes.
+**Near-term priority (75% game / 25% website):** an offline **dual-front** Godot 4 prototype that **shows promise** to the owner and two collaborators. Portfolio/research first, commercial second (≈60/40).
 
-This repository started life as a generic two-platform mobile game template; that scaffolding (Android `SurfaceView` skeleton, iOS SpriteKit skeleton, CI/CD, docs, `.agent/` LLM tooling) is now being seeded with Mobile Fortress' actual game design. Completed template groundwork is listed under [Track: Template Scaffolding](#track-template-scaffolding-complete) below and in [`CHANGELOG.md`](CHANGELOG.md); everything else in this document is the real game roadmap.
-
-Status markers: ✅ Done · 🚧 In Progress · 📋 Pending
+Status markers: ✅ Done · 🚧 In Progress · 📋 Pending · ❌ Rejected · 🔬 Research · ⏸ Deferred
 
 ---
 
 ## Game Concept Summary
 
-| Aspect | Decision | Source |
+| Aspect | Decision | Notes |
 | --- | --- | --- |
-| **Setting** | 1540s–1560s Wōkòu pirate crisis, East Asian coast — Main HQ + Resource/Trading Outpost defense, East Asian primary civ (Ming China default) + Western supporting civ (Portuguese default) | Market Gap 1, Tower Defense Market Research §"Strategic Market Gaps" |
-| **Core loop** | Grid-based tower defense spanning land and sea: deploy Ming Garrison Spearmen, Fo-lang-ji Cannon Crews, Portuguese Arquebusiers, and Veteran Commander heroes along Flow-Field-routed land and naval raid lanes | Market Research §"Technical Underpinnings"; Multiplayer TD Implementation §"Flow Fields" |
-| **Meta-game** | Coastal-territory light-4X layer over a persistent map; synchronous and asynchronous Co-Op defense of shared strongholds | Market Research §"4X Strategy and Tower Defense Fusion" |
-| **Monetization** | Gacha hero-commander banners (Performance Expectancy), cosmetics/skins (Hedonic Motivation), faction-contribution premium currency (Social Influence), frictionless battle pass — Kompu-Gacha-compliant probability disclosure from day one | Market Research §"UTAUT3"; §"Regulatory Pressures" |
-| **Shared core** | C++20 simulation core (ECS via EnTT), bridged to Kotlin/Swift via JNI/Swift C++ interop, FlatBuffers zero-copy state serialization | Multiplayer TD Implementation §"ECS", §"Zero-Copy Serialization" (originally researched a Rust/UniFFI approach — see [`shared_core.md`](roadmaps/shared_core.md) for why C++ was chosen instead) — supersedes the "stay documentation-only" default |
-| **Multiplayer** | Server-authoritative state sync with client-side prediction/reconciliation; AWS GameLift + FlexMatch for latency-optimized matchmaking and fleet orchestration | Multiplayer TD Implementation §"Server-Authoritative State Synchronization", §"Matchmaking and Fleet Orchestration" |
-| **Procedural content / AI** | Wave Function Collapse for siege-map generation; RL-driven dynamic difficulty adjustment; Contextual Multi-Armed Bandits for offer personalization; survival-analysis churn/LTV modeling | Multiplayer TD Implementation §"Algorithmic PCG", §"Dynamic Difficulty Adjustment", §"Optimizing Monetization and Player Retention" |
+| **Setting** | 1540s–1560s Wōkòu coast; historical aesthetics + accessible fiction | Market research gap |
+| **Core loop** | Dual land/sea grids; build vs combat phases; heroes (aura + active); cross-front synergy | [`gameplay.md`](roadmaps/gameplay.md) |
+| **Presentation** | Isometric 2.5D on **Godot 4**; ukiyo-e-readable art bar | Supersedes SurfaceView/SpriteKit primary |
+| **Simulation** | **C++20** (EnTT, FlatBuffers); godot-cpp **and** C++ modules | [`shared_core.md`](roadmaps/shared_core.md) |
+| **Co-op** | Asymmetric land/sea = launch pillar; **local Wi‑Fi first**; not in Slice-0 | [`co_op_modes.md`](roadmaps/co_op_modes.md) |
+| **Online** | Server-authoritative replication when needed; offline campaign first | GameLift **not** mandatory |
+| **Monetization** | Cosmetics → battle pass → skin lootboxes; **no** gameplay gacha; rewarded ads only | [`monetization.md`](roadmaps/monetization.md) |
+| **ML** | Identity: RL DDA + swarm/evo; CMAB later; WFC/TGNN research; sentiment HITL | [`ai_systems.md`](roadmaps/ai_systems.md) |
+| **Targets** | Android 13+, iOS 17+; 30+ FPS; 10–40 units | |
+
+---
 
 ## Roadmap Phases
 
 | Phase | Focus | Status |
 | --- | --- | --- |
-| 0 | Template scaffolding (two native clients, CI/CD, docs, agent tooling) | ✅ Done |
-| 1a | **Playable vertical slice** (Android-first, timeboxed) — grid + naive pathfinding + touch input + one tower/enemy type + HQ win/lose, no art, no meta-progression | 🚧 In Progress — target 2026-08-23 |
-| 1 | Single-player Wōkòu-era TD core loop (MVP), per-platform | 🚧 In Progress |
-| 2 | Shared C++ simulation core (ECS + JNI/Swift C++ interop), replacing per-platform duplicated engine logic | 📋 Pending |
-| 3 | Meta-progression: gacha commanders, clan/territory layer, monetization, LiveOps foundations | 📋 Pending |
-| 4 | Server-authoritative Co-Op multiplayer + matchmaking (GameLift/FlexMatch) | 📋 Pending |
-| 5 | Procedural content & ML systems (WFC maps, RL difficulty, CMAB offers, churn prediction) | 📋 Pending |
-| 6 | LiveOps, regulatory compliance, regional launch | 📋 Pending |
-| 7 | Internal dashboard: docs-site multi-framework platform (React host + Astro/Aurelia/Apollo islands) plus product/telemetry dashboard | 📋 Pending |
+| 0 | Template scaffolding (legacy native clients, CI, docs, agent tooling) | ✅ Done |
+| **1a** | **Slice-0: offline dual-front Godot prototype** | 🚧 **Current** |
+| 1 | Single-player Wōkòu-era loop polish (G3+, economy, heroes) | 📋 Pending |
+| 2 | C++ sim packaging (S0–S5) behind Godot | 📋 Parallel after VS1 starts |
+| 3 | Meta: cosmetics/battle pass/skin lootboxes, clans, LiveOps foundations | ⏸ After slice fun |
+| 4 | Local Wi‑Fi asymmetric co-op → later online session service | ⏸ After slice fun |
+| 5 | ML systems (gated) + sentiment research | 🔬 / ⏸ |
+| 6 | LiveOps, compliance, regional launch | ⏸ |
+| 7 | Internal dashboard (static/local first; live Docker later) | ⏸ Secondary (25%) |
 
-**Ownership note (2026-08-09, multi-agent brainstorm session):** this is a small team, not a solo effort. Track ownership is recorded per roadmap file below; most tracks are `Owner: TBD` pending role assignment — the one settled exception is [`ai_systems.md`](roadmaps/ai_systems.md), owned by ACFHarbinger (ML/RL/optimization research track).
+**Ownership:** small team (3 humans). Track owners mostly TBD; [`ai_systems.md`](roadmaps/ai_systems.md) owned by ACFHarbinger.
 
-See per-topic detail in [`docs/moon/roadmaps/`](roadmaps/):
+### Topic roadmaps
 
-| Roadmap | Scope | Owner |
-| --- | --- | --- |
-| [`gameplay.md`](roadmaps/gameplay.md) | core TD loop, castle defense, hero commanders, pathfinding | TBD |
-| [`ui_ux.md`](roadmaps/ui_ux.md) | menus, HUD, clan UI, accessibility | TBD |
-| [`performance.md`](roadmaps/performance.md) | ECS, Flow Field optimization, profiling | TBD |
-| [`monetization.md`](roadmaps/monetization.md) | gacha, battle pass, UTAUT3 alignment, compliance | TBD |
-| [`backend.md`](roadmaps/backend.md) | server-authoritative netcode, GameLift/FlexMatch, leaderboards, cloud save | TBD |
-| [`ai_systems.md`](roadmaps/ai_systems.md) | Wave Function Collapse procgen, RL dynamic difficulty, CMAB monetization, churn/LTV modeling | **ACFHarbinger** |
-| [`qa_testing.md`](roadmaps/qa_testing.md) | determinism/netcode testing, device coverage, retention benchmarks | TBD |
-| [`ios.md`](roadmaps/ios.md) | iOS-specific client work | TBD |
-| [`shared_core.md`](roadmaps/shared_core.md) | C++ shared-core architecture decision (superseded default, now Option B) | TBD |
-| [`internal_dashboard.md`](roadmaps/internal_dashboard.md) | docs site polyglot islands (React/Astro/Aurelia), GraphQL/Apollo, WASM (MFP1–MFP16), and the internal product/telemetry dashboard built on top of them (ID1–ID11) | TBD |
-| [`repo_automation.md`](roadmaps/repo_automation.md) | `git/` tooling: GitHub Project board sync, subagent-delegation conventions (RA1–RA4) | TBD |
+| Roadmap | Scope |
+| --- | --- |
+| [`vertical_slice.md`](roadmaps/vertical_slice.md) | **Slice-0 acceptance + deliverables** |
+| [`co_op_modes.md`](roadmaps/co_op_modes.md) | Asymmetric co-op design (implement later) |
+| [`gameplay.md`](roadmaps/gameplay.md) | Core TD loop, heroes, outposts |
+| [`shared_core.md`](roadmaps/shared_core.md) | Godot + C++ architecture |
+| [`ui_ux.md`](roadmaps/ui_ux.md) | Menus, HUD, shop UI |
+| [`performance.md`](roadmaps/performance.md) | 30 FPS / 40-unit budgets |
+| [`monetization.md`](roadmaps/monetization.md) | Cosmetics-first; no power gacha |
+| [`backend.md`](roadmaps/backend.md) | Online services (deferred) |
+| [`ai_systems.md`](roadmaps/ai_systems.md) | DDA, swarm, CMAB, sentiment research |
+| [`qa_testing.md`](roadmaps/qa_testing.md) | Tests + playtest gates |
+| [`ios.md`](roadmaps/ios.md) | Godot iOS export path |
+| [`internal_dashboard.md`](roadmaps/internal_dashboard.md) | React dashboard + MFP islands |
+| [`repo_automation.md`](roadmaps/repo_automation.md) | Issue sync / agent process |
 
-Completed items move to [`docs/moon/CHANGELOG.md`](CHANGELOG.md).
+Completed items → [`CHANGELOG.md`](CHANGELOG.md).
 
 ---
 
 ## Track: Template Scaffolding (complete)
 
-| # | Item | Effort | Status |
-| --- | --- | --- | --- |
-| T1 | Root scaffolding: LICENSE, README, `.pre-commit-config.yaml`, `.gitignore` | S | ✅ Done |
-| T2 | `.github/` CI/CD: workflows, issue/PR templates, dependabot | M | ✅ Done |
-| T3 | Unified Vue documentation and interactive design portal, including ADRs, roadmaps, design documents, codebase guides, research, and `gh-pages` deployment | M | ✅ Done |
-| T3b | Flatten `docs/website/vue` → `docs/website` and nest Vue sources under `src/frameworks/vue` (github-pages-style frameworks layout) | S | ✅ Done |
-| T4 | `moon/` roadmap and changelog | S | ✅ Done |
-| T5 | `infra/global/{docker,k8s,helm,terraform,ansible}/` optional backend scaffolding (+ cloud/private/server layout) | M | ✅ Done |
-| T6 | `.agent/` LLM coding-agent scaffolding | M | ✅ Done |
-| T7 | Root `justfile` wrapping Gradle + Xcode tasks | S | ✅ Done |
-| T8 | `.devcontainer/` Dev Container definition (Android SDK, JDK 17, emulator) — iOS/Xcode builds require a native macOS host, documented as a known limitation | S | ✅ Done |
-| T9 | Standard Android `app/` module skeleton (SurfaceView game loop, one demo entity) — now under `android/` | M | ✅ Done |
-| T10 | Unit test + instrumented test skeleton (Android) | S | ✅ Done |
-| T11 | `release.yml` signed AAB/APK pipeline + optional fastlane Play Store upload (Android) | M | ✅ Done |
-| T12 | iOS `MyGame` app skeleton under `ios/` (SpriteKit + SwiftUI chrome, feature-parity with Android where the two platforms' scope overlaps) | M | ✅ Done |
-| T13 | iOS `XCTest` unit test skeleton + shared Xcode scheme for CI | S | ✅ Done |
-| T14 | `core/` shared-assets module + documented (non-compiled) state-machine/level-schema spec | S | ✅ Done |
+Legacy Android SurfaceView + iOS SpriteKit skeletons, CI/CD, docs, `.agent/`, `infra/` scaffolding. See prior changelog entries. These trees are **not** the primary product path going forward.
 
 ---
 
-## Track: Playable Vertical Slice (in progress, 2026-08-09 → 2026-08-23)
+## Track: Slice-0 — Offline Dual-Front Prototype (current)
 
-**Decided in the 2026-08-09 multi-agent brainstorm session:** roadmap/architecture work had run far ahead of a single played frame of actual gameplay (both `android/`'s `engine/` and `ios/`'s `Scenes/` are still the inherited template skeletons — a bouncing-ball demo and a generic top-down shooter, respectively; see [`.agent/reports/claude/PMF_Analysis_2026-08-09.md`](../../.agent/reports/claude/PMF_Analysis_2026-08-09.md) for the full reasoning). Rather than gate all other roadmap work, this track is **timeboxed**: a hard 2-week target (2026-08-09 → 2026-08-23) to get a playable, placeholder-art, single-lane fortress-defense loop running on Android, while other tracks continue in parallel.
+**Canonical detail:** [`roadmaps/vertical_slice.md`](roadmaps/vertical_slice.md).
 
-| # | Item | Effort | Platform | Status |
-| --- | --- | --- | --- | --- |
-| VS1 | Minimal grid-based fortress-defense loop: one lane, one placeholder tower type, one placeholder enemy type, HQ HP win/lose condition — a cut-down slice of [`gameplay.md`](roadmaps/gameplay.md) G2 | M | Android first | 🚧 In Progress |
-| VS2 | Naive per-unit pathfinding (A\* or even a fixed lane path) as a stand-in for the full Flow Field system ([`gameplay.md`](roadmaps/gameplay.md) G3) — full Flow Field is not required to validate pacing/feel | S | Android first | 📋 Pending |
-| VS3 | Touch input for tower placement ([`gameplay.md`](roadmaps/gameplay.md) G10), cut down to the single lane above | S | Android first | 📋 Pending |
-| VS4 | Play it. Record what the slice teaches about pacing, lane/tower tension, and the Day/Night structure (G6) before any further Phase 3–7 roadmap depth is added | S | — | 📋 Pending |
-| VS5 | Port the validated slice to iOS (`Scenes/GameLevel/GameScene.swift`), once VS1–VS4 are done on Android | M | iOS | 📋 Pending — follows VS1–VS4 |
+| # | Item | Status |
+| --- | --- | --- |
+| VS0 | Godot 4 client expansion from `core/project.godot` | 🚧 |
+| VS1 | **G2 dual-front core loop** | 📋 **Next implement** |
+| VS2–VS10 | Pathing stub, input, phases, outposts, hero/support, art, save, exports, playtest | 📋 |
 
-Effort key: S = days, M = 1–2 weeks. **Owner:** TBD.
+**Supersedes:** 2026-08-09 Android-first single-lane VS1–VS5 timebox.
 
-## Track: Internal Dashboard (planned)
+---
 
-React is the **website host** under `docs/website/src/frameworks/react` (migrated from the original Vue host — see [`internal_dashboard.md`](roadmaps/internal_dashboard.md) Document history). Research under `docs/moon/research/` (Hybrid Vue/React, Hybrid Micro-Frontend, Vue visualization stack, WASM integration) drove the delivered **MFP1–MFP16** infrastructure workstream; the **ID1–ID11** deliverables in [`roadmaps/internal_dashboard.md`](roadmaps/internal_dashboard.md) build the actual product/telemetry dashboard on top of it (absorbing the former `product-metrics` GitHub issues #120–125). See that file for the full deliverable index — this section intentionally doesn't duplicate it.
+## Track: Internal Dashboard (secondary)
 
-Native game clients (`android/`, `ios/`, `core/`) stay out of scope for MFP unless a shared tooling UI explicitly needs them.
+React host under `docs/website/`. **Static/local/batch first**; live remote not required for small team. See [`internal_dashboard.md`](roadmaps/internal_dashboard.md). ID5 real-time WebSocket remains rejected for v1. Sentiment automation is research (A12/A13), not launch automation.
+
+---
+
+## Immediate execution order
+
+1. **G2 / VS1** dual-front playable loop on Godot  
+2. S0 Godot↔C++ spike (godot-cpp + modules) in parallel when capacity allows  
+3. VS playtest gate (“shows promise”)  
+4. Then G3 pathing depth, cosmetics track, local Wi‑Fi co-op design implementation  
+
+**Do not** start with multiplayer fleet, power gacha, or autonomous sentiment balancing.

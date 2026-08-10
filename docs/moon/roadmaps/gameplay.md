@@ -2,22 +2,26 @@
 
 **Owner:** TBD
 
-Scope: the Wōkòu-pirate-era tower-defense core loop and its meta-progression layer. See [`moon/ROADMAP.md`](../ROADMAP.md#game-concept-summary) for the overall concept and [`reports/Tower Defense Market Research.md`](../reports/Tower%20Defense%20Market%20Research.md) for the design rationale.
+Scope: the Wōkòu-pirate-era tower-defense core loop and its meta-progression layer. See [`moon/ROADMAP.md`](../ROADMAP.md#game-concept-summary) and the Slice-0 definition in [`vertical_slice.md`](vertical_slice.md).
 
-**2026-08-09 note:** G2/G3/G10 below are the full-scope versions of this loop. A cut-down, timeboxed slice of these three items (naive pathfinding instead of full Flow Field, one lane, no meta-progression) is being built first as the **Playable Vertical Slice** track in [`moon/ROADMAP.md`](../ROADMAP.md#track-playable-vertical-slice-in-progress-2026-08-09--2026-08-23) (VS1–VS5, target 2026-08-23, Android first) — see that section before starting G2/G3/G10 directly.
+**2026-08-11 note (final multi-agent pass):** Primary client is **Godot 4** (isometric 2.5D). Dual land/sea fronts are **mandatory** in the first playable prototype. Hero **gameplay gacha is rejected** — heroes remain a core systems feature (G4) but are not monetized as power gacha (see [`monetization.md`](monetization.md)). Full Flow Field (G3) follows a fun dual-front loop (G2 / VS1), not the reverse.
 
-| # | Item | Effort | Status |
-| --- | --- | --- | --- |
-| G1 | ~~Demo entity (`Ball`) with bounce physics~~ — template placeholder, superseded by G2+ | S | ✅ Done (superseded) |
-| G2 | Grid-based fortress-defense core loop: place Ming Garrison Spearmen, Fo-lang-ji Cannon Crews, Portuguese Arquebusiers, and Veteran Commander heroes along land/naval raid lanes, defend the Main HQ from HP depletion | L | 📋 Pending |
-| G3 | Flow Field (vector field) pathfinding for enemy raiders (land and naval), replacing per-unit A\*: single Dijkstra-map recompute per tower placement, O(1) per-enemy lookup thereafter | L | 📋 Pending |
-| G4 | Hero-commander system: rarity-tiered units (gacha-sourced, see [`monetization.md`](monetization.md)) with unique abilities, distinct from generic towers | M | 📋 Pending |
-| G5 | Data-driven level/wave definitions (JSON, extending `core/src/level-schema.json`) — no hardcoded waves | M | 📋 Pending |
-| G6 | Day/Night structure: daytime frictionless menu-based fortress upgrades and unit assignment; nighttime raid defense — explicitly avoid the "manual villager-running" tedium noted as *Kunitsu-Gami*'s core UX flaw | M | 📋 Pending |
-| G7 | Resource Outpost / Trading Outpost economy: Resource Outposts generate land-unit currency, Trading Outposts generate naval-unit currency, both independently defendable and separate from the HQ loss condition | L | 📋 Pending |
-| G8 | Score/progression system (per-level stars, HQ prestige) | M | 📋 Pending |
-| G9 | Coastal-territory light-4X meta-map: persistent world map, faction-owned strongholds, alliance-vs-alliance contested zones | XL | 📋 Pending |
-| G10 | Touch-input handling for tower/unit placement (drag/tap, lane-aware) | S | 📋 Pending |
-| G11 | Sensor input (accelerometer/gyroscope) as an optional control scheme | M | 📋 Pending |
+| # | Item | Effort | Status | Milestone |
+| --- | --- | --- | --- | --- |
+| G1 | ~~Demo entity (`Ball`) with bounce physics~~ — template placeholder, superseded by G2+ | S | ✅ Done (superseded) | — |
+| G2 | Dual-front grid fortress-defense core loop (land + sea): place Ming Garrison Spearmen, Fo-lang-ji Cannon Crews, Portuguese Arquebusiers, and Commander heroes along land/naval raid lanes; defend Main HQ; cross-front range interfaces and specialized support units | L | 📋 Pending · **NEXT** | Slice-0 |
+| G3 | Flow Field pathfinding for enemy raiders (land and naval); naive pathing acceptable in Slice-0 | L | 📋 Pending | Post Slice-0 polish |
+| G4 | Hero-commander system: grid placement, nearby bonuses, active ability CD, reposition with travel time; mix of support / combat / global-resource heroes — **not** gacha-sourced for power | M | 📋 Pending | Slice-0 (minimal) → expand |
+| G5 | Data-driven level/wave definitions (JSON, extending `core/src/level-schema.json`) | M | 📋 Pending | Slice-0 partial |
+| G6 | Build vs combat phases: build/upgrade/position phase; combat/resource-management phase (day/night or equivalent) | M | 📋 Pending | Slice-0 |
+| G7 | Resource Outpost / Trading Outpost economy: land vs naval currencies; outpost loss is economic only | L | 📋 Pending | Slice-0 minimal |
+| G8 | Score/progression system (per-level stars, HQ prestige) | M | 📋 Pending | Launch path |
+| G9 | Coastal-territory light-4X meta-map; settlement capture = later season | XL | 📋 Deferred | Post-launch seasons |
+| G10 | Touch-input for dual-grid placement (Godot input) | S | 📋 Pending | Slice-0 |
+| G11 | Sensor input (accelerometer/gyroscope) optional | M | 📋 Deferred | Nice-to-have |
+| G12 | Cross-front specialized support units + environment-locked upgrade resources | M | 📋 Pending | Slice-0 |
+| G13 | Clans as persistent social layer at launch (UI/meta; not required for Slice-0) | L | 📋 Deferred | Launch |
 
 Effort key: S = days, M = 1–2 weeks, L = 3–6 weeks, XL = multi-month/cross-cutting.
+
+See also: [`co_op_modes.md`](co_op_modes.md) for asymmetric land/sea co-op (design now, implement after Slice-0).
