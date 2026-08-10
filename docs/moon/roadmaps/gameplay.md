@@ -9,7 +9,7 @@ Scope: the Wōkòu-pirate-era tower-defense core loop and its meta-progression l
 | # | Item | Effort | Status | Milestone |
 | --- | --- | --- | --- | --- |
 | G1 | ~~Demo entity (`Ball`) with bounce physics~~ — template placeholder, superseded by G2+ | S | ✅ Done (superseded) | — |
-| G2 | Dual-front grid fortress-defense core loop (land + sea): place Ming Garrison Spearmen, Fo-lang-ji Cannon Crews, Portuguese Arquebusiers, and Commander heroes along land/naval raid lanes; defend Main HQ; cross-front range interfaces and specialized support units | L | 📋 Pending · **NEXT** | Slice-0 |
+| G2 | Dual-front grid fortress-defense core loop (land + sea): place Ming Garrison Spearmen, Fo-lang-ji Cannon Crews, Portuguese Arquebusiers, and Commander heroes along land/naval raid lanes; defend Main HQ; cross-front range interfaces and specialized support units | L | 🚧 **In progress** · **NEXT** | Slice-0; Godot implementation in `core/scenes/battle/battle.tscn` + `core/scripts/battle/` |
 | G3 | Flow Field pathfinding for enemy raiders (land and naval); naive pathing acceptable in Slice-0 | L | 📋 Pending | Post Slice-0 polish |
 | G4 | Hero-commander system: grid placement, nearby bonuses, active ability CD, reposition with travel time; mix of support / combat / global-resource heroes — **not** gacha-sourced for power | M | 📋 Pending | Slice-0 (minimal) → expand |
 | G5 | Data-driven level/wave definitions (JSON, extending `core/src/level-schema.json`) | M | 📋 Pending | Slice-0 partial |

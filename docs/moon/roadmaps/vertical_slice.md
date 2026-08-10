@@ -29,8 +29,8 @@ Ship an **offline**, **dual-front** (land + sea) Wōkòu-era fortress-defense pr
 
 | # | Item | Effort | Status | Notes |
 | --- | --- | --- | --- | --- |
-| VS0 | Godot 4 project as primary game client (`core/project.godot` seed exists; expand scenes/exports) | M | 🚧 | Supersedes SurfaceView/SpriteKit as primary |
-| VS1 | Dual-front grid core loop (G2 cut for slice): land + naval lanes, HQ, basic towers/units | L | 📋 | **Next implementation focus** |
+| VS0 | Godot 4 project as primary game client (`core/project.godot` seed exists; expand scenes/exports) | M | 🚧 **In progress** | `core/scenes/battle/battle.tscn` + `core/scripts/`; supersedes SurfaceView/SpriteKit as primary |
+| VS1 | Dual-front grid core loop (G2 cut for slice): land + naval lanes, HQ, basic towers/units | L | 🚧 **In progress** | **Next implementation focus**; Godot battle scene and entity loop exist |
 | VS2 | Naive pathfinding sufficient for feel (full Flow Field = G3, after fun) | S | 📋 | |
 | VS3 | Touch/drag placement for dual grids | S | 📋 | |
 | VS4 | Build vs combat phase shell (G6 simplified) | M | 📋 | |

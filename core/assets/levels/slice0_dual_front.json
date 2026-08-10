@@ -1,0 +1,17 @@
+{
+  "id": "slice0_dual_front",
+  "displayName": "Coastal Raid — Dual Front",
+  "civPrimary": "Ming",
+  "civSupport": "Portuguese",
+  "buildPhaseSeconds": 45,
+  "enemySpawnIntervalSeconds": 0.35,
+  "hqMaxHp": 100,
+  "startingLandCurrency": 40,
+  "startingSeaCurrency": 40,
+  "waves": [
+    { "delaySeconds": 2.0, "landCount": 3, "seaCount": 2, "spawnPattern": "lane" },
+    { "delaySeconds": 12.0, "landCount": 4, "seaCount": 4, "spawnPattern": "lane" },
+    { "delaySeconds": 24.0, "landCount": 6, "seaCount": 5, "spawnPattern": "lane" },
+    { "delaySeconds": 38.0, "landCount": 5, "seaCount": 6, "spawnPattern": "lane" }
+  ]
+}

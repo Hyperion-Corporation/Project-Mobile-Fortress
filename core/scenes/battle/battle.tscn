@@ -1,0 +1,160 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/battle/battle_root.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/ui/battle_hud.gd" id="2"]
+
+[node name="BattleRoot" type="Node2D"]
+script = ExtResource("1")
+
+[node name="Bg" type="ColorRect" parent="."]
+offset_right = 1280.0
+offset_bottom = 720.0
+mouse_filter = 2
+color = Color(0.956863, 0.913725, 0.847059, 1)
+
+[node name="LandHost" type="Node2D" parent="."]
+position = Vector2(0, 0)
+
+[node name="SeaHost" type="Node2D" parent="."]
+position = Vector2(0, 380)
+
+[node name="Units" type="Node2D" parent="."]
+z_index = 5
+
+[node name="Raiders" type="Node2D" parent="."]
+z_index = 6
+
+[node name="HUD" type="CanvasLayer" parent="."]
+script = ExtResource("2")
+
+[node name="Root" type="Control" parent="HUD"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="TopBar" type="HBoxContainer" parent="HUD/Root"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 12.0
+offset_top = 8.0
+offset_right = -12.0
+offset_bottom = 40.0
+grow_horizontal = 2
+theme_override_constants/separation = 24
+
+[node name="PhaseLabel" type="Label" parent="HUD/Root/TopBar"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.101961, 0.101961, 0.180392, 1)
+theme_override_font_sizes/font_size = 18
+text = "Phase: BUILD"
+
+[node name="TimerLabel" type="Label" parent="HUD/Root/TopBar"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.101961, 0.101961, 0.180392, 1)
+text = "Build: 45s"
+
+[node name="LandRes" type="Label" parent="HUD/Root/TopBar"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.239216, 0.360784, 0.270588, 1)
+text = "Land 兩: 40"
+
+[node name="SeaRes" type="Label" parent="HUD/Root/TopBar"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.239216, 0.352941, 0.501961, 1)
+text = "Sea 兩: 40"
+
+[node name="HqLabel" type="Label" parent="HUD/Root/TopBar"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.760784, 0.231373, 0.133333, 1)
+text = "HQ: 100/100"
+
+[node name="SideBar" type="VBoxContainer" parent="HUD/Root"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -280.0
+offset_top = 56.0
+offset_right = -12.0
+offset_bottom = 520.0
+grow_horizontal = 0
+theme_override_constants/separation = 8
+
+[node name="SelectedLabel" type="Label" parent="HUD/Root/SideBar"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.101961, 0.101961, 0.180392, 1)
+text = "Selected: —"
+autowrap_mode = 3
+
+[node name="BtnSpear" type="Button" parent="HUD/Root/SideBar"]
+layout_mode = 2
+text = "Spearman (Land)"
+
+[node name="BtnCannon" type="Button" parent="HUD/Root/SideBar"]
+layout_mode = 2
+text = "Cannon (Land, some cross)"
+
+[node name="BtnArq" type="Button" parent="HUD/Root/SideBar"]
+layout_mode = 2
+text = "Arquebusier (Sea)"
+
+[node name="BtnJunk" type="Button" parent="HUD/Root/SideBar"]
+layout_mode = 2
+text = "War Junk (Sea)"
+
+[node name="BtnHero" type="Button" parent="HUD/Root/SideBar"]
+layout_mode = 2
+text = "Hero Qi (Either)"
+
+[node name="BtnCross" type="Button" parent="HUD/Root/SideBar"]
+layout_mode = 2
+text = "Cross-Front Battery"
+
+[node name="StartCombatBtn" type="Button" parent="HUD/Root/SideBar"]
+layout_mode = 2
+text = "Start Combat (Space)"
+
+[node name="HeroAbilityBtn" type="Button" parent="HUD/Root/SideBar"]
+layout_mode = 2
+text = "Hero Active Ability"
+
+[node name="HelpLabel" type="Label" parent="HUD/Root/SideBar"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.3, 0.35, 1)
+theme_override_font_sizes/font_size = 12
+text = "Help"
+autowrap_mode = 3
+
+[node name="ResultPanel" type="PanelContainer" parent="HUD/Root"]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -180.0
+offset_top = -100.0
+offset_right = 180.0
+offset_bottom = 100.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="HUD/Root/ResultPanel"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="ResultText" type="Label" parent="HUD/Root/ResultPanel/VBox"]
+layout_mode = 2
+text = "Result"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="RestartBtn" type="Button" parent="HUD/Root/ResultPanel/VBox"]
+layout_mode = 2
+text = "Play Again"

@@ -1,41 +1,43 @@
-# core/
+# core/ — Mobile Fortress (Godot 4 Slice-0)
 
-Platform-agnostic shared game data and (aspirationally) shared logic for the
-Android (`android/`) and iOS (`ios/`) clients.
+Playable **offline dual-front** prototype for Mobile Fortress.
 
-## What's real today
+| Path | Role |
+| --- | --- |
+| **`main.tscn` + `main.gd`** | **Primary playable** — isometric dual land/sea loop |
+| `scenes/`, `scripts/` | Modular scene/script split (menu + battle) for next iteration |
+| `assets/levels/` | Level JSON |
+| `src/` | Historical shared-spec docs (pre-Godot) |
 
-- **`assets/`** — the canonical, single-sourced raw game assets referenced by
-  both clients: level/wave layout JSON, and (as they're added) shared audio
-  and texture source files. `ios/MyGame.xcodeproj` references
-  `assets/levels/level_01.json` directly from here (via a relative file
-  reference into the Xcode project, no copy/duplication) — see
-  `ios/MyGame/Resources/Levels/LevelLoader.swift`. The Android client does not
-  yet consume structured level JSON (its `GameEngine` only tracks a single
-  `Ball` entity — see `android/app/.../engine/GameEngine.kt`); when Android
-  gameplay grows past that, it should read from `assets/levels/` too rather
-  than duplicating level data under `android/app/src/main/res/`.
-- **`src/level-schema.json`** — a plain JSON Schema describing the shape of
-  files under `assets/levels/`. Both platforms' native level loaders
-  (`ios/.../LevelLoader.swift` today; a future Kotlin equivalent) implement
-  against this schema by convention. It is documentation, not compiled code.
+## Run
 
-## What's aspirational
+1. Install [Godot 4.3+](https://godotengine.org/download).
+2. **Import / open this `core/` folder** as the project.
+3. Press **F5** (main scene is `main.tscn`).
 
-`src/` is **not** a compiled shared module — there is no build step that
-turns anything in `core/src/` into code either client links against. Kotlin
-and Swift have no natural shared-compilation boundary without real
-engineering investment (Kotlin Multiplatform targeting an iOS framework, or a
-C++ core with Kotlin/JNI + Swift C++ interop bindings, are the two realistic
-options). Neither is set up here — doing so properly is a multi-week project
-in its own right, not something to bolt on as a template default. Until then,
-"shared logic" (the state-machine shape in particular — see
-`src/game-state-machine.md`) is kept in sync **by convention**: the Kotlin
-`GameManager`-equivalent and Swift `GameManager` (`ios/MyGame/Core/GameManager.swift`)
-independently implement the same states/transitions, and a change to one
-should be mirrored in the other and in `src/game-state-machine.md`.
+```text
+Godot → Import → select core/project.godot → Run
+```
 
-A real shared core (KMP or C++) is tracked as a future option in
-[`moon/roadmaps/shared_core.md`](../docs/moon/roadmaps/shared_core.md) — read that
-before starting any such migration, since it changes both clients'
-architecture substantially.
+## Controls
+
+| Input | Action |
+| --- | --- |
+| **1–4** or top unit buttons | Garrison / Arquebus / Support / Commander |
+| **Click** a diamond cell on **land or sea** | Place unit (build phase) |
+| **Space** or START COMBAT | Begin raid |
+| **E** | Hero active ability (cooldown) |
+| **S** / **L** | Offline save / load (`user://mobile_fortress_slice0.json`) |
+
+## Loop (Slice-0)
+
+1. **Build** — place Ming/Portuguese units on both fronts.
+2. **Combat** — raiders approach each front; hold **HQ**.
+3. Outpost loss is **economic only** (income drops).
+4. Survive ~45s with field clear → victory. Results also go to `user://last_run_results.json`.
+
+## Next engineering steps
+
+- Polish VS1 feel (waves from `assets/levels/slice0_dual_front.json`).
+- Promote modular `scenes/battle` when structure helps.
+- S0 spike: godot-cpp / C++ modules for sim (`docs/moon/roadmaps/shared_core.md`).
