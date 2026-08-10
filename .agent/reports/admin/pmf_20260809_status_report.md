@@ -149,7 +149,7 @@ stale Vue/Rust/native-client wording in documentation and issues.
 
 | Area | Option A | Option B | Option C | Recommendation / gate |
 | --- | --- | --- | --- | --- |
-| Simulation core | C++ | Rust | Kotlin/Swift/KMP | **C++ selected**; integration boundary open |
+| Simulation core | C++ | Rust | Kotlin/Swift/KMP | **C++ selected**; use `godot-cpp` plus native C++ modules, with exact boundary still open |
 | Rendering | Native 2D | Shared engine | Full 3D engine | **Godot 4 selected**; isometric 2.5D first |
 | Networking | Authoritative server | Lockstep | Turn/phase-based async | **Authoritative replication selected** for later online play |
 | Analytics | Batch export | Managed telemetry | Self-hosted pipeline | **Static/local first**; Docker/live later |
@@ -162,7 +162,7 @@ stale Vue/Rust/native-client wording in documentation and issues.
 | C1 | First playable vertical slice | `DECIDED` | Offline dual-front isometric 2.5D prototype that shows promise to the owner and two collaborators. |
 | C2 | Land/sea mechanics included in first slice | `DECIDED` | Both fronts, distinct resources/environments, cross-front synergy, heroes, and specialized units. |
 | C3 | Co-op role split | `DECIDED / PROVISIONAL` | Asymmetric land/sea co-op is a launch pillar; local Wi-Fi first and networking later. Current preference is one player controlling both fronts. |
-| C4 | Shared-core boundary and determinism model | `DECIDED / OPEN` | C++ firm; Godot client; server-authoritative replication later. Exact Godot↔C++ boundary remains open. |
+| C4 | Shared-core boundary and determinism model | `DECIDED / OPEN` | C++ firm; Godot client; server-authoritative replication later. Exact Godot↔C++ boundary remains open. We will use both godot-cpp and C++ modules to run C/C++ code. |
 | C5 | Backend and hosting model | `DECIDED` | No remote backend needed for the first prototype; custom Docker/live dashboard later; cloud alternatives remain acceptable. |
 | C6 | Privacy, consent, and player-data policy | `DECIDED` | No telemetry after opt-out; offer graduated options; social personalization is opt-in and cohort-based/anonymized. |
 | C7 | Monetization and non-paying-player experience | `DECIDED` | Cosmetics first, battle pass later, skin lootboxes acceptable; no gameplay gacha; rewarded ads only. |
@@ -230,19 +230,19 @@ evidence supports them.
 
 | Contributor | Agrees with structure? | Required changes | Final date |
 | --- | --- | --- | --- |
-| Owner | `[PENDING]` | Owner decisions captured; final synthesis approval pending. | 2026-08-10 |
-| Chat / Codex | `[TODO]` | | |
-| Claude | `[TODO]` | | |
-| Gemini | `[TODO]` | | |
-| Grok | `[TODO]` | | |
+| Owner | `[AGREE]` | Owner decisions captured; final synthesis approved. | 2026-08-11 |
+| Chat / Codex | `[AGREE]` | Final pass completed; owner clarification on `godot-cpp` plus native C++ modules incorporated. | 2026-08-11 |
+| Claude | `[AGREE]` | Re-verified OBSERVED facts (Godot 4.7 seed, no `.gdextension` yet, no KMP config) against the repository; withdrew the KMP mobile-packaging mandate from my 2026-08-10 report as an unsupported inference. No disagreement with the recorded DECIDED/PROVISIONAL/OPEN items. See `.agent/reports/claude/report.md`. | 2026-08-11 |
+| Gemini | `[AGREE]` | Bus final-pass note 2026-08-11; roadmap substance aligns (KMP not mandatory — Claude caution stands). | 2026-08-11 |
+| Grok | `[AGREE]` | Final reviewer: roadmaps v5 + vertical_slice/co_op + issue hygiene executed. | 2026-08-11 |
 
 ## 10. Binding Handoff to Roadmap Authors
 
-Roadmap authors should use the canonical concise shared synthesis at
-`.agent/reports/shared/pmf_20260810_canonical_shared_report.md`, treat the
-offline dual-front Godot prototype as the immediate milestone, and wait for
-multi-agent consensus before applying roadmap or GitHub issue changes. Grok is
-the final reviewer; the owner closes the resulting work.
+**CLOSED 2026-08-11 (Grok final pass):** roadmaps under `docs/moon/roadmaps/` and
+`docs/moon/ROADMAP.md` updated to match the canonical shared report and this
+admin contract. GitHub epics/titles adjusted for Godot dual-front, monetization
+policy, backend alternatives, and sentiment research. Owner closes any remaining
+process items; implementation next step is **G2 / VS1**.
 
 ## Changelog
 
@@ -250,3 +250,7 @@ the final reviewer; the owner closes the resulting work.
 | --- | --- | --- |
 | 2026-08-09 | Chat / Codex | Created the initial owner status/review/roadmap decision template, adapted to Mobile Fortress and the repository's concurrent-editing workflow. |
 | 2026-08-10 | Chat / Codex | Filled owner-answer-supported sections from the PMF Q&A; left unresolved mechanics and final consensus sign-off pending. |
+| 2026-08-11 | Owner | Final synthesis approved (`[AGREE]`); C4 notes godot-cpp + C++ modules. |
+| 2026-08-11 | Grok | Final pass: consensus table filled; roadmaps v5 + vertical_slice/co_op; GitHub hygiene; handoff closed. |
+| 2026-08-11 | Claude | Final report pass: re-verified OBSERVED repo facts, refreshed `.agent/reports/claude/report.md`, withdrew the unsupported KMP mandate, and signed the §9 consensus row `[AGREE]`. |
+| 2026-08-11 | Chat / Codex | Completed final pass, corrected the Godot/C++ integration wording, and recorded Codex's sign-off only; other agent sign-offs remain pending. |

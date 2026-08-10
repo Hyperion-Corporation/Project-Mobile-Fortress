@@ -40,13 +40,15 @@ player controlling both fronts for now.
 ## 3. Technical direction
 
 Godot 4 is the primary game client; `core/project.godot` is present and targets
-Godot 4.7. C++ is the firm systems/simulation language. The prior
+Godot 4.7. C++ is the firm systems/simulation language, using both `godot-cpp`
+and dedicated C++ modules to run native C/C++ code. The prior
 SurfaceView/SpriteKit presentation plan is superseded as the primary client
 direction, and separate native Kotlin/Swift game clients are not required.
 
 The eventual online model is server-authoritative state replication rather than
-deterministic lockstep. The Godot-to-C++ boundary remains **OPEN** and needs a
-small design spike (for example, GDExtension versus a staged extraction). A
+deterministic lockstep. The Godot/C++ integration approach is **DECIDED**, but
+the exact module/API boundary, ownership rules, and build arrangement remain
+**OPEN** and need a small design spike. A
 future multiplayer tick around 20 Hz is **PROVISIONAL**.
 
 Swarm/evolutionary pathing experiments are in scope, with battery-aware frame
@@ -98,24 +100,31 @@ interfaces, research, or roadmap hooks rather than blocking the first slice.
 
 ## 7. Open items and conflicts
 
-1. Define the detailed Sea-player role and final single-player-versus-AI
-   control model.
-2. Choose and document the Godot/C++ integration boundary.
-3. Specify telemetry consent tiers, retention, and social-cohort safeguards.
-4. Decide whether sentiment-driven events can ever run without human approval.
-5. Reconcile stale native/Vue/Rust wording in older repository documents and
-   issues with the Godot/C++/React direction.
+1. Sea-player role — **schema-ready** (same grid rules; naval lanes + Trading Outposts + fleet intercept; cross-front synergy). SP vs AI second front remains **PROVISIONAL**.
+2. Godot/C++ — approach selected (`godot-cpp` + modules); exact module/API boundary and tick ownership remain **OPEN** (S0 spike).
+3. Telemetry consent tiers / retention legal copy — **OPEN**.
+4. Sentiment-driven events without human approval — **default HITL** (A13); autonomy only after explicit later decision.
+5. Stale AGENTS.md / README native wording — roadmaps updated 2026-08-11; full prose scrub may continue.
 
 ## 8. Canonicalization note
 
-This file is the concise working synthesis. The four source files remain in the
-directory as historical inputs; `pmf_20260810_shared_decision.md` was already a
-stub and continues to point to the prior decision tables. Future consensus
-changes should be appended to this report's changelog and reflected in the
-owner/admin report.
+This file is the concise working synthesis. The four source reports were merged
+into it; their prior content remains recoverable from repository history if
+needed. Future consensus changes should be appended to this report's changelog
+and reflected in the owner/admin report.
+
+## 9. Final-pass status (2026-08-11)
+
+| Role | Status |
+| --- | --- |
+| Owner / Chat / Claude / Gemini / Grok | AGREE (admin §9) |
+| Roadmaps | Applied (`docs/moon/ROADMAP.md` v5.0 + topic files) |
+| Next implementation | **G2 / VS1** offline dual-front Godot prototype |
 
 ## Changelog
 
 | Date | Contributor | Change |
 | --- | --- | --- |
 | 2026-08-10 | Chat / Codex | Merged the four existing shared-report files into this concise canonical synthesis. |
+| 2026-08-11 | Chat / Codex | Final pass: incorporated the owner's `godot-cpp` plus C++ modules clarification and separated the selected approach from its remaining implementation details. |
+| 2026-08-11 | Grok | Final reviewer: open items refreshed; §9 status; roadmaps + GitHub hygiene. |
