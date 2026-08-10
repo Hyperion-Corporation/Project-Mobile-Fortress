@@ -133,7 +133,7 @@ static func catalog() -> Dictionary:
 	}
 
 
-static def get_def(id: String) -> Dictionary:
+static func get_def(id: String) -> Dictionary:
 	var c := catalog()
 	if not c.has(id):
 		push_error("Unknown unit id: %s" % id)

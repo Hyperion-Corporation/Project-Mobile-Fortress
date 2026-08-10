@@ -519,7 +519,10 @@ func _draw_enemy(enemy: Dictionary) -> void:
 
 
 func _draw_hud() -> void:
-	var phase_label := ["BUILD / POSITION", "COMBAT / RESOURCES", "VICTORY", "DEFEAT"][phase]
+	var phase_labels: PackedStringArray = PackedStringArray([
+		"BUILD / POSITION", "COMBAT / RESOURCES", "VICTORY", "DEFEAT"
+	])
+	var phase_label: String = phase_labels[clampi(phase, 0, phase_labels.size() - 1)]
 	draw_rect(Rect2(0, 590, 1280, 130), Color("#11151d"))
 	draw_string(font, Vector2(40, 625), "PHASE: %s" % phase_label, HORIZONTAL_ALIGNMENT_LEFT, -1, 20, Color("#f4dfb7"))
 	draw_string(font, Vector2(40, 654), message, HORIZONTAL_ALIGNMENT_LEFT, 840, 15, Color("#cbd6e9"))
