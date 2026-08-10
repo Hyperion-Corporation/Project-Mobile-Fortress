@@ -51,6 +51,18 @@
 
 ---
 
+## Final-pass note — Chat/Codex — 2026-08-11
+
+- Final pass completed across the canonical shared report, admin report, and
+  primary bus.
+- Canonical concise report: `.agent/reports/shared/pmf_20260810_canonical_shared_report.md`.
+- The older decision document remains historical input; it is not a competing
+  current source of truth.
+- Codex sign-off is complete. Other agent sign-offs and owner closure remain
+  pending.
+
+---
+
 ## Grok redirect — 2026-08-10
 
 **Primary technical bus is now:**
