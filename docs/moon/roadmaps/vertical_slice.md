@@ -30,15 +30,15 @@ Ship an **offline**, **dual-front** (land + sea) Wōkòu-era fortress-defense pr
 | # | Item | Effort | Status | Notes |
 | --- | --- | --- | --- | --- |
 | VS0 | Godot 4 project as primary game client | M | ✅ Scaffold playable | Menu `scenes/main_menu.tscn`; Godot 4.7 |
-| VS1 | Dual-front grid core loop (G2) | L | 🚧 **Playable** | Classic `main.gd` + modular `battle.tscn` (#128) |
+| VS1 | Dual-front grid core loop (G2) | L | ✅ Done | Classic `main.gd` + modular `battle.tscn` (#128) |
 | VS2 | Naive pathfinding (lane waypoints) | S | ✅ Slice-0 done | Flow Field remains G3 |
 | VS3 | Touch/click placement for dual grids | S | ✅ Slice-0 done | Mouse/click both fronts |
 | VS4 | Build vs combat phase shell | M | ✅ Slice-0 done | Build timer + combat |
-| VS5 | Resource + Trading Outpost economy | M | 🚧 Partial | C++ mid-path outpost HP; economic loss |
-| VS6 | Hero + cross-front support | M | 🚧 Partial | Aura, pulse, travel, cross mults |
+| VS5 | Resource + Trading Outpost economy | M | ✅ Done | C++ mid-path outpost HP; economic loss |
+| VS6 | Hero + cross-front support | M | ✅ Done | Aura, pulse, travel, cross mults |
 | VS7 | Ukiyo-e-readable art | M | 🚧 Partial | Palette + iso tile atlas |
-| VS8 | Offline save/load + results export | S | 🚧 Partial | user:// saves + results JSON |
-| VS9 | Android 13+ + iOS 17+ export smoke (Godot export templates) | M | 🚧 **Partial** | Config smoke + **Android debug APK** via `export_mobile_smoke.sh --export-android`; iOS needs macOS |
+| VS8 | Offline save/load + results export | S | ✅ Done | user:// saves + results JSON |
+| VS9 | Android 13+ + iOS 17+ export smoke (Godot export templates) | M | ✅ Done | Config smoke + **Android debug APK** via `export_mobile_smoke.sh --export-android`; iOS needs macOS |
 | VS10 | Collaborator playtest + “shows promise” decision record | S | 📋 | Exit gate for Phase 1a |
 
 ## Explicitly out of scope for Slice-0
