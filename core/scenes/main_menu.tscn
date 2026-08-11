@@ -1,0 +1,70 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/main_menu.gd" id="1"]
+
+[node name="MainMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+
+[node name="Bg" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.956863, 0.913725, 0.847059, 1)
+
+[node name="Center" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="Center"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Title" type="Label" parent="Center/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.101961, 0.101961, 0.180392, 1)
+theme_override_font_sizes/font_size = 36
+text = "Mobile Fortress"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="Center/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.760784, 0.231373, 0.133333, 1)
+theme_override_font_sizes/font_size = 18
+text = "倭寇 Dual-Front Defense"
+horizontal_alignment = 1
+
+[node name="Blurb" type="Label" parent="Center/VBox"]
+custom_minimum_size = Vector2(480, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.101961, 0.101961, 0.180392, 1)
+text = "Loading…"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="StartBtn" type="Button" parent="Center/VBox"]
+custom_minimum_size = Vector2(280, 40)
+layout_mode = 2
+text = "Modular Battle (C++ view)"
+
+[node name="ClassicBtn" type="Button" parent="Center/VBox"]
+custom_minimum_size = Vector2(280, 36)
+layout_mode = 2
+text = "Classic main.gd prototype"
+
+[node name="QuitBtn" type="Button" parent="Center/VBox"]
+custom_minimum_size = Vector2(280, 36)
+layout_mode = 2
+text = "Quit"

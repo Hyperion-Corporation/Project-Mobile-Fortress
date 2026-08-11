@@ -81,6 +81,18 @@ func _init() -> void:
 	if sim.get_hq_hp() <= 0:
 		failures.append("outpost loss must not auto-destroy HQ")
 
+	# Defenders: spawn + auto combat
+	sim.reset_run(40, 40, 100)
+	var did: int = sim.spawn_defender(0, "spearman", Vector2(30, 0), 80.0, 20.0, 0.2, 1.0, 0.0, 0.0, 0.0)
+	if did < 0 or sim.get_defender_count() != 1:
+		failures.append("spawn_defender failed")
+	var rpath := PackedVector2Array([Vector2(0, 0), Vector2(100, 0)])
+	sim.spawn_raider(0, rpath, 15.0, 5.0, 1.0, 99) # no outpost strike
+	for _t in 40:
+		sim.tick(0.1, false)
+	if sim.get_enemies_killed() < 1:
+		failures.append("defender combat did not kill nearby raider")
+
 	sim.queue_free()
 	_finish(failures)
 

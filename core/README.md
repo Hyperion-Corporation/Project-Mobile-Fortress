@@ -4,30 +4,34 @@ Playable **offline dual-front** prototype for Mobile Fortress.
 
 | Path | Role |
 | --- | --- |
-| **`main.tscn` + `main.gd`** | **Primary playable** — isometric dual land/sea loop |
-| `scenes/`, `scripts/` | Modular scene/script split (menu + battle) for next iteration |
+| **`scenes/main_menu.tscn`** | **Entry** — choose modular or classic |
+| **`scenes/battle/battle.tscn`** | **Modular view** — TileMap grids + HUD over `SimulationCore` |
+| **`main.tscn` + `main.gd`** | Classic single-file canvas prototype |
+| `scripts/battle/battle_root.gd` | Presentation + input for modular battle |
 | `assets/levels/` | Level JSON |
-| `src/` | Historical shared-spec docs (pre-Godot) |
+| `src/cpp/` | GDExtension `SimulationCore` (raiders, defenders, outposts) |
 
 ## Run
 
-1. Install [Godot 4.3+](https://godotengine.org/download).
-2. **Import / open this `core/` folder** as the project.
-3. Press **F5** (main scene is `main.tscn`).
+1. Install [Godot 4.3+](https://godotengine.org/download) (tested 4.7).
+2. Build the extension if needed: see [`BUILD_CPP.md`](BUILD_CPP.md).
+3. **Import / open this `core/` folder** → **F5**.
 
 ```text
 Godot → Import → select core/project.godot → Run
+# menu: Modular Battle (C++ view)  |  Classic main.gd prototype
 ```
 
-## Controls
+## Controls (modular battle)
 
 | Input | Action |
 | --- | --- |
-| **1–4** or top unit buttons | Garrison / Arquebus / Support / Commander |
-| **Click** a diamond cell on **land or sea** | Place unit (build phase) |
-| **Space** or START COMBAT | Begin raid |
-| **E** | Hero active ability (cooldown) |
-| **S** / **L** | Offline save / load (`user://mobile_fortress_slice0.json`) |
+| Sidebar / **1–4** | Spearman / Cannon / Hero / Cross-support |
+| **Click** land or sea grid | Place unit (build or combat) |
+| Click hero, then empty cell | Redeploy (travel; no fire while moving) |
+| **Space** / Start Combat | Begin raid |
+| **E** / Hero Ability | Flare pulse |
+| **Esc** | Pause |
 
 ## Loop (Slice-0)
 

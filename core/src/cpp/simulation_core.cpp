@@ -3,17 +3,16 @@
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <algorithm>
+#include <cmath>
 
 using namespace godot;
 
 struct Position {
 	Vector2 value;
 };
-
 struct Velocity {
 	Vector2 value;
 };
-
 struct Health {
 	int current;
 	int max;
@@ -41,14 +40,20 @@ void SimulationCore::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("note_unit_placed"), &SimulationCore::note_unit_placed);
 	ClassDB::bind_method(D_METHOD("spawn_raider", "front", "path", "hp", "speed", "damage", "outpost_path_i"), &SimulationCore::spawn_raider, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("damage_raider", "id", "amount"), &SimulationCore::damage_raider);
+	ClassDB::bind_method(D_METHOD("spawn_defender", "front", "type", "position", "range_px", "damage", "cooldown", "own_env_mult", "cross_env_mult", "aura_radius", "aura_bonus"),
+			&SimulationCore::spawn_defender, DEFVAL(1.0f), DEFVAL(0.0f), DEFVAL(0.0f), DEFVAL(0.0f));
+	ClassDB::bind_method(D_METHOD("start_defender_travel", "id", "to", "new_front", "duration"), &SimulationCore::start_defender_travel, DEFVAL(1.6f));
+	ClassDB::bind_method(D_METHOD("hero_pulse", "radius_px", "damage"), &SimulationCore::hero_pulse);
 	ClassDB::bind_method(D_METHOD("tick", "delta", "income_enabled"), &SimulationCore::tick, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("get_raiders"), &SimulationCore::get_raiders);
+	ClassDB::bind_method(D_METHOD("get_defenders"), &SimulationCore::get_defenders);
 	ClassDB::bind_method(D_METHOD("get_raider_count"), &SimulationCore::get_raider_count);
+	ClassDB::bind_method(D_METHOD("get_defender_count"), &SimulationCore::get_defender_count);
 	ClassDB::bind_method(D_METHOD("spawn_entity", "type", "position"), &SimulationCore::spawn_entity);
 }
 
 SimulationCore::SimulationCore() {
-	UtilityFunctions::print("[MF] SimulationCore ready (EnTT + dual-front Slice-0 API)");
+	UtilityFunctions::print("[MF] SimulationCore ready (raiders + defenders + outposts)");
 }
 
 SimulationCore::~SimulationCore() = default;
@@ -66,8 +71,10 @@ void SimulationCore::reset_run(int start_land, int start_sea, int start_hq) {
 	sea_outpost_alive = true;
 	income_acc = 0.0f;
 	raiders.clear();
+	defenders.clear();
 	registry.clear();
 	next_raider_id = 1;
+	next_defender_id = 10001;
 }
 
 int SimulationCore::get_land_resources() const { return land_resources; }
@@ -177,7 +184,6 @@ void SimulationCore::damage_outpost(int front, int amount, Array &events) {
 		Dictionary lost;
 		lost["type"] = "outpost_lost";
 		lost["front"] = front;
-		// Economic only — no HQ auto-loss
 		lost["economic_only"] = true;
 		events.push_back(lost);
 	}
@@ -204,7 +210,6 @@ int SimulationCore::spawn_raider(int front, PackedVector2Array path, float hp, f
 	r.alive = true;
 	r.struck_outpost = false;
 	if (outpost_path_i < 0) {
-		// Default: first strike near middle of path (not spawn, not HQ)
 		r.outpost_path_i = std::max(1, static_cast<int>(path.size()) / 2);
 	} else {
 		r.outpost_path_i = outpost_path_i;
@@ -222,6 +227,146 @@ void SimulationCore::damage_raider(int id, float amount) {
 				enemies_killed += 1;
 			}
 			return;
+		}
+	}
+}
+
+int SimulationCore::spawn_defender(int front, const String &type, Vector2 position, float range_px, float damage, float cooldown,
+		float own_env_mult, float cross_env_mult, float aura_radius, float aura_bonus) {
+	DefenderData d;
+	d.id = next_defender_id++;
+	d.front = front;
+	d.type = type;
+	d.position = position;
+	d.range_px = range_px;
+	d.damage = damage;
+	d.cooldown = std::max(0.1f, cooldown);
+	d.cooldown_left = 0.0f;
+	d.own_env_mult = own_env_mult;
+	d.cross_env_mult = cross_env_mult;
+	d.aura_radius = aura_radius;
+	d.aura_bonus = aura_bonus;
+	d.alive = true;
+	defenders.push_back(d);
+	units_placed += 1;
+	return d.id;
+}
+
+bool SimulationCore::start_defender_travel(int id, Vector2 to, int new_front, float duration) {
+	for (auto &d : defenders) {
+		if (d.id == id && d.alive && !d.traveling) {
+			d.traveling = true;
+			d.travel_from = d.position;
+			d.travel_to = to;
+			d.travel_t = 0.0f;
+			d.travel_duration = std::max(0.2f, duration);
+			d.front = new_front;
+			return true;
+		}
+	}
+	return false;
+}
+
+int SimulationCore::hero_pulse(float radius_px, float damage) {
+	int hits = 0;
+	for (const auto &d : defenders) {
+		if (!d.alive || d.traveling) {
+			continue;
+		}
+		if (d.type != String("hero_qi") && d.type != String("hero")) {
+			continue;
+		}
+		for (auto &r : raiders) {
+			if (!r.alive) {
+				continue;
+			}
+			if (d.position.distance_to(r.position) <= radius_px) {
+				r.hp -= damage;
+				hits += 1;
+				if (r.hp <= 0.0f) {
+					r.alive = false;
+					enemies_killed += 1;
+				}
+			}
+		}
+	}
+	return hits;
+}
+
+float SimulationCore::total_aura_at(Vector2 pos) const {
+	float bonus = 0.0f;
+	for (const auto &d : defenders) {
+		if (!d.alive || d.aura_radius <= 0.0f) {
+			continue;
+		}
+		// Aura applies during travel too
+		if (d.position.distance_to(pos) <= d.aura_radius) {
+			bonus += d.aura_bonus;
+		}
+	}
+	return bonus;
+}
+
+void SimulationCore::run_travel(double delta) {
+	for (auto &d : defenders) {
+		if (!d.alive || !d.traveling) {
+			continue;
+		}
+		d.travel_t += static_cast<float>(delta) / d.travel_duration;
+		float t = std::clamp(d.travel_t, 0.0f, 1.0f);
+		d.position = d.travel_from.lerp(d.travel_to, t);
+		if (t >= 1.0f) {
+			d.traveling = false;
+			d.position = d.travel_to;
+		}
+	}
+}
+
+void SimulationCore::run_defender_combat(double delta, Array &events) {
+	for (auto &d : defenders) {
+		if (!d.alive || d.traveling) {
+			continue;
+		}
+		d.cooldown_left = std::max(0.0f, d.cooldown_left - static_cast<float>(delta));
+		if (d.cooldown_left > 0.0f) {
+			continue;
+		}
+		RaiderData *best = nullptr;
+		float best_d = 1e9f;
+		for (auto &r : raiders) {
+			if (!r.alive) {
+				continue;
+			}
+			float dist = d.position.distance_to(r.position);
+			if (dist > d.range_px) {
+				continue;
+			}
+			bool same = (r.front == d.front);
+			float mult = same ? d.own_env_mult : d.cross_env_mult;
+			if (mult <= 0.0f) {
+				continue;
+			}
+			if (dist < best_d) {
+				best_d = dist;
+				best = &r;
+			}
+		}
+		if (best == nullptr) {
+			continue;
+		}
+		bool same = (best->front == d.front);
+		float mult = same ? d.own_env_mult : d.cross_env_mult;
+		float dmg = d.damage * mult * (1.0f + total_aura_at(d.position));
+		best->hp -= dmg;
+		d.cooldown_left = d.cooldown;
+		if (best->hp <= 0.0f) {
+			best->alive = false;
+			enemies_killed += 1;
+			Dictionary kill;
+			kill["type"] = "raider_killed";
+			kill["id"] = best->id;
+			kill["front"] = best->front;
+			events.push_back(kill);
 		}
 	}
 }
@@ -245,6 +390,8 @@ Array SimulationCore::tick(double delta, bool income_enabled) {
 			events.push_back(inc);
 		}
 	}
+
+	run_travel(delta);
 
 	for (auto &r : raiders) {
 		if (!r.alive) {
@@ -278,10 +425,8 @@ Array SimulationCore::tick(double delta, bool income_enabled) {
 		if (dist <= step || dist < 0.001f) {
 			r.position = target;
 			r.path_i += 1;
-			// Deterministic outpost strike once when passing the marked waypoint
 			if (!r.struck_outpost && r.path_i >= r.outpost_path_i) {
 				r.struck_outpost = true;
-				// Outpost strike = half HQ damage, economic pressure
 				int strike = std::max(4, static_cast<int>(r.damage));
 				damage_outpost(r.front, strike, events);
 			}
@@ -290,9 +435,14 @@ Array SimulationCore::tick(double delta, bool income_enabled) {
 		}
 	}
 
+	run_defender_combat(delta, events);
+
 	raiders.erase(std::remove_if(raiders.begin(), raiders.end(),
 						  [](const RaiderData &r) { return !r.alive; }),
 			raiders.end());
+	defenders.erase(std::remove_if(defenders.begin(), defenders.end(),
+						  [](const DefenderData &d) { return !d.alive; }),
+			defenders.end());
 
 	return events;
 }
@@ -315,10 +465,38 @@ Array SimulationCore::get_raiders() const {
 	return out;
 }
 
+Array SimulationCore::get_defenders() const {
+	Array out;
+	for (const auto &d : defenders) {
+		if (!d.alive) {
+			continue;
+		}
+		Dictionary dict;
+		dict["id"] = d.id;
+		dict["front"] = d.front;
+		dict["type"] = d.type;
+		dict["position"] = d.position;
+		dict["traveling"] = d.traveling;
+		dict["range_px"] = d.range_px;
+		out.push_back(dict);
+	}
+	return out;
+}
+
 int SimulationCore::get_raider_count() const {
 	int n = 0;
 	for (const auto &r : raiders) {
 		if (r.alive) {
+			n++;
+		}
+	}
+	return n;
+}
+
+int SimulationCore::get_defender_count() const {
+	int n = 0;
+	for (const auto &d : defenders) {
+		if (d.alive) {
 			n++;
 		}
 	}
