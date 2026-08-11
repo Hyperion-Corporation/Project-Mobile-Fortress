@@ -4,6 +4,7 @@
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/json.hpp>
+#include "simulation_state_generated.h"
 #include <algorithm>
 #include <cmath>
 
@@ -56,6 +57,10 @@ void SimulationCore::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("tick", "delta", "income_enabled"), &SimulationCore::tick, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("load_level_json", "path"), &SimulationCore::load_level_json);
 	ClassDB::bind_method(D_METHOD("start_combat"), &SimulationCore::start_combat);
+
+	ClassDB::bind_method(D_METHOD("save_state"), &SimulationCore::save_state);
+	ClassDB::bind_method(D_METHOD("load_state", "data"), &SimulationCore::load_state);
+
 	ClassDB::bind_method(D_METHOD("get_raiders"), &SimulationCore::get_raiders);
 	ClassDB::bind_method(D_METHOD("get_defenders"), &SimulationCore::get_defenders);
 	ClassDB::bind_method(D_METHOD("get_raider_count"), &SimulationCore::get_raider_count);
@@ -274,6 +279,7 @@ int SimulationCore::spawn_defender(int front, const String &type, Vector2 positi
 	d.position = position;
 	d.range_px = range_px;
 	d.damage = damage;
+	d.hp = 100.0f;
 	d.cooldown = std::max(0.1f, cooldown);
 	d.cooldown_left = 0.0f;
 	d.ability_cooldown = 8.0f;
@@ -283,6 +289,8 @@ int SimulationCore::spawn_defender(int front, const String &type, Vector2 positi
 	d.aura_radius = aura_radius;
 	d.aura_bonus = aura_bonus;
 	d.alive = true;
+	d.travel_from = position;
+	d.travel_to = position;
 	defenders.push_back(d);
 	units_placed += 1;
 	return d.id;
@@ -425,45 +433,309 @@ void SimulationCore::run_defender_combat(double delta, Array &events) {
 	}
 }
 
-void SimulationCore::spawn_wave_raiders(int front, int count, int wave_index) {
-	PackedVector2Array path = (front == 0) ? land_path : sea_path;
-	if (path.size() == 0) {
-		return;
-	}
-	float hp = 50.0f + static_cast<float>(wave_index) * 3.0f;
-	float speed = 26.0f + static_cast<float>(wave_index % 4) * 2.0f;
-	int outpost_i = std::max(1, static_cast<int>(path.size()) / 2);
-	for (int i = 0; i < count; ++i) {
-		PackedVector2Array staggered = path;
-		if (staggered.size() > 0) {
-			staggered.set(0, staggered[0] + Vector2(-static_cast<float>(i) * 18.0f, 0));
+void SimulationCore::check_and_spawn_waves(Array &events) {
+	if (!in_combat || current_wave >= (int)waves.size()) return;
+
+	if (combat_time >= waves[current_wave].delay) {
+		WaveData w = waves[current_wave];
+
+		for (int i = 0; i < w.land_count; i++) {
+			Vector2 start_pos = Vector2(-20.0f - static_cast<float>(i) * 20.0f, 150.0f);
+			PackedVector2Array path;
+			path.push_back(start_pos);
+			path.push_back(Vector2(400.0f, 150.0f)); // naive lane endpoint HQ
+			float hp = 50.0f + static_cast<float>(current_wave) * 3.0f;
+			float speed = 26.0f + static_cast<float>(current_wave % 4) * 2.0f;
+			spawn_raider(0, path, hp, speed, 6.0f, -1);
 		}
-		spawn_raider(front, staggered, hp, speed, 6.0f, outpost_i);
+
+		for (int i = 0; i < w.sea_count; i++) {
+			Vector2 start_pos = Vector2(-20.0f - static_cast<float>(i) * 20.0f, 250.0f);
+			PackedVector2Array path;
+			path.push_back(start_pos);
+			path.push_back(Vector2(400.0f, 250.0f));
+			float hp = 50.0f + static_cast<float>(current_wave) * 3.0f;
+			float speed = 26.0f + static_cast<float>(current_wave % 4) * 2.0f;
+			spawn_raider(1, path, hp, speed, 6.0f, -1);
+		}
+
+		Dictionary ev;
+		ev["type"] = "wave_spawned";
+		ev["index"] = current_wave + 1;
+		events.push_back(ev);
+
+		current_wave++;
 	}
 }
 
-void SimulationCore::check_and_spawn_waves(Array &events) {
-	if (!in_combat) {
-		return;
+PackedByteArray SimulationCore::save_state() const {
+	using namespace MobileFortress::Schema;
+	flatbuffers::FlatBufferBuilder builder(2048);
+
+	std::vector<flatbuffers::Offset<Defender>> fbs_defenders;
+	fbs_defenders.reserve(defenders.size());
+	for (const auto &d : defenders) {
+		auto type_str = builder.CreateString(d.type.utf8().get_data());
+		Vec2 pos(d.position.x, d.position.y);
+		Vec2 tfrom(d.travel_from.x, d.travel_from.y);
+		Vec2 tto(d.travel_to.x, d.travel_to.y);
+		fbs_defenders.push_back(CreateDefender(
+				builder,
+				d.id,
+				d.front,
+				type_str,
+				&pos,
+				d.alive,
+				d.hp,
+				d.damage,
+				d.range_px,
+				d.cooldown,
+				d.cooldown_left,
+				d.ability_cooldown,
+				d.ability_cooldown_left,
+				d.traveling,
+				&tfrom,
+				&tto,
+				d.travel_t,
+				d.travel_duration,
+				d.aura_radius,
+				d.aura_bonus,
+				d.own_env_mult,
+				d.cross_env_mult));
 	}
-	for (size_t i = 0; i < waves.size(); ++i) {
-		WaveData &w = waves[i];
-		if (w.fired) {
-			continue;
+
+	std::vector<flatbuffers::Offset<Raider>> fbs_raiders;
+	fbs_raiders.reserve(raiders.size());
+	for (const auto &r : raiders) {
+		std::vector<Vec2> rpath;
+		rpath.reserve(static_cast<size_t>(r.path.size()));
+		for (int i = 0; i < r.path.size(); ++i) {
+			rpath.emplace_back(r.path[i].x, r.path[i].y);
 		}
-		if (combat_time >= w.delay) {
-			w.fired = true;
-			current_wave = static_cast<int>(i) + 1;
-			spawn_wave_raiders(0, w.land_count, current_wave);
-			spawn_wave_raiders(1, w.sea_count, current_wave);
-			Dictionary ev;
-			ev["type"] = "wave_spawned";
-			ev["wave"] = current_wave;
-			ev["land"] = w.land_count;
-			ev["sea"] = w.sea_count;
-			events.push_back(ev);
+		auto path_vec = builder.CreateVectorOfStructs(rpath);
+		Vec2 pos(r.position.x, r.position.y);
+		fbs_raiders.push_back(CreateRaider(
+				builder,
+				r.id,
+				r.front,
+				path_vec,
+				r.hp,
+				r.max_hp,
+				r.speed,
+				r.damage,
+				r.path_i,
+				r.outpost_path_i,
+				r.struck_outpost,
+				r.alive,
+				&pos));
+	}
+
+	std::vector<flatbuffers::Offset<Wave>> fbs_waves;
+	fbs_waves.reserve(waves.size());
+	for (const auto &w : waves) {
+		fbs_waves.push_back(CreateWave(builder, w.delay, w.land_count, w.sea_count, w.fired));
+	}
+
+	std::vector<Vec2> land_pts;
+	land_pts.reserve(static_cast<size_t>(land_path.size()));
+	for (int i = 0; i < land_path.size(); ++i) {
+		land_pts.emplace_back(land_path[i].x, land_path[i].y);
+	}
+	std::vector<Vec2> sea_pts;
+	sea_pts.reserve(static_cast<size_t>(sea_path.size()));
+	for (int i = 0; i < sea_path.size(); ++i) {
+		sea_pts.emplace_back(sea_path[i].x, sea_path[i].y);
+	}
+
+	auto state = CreateSimulationState(
+			builder,
+			land_resources,
+			sea_resources,
+			hq_hp,
+			hq_max_hp,
+			land_outpost_hp,
+			sea_outpost_hp,
+			land_outpost_max,
+			sea_outpost_max,
+			land_outpost_alive,
+			sea_outpost_alive,
+			enemies_killed,
+			units_placed,
+			in_combat,
+			combat_time,
+			current_wave,
+			build_phase_seconds,
+			victory_time,
+			income_acc,
+			next_raider_id,
+			next_defender_id,
+			builder.CreateVector(fbs_defenders),
+			builder.CreateVector(fbs_raiders),
+			builder.CreateVector(fbs_waves),
+			builder.CreateVectorOfStructs(land_pts),
+			builder.CreateVectorOfStructs(sea_pts),
+			1);
+
+	builder.Finish(state);
+
+	PackedByteArray result;
+	result.resize(static_cast<int64_t>(builder.GetSize()));
+	memcpy(result.ptrw(), builder.GetBufferPointer(), builder.GetSize());
+	return result;
+}
+
+bool SimulationCore::load_state(const PackedByteArray &data) {
+	using namespace MobileFortress::Schema;
+	if (data.size() == 0) {
+		return false;
+	}
+
+	flatbuffers::Verifier verifier(data.ptr(), static_cast<size_t>(data.size()));
+	if (!VerifySimulationStateBuffer(verifier)) {
+		UtilityFunctions::push_warning("[MF] FlatBuffers VerifySimulationStateBuffer failed");
+		return false;
+	}
+
+	const SimulationState *state = GetSimulationState(data.ptr());
+	if (state == nullptr) {
+		return false;
+	}
+
+	land_resources = state->land_resources();
+	sea_resources = state->sea_resources();
+	hq_hp = state->hq_hp();
+	hq_max_hp = state->hq_max_hp();
+	land_outpost_hp = state->land_outpost_hp();
+	sea_outpost_hp = state->sea_outpost_hp();
+	if (state->land_outpost_max() > 0) {
+		land_outpost_max = state->land_outpost_max();
+	}
+	if (state->sea_outpost_max() > 0) {
+		sea_outpost_max = state->sea_outpost_max();
+	}
+	land_outpost_alive = state->land_outpost_alive();
+	sea_outpost_alive = state->sea_outpost_alive();
+	enemies_killed = state->enemies_killed();
+	units_placed = state->units_placed();
+	in_combat = state->in_combat();
+	combat_time = state->combat_time();
+	current_wave = state->current_wave();
+	if (state->build_phase_seconds() > 0.0f) {
+		build_phase_seconds = state->build_phase_seconds();
+	}
+	if (state->victory_time() > 0.0f) {
+		victory_time = state->victory_time();
+	}
+	income_acc = state->income_acc();
+	next_raider_id = state->next_raider_id() > 0 ? state->next_raider_id() : 1;
+	next_defender_id = state->next_defender_id() > 0 ? state->next_defender_id() : 10001;
+
+	defenders.clear();
+	if (state->defenders()) {
+		for (const Defender *d : *state->defenders()) {
+			if (d == nullptr) {
+				continue;
+			}
+			DefenderData cd;
+			cd.id = d->id();
+			cd.front = d->front();
+			cd.type = d->type() ? String(d->type()->c_str()) : String();
+			if (d->position()) {
+				cd.position = Vector2(d->position()->x(), d->position()->y());
+			}
+			cd.alive = d->alive();
+			cd.hp = d->hp();
+			cd.damage = d->damage();
+			cd.range_px = d->range_px();
+			cd.cooldown = d->cooldown();
+			cd.cooldown_left = d->cooldown_left();
+			cd.ability_cooldown = d->ability_cooldown();
+			cd.ability_cooldown_left = d->ability_cooldown_left();
+			cd.traveling = d->traveling();
+			if (d->travel_from()) {
+				cd.travel_from = Vector2(d->travel_from()->x(), d->travel_from()->y());
+			}
+			if (d->travel_to()) {
+				cd.travel_to = Vector2(d->travel_to()->x(), d->travel_to()->y());
+			}
+			cd.travel_t = d->travel_t();
+			cd.travel_duration = d->travel_duration() > 0.0f ? d->travel_duration() : 1.6f;
+			cd.aura_radius = d->aura_radius();
+			cd.aura_bonus = d->aura_bonus();
+			cd.own_env_mult = d->own_env_mult();
+			cd.cross_env_mult = d->cross_env_mult();
+			defenders.push_back(cd);
 		}
 	}
+
+	raiders.clear();
+	if (state->raiders()) {
+		for (const Raider *r : *state->raiders()) {
+			if (r == nullptr) {
+				continue;
+			}
+			RaiderData cr;
+			cr.id = r->id();
+			cr.front = r->front();
+			cr.hp = r->hp();
+			cr.max_hp = r->max_hp() > 0.0f ? r->max_hp() : r->hp();
+			cr.speed = r->speed();
+			cr.damage = r->damage();
+			cr.path_i = r->path_index();
+			cr.outpost_path_i = r->outpost_path_index();
+			cr.struck_outpost = r->struck_outpost();
+			cr.alive = r->alive();
+			if (r->position()) {
+				cr.position = Vector2(r->position()->x(), r->position()->y());
+			}
+			if (r->path()) {
+				for (const Vec2 *p : *r->path()) {
+					if (p) {
+						cr.path.push_back(Vector2(p->x(), p->y()));
+					}
+				}
+			}
+			raiders.push_back(cr);
+		}
+	}
+
+	waves.clear();
+	if (state->waves()) {
+		for (const Wave *w : *state->waves()) {
+			if (w == nullptr) {
+				continue;
+			}
+			WaveData wd;
+			wd.delay = w->delay();
+			wd.land_count = w->land_count();
+			wd.sea_count = w->sea_count();
+			wd.fired = w->fired();
+			waves.push_back(wd);
+		}
+	}
+
+	land_path.clear();
+	if (state->land_path()) {
+		for (const Vec2 *p : *state->land_path()) {
+			if (p) {
+				land_path.push_back(Vector2(p->x(), p->y()));
+			}
+		}
+	}
+	sea_path.clear();
+	if (state->sea_path()) {
+		for (const Vec2 *p : *state->sea_path()) {
+			if (p) {
+				sea_path.push_back(Vector2(p->x(), p->y()));
+			}
+		}
+	}
+
+	UtilityFunctions::print("[MF] load_state OK bytes=", data.size(),
+			" defenders=", static_cast<int64_t>(defenders.size()),
+			" raiders=", static_cast<int64_t>(raiders.size()),
+			" combat=", in_combat);
+	return true;
 }
 
 bool SimulationCore::load_level_json(const String &path) {

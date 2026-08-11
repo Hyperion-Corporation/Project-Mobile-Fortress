@@ -1,0 +1,95 @@
+// Mobile Fortress SimulationCore snapshot schema (S4).
+// Used for offline save/load and later net replication.
+
+namespace MobileFortress.Schema;
+
+struct Vec2 {
+  x:float;
+  y:float;
+}
+
+table Defender {
+  id:int;
+  front:int;
+  type:string;
+  position:Vec2;
+  alive:bool = true;
+  hp:float = 100.0;
+  damage:float;
+  range_px:float;
+  cooldown:float;
+  cooldown_left:float;
+  ability_cooldown:float;
+  ability_cooldown_left:float;
+  traveling:bool = false;
+  travel_from:Vec2;
+  travel_to:Vec2;
+  travel_t:float;
+  travel_duration:float;
+  aura_radius:float;
+  aura_bonus:float;
+  own_env_mult:float = 1.0;
+  cross_env_mult:float = 0.0;
+}
+
+table Raider {
+  id:int;
+  front:int;
+  path:[Vec2];
+  hp:float;
+  max_hp:float;
+  speed:float;
+  damage:float;
+  path_index:int;
+  outpost_path_index:int;
+  struck_outpost:bool = false;
+  alive:bool = true;
+  position:Vec2;
+}
+
+table Wave {
+  delay:float;
+  land_count:int;
+  sea_count:int;
+  fired:bool = false;
+}
+
+table SimulationState {
+  // Economy / HQ / outposts
+  land_resources:int;
+  sea_resources:int;
+  hq_hp:int;
+  hq_max_hp:int;
+  land_outpost_hp:int;
+  sea_outpost_hp:int;
+  land_outpost_max:int = 40;
+  sea_outpost_max:int = 40;
+  land_outpost_alive:bool = true;
+  sea_outpost_alive:bool = true;
+  enemies_killed:int;
+  units_placed:int;
+
+  // Combat clock / waves
+  in_combat:bool = false;
+  combat_time:float;
+  current_wave:int;
+  build_phase_seconds:float = 40.0;
+  victory_time:float = 55.0;
+  income_acc:float;
+  next_raider_id:int = 1;
+  next_defender_id:int = 10001;
+
+  // Entities
+  defenders:[Defender];
+  raiders:[Raider];
+  waves:[Wave];
+
+  // Lane paths (so wave spawn continues after load)
+  land_path:[Vec2];
+  sea_path:[Vec2];
+
+  // Schema version for forward compatibility
+  schema_version:int = 1;
+}
+
+root_type SimulationState;

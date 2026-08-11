@@ -363,6 +363,58 @@ func _restart() -> void:
 	get_tree().reload_current_scene()
 
 
+const SNAPSHOT_PATH := "user://mf_slice0_snapshot.bin"
+
+
+func save_snapshot() -> bool:
+	if sim == null or not sim.has_method("save_state"):
+		status_message = "Snapshot save unavailable"
+		return false
+	var bytes: PackedByteArray = sim.save_state()
+	var f := FileAccess.open(SNAPSHOT_PATH, FileAccess.WRITE)
+	if f == null:
+		status_message = "Could not write snapshot"
+		return false
+	f.store_buffer(bytes)
+	f.close()
+	status_message = "FlatBuffers snapshot saved (%d bytes)" % bytes.size()
+	_update_hud()
+	return true
+
+
+func load_snapshot() -> bool:
+	if sim == null or not sim.has_method("load_state"):
+		status_message = "Snapshot load unavailable"
+		return false
+	if not FileAccess.file_exists(SNAPSHOT_PATH):
+		status_message = "No snapshot file"
+		return false
+	var f := FileAccess.open(SNAPSHOT_PATH, FileAccess.READ)
+	var bytes: PackedByteArray = f.get_buffer(f.get_length())
+	f.close()
+	if not sim.load_state(bytes):
+		status_message = "Snapshot load failed (verify)"
+		return false
+	# Rebuild presentation from C++ state
+	for id in visual_nodes.keys():
+		_free_visual(id)
+	cell_by_defender.clear()
+	pending_hero_id = -1
+	run_over = false
+	if sim.get_in_combat():
+		_set_phase(Phase.COMBAT)
+		combat_time = sim.get_combat_time()
+		wave_index = sim.get_current_wave()
+	else:
+		_set_phase(Phase.BUILD)
+		build_time_left = sim.get_build_phase_seconds()
+	_sync_visuals()
+	_sync_session_from_sim()
+	status_message = "FlatBuffers snapshot loaded"
+	_update_hud()
+	return true
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("toggle_phase") or event.is_action_pressed("start_combat"):
 		_start_combat()
@@ -370,6 +422,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		_hero_ability()
 	elif event.is_action_pressed("pause_game"):
 		GameSession.is_paused = not GameSession.is_paused
+	elif event.is_action_pressed("save_game"):
+		save_snapshot()
+	elif event.is_action_pressed("load_game"):
+		load_snapshot()
 	for action in SELECT_KEYS.keys():
 		if event.is_action_pressed(action):
 			_on_unit_selected(SELECT_KEYS[action])

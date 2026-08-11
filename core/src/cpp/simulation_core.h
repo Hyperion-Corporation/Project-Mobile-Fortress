@@ -57,6 +57,7 @@ private:
 		int front = 0;
 		String type;
 		Vector2 position;
+		float hp = 100.0f;
 		float range_px = 150.0f;
 		float damage = 10.0f;
 		float cooldown = 1.0f;

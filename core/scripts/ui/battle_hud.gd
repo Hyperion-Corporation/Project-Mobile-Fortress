@@ -31,7 +31,7 @@ func _ready() -> void:
 	_wire_unit_buttons()
 	_on_res(GameSession.land_currency, GameSession.sea_currency)
 	_on_hq(GameSession.hq_hp, GameSession.hq_max_hp)
-	help_label.text = "1 Spearman  2 Cannon  3 Hero  4 Cross-support\nClick land/sea cells to place\nSpace = start combat  Esc = pause"
+	help_label.text = "1–4 units · click land/sea · Space combat · E flare\nS FlatBuffers save · L load snapshot · Esc pause"
 
 
 func _wire_unit_buttons() -> void:

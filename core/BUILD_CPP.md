@@ -26,9 +26,18 @@ cp -f build/libmobile_fortress_core.so bin/libmobile_fortress_core.so
 | --- | --- |
 | `reset_run(land, sea, hq)` | New raid |
 | `spend` / `gain` | Dual currencies |
-| `spawn_raider(front, path, hp, speed, damage)` | Lane raider |
-| `damage_raider(id, amount)` | Combat |
-| `tick(delta, income_enabled)` → events | Move raiders, income, HQ hits |
-| `get_raiders()` | Render snapshot |
+| `spawn_raider` / `spawn_defender` | Entities |
+| `set_lane_path` / `load_level_json` / `start_combat` | Waves |
+| `tick(delta, income_enabled)` → events | Sim step |
+| `save_state()` → `PackedByteArray` | FlatBuffers snapshot (S4) |
+| `load_state(bytes)` | Restore snapshot |
+| `get_raiders()` / `get_defenders()` | Render snapshots |
 
-Next: FlatBuffers snapshots (S4), pathfinding systems, Godot module alternative.
+Schema: `src/schema/simulation_state.fbs` (generated into build dir by `flatc`).
+
+```bash
+# FlatBuffers contract test
+godot --path core --headless --script res://tests/flatbuffers_smoke.gd
+```
+
+Next: Flow Field (S2/G3), async bridge (S6), mobile export (S8).

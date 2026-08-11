@@ -24,7 +24,7 @@
 | S1 | C++ workspace (CMake) with EnTT skeleton | L | ✅ **Done** — `core/CMakeLists.txt` + EnTT components |
 | S2 | Pathfinding in C++ (Flow Field later; lane paths now) | L | 🚧 **Partial** — lane waypoint motion; Flow Field still open (#69) |
 | S3 | Wire godot-cpp so Godot scenes call into the sim | M | ✅ **Done** — modular `battle_root` + classic `main.gd` |
-| S4 | FlatBuffers state snapshot for save/load and later replication | M | 📋 Pending |
+| S4 | FlatBuffers state snapshot for save/load and later replication | M | ✅ **Done** — `save_state`/`load_state` + `src/schema/simulation_state.fbs` |
 | S5 | Move dual-front game logic into C++; Godot presentation | XL | 🚧 **In progress** — defenders/raiders/outposts/combat in C++; UX still Godot |
 | S6 | Async/job bridging sim thread ↔ Godot main (TSan) | M | 📋 Pending (retarget from Kotlin/Swift era) |
 | S7 | Cross-platform regression suite (soft determinism) | L | 🚧 **Partial** — headless smokes in `core/tests/` |
