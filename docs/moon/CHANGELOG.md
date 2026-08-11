@@ -7,20 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed (2026-08-11, VS4 unit-upgrade + T8 verification close-out)
+
+- **VS4 build-phase upgrade:** `SimulationCore::upgrade_defender` (C++) boosts a placed defender's damage (+25%) and range (+12px) while it isn't traveling; bound to the new `upgrade_unit` Godot input action (`U` key) and exposed via `get_defenders()`'s `damage` field; covered by a new case in `core/tests/simulation_smoke.gd`. Strengthens VS-A4 (build/position/upgrade phase).
+- **T8 GitHub issue hygiene, verified:** re-checked the 2026-08-11 hygiene plan live via `gh` against `Hyperion-Corporation/Project-Mobile-Fortress` — all 10 title edits and epics/research issues #128–#133 confirmed present. Filled in the plan's short status comments that had not actually posted (#33, #46, #70) and corrected a template-substitution bug in #9's comment (posted a follow-up rather than editing the original). See `.agent/cache/AGENT_BUS.md` (T8 log entry) for detail.
+
 ### Changed (2026-08-11, Slice-0 implementation + issue hygiene)
 
 - Godot dual-front prototype playable: classic `core/main.gd` and modular `core/scenes/battle/` over `SimulationCore` GDExtension (raiders, defenders, outposts).
-- Headless smokes: `core/tests/{simulation,gameplay,modular_battle}_smoke.gd`.
+- Headless smokes: `core/tests/{simulation,gameplay,modular_battle,flatbuffers,game_session,offline_persistence,main_menu}_smoke.gd`.
 - Finished Epic #128 (Slice-0 Godot prototype) and Epic #134 (Godot↔C++ GDExtension boundary):
-  - **G3 Flow Field**: Integrated native BFS flow field pathfinding into `SimulationCore` with Godot coordinate conversion for raider routing.
+  - **G3 / S2 Flow Field**: Dual-mode pathing — waypoint lanes primary; optional `init_grids` / `set_cell_solid` BFS flow field for empty-path raiders (commit `1837ccb`).
   - **G4 Hero Abilities**: Migrated hero state and ability casting to native C++.
   - **G5 Level Loader**: C++ `load_level_json` logic now handles wave/config bootstrapping natively.
   - **G7 Outpost Economy**: Finalized dual-currency economic logic tied to mid-path destructible outposts.
-  - **G12 Cross-Front Combat**: Matched C++ coordinates to Godot's UI layout (400px gap) and deployed Signal Battery mechanics.
+  - **G12 Cross-Front Combat**: Matched C++ coordinates to Godot's UI layout and deployed Signal Battery mechanics.
+  - **S4 FlatBuffers**: `SimulationCore.save_state` / `load_state` + `src/schema/simulation_state.fbs` (schema v1).
   - **VS7 Ukiyo-e Art**: Generated 2.5D isometric tile atlas palette mockup matching the Wōkòu crisis aesthetic.
-  - **VS8 Save/Load**: Implemented complete `FlatBuffers` snapshot zero-copy serialization wired to Godot UI keys.
-  - **VS9 Mobile Export**: Android API 33 debug export smoke passes fully.
-- Roadmaps updated for G2/S0–S3 progress; GitHub epics #128–#133 and child issues commented/closed where done.
+  - **VS8 Offline persistence**: `OfflinePersistence` helper — `user://last_run_results.json`, `run_history.json` (20 runs), FlatBuffers snapshot `mf_slice0_snapshot.bin`, classic JSON save; modular Save/Load buttons; main-menu resume + last-run summary; auto-snapshot on run end (commit `9ab1924`).
+  - **VS9 / S8 Mobile Export**: `export_presets.cfg` (Android Gradle minSdk 33 / iOS 17), `EXPORT_MOBILE.md`, `export_mobile_smoke.sh`, template installer; **Android debug APK verified** (~159MB); GDExtension mobile paths deferred until NDK binaries exist (commit `53814d6`).
+- Roadmaps updated for G2/S0–S8, VS8–VS9; GitHub epics #128–#133 and child issues commented/closed where done.
 
 ### Changed (2026-08-11, multi-agent final pass — Godot dual-front decisions)
 
