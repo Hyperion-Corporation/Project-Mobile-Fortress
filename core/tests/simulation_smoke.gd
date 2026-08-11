@@ -144,6 +144,23 @@ func _init() -> void:
 		if sim.get_current_wave() < 1 and sim.get_raider_count() < 1:
 			failures.append("C++ wave spawn after start_combat failed")
 
+	# Optional flow field (S2): empty-path raiders reach HQ when grids are live
+	sim.reset_run(10, 20, 100)
+	if sim.has_method("init_grids"):
+		sim.init_grids(Vector2i(8, 5))
+		var flow_id: int = sim.spawn_raider(0, PackedVector2Array(), 20.0, 80.0, 5.0, -1)
+		if flow_id <= 0:
+			failures.append("flow-mode spawn with empty path failed")
+		else:
+			var saw_flow_hq := false
+			for _f in 200:
+				var fevs: Array = sim.tick(0.05, false)
+				for event in fevs:
+					if event is Dictionary and str(event.get("type", "")) == "hq_hit":
+						saw_flow_hq = true
+			if not saw_flow_hq:
+				failures.append("flow-field raider never reached HQ")
+
 	# Native save/load round-trip preserves offline simulation state
 	sim.reset_run(33, 44, 88)
 	sim.spawn_defender(1, "arquebusier", Vector2(12, 24), 80.0, 10.0, 0.8)

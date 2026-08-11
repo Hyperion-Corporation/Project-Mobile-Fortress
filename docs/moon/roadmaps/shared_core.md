@@ -22,7 +22,7 @@
 | --- | --- | --- | --- |
 | S0 | **Spike:** Godot↔C++ boundary (GDExtension) | M | ✅ **Done** — `SimulationCore` loads in Godot 4.7 |
 | S1 | C++ workspace (CMake) with EnTT skeleton | L | ✅ **Done** — `core/CMakeLists.txt` + EnTT components |
-| S2 | Pathfinding in C++ (Flow Field later; lane paths now) | L | 🚧 **Partial** — lane waypoint motion; Flow Field still open (#69) |
+| S2 | Pathfinding in C++ (Flow Field later; lane paths now) | L | 🚧 **Partial** — lane waypoints primary; optional `init_grids`/`set_cell_solid` flow field (#69) |
 | S3 | Wire godot-cpp so Godot scenes call into the sim | M | ✅ **Done** — modular `battle_root` + classic `main.gd` |
 | S4 | FlatBuffers state snapshot for save/load and later replication | M | ✅ **Done** — `save_state`/`load_state` + `src/schema/simulation_state.fbs` |
 | S5 | Move dual-front game logic into C++; Godot presentation | XL | 🚧 **In progress** — defenders/raiders/outposts/combat in C++; UX still Godot |

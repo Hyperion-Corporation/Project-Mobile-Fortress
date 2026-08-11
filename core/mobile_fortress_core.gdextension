@@ -13,12 +13,5 @@ windows.release.x86_64 = "res://bin/libmobile_fortress_core.windows.x86_64.dll"
 macos.debug = "res://bin/libmobile_fortress_core.macos.universal.dylib"
 macos.release = "res://bin/libmobile_fortress_core.macos.universal.dylib"
 
-; Android (NDK optional; classic GDScript path works without these)
-android.debug.arm64 = "res://bin/libmobile_fortress_core.android.arm64.so"
-android.release.arm64 = "res://bin/libmobile_fortress_core.android.arm64.so"
-android.debug.x86_64 = "res://bin/libmobile_fortress_core.android.x86_64.so"
-android.release.x86_64 = "res://bin/libmobile_fortress_core.android.x86_64.so"
-
-; iOS (macOS + Xcode)
-ios.debug = "res://bin/libmobile_fortress_core.ios.arm64.dylib"
-ios.release = "res://bin/libmobile_fortress_core.ios.arm64.dylib"
+; Android/iOS mappings are added when platform binaries are built.
+; Mobile exports intentionally use the classic GDScript fallback until then.

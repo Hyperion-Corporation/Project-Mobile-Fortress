@@ -237,11 +237,26 @@ void SimulationCore::set_lane_path(int front, PackedVector2Array path) {
 	}
 }
 
+bool SimulationCore::flow_active() const {
+	return grid_size.x > 0 && grid_size.y > 0 && !land_flow.empty() && !sea_flow.empty();
+}
+
+PackedVector2Array SimulationCore::default_lane_path(int front) const {
+	PackedVector2Array path;
+	// Smoke-test / headless-friendly orthographic lanes (world units).
+	const float y = (front == 0) ? 150.0f : 250.0f;
+	path.push_back(Vector2(-20.0f, y));
+	path.push_back(Vector2(200.0f, y));
+	path.push_back(Vector2(400.0f, y));
+	return path;
+}
+
 int SimulationCore::spawn_raider(int front, PackedVector2Array path, float hp, float speed, float damage, int outpost_path_i) {
-	if (path.size() == 0) {
+	if (static_cast<int>(raiders.size()) >= 40) {
 		return -1;
 	}
-	if (static_cast<int>(raiders.size()) >= 40) {
+	// Empty path is allowed only when flow fields drive motion.
+	if (path.size() == 0 && !flow_active()) {
 		return -1;
 	}
 	RaiderData r;
@@ -253,11 +268,21 @@ int SimulationCore::spawn_raider(int front, PackedVector2Array path, float hp, f
 	r.damage = damage;
 	r.path = path;
 	r.path_i = 0;
-	r.position = path[0];
+	if (path.size() > 0) {
+		r.position = path[0];
+	} else {
+		// Spawn just off the left edge of the flow grid mid-row.
+		r.position = map_to_local(front, Vector2i(0, grid_size.y / 2));
+		r.position.x -= 32.0f;
+	}
 	r.alive = true;
 	r.struck_outpost = false;
 	if (outpost_path_i < 0) {
-		r.outpost_path_i = std::max(1, static_cast<int>(path.size()) / 2);
+		if (path.size() > 0) {
+			r.outpost_path_i = std::max(1, static_cast<int>(path.size()) / 2);
+		} else {
+			r.outpost_path_i = -1; // flow mode uses mid-grid x
+		}
 	} else {
 		r.outpost_path_i = outpost_path_i;
 	}
@@ -447,22 +472,34 @@ void SimulationCore::check_and_spawn_waves(Array &events) {
 	if (combat_time >= waves[current_wave].delay) {
 		WaveData w = waves[current_wave];
 
+		auto make_path = [this](int front, int stagger_i) -> PackedVector2Array {
+			PackedVector2Array path;
+			if (front == 0 && land_path.size() > 0) {
+				path = land_path;
+			} else if (front == 1 && sea_path.size() > 0) {
+				path = sea_path;
+			} else if (flow_active()) {
+				// Flow-only: empty path; spawn_raider places off-grid left edge.
+				return path;
+			} else {
+				path = default_lane_path(front);
+			}
+			if (path.size() > 0 && stagger_i > 0) {
+				path[0].x -= static_cast<float>(stagger_i) * 20.0f;
+			}
+			return path;
+		};
+
 		for (int i = 0; i < w.land_count; i++) {
-			Vector2 start_pos = map_to_local(0, Vector2i(0, grid_size.y > 0 ? grid_size.y / 2 : 2));
-			start_pos.x -= static_cast<float>(i) * 32.0f; // stagger
-			PackedVector2Array path; // Unused for Flow Field
 			float hp = 50.0f + static_cast<float>(current_wave) * 3.0f;
 			float speed = 26.0f + static_cast<float>(current_wave % 4) * 2.0f;
-			spawn_raider(0, path, hp, speed, 6.0f, -1);
+			spawn_raider(0, make_path(0, i), hp, speed, 6.0f, -1);
 		}
 
 		for (int i = 0; i < w.sea_count; i++) {
-			Vector2 start_pos = map_to_local(1, Vector2i(0, grid_size.y > 0 ? grid_size.y / 2 : 2));
-			start_pos.x -= static_cast<float>(i) * 32.0f; // stagger
-			PackedVector2Array path; // Unused for Flow Field
 			float hp = 50.0f + static_cast<float>(current_wave) * 3.0f;
 			float speed = 26.0f + static_cast<float>(current_wave % 4) * 2.0f;
-			spawn_raider(1, path, hp, speed, 6.0f, -1);
+			spawn_raider(1, make_path(1, i), hp, speed, 6.0f, -1);
 		}
 
 		Dictionary ev;
@@ -840,58 +877,15 @@ Array SimulationCore::tick(double delta, bool income_enabled) {
 	run_travel(delta);
 
 	for (auto &r : raiders) {
-		if (!r.alive) continue;
-
-		Vector2i cell = local_to_map(r.front, r.position);
-		auto &grid = (r.front == 0) ? land_flow : sea_flow;
-
-		// If reached HQ
-		if (cell.x >= grid_size.x - 1) {
-			damage_hq(static_cast<int>(r.damage));
-			r.alive = false;
-			Dictionary ev;
-			ev["type"] = "hq_hit";
-			ev["id"] = r.id;
-			ev["front"] = r.front;
-			ev["damage"] = r.damage;
-			ev["hq_hp"] = hq_hp;
-			events.push_back(ev);
-			if (hq_hp <= 0) {
-				Dictionary dead;
-				dead["type"] = "hq_destroyed";
-				events.push_back(dead);
-			}
+		if (!r.alive) {
 			continue;
 		}
-
-		Vector2 target_pos;
-		if (cell.x < 0 || cell.x >= grid_size.x || cell.y < 0 || cell.y >= grid_size.y) {
-			// Off grid (just spawned), move to (0, mid)
-			target_pos = map_to_local(r.front, Vector2i(0, grid_size.y > 0 ? grid_size.y / 2 : 2));
-		} else {
-			int idx = cell.y * grid_size.x + cell.x;
-			Vector2i dir = grid[idx].dir;
-			if (dir == Vector2i(0, 0)) {
-				// Blocked or at target, just move right if possible
-				dir = Vector2i(1, 0);
-			}
-			Vector2i next_cell = cell + dir;
-			target_pos = map_to_local(r.front, next_cell);
-		}
-
-		Vector2 dir = target_pos - r.position;
-		float dist = dir.length();
-		float step = r.speed * static_cast<float>(delta);
-
-		if (dist > 0.001f) {
-			r.position += (dir / dist) * step;
-		}
-
-		// Outpost hit logic (legacy)
-		if (!r.struck_outpost && cell.x >= grid_size.x / 2) {
-			r.struck_outpost = true;
-			int strike = std::max(4, static_cast<int>(r.damage));
-			damage_outpost(r.front, strike, events);
+		// Prefer explicit waypoint paths (smoke tests + modular lanes).
+		// Fall back to flow field only when path is empty and grids are live.
+		if (r.path.size() > 0) {
+			advance_raider_along_path(r, delta, events);
+		} else if (flow_active()) {
+			advance_raider_along_flow(r, delta, events);
 		}
 	}
 
@@ -981,24 +975,117 @@ int SimulationCore::get_defender_count() const {
 	return n;
 }
 
+void SimulationCore::advance_raider_along_path(RaiderData &r, double delta, Array &events) {
+	if (r.path.size() == 0) {
+		return;
+	}
+	if (r.path_i >= r.path.size() - 1) {
+		damage_hq(static_cast<int>(r.damage));
+		r.alive = false;
+		Dictionary ev;
+		ev["type"] = "hq_hit";
+		ev["id"] = r.id;
+		ev["front"] = r.front;
+		ev["damage"] = r.damage;
+		ev["hq_hp"] = hq_hp;
+		events.push_back(ev);
+		if (hq_hp <= 0) {
+			Dictionary dead;
+			dead["type"] = "hq_destroyed";
+			events.push_back(dead);
+		}
+		return;
+	}
+
+	Vector2 target = r.path[r.path_i + 1];
+	Vector2 dir = target - r.position;
+	float dist = dir.length();
+	float step = r.speed * static_cast<float>(delta);
+	if (dist <= step || dist < 0.001f) {
+		r.position = target;
+		r.path_i += 1;
+		if (!r.struck_outpost && r.path_i >= r.outpost_path_i) {
+			r.struck_outpost = true;
+			int strike = std::max(4, static_cast<int>(r.damage));
+			damage_outpost(r.front, strike, events);
+		}
+	} else {
+		r.position += dir.normalized() * step;
+	}
+}
+
+void SimulationCore::advance_raider_along_flow(RaiderData &r, double delta, Array &events) {
+	Vector2i cell = local_to_map(r.front, r.position);
+	auto &grid = (r.front == 0) ? land_flow : sea_flow;
+
+	// HQ column: far edge of the grid
+	if (cell.x >= grid_size.x - 1 && cell.x >= 0 && cell.y >= 0 && cell.y < grid_size.y) {
+		damage_hq(static_cast<int>(r.damage));
+		r.alive = false;
+		Dictionary ev;
+		ev["type"] = "hq_hit";
+		ev["id"] = r.id;
+		ev["front"] = r.front;
+		ev["damage"] = r.damage;
+		ev["hq_hp"] = hq_hp;
+		events.push_back(ev);
+		if (hq_hp <= 0) {
+			Dictionary dead;
+			dead["type"] = "hq_destroyed";
+			events.push_back(dead);
+		}
+		return;
+	}
+
+	Vector2 target_pos;
+	if (cell.x < 0 || cell.x >= grid_size.x || cell.y < 0 || cell.y >= grid_size.y) {
+		target_pos = map_to_local(r.front, Vector2i(0, grid_size.y / 2));
+	} else {
+		int idx = cell.y * grid_size.x + cell.x;
+		Vector2i fdir = grid[idx].dir;
+		if (fdir == Vector2i(0, 0)) {
+			fdir = Vector2i(1, 0);
+		}
+		target_pos = map_to_local(r.front, cell + fdir);
+	}
+
+	Vector2 dir = target_pos - r.position;
+	float dist = dir.length();
+	float step = r.speed * static_cast<float>(delta);
+	if (dist > 0.001f) {
+		r.position += (dir / dist) * step;
+	}
+
+	// Mid-grid outpost strike (cell-based, independent of waypoint index)
+	if (!r.struck_outpost && cell.x >= grid_size.x / 2 && cell.x >= 0) {
+		r.struck_outpost = true;
+		int strike = std::max(4, static_cast<int>(r.damage));
+		damage_outpost(r.front, strike, events);
+	}
+}
+
 void SimulationCore::init_grids(Vector2i size) {
+	if (size.x <= 0 || size.y <= 0) {
+		return;
+	}
 	grid_size = size;
-	land_flow.resize(size.x * size.y);
-	sea_flow.resize(size.x * size.y);
-	for (auto &c : land_flow) { c.solid = false; c.cost = 9999; }
-	for (auto &c : sea_flow) { c.solid = false; c.cost = 9999; }
+	land_flow.assign(static_cast<size_t>(size.x * size.y), FlowCell{});
+	sea_flow.assign(static_cast<size_t>(size.x * size.y), FlowCell{});
+	update_flow_field(0, Vector2i(grid_size.x - 1, grid_size.y / 2));
+	update_flow_field(1, Vector2i(grid_size.x - 1, grid_size.y / 2));
 	UtilityFunctions::print("[MF] C++ Flow Field initialized ", size.x, "x", size.y);
 }
 
 void SimulationCore::set_cell_solid(int front, Vector2i cell, bool solid) {
-	if (cell.x < 0 || cell.y < 0 || cell.x >= grid_size.x || cell.y >= grid_size.y) return;
+	if (!flow_active()) {
+		return;
+	}
+	if (cell.x < 0 || cell.y < 0 || cell.x >= grid_size.x || cell.y >= grid_size.y) {
+		return;
+	}
 	auto &grid = (front == 0) ? land_flow : sea_flow;
 	grid[cell.y * grid_size.x + cell.x].solid = solid;
 	update_flow_field(front, Vector2i(grid_size.x - 1, grid_size.y / 2));
-}
-
-void SimulationCore::mark_cell_solid(int front, Vector2i cell, bool solid) {
-	set_cell_solid(front, cell, solid);
 }
 
 void SimulationCore::update_flow_field(int front, Vector2i target) {

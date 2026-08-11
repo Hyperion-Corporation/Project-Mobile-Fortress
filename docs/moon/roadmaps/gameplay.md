@@ -12,7 +12,7 @@ Scope: the Wōkòu-pirate-era tower-defense core loop and its meta-progression l
 | --- | --- | --- | --- | --- |
 | G1 | ~~Demo entity (`Ball`) with bounce physics~~ — template placeholder, superseded by G2+ | S | ✅ Done (superseded) | — |
 | G2 | Dual-front grid fortress-defense core loop (land + sea): place units, defend HQ, cross-front support | L | 🚧 **Playable** — polish remaining | Slice-0; epic #128 |
-| G3 | Flow Field pathfinding for enemy raiders (land and naval); naive lane pathing ships in Slice-0 | L | 📋 Pending (naive pathing ✅ in Slice-0) | Post Slice-0 |
+| G3 | Flow Field pathfinding for enemy raiders (land and naval); naive lane pathing ships in Slice-0 | L | 🚧 **Partial** — C++ BFS flow field API + solid cells; lanes still drive modular waves | Post Slice-0 polish |
 | G4 | Hero-commander system: grid place, aura, active CD, reposition travel — **not** power-gacha | M | 🚧 **Minimal in Slice-0** (Qi aura + E pulse + travel) | Expand post-slice |
 | G5 | Data-driven level/wave definitions (JSON) | M | 🚧 **Partial** — `assets/levels/slice0_dual_front.json` | Slice-0 |
 | G6 | Build vs combat phases | M | 🚧 **Partial** — build timer + combat (day/night UX polish later) | Slice-0 |

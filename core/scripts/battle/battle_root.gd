@@ -79,18 +79,21 @@ func _setup_grids() -> void:
 	land_grid = GridFront.new()
 	land_grid.name = "LandGrid"
 	land_host.add_child(land_grid)
+	# TileMap lives under LandHost/LandMap (sibling of this grid), not BattleRoot.
+	land_grid.setup(Vector2.ZERO, "land", 8, 5)
+	land_grid.cell_clicked.connect(_on_cell_clicked)
 
 	sea_grid = GridFront.new()
 	sea_grid.name = "SeaGrid"
 	sea_host.add_child(sea_grid)
+	sea_grid.setup(Vector2.ZERO, "sea", 8, 5)
+	sea_grid.cell_clicked.connect(_on_cell_clicked)
 
-	if has_node("LandMap"):
-		land_grid.setup(Vector2.ZERO, "land", 8, 5)
-		land_grid.cell_clicked.connect(_on_cell_clicked)
-	if has_node("SeaMap"):
-		sea_grid.setup(Vector2.ZERO, "sea", 8, 5)
-		sea_grid.cell_clicked.connect(_on_cell_clicked)
-	sim.init_grids(Vector2i(8, 5))
+	# Optional S2 flow field (placement blocks recompute); waves still use lane paths.
+	if sim.has_method("init_grids"):
+		sim.init_grids(Vector2i(8, 5))
+		sim.set_cell_solid(0, Vector2i(4, 2), true) # resource outpost
+		sim.set_cell_solid(1, Vector2i(4, 2), true) # trading outpost
 
 
 func _wire_hud() -> void:
@@ -351,7 +354,13 @@ func _sync_outpost(front_id: int, hp: float, alive: bool, grid: GridFront) -> vo
 	var node: ColorRect = visual_nodes[id_key]
 	var cell := Vector2i(4, 2)
 	node.global_position = grid.cell_to_global_center(cell) - node.size * 0.5
-	node.modulate = Color(1.0, hp / 100.0, hp / 100.0)
+	var max_hp: float = 40.0
+	if front_id == 0 and sim.has_method("get_land_outpost_max"):
+		max_hp = float(sim.get_land_outpost_max())
+	elif front_id == 1 and sim.has_method("get_sea_outpost_max"):
+		max_hp = float(sim.get_sea_outpost_max())
+	var ratio: float = clampf(hp / maxf(1.0, max_hp), 0.15, 1.0)
+	node.modulate = Color(1.0, ratio, ratio)
 
 func _free_visual(id: Variant) -> void:
 	if visual_nodes.has(id):
