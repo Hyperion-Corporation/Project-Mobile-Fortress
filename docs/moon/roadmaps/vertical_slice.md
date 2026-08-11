@@ -36,7 +36,7 @@ Ship an **offline**, **dual-front** (land + sea) Wōkòu-era fortress-defense pr
 | VS4 | Build vs combat phase shell | M | ✅ Slice-0 done | Build timer + combat |
 | VS5 | Resource + Trading Outpost economy | M | ✅ Done | C++ mid-path outpost HP; economic loss |
 | VS6 | Hero + cross-front support | M | ✅ Done | Aura, pulse, travel, cross mults |
-| VS7 | Ukiyo-e-readable art | M | 🚧 Partial | Palette + iso tile atlas |
+| VS7 | Ukiyo-e-readable art | M | ✅ Done | Palette + iso tile atlas |
 | VS8 | Offline save/load + results export | S | ✅ Done | user:// saves + results JSON |
 | VS9 | Android 13+ + iOS 17+ export smoke (Godot export templates) | M | ✅ Done | Config smoke + **Android debug APK** via `export_mobile_smoke.sh --export-android`; iOS needs macOS |
 | VS10 | Collaborator playtest + “shows promise” decision record | S | 📋 | Exit gate for Phase 1a |
