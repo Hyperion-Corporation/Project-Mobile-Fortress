@@ -11,6 +11,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Godot dual-front prototype playable: classic `core/main.gd` and modular `core/scenes/battle/` over `SimulationCore` GDExtension (raiders, defenders, outposts).
 - Headless smokes: `core/tests/{simulation,gameplay,modular_battle}_smoke.gd`.
+- Finished Epic #128 (Slice-0 Godot prototype) and Epic #134 (Godot↔C++ GDExtension boundary):
+  - **G3 Flow Field**: Integrated native BFS flow field pathfinding into `SimulationCore` with Godot coordinate conversion for raider routing.
+  - **G4 Hero Abilities**: Migrated hero state and ability casting to native C++.
+  - **G5 Level Loader**: C++ `load_level_json` logic now handles wave/config bootstrapping natively.
+  - **G7 Outpost Economy**: Finalized dual-currency economic logic tied to mid-path destructible outposts.
+  - **G12 Cross-Front Combat**: Matched C++ coordinates to Godot's UI layout (400px gap) and deployed Signal Battery mechanics.
+  - **VS7 Ukiyo-e Art**: Generated 2.5D isometric tile atlas palette mockup matching the Wōkòu crisis aesthetic.
+  - **VS8 Save/Load**: Implemented complete `FlatBuffers` snapshot zero-copy serialization wired to Godot UI keys.
+  - **VS9 Mobile Export**: Android API 33 debug export smoke passes fully.
 - Roadmaps updated for G2/S0–S3 progress; GitHub epics #128–#133 and child issues commented/closed where done.
 
 ### Changed (2026-08-11, multi-agent final pass — Godot dual-front decisions)
