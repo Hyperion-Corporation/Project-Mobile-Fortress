@@ -47,6 +47,8 @@ Godot → Import → select core/project.godot → Run
 - Build native lib: see [`BUILD_CPP.md`](BUILD_CPP.md).
 - Run the C++ bridge contract test: `godot --path core --headless --script res://tests/simulation_smoke.gd`.
 - Run the active scene gameplay smoke test: `godot --path core --headless --script res://tests/gameplay_smoke.gd`.
+- Run the default entry-point smoke test: `godot --path core --headless --script res://tests/main_menu_smoke.gd`.
+- Run the offline result persistence smoke test: `godot --path core --headless --script res://tests/game_session_smoke.gd`.
 
 ## Next engineering steps
 

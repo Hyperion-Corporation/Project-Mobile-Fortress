@@ -93,6 +93,52 @@ func _init() -> void:
 	if sim.get_enemies_killed() < 1:
 		failures.append("defender combat did not kill nearby raider")
 
+	# Commander Qi active ability and cooldown contract
+	sim.reset_run(40, 40, 100)
+	var hero_id: int = sim.spawn_defender(
+		0, "hero_qi", Vector2(0, 0), 100.0, 12.0, 1.0, 1.0, 0.5, 100.0, 0.25
+	)
+	var pulse_path := PackedVector2Array([Vector2(50, 0), Vector2(100, 0)])
+	sim.spawn_raider(0, pulse_path, 20.0, 5.0, 1.0, 99)
+	var pulse: Dictionary = sim.cast_hero_ability(hero_id)
+	if not pulse.get("success", false) or int(pulse.get("hits", 0)) != 1:
+		failures.append("hero pulse did not hit a nearby raider")
+	var cooldown_pulse: Dictionary = sim.cast_hero_ability(hero_id)
+	if cooldown_pulse.get("reason", "") != "on_cooldown":
+		failures.append("hero pulse cooldown was not enforced")
+
+	# Cross-front damage is amplified by a nearby commander aura
+	sim.reset_run(40, 40, 100)
+	sim.spawn_defender(
+		0, "hero_qi", Vector2(0, 0), 0.0, 0.0, 1.0, 0.0, 0.0, 100.0, 0.25
+	)
+	sim.spawn_defender(
+		0, "cross_support", Vector2(0, 0), 100.0, 10.0, 0.1, 0.5, 1.0, 0.0, 0.0
+	)
+	var cross_path := PackedVector2Array([Vector2(50, 0), Vector2(100, 0)])
+	sim.spawn_raider(1, cross_path, 20.0, 0.0, 1.0, 99)
+	sim.tick(0.1, false)
+	var cross_raiders: Array = sim.get_raiders()
+	if cross_raiders.is_empty() or float(cross_raiders[0].get("hp", 20.0)) >= 10.0:
+		failures.append("cross-front damage or commander aura was not applied")
+
+	# Level JSON + C++-owned wave spawn
+	sim.reset_run(40, 40, 100)
+	if not sim.load_level_json("res://assets/levels/slice0_dual_front.json"):
+		failures.append("load_level_json failed")
+	elif sim.get_wave_count() < 2:
+		failures.append("level JSON did not load waves")
+	else:
+		var lane := PackedVector2Array([Vector2(0, 0), Vector2(40, 0), Vector2(80, 0)])
+		sim.set_lane_path(0, lane)
+		sim.set_lane_path(1, lane)
+		sim.spawn_defender(0, "spearman", Vector2(20, 0), 50.0, 10.0, 0.5)
+		sim.start_combat()
+		for _t in 40:
+			sim.tick(0.1, false)
+		if sim.get_current_wave() < 1 and sim.get_raider_count() < 1:
+			failures.append("C++ wave spawn after start_combat failed")
+
 	sim.queue_free()
 	_finish(failures)
 

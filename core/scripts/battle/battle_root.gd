@@ -1,6 +1,7 @@
 class_name BattleRoot
 extends Node2D
 ## Modular dual-front view: presentation + input over SimulationCore (C++).
+## Waves, combat victory, and unit combat live in C++; this scene renders and places.
 
 enum Phase { BUILD, COMBAT, RESULT }
 
@@ -28,10 +29,7 @@ var combat_time: float = 0.0
 var wave_index: int = 0
 var run_over: bool = false
 var status_message: String = ""
-var hero_ability_cd: float = 0.0
 
-var waves: Array = []
-var waves_fired: Dictionary = {}
 var visual_nodes: Dictionary = {} ## id -> Control
 var cell_by_defender: Dictionary = {} ## defender_id -> {front, cell}
 var pending_hero_id: int = -1
@@ -46,16 +44,24 @@ func _ready() -> void:
 	if not _ensure_sim():
 		push_error("BattleRoot requires SimulationCore GDExtension")
 		return
-	_load_level()
 	GameSession.reset_run()
-	sim.reset_run(start_land, start_sea, start_hq)
-	_sync_session_from_sim()
 	_setup_grids()
+	sim.set_lane_path(0, land_grid.path_world_points())
+	sim.set_lane_path(1, sea_grid.path_world_points())
+	if sim.load_level_json(LEVEL_PATH):
+		start_land = sim.get_land_resources()
+		start_sea = sim.get_sea_resources()
+		start_hq = sim.get_hq_max_hp()
+		build_time_left = sim.get_build_phase_seconds()
+		victory_time = sim.get_victory_time()
+	else:
+		sim.reset_run(start_land, start_sea, start_hq)
+	_sync_session_from_sim()
 	_wire_hud()
 	_set_phase(Phase.BUILD)
 	if hud.has_method("set_selected"):
 		hud.set_selected(selected_unit_id)
-	status_message = "Modular battle — place on land & sea (C++ sim)"
+	status_message = "Modular battle — C++ waves/combat; place both fronts"
 
 
 func _ensure_sim() -> bool:
@@ -67,36 +73,6 @@ func _ensure_sim() -> bool:
 		add_child(sim)
 		return true
 	return false
-
-
-func _load_level() -> void:
-	if not FileAccess.file_exists(LEVEL_PATH):
-		waves = [
-			{"at": 2.0, "land": 2, "sea": 2},
-			{"at": 12.0, "land": 3, "sea": 3},
-			{"at": 24.0, "land": 4, "sea": 4},
-			{"at": 38.0, "land": 5, "sea": 5},
-		]
-		return
-	var f := FileAccess.open(LEVEL_PATH, FileAccess.READ)
-	var parsed = JSON.parse_string(f.get_as_text())
-	if not parsed is Dictionary:
-		return
-	var level: Dictionary = parsed
-	start_land = int(level.get("startingLandCurrency", 40))
-	start_sea = int(level.get("startingSeaCurrency", 40))
-	start_hq = int(level.get("hqMaxHp", 100))
-	build_time_left = float(level.get("buildPhaseSeconds", 40))
-	waves.clear()
-	for w in level.get("waves", []):
-		if w is Dictionary:
-			waves.append({
-				"at": float(w.get("delaySeconds", 0.0)),
-				"land": int(w.get("landCount", 2)),
-				"sea": int(w.get("seaCount", 2)),
-			})
-	if waves.is_empty():
-		waves = [{"at": 2.0, "land": 3, "sea": 2}]
 
 
 func _setup_grids() -> void:
@@ -127,7 +103,6 @@ func _wire_hud() -> void:
 func _process(delta: float) -> void:
 	if run_over or GameSession.is_paused:
 		return
-	hero_ability_cd = maxf(0.0, hero_ability_cd - delta)
 	match phase:
 		Phase.BUILD:
 			build_time_left -= delta
@@ -135,15 +110,13 @@ func _process(delta: float) -> void:
 			if build_time_left <= 0.0:
 				_start_combat()
 		Phase.COMBAT:
-			combat_time += delta
-			_process_waves()
 			var events: Array = sim.tick(delta, true)
+			combat_time = sim.get_combat_time()
+			wave_index = sim.get_current_wave()
 			_process_events(events)
 			_sync_visuals()
 			_sync_session_from_sim()
 			_update_hud()
-			if combat_time > victory_time and sim.get_raider_count() == 0 and wave_index >= waves.size():
-				_finish(true, "Raid weathered — fortress holds")
 
 
 func _process_events(events: Array) -> void:
@@ -154,17 +127,19 @@ func _process_events(events: Array) -> void:
 		match type:
 			"hq_destroyed":
 				_finish(false, "HQ Destroyed!")
+			"victory":
+				_finish(true, str(ev.get("reason", "Raid weathered — fortress holds")))
 			"outpost_lost":
 				var front: int = int(ev.get("front", 0))
 				GameSession.outposts_lost += 1
 				status_message = ("%s outpost lost — income cut (economic only)" %
 					("Resource" if front == 0 else "Trading"))
 			"raider_killed":
-				var id: int = int(ev.get("id", -1))
-				_free_visual(id)
+				_free_visual(int(ev.get("id", -1)))
 			"hq_hit":
-				var rid: int = int(ev.get("id", -1))
-				_free_visual(rid)
+				_free_visual(int(ev.get("id", -1)))
+			"wave_spawned":
+				status_message = "Wave %d inbound!" % int(ev.get("wave", 0))
 			"income":
 				pass
 
@@ -200,41 +175,11 @@ func _update_hud() -> void:
 			str(sea_hp) if sea_alive else "LOST",
 		]
 	if hud.has_node("Root/TopBar/HqLabel"):
-		hud.get_node("Root/TopBar/HqLabel").text = "HQ: %d/%d" % [sim.get_hq_hp(), sim.get_hq_max_hp()]
+		hud.get_node("Root/TopBar/HqLabel").text = "HQ: %d/%d  W%d" % [
+			sim.get_hq_hp(), sim.get_hq_max_hp(), wave_index
+		]
 	if hud.has_node("Root/SideBar/HelpLabel") and status_message != "":
 		hud.get_node("Root/SideBar/HelpLabel").text = status_message
-
-
-func _process_waves() -> void:
-	for i in waves.size():
-		if waves_fired.has(i):
-			continue
-		var w: Dictionary = waves[i]
-		if combat_time >= float(w["at"]):
-			waves_fired[i] = true
-			wave_index = i + 1
-			_spawn_wave(int(w["land"]), int(w["sea"]))
-			status_message = "Wave %d inbound!" % wave_index
-
-
-func _spawn_wave(land_n: int, sea_n: int) -> void:
-	for i in land_n:
-		_spawn_raider(0, float(i) * 0.3)
-	for i in sea_n:
-		_spawn_raider(1, float(i) * 0.3)
-
-
-func _spawn_raider(front_id: int, delay: float) -> void:
-	var grid: GridFront = land_grid if front_id == 0 else sea_grid
-	var path: PackedVector2Array = grid.path_world_points()
-	if path.size() == 0:
-		return
-	if path.size() > 0:
-		path[0] = path[0] + Vector2(-delay * 18.0, 0)
-	var outpost_i: int = maxi(1, path.size() / 2)
-	var hp := 50.0 + float(wave_index) * 3.0
-	var speed := 26.0 + float(wave_index % 4) * 2.0
-	sim.spawn_raider(front_id, path, hp, speed, 6.0, outpost_i)
 
 
 func _start_combat() -> void:
@@ -244,11 +189,13 @@ func _start_combat() -> void:
 		status_message = "Place at least one unit before combat"
 		_update_hud()
 		return
+	sim.set_lane_path(0, land_grid.path_world_points())
+	sim.set_lane_path(1, sea_grid.path_world_points())
+	sim.start_combat()
 	_set_phase(Phase.COMBAT)
 	combat_time = 0.0
 	wave_index = 0
-	waves_fired.clear()
-	status_message = "COMBAT — hold both fronts"
+	status_message = "COMBAT — C++ waves on both fronts"
 
 
 func _set_phase(p: Phase) -> void:
@@ -267,18 +214,14 @@ func _on_unit_selected(id: String) -> void:
 
 
 func _on_cell_clicked(front_id: String, cell: Vector2i) -> void:
-	if run_over:
-		return
-	if phase == Phase.RESULT:
+	if run_over or phase == Phase.RESULT:
 		return
 	var grid: GridFront = land_grid if front_id == "land" else sea_grid
 
-	# Hero redeploy: second click on empty cell
 	if pending_hero_id >= 0 and grid.is_placeable(cell):
 		var to: Vector2 = grid.cell_to_global_center(cell)
 		var new_front: int = 0 if front_id == "land" else 1
 		if sim.start_defender_travel(pending_hero_id, to, new_front, 1.6):
-			# free old cell
 			if cell_by_defender.has(pending_hero_id):
 				var old: Dictionary = cell_by_defender[pending_hero_id]
 				var og: GridFront = land_grid if str(old.front) == "land" else sea_grid
@@ -289,7 +232,6 @@ func _on_cell_clicked(front_id: String, cell: Vector2i) -> void:
 			pending_hero_id = -1
 		return
 
-	# Select existing hero on occupied cell
 	if grid.occupants.has(cell):
 		var did: int = int(grid.occupants[cell])
 		for d in sim.get_defenders():
@@ -318,7 +260,6 @@ func _on_cell_clicked(front_id: String, cell: Vector2i) -> void:
 	var currency: String = str(def.get("currency", "land"))
 	var cost: int = int(def.get("cost", 10))
 	var sim_front: int = 0 if currency == "land" else 1
-	# Prefer spending matching front currency; fallback to placement front
 	if not sim.spend(sim_front, cost):
 		var alt: int = 0 if front_id == "land" else 1
 		if alt == sim_front or not sim.spend(alt, cost):
@@ -348,7 +289,6 @@ func _on_cell_clicked(front_id: String, cell: Vector2i) -> void:
 
 func _sync_visuals() -> void:
 	var live_ids: Dictionary = {}
-	# Raiders
 	for r in sim.get_raiders():
 		var id: int = int(r["id"])
 		live_ids[id] = true
@@ -359,7 +299,6 @@ func _sync_visuals() -> void:
 			raiders_root.add_child(sprite)
 			visual_nodes[id] = sprite
 		visual_nodes[id].global_position = r["position"] - Vector2(8, 8)
-	# Defenders
 	for d in sim.get_defenders():
 		var id: int = int(d["id"])
 		live_ids[id] = true
@@ -376,7 +315,6 @@ func _sync_visuals() -> void:
 		var node: ColorRect = visual_nodes[id]
 		node.global_position = d["position"] - node.size * 0.5
 		node.modulate = Color(0.7, 0.7, 0.7) if bool(d.get("traveling", false)) else Color.WHITE
-	# Prune dead
 	for id in visual_nodes.keys():
 		if not live_ids.has(id):
 			_free_visual(id)
@@ -393,16 +331,21 @@ func _free_visual(id: int) -> void:
 func _hero_ability() -> void:
 	if phase != Phase.COMBAT or run_over:
 		return
-	if hero_ability_cd > 0.0:
-		status_message = "Hero ability CD %.0fs" % hero_ability_cd
-		return
-	var hits: int = sim.hero_pulse(200.0, 28.0)
-	if hits <= 0:
+	var cast_happened := false
+	for d in sim.get_defenders():
+		var type := str(d.get("type", ""))
+		if type == "hero_qi" or type == "hero":
+			var result: Dictionary = sim.cast_hero_ability(int(d.get("id", -1)))
+			if result.get("success", false):
+				status_message = "Commander signal flare! (%d hits)" % int(result.get("hits", 0))
+				cast_happened = true
+			elif result.get("reason", "") == "on_cooldown":
+				status_message = "Hero ability CD %.1fs" % float(result.get("cooldown_left", 0.0))
+				return
+	if not cast_happened and not status_message.begins_with("Hero ability CD"):
 		status_message = "No commander on field or no targets in range"
-		return
-	hero_ability_cd = 8.0
-	status_message = "Commander signal flare! (%d hits)" % hits
-	_sync_visuals()
+	if cast_happened:
+		_sync_visuals()
 
 
 func _finish(victory: bool, reason: String) -> void:

@@ -61,13 +61,71 @@ func _run() -> void:
 	if battle.sim.get_defender_count() < 2:
 		failures.append("dual-front defender placement failed")
 
+	# Hero placement and cross-front redeployment
+	battle.selected_unit_id = "hero_qi"
+	var hero_cell := Vector2i(-1, -1)
+	for x in range(0, 8):
+		for y in range(0, 5):
+			var candidate := Vector2i(x, y)
+			if battle.land_grid.is_placeable(candidate):
+				hero_cell = candidate
+				break
+		if hero_cell.x >= 0:
+			break
+	if hero_cell.x < 0:
+		failures.append("could not find a land cell for hero")
+	else:
+		battle._on_cell_clicked("land", hero_cell)
+		await process_frame
+		var hero_id := -1
+		for defender in battle.sim.get_defenders():
+			if str(defender.get("type", "")) == "hero_qi":
+				hero_id = int(defender.get("id", -1))
+				break
+		if hero_id < 0:
+			failures.append("hero placement failed")
+		else:
+			battle._on_cell_clicked("land", hero_cell)
+			var target_cell := Vector2i(-1, -1)
+			for x in range(0, 8):
+				for y in range(0, 5):
+					var candidate := Vector2i(x, y)
+					if battle.sea_grid.is_placeable(candidate):
+						target_cell = candidate
+						break
+				if target_cell.x >= 0:
+					break
+			if target_cell.x < 0:
+				failures.append("could not find a sea redeployment cell")
+			else:
+				battle._on_cell_clicked("sea", target_cell)
+				var traveling := false
+				for defender in battle.sim.get_defenders():
+					if int(defender.get("id", -1)) == hero_id:
+						traveling = bool(defender.get("traveling", false))
+				if not traveling:
+					failures.append("hero redeployment did not start travel")
+
 	battle._start_combat()
 	if int(battle.phase) != int(battle.Phase.COMBAT):
 		failures.append("combat phase did not start")
+	if battle.sim.has_method("get_in_combat") and not battle.sim.get_in_combat():
+		failures.append("sim not in combat after start")
 
 	await create_timer(3.0).timeout
-	if battle.sim.get_raider_count() <= 0 and battle.wave_index < 1:
-		failures.append("expected wave spawn after combat start")
+	var wave_ok: bool = false
+	wave_ok = battle.sim.get_raider_count() > 0
+	if battle.sim.has_method("get_current_wave") and battle.sim.get_current_wave() >= 1:
+		wave_ok = true
+	if not wave_ok:
+		failures.append("expected C++ wave spawn after combat start")
+	await create_timer(2.0).timeout
+	for defender in battle.sim.get_defenders():
+		if str(defender.get("type", "")) == "hero_qi":
+			if bool(defender.get("traveling", true)):
+				failures.append("hero remained traveling after redeployment duration")
+			if int(defender.get("front", -1)) != 1:
+				failures.append("hero did not arrive on the sea front")
 
 	# Defenders should be able to kill over time
 	var kills_before: int = battle.sim.get_enemies_killed()
