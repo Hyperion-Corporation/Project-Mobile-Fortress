@@ -1,10 +1,12 @@
 extends CanvasLayer
-## Slice-0 HUD: phase, resources, unit picker, result panel.
+## Slice-0 HUD: phase, resources, unit picker, result panel, offline save/load (VS8).
 
 signal start_combat_pressed
 signal unit_selected(id: String)
 signal restart_pressed
 signal hero_ability_pressed
+signal save_pressed
+signal load_pressed
 
 @onready var phase_label: Label = $Root/TopBar/PhaseLabel
 @onready var timer_label: Label = $Root/TopBar/TimerLabel
@@ -19,6 +21,10 @@ signal hero_ability_pressed
 @onready var start_btn: Button = $Root/SideBar/StartCombatBtn
 @onready var hero_btn: Button = $Root/SideBar/HeroAbilityBtn
 
+var _save_btn: Button
+var _load_btn: Button
+var _menu_btn: Button
+
 
 func _ready() -> void:
 	result_panel.visible = false
@@ -29,9 +35,45 @@ func _ready() -> void:
 	restart_btn.pressed.connect(func(): restart_pressed.emit())
 	hero_btn.pressed.connect(func(): hero_ability_pressed.emit())
 	_wire_unit_buttons()
+	_ensure_persistence_buttons()
 	_on_res(GameSession.land_currency, GameSession.sea_currency)
 	_on_hq(GameSession.hq_hp, GameSession.hq_max_hp)
-	help_label.text = "1–4 units · click land/sea · Space combat · E flare\nS FlatBuffers save · L load snapshot · Esc pause"
+	help_label.text = (
+		"1–4 units · click land/sea · Space combat · E flare\n"
+		+ "S / Save = FlatBuffers snapshot · L / Load · Esc pause"
+	)
+
+
+func _ensure_persistence_buttons() -> void:
+	var sidebar: VBoxContainer = $Root/SideBar
+	if sidebar.get_node_or_null("SaveBtn") == null:
+		_save_btn = Button.new()
+		_save_btn.name = "SaveBtn"
+		_save_btn.text = "Save snapshot (S)"
+		sidebar.add_child(_save_btn)
+		sidebar.move_child(_save_btn, hero_btn.get_index() + 1)
+	else:
+		_save_btn = sidebar.get_node("SaveBtn")
+	if sidebar.get_node_or_null("LoadBtn") == null:
+		_load_btn = Button.new()
+		_load_btn.name = "LoadBtn"
+		_load_btn.text = "Load snapshot (L)"
+		sidebar.add_child(_load_btn)
+		sidebar.move_child(_load_btn, _save_btn.get_index() + 1)
+	else:
+		_load_btn = sidebar.get_node("LoadBtn")
+	_save_btn.pressed.connect(func(): save_pressed.emit())
+	_load_btn.pressed.connect(func(): load_pressed.emit())
+	# Result panel: back to menu
+	var vbox: VBoxContainer = $Root/ResultPanel/VBox
+	if vbox.get_node_or_null("MenuBtn") == null:
+		_menu_btn = Button.new()
+		_menu_btn.name = "MenuBtn"
+		_menu_btn.text = "Main Menu"
+		vbox.add_child(_menu_btn)
+	else:
+		_menu_btn = vbox.get_node("MenuBtn")
+	_menu_btn.pressed.connect(func(): get_tree().change_scene_to_file("res://scenes/main_menu.tscn"))
 
 
 func _wire_unit_buttons() -> void:
@@ -84,10 +126,17 @@ func _on_hq(hp: int, max_hp: int) -> void:
 func show_result(victory: bool, reason: String, stats: Dictionary) -> void:
 	result_panel.visible = true
 	var title := "VICTORY" if victory else "DEFEAT"
-	result_label.text = "%s\n%s\n\nKills: %s  Placed: %s  Outposts lost: %s" % [
+	result_label.text = (
+		"%s\n%s\n\nKills: %s  Placed: %s  Outposts lost: %s\n"
+		+ "Combat: %.0fs  Wave: %s\n\nExported: %s\nHistory: %s"
+	) % [
 		title,
 		reason,
 		str(stats.get("enemies_killed", 0)),
 		str(stats.get("units_placed", 0)),
 		str(stats.get("outposts_lost", 0)),
+		float(stats.get("combat_time", 0.0)),
+		str(stats.get("wave", 0)),
+		str(stats.get("results_path", OfflinePersistence.RESULTS_PATH)),
+		OfflinePersistence.HISTORY_PATH,
 	]

@@ -671,40 +671,49 @@ func _save_game() -> void:
 			"hp": unit.hp,
 		})
 	var payload := {
+		"schema_version": OfflinePersistence.SCHEMA_VERSION,
 		"land": _land_res(),
 		"sea": _sea_res(),
 		"hq": _hq(),
 		"units": saved_units,
 		"use_cpp": use_cpp,
+		"path": "classic",
 	}
-	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
-	if file:
-		file.store_string(JSON.stringify(payload))
+	OfflinePersistence.write_json(OfflinePersistence.CLASSIC_SAVE_PATH, payload)
 
 
 func _export_results(victory: bool, reason: String) -> void:
 	var payload := {
+		"schema_version": OfflinePersistence.SCHEMA_VERSION,
+		"timestamp_unix": Time.get_unix_time_from_system(),
 		"victory": victory,
 		"reason": reason,
 		"enemies_killed": _kills(),
 		"units_placed": _placed(),
+		"outposts_lost": (0 if _land_out() else 1) + (0 if _sea_out() else 1),
 		"land_outpost_alive": _land_out(),
 		"sea_outpost_alive": _sea_out(),
+		"land_currency": _land_res(),
+		"sea_currency": _sea_res(),
 		"sim": "cpp" if use_cpp else "gdscript",
+		"path": "classic",
 		"civs": ["Ming", "Portuguese"],
+		"results_path": OfflinePersistence.RESULTS_PATH,
 	}
-	var file := FileAccess.open(RESULTS_PATH, FileAccess.WRITE)
-	if file:
-		file.store_string(JSON.stringify(payload, "\t"))
+	OfflinePersistence.write_results(payload)
+	OfflinePersistence.append_history(payload)
 
 
 func _load_game() -> void:
-	if not FileAccess.file_exists(SAVE_PATH):
-		return
-	var file := FileAccess.open(SAVE_PATH, FileAccess.READ)
-	var parsed = JSON.parse_string(file.get_as_text())
+	var parsed: Variant = OfflinePersistence.read_json(OfflinePersistence.CLASSIC_SAVE_PATH)
 	if not parsed is Dictionary:
-		return
+		# Legacy path support
+		if not FileAccess.file_exists(SAVE_PATH):
+			return
+		var file := FileAccess.open(SAVE_PATH, FileAccess.READ)
+		parsed = JSON.parse_string(file.get_as_text()) if file else null
+		if not parsed is Dictionary:
+			return
 	_reset_run()
 	# Restore units only (resources reset for fairness on load into build)
 	for saved_unit in parsed.get("units", []):

@@ -21,6 +21,9 @@ var outposts_lost: int = 0
 var is_paused: bool = false
 var last_result: Dictionary = {}
 
+## When true, next modular battle scene loads FlatBuffers snapshot after ready.
+var resume_snapshot_on_next_battle: bool = false
+
 
 func reset_run() -> void:
 	land_currency = 40
@@ -65,8 +68,10 @@ func damage_hq(amount: int) -> void:
 		end_run(false, "Main HQ destroyed")
 
 
-func end_run(victory: bool, reason: String) -> void:
+func end_run(victory: bool, reason: String, extra: Dictionary = {}) -> void:
 	last_result = {
+		"schema_version": OfflinePersistence.SCHEMA_VERSION,
+		"timestamp_unix": Time.get_unix_time_from_system(),
 		"victory": victory,
 		"reason": reason,
 		"enemies_killed": enemies_killed,
@@ -74,18 +79,25 @@ func end_run(victory: bool, reason: String) -> void:
 		"outposts_lost": outposts_lost,
 		"land_currency": land_currency,
 		"sea_currency": sea_currency,
+		"hq_hp": hq_hp,
+		"hq_max_hp": hq_max_hp,
 		"civs": [CIV_PRIMARY, CIV_SUPPORT],
+		"sim": str(extra.get("sim", "unknown")),
 	}
-	_write_local_export()
+	for key in extra.keys():
+		if key == "sim":
+			continue
+		last_result[key] = extra[key]
+	OfflinePersistence.write_results(last_result)
+	OfflinePersistence.append_history(last_result)
 	run_ended.emit(victory, reason)
 
 
-func _write_local_export() -> void:
-	## Static/batch export for local dashboard later (VS8).
-	var path := "user://last_run_results.json"
-	var f := FileAccess.open(path, FileAccess.WRITE)
-	if f == null:
-		push_warning("Could not write %s" % path)
-		return
-	f.store_string(JSON.stringify(last_result, "\t"))
-	f.close()
+func get_last_results() -> Dictionary:
+	if not last_result.is_empty():
+		return last_result
+	return OfflinePersistence.read_results()
+
+
+func has_last_results() -> bool:
+	return not last_result.is_empty() or OfflinePersistence.has_results()

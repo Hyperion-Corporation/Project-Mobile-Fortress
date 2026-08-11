@@ -40,6 +40,19 @@ Godot → Import → select core/project.godot → Run
 3. Outpost loss is **economic only** (income drops).
 4. Survive ~45s with field clear → victory. Results also go to `user://last_run_results.json`.
 
+## Offline persistence (VS8)
+
+| Path | Contents |
+| --- | --- |
+| `user://last_run_results.json` | Last run outcome (schema v1) |
+| `user://run_history.json` | Last 20 runs (`runs[]`) |
+| `user://mf_slice0_snapshot.bin` | Modular FlatBuffers mid-run snapshot |
+| `user://mobile_fortress_slice0.json` | Classic main.gd placement save |
+
+Shared helpers: `scripts/data/offline_persistence.gd` (`OfflinePersistence`).  
+Modular: **S** / Save button snapshot; **L** / Load; run end auto-saves snapshot + results.  
+Main menu shows last-run summary and **Resume last snapshot** when a bin exists.
+
 ## Simulation backend
 
 - **Preferred:** `SimulationCore` GDExtension (`bin/libmobile_fortress_core.so`) — HQ, dual currencies, raider pathing.
@@ -48,8 +61,9 @@ Godot → Import → select core/project.godot → Run
 - C++ bridge: `godot --path core --headless --script res://tests/simulation_smoke.gd`
 - Modular battle: `godot --path core --headless --script res://tests/modular_battle_smoke.gd`
 - FlatBuffers S4: `godot --path core --headless --script res://tests/flatbuffers_smoke.gd`
+- VS8 offline: `godot --path core --headless --script res://tests/game_session_smoke.gd`  
+  and `res://tests/offline_persistence_smoke.gd`
 - Menu entry: `godot --path core --headless --script res://tests/main_menu_smoke.gd`
-- GameSession: `godot --path core --headless --script res://tests/game_session_smoke.gd`
 
 ### FlatBuffers save/load (S4)
 
@@ -58,6 +72,5 @@ API: `SimulationCore.save_state()` / `load_state(PackedByteArray)` — schema `s
 
 ## Next engineering steps
 
-- Flow Field pathing (G3 / S2).
-- Richer EnTT combat systems.
-- Export smoke Android/iOS (VS9).
+- Collaborator playtest gate (VS10).
+- Richer EnTT combat systems / Flow Field presentation alignment.

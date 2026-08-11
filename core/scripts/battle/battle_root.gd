@@ -33,6 +33,7 @@ var status_message: String = ""
 var visual_nodes: Dictionary = {} ## id -> Control
 var cell_by_defender: Dictionary = {} ## defender_id -> {front, cell}
 var pending_hero_id: int = -1
+var selected_defender_id: int = -1
 
 var start_land := 40
 var start_sea := 40
@@ -61,7 +62,13 @@ func _ready() -> void:
 	_set_phase(Phase.BUILD)
 	if hud.has_method("set_selected"):
 		hud.set_selected(selected_unit_id)
-	status_message = "Modular battle — C++ waves/combat; place both fronts"
+	status_message = "Modular battle — C++ waves/combat; place both fronts · S/L snapshot"
+	if GameSession.resume_snapshot_on_next_battle:
+		GameSession.resume_snapshot_on_next_battle = false
+		if load_snapshot():
+			status_message = "Resumed offline FlatBuffers snapshot"
+		else:
+			status_message = "Resume failed — starting fresh build"
 
 
 func _ensure_sim() -> bool:
@@ -105,6 +112,10 @@ func _wire_hud() -> void:
 		hud.restart_pressed.connect(_restart)
 	if hud.has_signal("hero_ability_pressed"):
 		hud.hero_ability_pressed.connect(_hero_ability)
+	if hud.has_signal("save_pressed"):
+		hud.save_pressed.connect(func(): save_snapshot())
+	if hud.has_signal("load_pressed"):
+		hud.load_pressed.connect(func(): load_snapshot())
 
 
 func _process(delta: float) -> void:
@@ -245,9 +256,12 @@ func _on_cell_clicked(front_id: String, cell: Vector2i) -> void:
 		var did: int = int(grid.occupants[cell])
 		for d in sim.get_defenders():
 			if int(d.get("id", -1)) == did and str(d.get("type", "")) == "hero_qi":
+				selected_defender_id = did
 				pending_hero_id = did
 				status_message = "Commander selected — click empty cell to redeploy"
 				return
+		selected_defender_id = did
+		status_message = "Unit selected — press U to upgrade"
 		return
 
 	if phase != Phase.BUILD and phase != Phase.COMBAT:
@@ -390,13 +404,46 @@ func _hero_ability() -> void:
 		_sync_visuals()
 
 
+func _upgrade_selected() -> void:
+	if phase != Phase.BUILD or run_over or selected_defender_id < 0:
+		return
+	var front := 0
+	for defender in sim.get_defenders():
+		if int(defender.get("id", -1)) == selected_defender_id:
+			front = int(defender.get("front", 0))
+			break
+	var cost := 12
+	if not sim.spend(front, cost):
+		status_message = "Not enough resources to upgrade"
+		return
+	if sim.upgrade_defender(selected_defender_id):
+		status_message = "Unit upgraded (+25% damage, +range)"
+		_sync_session_from_sim()
+	else:
+		sim.gain(front, cost)
+		status_message = "Unit cannot be upgraded while traveling"
+
+
 func _finish(victory: bool, reason: String) -> void:
 	if run_over:
 		return
 	run_over = true
 	_set_phase(Phase.RESULT)
 	_sync_session_from_sim()
-	GameSession.end_run(victory, reason)
+	# Mid-run snapshot for resume; results JSON + history via GameSession.
+	save_snapshot()
+	GameSession.end_run(victory, reason, {
+		"sim": "cpp",
+		"path": "modular",
+		"combat_time": combat_time,
+		"wave": wave_index,
+		"land_outpost_alive": sim.is_land_outpost_alive(),
+		"sea_outpost_alive": sim.is_sea_outpost_alive(),
+		"land_outpost_hp": sim.get_land_outpost_hp(),
+		"sea_outpost_hp": sim.get_sea_outpost_hp(),
+		"results_path": OfflinePersistence.RESULTS_PATH,
+		"snapshot_path": OfflinePersistence.SNAPSHOT_PATH,
+	})
 	if hud.has_method("show_result"):
 		hud.show_result(victory, reason, GameSession.last_result)
 
@@ -405,21 +452,15 @@ func _restart() -> void:
 	get_tree().reload_current_scene()
 
 
-const SNAPSHOT_PATH := "user://mf_slice0_snapshot.bin"
-
-
 func save_snapshot() -> bool:
 	if sim == null or not sim.has_method("save_state"):
 		status_message = "Snapshot save unavailable"
 		return false
 	var bytes: PackedByteArray = sim.save_state()
-	var f := FileAccess.open(SNAPSHOT_PATH, FileAccess.WRITE)
-	if f == null:
+	if not OfflinePersistence.write_snapshot(bytes):
 		status_message = "Could not write snapshot"
 		return false
-	f.store_buffer(bytes)
-	f.close()
-	status_message = "FlatBuffers snapshot saved (%d bytes)" % bytes.size()
+	status_message = "Snapshot saved (%d bytes → %s)" % [bytes.size(), OfflinePersistence.SNAPSHOT_PATH]
 	_update_hud()
 	return true
 
@@ -428,18 +469,17 @@ func load_snapshot() -> bool:
 	if sim == null or not sim.has_method("load_state"):
 		status_message = "Snapshot load unavailable"
 		return false
-	if not FileAccess.file_exists(SNAPSHOT_PATH):
+	var bytes: PackedByteArray = OfflinePersistence.read_snapshot()
+	if bytes.is_empty():
 		status_message = "No snapshot file"
 		return false
-	var f := FileAccess.open(SNAPSHOT_PATH, FileAccess.READ)
-	var bytes: PackedByteArray = f.get_buffer(f.get_length())
-	f.close()
 	if not sim.load_state(bytes):
 		status_message = "Snapshot load failed (verify)"
 		return false
 	# Rebuild presentation from C++ state
 	for id in visual_nodes.keys():
 		_free_visual(id)
+	_clear_grid_occupants()
 	cell_by_defender.clear()
 	pending_hero_id = -1
 	run_over = false
@@ -450,11 +490,44 @@ func load_snapshot() -> bool:
 	else:
 		_set_phase(Phase.BUILD)
 		build_time_left = sim.get_build_phase_seconds()
+	_rebuild_placement_from_sim()
 	_sync_visuals()
 	_sync_session_from_sim()
-	status_message = "FlatBuffers snapshot loaded"
+	status_message = "Snapshot loaded (%d bytes)" % bytes.size()
 	_update_hud()
 	return true
+
+
+func _clear_grid_occupants() -> void:
+	if land_grid:
+		for cell in land_grid.occupants.keys():
+			land_grid.clear_occupant(cell)
+	if sea_grid:
+		for cell in sea_grid.occupants.keys():
+			sea_grid.clear_occupant(cell)
+
+
+func _rebuild_placement_from_sim() -> void:
+	## Best-effort: map defender world positions back onto grid cells for placement locks.
+	for d in sim.get_defenders():
+		var id: int = int(d.get("id", -1))
+		if id < 0:
+			continue
+		var front: int = int(d.get("front", 0))
+		var pos: Vector2 = d.get("position", Vector2.ZERO)
+		var grid: GridFront = land_grid if front == 0 else sea_grid
+		if grid == null:
+			continue
+		var cell: Vector2i = grid.world_to_cell(pos)
+		if not grid.in_bounds(cell):
+			continue
+		var front_id := "land" if front == 0 else "sea"
+		grid.set_occupant(cell, id)
+		cell_by_defender[id] = {"front": front_id, "cell": cell}
+		if sim.has_method("set_cell_solid") and not bool(d.get("traveling", false)):
+			var utype: String = str(d.get("type", ""))
+			if utype != "hero_qi" and utype != "hero":
+				sim.set_cell_solid(front, cell, true)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -468,6 +541,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		save_snapshot()
 	elif event.is_action_pressed("load_game"):
 		load_snapshot()
+	elif event.is_action_pressed("upgrade_unit"):
+		_upgrade_selected()
 	for action in SELECT_KEYS.keys():
 		if event.is_action_pressed(action):
 			_on_unit_selected(SELECT_KEYS[action])
