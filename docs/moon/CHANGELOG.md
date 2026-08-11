@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed (2026-08-11, Slice-0 implementation + issue hygiene)
+
+- Godot dual-front prototype playable: classic `core/main.gd` and modular `core/scenes/battle/` over `SimulationCore` GDExtension (raiders, defenders, outposts).
+- Headless smokes: `core/tests/{simulation,gameplay,modular_battle}_smoke.gd`.
+- Roadmaps updated for G2/S0–S3 progress; GitHub epics #128–#133 and child issues commented/closed where done.
+
 ### Changed (2026-08-11, multi-agent final pass — Godot dual-front decisions)
 
 - **Engine pivot:** primary game client is **Godot 4** (isometric 2.5D); SurfaceView/SpriteKit demoted to legacy template paths. C++ simulation retained; integration via **godot-cpp and C++ modules** (owner C4). See `roadmaps/shared_core.md`, `roadmaps/ios.md`.

@@ -1,49 +1,44 @@
-# GitHub issue hygiene plan — 2026-08-11 final pass
+# GitHub issue hygiene — 2026-08-11
 
-**Status:** Prepared by Grok final pass. **Not applied via `gh` in this session** (remote mutations require explicit owner run or elevated permissions).  
-**Authority:** Owner Q&A R.47 + final-pass request; thin-pointer body policy (RA5).
-
-## Title edits
-
-| # | New title |
-| --- | --- |
-| 9 | `[G2] Dual-front (land+sea) fortress-defense core loop — Slice-0 NEXT` |
-| 11 | `[G4] Hero-commander system (aura + active; NOT power-gacha sourced)` |
-| 22 | `[U5] Cosmetic shop / skin lootbox UI (replaces power-gacha summon screen)` |
-| 33 | `[M1] REJECTED: Hero-commander power gacha — replaced by cosmetics / skin lootboxes` |
-| 34 | `[M2] Probability disclosure for cosmetic lootboxes (not power gacha)` |
-| 46 | `[B4] Fleet provisioning (GameLift OR Nakama/PlayFab/self-host — provider open)` |
-| 59 | `[Q9] Cosmetic lootbox probability audit tooling` |
-| 62 | `[IOS2] SUPERSEDED: SpriteKit TD rebuild — use Godot export path` |
-| 70 | `[S3] Wire Godot↔C++ via godot-cpp and/or C++ modules` |
-| 72 | `[S5] Move dual-front logic into C++ sim; Godot remains presentation` |
-
-## Comments (short)
-
-- **#9:** G2 is next implementation focus; see `gameplay.md` + `vertical_slice.md`.
-- **#33:** Power gacha rejected; cosmetics → battle pass → skin lootboxes.
-- **#46:** GameLift not mandatory; no remote backend for Slice-0.
-- **#70:** godot-cpp and/or C++ modules (owner C4); S0 spike.
-
-## New issues to create
-
-1. **Epic:** Slice-0 offline dual-front Godot vertical slice (children: #9, #10, #11, #13, #16, #85, #21, #60)
-2. **Epic:** Godot 4 + C++ simulation (godot-cpp/modules) (children: #68–#74 + S0)
-3. **Epic:** Monetization policy cosmetics-first / no power gacha
-4. **Research A12:** Sentiment → dashboard HITL
-5. **Research A13:** Sentiment-driven in-game events HITL
-6. **Research A11:** Swarm / evo pathing experiments
-
-## Apply script (owner or agent with network)
+**Status:** Script ready at `scripts/apply_github_issue_updates_20260811.sh`  
+**Apply:** from repo root after `gh auth login`:
 
 ```bash
-# From repo root after review
-gh issue edit 9 --title "[G2] Dual-front (land+sea) fortress-defense core loop — Slice-0 NEXT"
-# ... remaining edits from table ...
-gh issue create --title "[Epic] Slice-0: Offline dual-front Godot vertical slice" \
-  --label "enhancement,roadmap:gameplay" --body-file - <<'EOF'
-See docs/moon/roadmaps/vertical_slice.md
-EOF
+bash scripts/apply_github_issue_updates_20260811.sh
 ```
 
-Or re-run Grok with explicit permission: “apply the GitHub issue hygiene plan.”
+Epics #128–#133 already exist from earlier hygiene. This update wave reflects **Slice-0 playable** state (modular + classic + SimulationCore).
+
+## Intended title / state changes
+
+| # | Action |
+| --- | --- |
+| 9 G2 | Retitle PLAYABLE; reopen if closed; progress comment |
+| 10 G3 | Retitle (naive done; Flow Field open); reopen if closed |
+| 11 G4 | Retitle Slice-0 minimal |
+| 12 G5 | Retitle partial JSON |
+| 13 G6 | Retitle build/combat shell done |
+| 16 G10 | Retitle click placement done |
+| 21 U4 | Retitle partial HUD |
+| 63 IOS3 | Retarget Godot iOS export |
+| 68 S1 | **Close** DONE |
+| 70 S3 | **Close** DONE |
+| 71 S4 | Retitle FlatBuffers general |
+| 72 S5 | Reopen IN PROGRESS if closed |
+| 73 S6 | Retarget Godot main thread |
+| 85 G7 | Retitle partial outpost economy |
+| 128 Epic Slice-0 | Progress comment + IN PROGRESS title |
+| 129 Epic Godot/C++ | Progress table + title |
+| (new) S0 | Create DONE tracker if missing |
+| (new) G12 | Create if missing |
+
+## Local roadmap SoT (already updated in git)
+
+- `docs/moon/roadmaps/gameplay.md`
+- `docs/moon/roadmaps/shared_core.md`
+- `docs/moon/roadmaps/vertical_slice.md`
+- `docs/moon/CHANGELOG.md`
+
+## Authority
+
+Owner: “Let us continue. Update the github issues also.”
