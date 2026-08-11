@@ -38,7 +38,7 @@ Ship an **offline**, **dual-front** (land + sea) Wōkòu-era fortress-defense pr
 | VS6 | Hero + cross-front support | M | 🚧 Partial | Aura, pulse, travel, cross mults |
 | VS7 | Ukiyo-e-readable art | M | 🚧 Partial | Palette + iso tile atlas |
 | VS8 | Offline save/load + results export | S | 🚧 Partial | user:// saves + results JSON |
-| VS9 | Android 13+ + iOS 17+ export smoke (Godot export templates) | M | 📋 | iOS CI when macOS collaborator joins |
+| VS9 | Android 13+ + iOS 17+ export smoke (Godot export templates) | M | 🚧 **Partial** | Config smoke + **Android debug APK** via `export_mobile_smoke.sh --export-android`; iOS needs macOS |
 | VS10 | Collaborator playtest + “shows promise” decision record | S | 📋 | Exit gate for Phase 1a |
 
 ## Explicitly out of scope for Slice-0

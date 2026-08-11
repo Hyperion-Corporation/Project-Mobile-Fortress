@@ -28,6 +28,6 @@
 | S5 | Move dual-front game logic into C++; Godot presentation | XL | 🚧 **In progress** — defenders/raiders/outposts/combat in C++; UX still Godot |
 | S6 | Async/job bridging sim thread ↔ Godot main (TSan) | M | 📋 Pending (retarget from Kotlin/Swift era) |
 | S7 | Cross-platform regression suite (soft determinism) | L | 🚧 **Partial** — headless smokes in `core/tests/` |
-| S8 | Android 13+ / iOS 17+ Godot export packaging | M | 📋 Pending |
+| S8 | Android 13+ / iOS 17+ Godot export packaging | M | 🚧 **Partial** — presets + smoke; **Android debug APK exported** (2026-08-11); NDK arm64 sim + signed store pipelines still open |
 
 Effort key: S = days, M = 1–2 weeks, L = 3–6 weeks, XL = multi-month/cross-cutting.

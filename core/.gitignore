@@ -1,11 +1,6 @@
 # Godot 4
 .godot/
 *.translation
-export_presets.cfg
-exports/
-*.apk
-*.aab
-*.ipa
 *.app
 .mono/
 data_*/
@@ -22,3 +17,12 @@ build/
 bin/
 *.gd.uid
 *.gdextension.uid
+
+# Mobile export artifacts (export_presets.cfg IS committed — no secrets in repo presets)
+exports/
+android/build/
+android/.build_version
+*.apk
+*.aab
+*.ipa
+*.xcarchive
