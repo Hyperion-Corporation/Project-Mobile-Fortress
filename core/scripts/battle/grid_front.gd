@@ -35,8 +35,20 @@ func _build_visuals() -> void:
 			c.queue_free()
 
 	var pal := UnitDefs.PALETTE
-	# The grid lines and background are now handled by the Isometric TileMap nodes
-	# instantiated in battle.tscn under LandHost and SeaHost.
+	var tm: TileMap = get_parent().get_node_or_null("LandMap") if front_id == "land" else get_parent().get_node_or_null("SeaMap")
+	if tm:
+		tm.clear()
+		# Grass: (0,0), Water: (1,0), Path/Blocked: (0,1)
+		var base_tile = Vector2i(0, 0) if front_id == "land" else Vector2i(1, 0)
+		var path_tile = Vector2i(0, 1)
+
+		for y in rows:
+			for x in cols:
+				var cell = Vector2i(x, y)
+				if path_cells.has(cell):
+					tm.set_cell(0, cell, 0, path_tile)
+				else:
+					tm.set_cell(0, cell, 0, base_tile)
 
 	_label = Label.new()
 	_label.text = "LAND — Ming coast" if front_id == "land" else "SEA — Portuguese guns"
@@ -58,14 +70,18 @@ func _build_default_lane() -> void:
 
 
 func world_to_cell(global_pos: Vector2) -> Vector2i:
-	var local := global_pos - global_position
-	var cx := int(floor(local.x / CELL))
-	var cy := int(floor(local.y / CELL))
-	return Vector2i(cx, cy)
+	var tm: TileMap = get_parent().get_node_or_null("LandMap") if front_id == "land" else get_parent().get_node_or_null("SeaMap")
+	if tm:
+		var local = tm.to_local(global_pos)
+		return tm.local_to_map(local)
+	return Vector2i.ZERO
 
 
 func cell_to_local_center(cell: Vector2i) -> Vector2:
-	return Vector2((cell.x + 0.5) * CELL, (cell.y + 0.5) * CELL)
+	var tm: TileMap = get_parent().get_node_or_null("LandMap") if front_id == "land" else get_parent().get_node_or_null("SeaMap")
+	if tm:
+		return tm.map_to_local(cell)
+	return Vector2.ZERO
 
 
 func cell_to_global_center(cell: Vector2i) -> Vector2:

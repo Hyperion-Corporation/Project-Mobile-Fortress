@@ -41,6 +41,8 @@ Godot → Import → select core/project.godot → Run
 - **Preferred:** `SimulationCore` GDExtension (`bin/libmobile_fortress_core.so`) — HQ, dual currencies, raider pathing.
 - **Fallback:** pure GDScript if the `.so` is missing.
 - Build native lib: see [`BUILD_CPP.md`](BUILD_CPP.md).
+- Run the C++ bridge contract test: `godot --path core --headless --script res://tests/simulation_smoke.gd`.
+- Run the active scene gameplay smoke test: `godot --path core --headless --script res://tests/gameplay_smoke.gd`.
 
 ## Next engineering steps
 

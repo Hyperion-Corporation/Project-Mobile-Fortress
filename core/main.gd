@@ -35,6 +35,7 @@ var font: Font
 
 var use_cpp := false
 var sim: Node = null ## SimulationCore when available
+var iso_atlas: Texture2D = null
 
 ## Level data
 var level: Dictionary = {}
@@ -45,9 +46,16 @@ var start_sea := 14
 var build_phase_seconds := 40.0
 var victory_time := 48.0
 
+## Fallback outpost HP (C++ tracks its own when use_cpp)
+var _fb_land_out_hp := 40
+var _fb_sea_out_hp := 40
+const OUTPOST_MAX := 40
+
 
 func _ready() -> void:
 	font = ThemeDB.fallback_font
+	if ResourceLoader.exists("res://assets/iso_tiles.png"):
+		iso_atlas = load("res://assets/iso_tiles.png") as Texture2D
 	_load_level()
 	_init_sim()
 	_build_cells()
@@ -151,6 +159,12 @@ func _land_out() -> bool:
 func _sea_out() -> bool:
 	return sim.is_sea_outpost_alive() if use_cpp else _fb_sea_out
 
+func _land_out_hp() -> int:
+	return int(sim.get_land_outpost_hp()) if use_cpp else _fb_land_out_hp
+
+func _sea_out_hp() -> int:
+	return int(sim.get_sea_outpost_hp()) if use_cpp else _fb_sea_out_hp
+
 # Fallback state
 var _fb_land := 14
 var _fb_sea := 14
@@ -178,14 +192,7 @@ func _process(delta: float) -> void:
 		_process_waves()
 		if use_cpp:
 			var events: Array = sim.tick(delta, true)
-			for ev in events:
-				if not ev is Dictionary:
-					continue
-				var t: String = str(ev.get("type", ""))
-				if t == "hq_destroyed":
-					_defeat("DEFEAT — the Main HQ fell")
-				elif t == "hq_hit" and int(ev.get("damage", 0)) > 0:
-					pass
+			_handle_sim_events(events)
 		else:
 			_fallback_combat(delta)
 		_update_units(delta)
@@ -232,15 +239,37 @@ func _process_waves() -> void:
 			_set_message("Wave %d inbound!" % wave_number)
 
 
+func _handle_sim_events(events: Array) -> void:
+	for ev in events:
+		if not ev is Dictionary:
+			continue
+		var t: String = str(ev.get("type", ""))
+		match t:
+			"hq_destroyed":
+				_defeat("DEFEAT — the Main HQ fell")
+			"outpost_lost":
+				var front: int = int(ev.get("front", 0))
+				var name_s: String = "Resource Outpost" if front == 0 else "Trading Outpost"
+				_set_message("%s lost — income cut (economic only)" % name_s)
+			"outpost_damaged":
+				# Quiet unless critical; HUD shows HP bars
+				pass
+			"hq_hit":
+				pass
+			"income":
+				pass
+
+
 func _spawn_raider(front: int) -> void:
 	var path := _lane_path(front)
 	var hp := 55.0 + float(wave_number) * 3.0
 	var speed := 28.0 + float(wave_number % 4) * 2.5
 	var dmg := 6.0
+	var outpost_i: int = maxi(1, path.size() / 2)
 	if use_cpp:
 		if _raider_count() >= 40:
 			return
-		sim.spawn_raider(front, path, hp, speed, dmg)
+		sim.spawn_raider(front, path, hp, speed, dmg, outpost_i)
 	else:
 		if enemies_fallback.size() >= 40:
 			return
@@ -254,6 +283,8 @@ func _spawn_raider(front: int) -> void:
 			"damage": dmg,
 			"path": path,
 			"path_i": 0,
+			"outpost_path_i": outpost_i,
+			"struck_outpost": false,
 		})
 
 
@@ -293,18 +324,28 @@ func _fallback_combat(delta: float) -> void:
 			if _fb_hq <= 0.0:
 				_defeat("DEFEAT — the Main HQ fell")
 			continue
-		# Outpost threat near mid path
-		if pi == path.size() / 2:
-			if int(enemy.front) == 0 and _fb_land_out and randf() < 0.015:
-				_fb_land_out = false
-				_set_message("Resource Outpost lost (economic only)")
-			elif int(enemy.front) == 1 and _fb_sea_out and randf() < 0.015:
-				_fb_sea_out = false
-				_set_message("Trading Outpost lost (economic only)")
 		var target: Vector2 = path[pi + 1]
 		enemy.position = enemy.position.move_toward(target, float(enemy.speed) * delta)
 		if enemy.position.distance_to(target) < 4.0:
 			enemy.path_i = pi + 1
+			# Deterministic mid-path outpost strike (mirrors C++)
+			if not bool(enemy.get("struck_outpost", false)) and int(enemy.path_i) >= int(enemy.get("outpost_path_i", 1)):
+				enemy.struck_outpost = true
+				var strike: int = maxi(4, int(enemy.damage))
+				_fallback_damage_outpost(int(enemy.front), strike)
+
+
+func _fallback_damage_outpost(front: int, amount: int) -> void:
+	if front == 0 and _fb_land_out:
+		_fb_land_out_hp = maxi(0, _fb_land_out_hp - amount)
+		if _fb_land_out_hp <= 0:
+			_fb_land_out = false
+			_set_message("Resource Outpost lost — income cut (economic only)")
+	elif front == 1 and _fb_sea_out:
+		_fb_sea_out_hp = maxi(0, _fb_sea_out_hp - amount)
+		if _fb_sea_out_hp <= 0:
+			_fb_sea_out = false
+			_set_message("Trading Outpost lost — income cut (economic only)")
 
 
 func _input(event: InputEvent) -> void:
@@ -615,6 +656,8 @@ func _reset_run() -> void:
 		_fb_placed = 0
 		_fb_land_out = true
 		_fb_sea_out = true
+		_fb_land_out_hp = OUTPOST_MAX
+		_fb_sea_out_hp = OUTPOST_MAX
 	_set_message("New raid — fortify both fronts")
 
 
@@ -726,7 +769,9 @@ func _draw_paths() -> void:
 
 func _draw_front(front: int) -> void:
 	draw_string(font, FRONT_ORIGINS[front] + Vector2(-110, -72), FRONT_NAMES[front], HORIZONTAL_ALIGNMENT_LEFT, -1, 19, FRONT_COLORS[front].lightened(0.35))
-	var outpost_txt := "ONLINE" if (_land_out() if front == 0 else _sea_out()) else "LOST (econ)"
+	var alive: bool = _land_out() if front == 0 else _sea_out()
+	var ohp: int = _land_out_hp() if front == 0 else _sea_out_hp()
+	var outpost_txt: String = ("ONLINE %d/%d" % [ohp, OUTPOST_MAX]) if alive else "LOST (econ)"
 	draw_string(font, FRONT_ORIGINS[front] + Vector2(-110, -48), "%s OUTPOST: %s" % ["RESOURCE" if front == 0 else "TRADING", outpost_txt], HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color("#aab5c9"))
 	for cell in cells:
 		if int(cell.front) != front:
@@ -738,11 +783,27 @@ func _draw_front(front: int) -> void:
 			center + Vector2(0, CELL_SIZE.y * 0.48),
 			center - Vector2(CELL_SIZE.x * 0.48, 0),
 		])
-		var cell_color := Color("#283e43") if front == 1 else Color("#44382f")
-		if int(cell.occupied) == -1 and (phase == Phase.BUILD or phase == Phase.COMBAT):
-			cell_color = cell_color.lightened(0.16)
-		draw_colored_polygon(points, cell_color)
+		if iso_atlas != null:
+			# atlas: 0 land, 1 sea (128x64 tiles in 256x128 sheet)
+			var src := Rect2(128 if front == 1 else 0, 0, 128, 64)
+			var dest := Rect2(center - Vector2(CELL_SIZE.x * 0.55, CELL_SIZE.y * 0.55), CELL_SIZE * 1.1)
+			draw_texture_rect_region(iso_atlas, dest, src)
+		else:
+			var cell_color := Color("#283e43") if front == 1 else Color("#44382f")
+			if int(cell.occupied) == -1 and (phase == Phase.BUILD or phase == Phase.COMBAT):
+				cell_color = cell_color.lightened(0.16)
+			draw_colored_polygon(points, cell_color)
 		draw_polyline(PackedVector2Array([points[0], points[1], points[2], points[3], points[0]]), FRONT_COLORS[front].darkened(0.2), 2.0)
+	# Outpost marker near mid lane
+	var op := _cell_position(front, 1, 2)
+	var op_col: Color = Color("#a67c52") if front == 0 else Color("#c9a227")
+	if not alive:
+		op_col = op_col.darkened(0.55)
+	draw_rect(Rect2(op - Vector2(16, 16), Vector2(32, 32)), op_col)
+	draw_rect(Rect2(op - Vector2(16, 20), Vector2(32, 4)), Color("#401c29"))
+	var omax: float = float(OUTPOST_MAX)
+	draw_rect(Rect2(op - Vector2(16, 20), Vector2(32.0 * float(ohp) / omax, 4)), Color("#6fc287") if alive else Color("#666666"))
+	draw_string(font, op + Vector2(-14, 4), "R" if front == 0 else "T", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color("#f4ead3"))
 	for unit in units:
 		if int(unit.front) == front or bool(unit.get("traveling", false)):
 			_draw_unit(unit)

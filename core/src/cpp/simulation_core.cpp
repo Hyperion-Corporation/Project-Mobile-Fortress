@@ -29,13 +29,17 @@ void SimulationCore::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_units_placed"), &SimulationCore::get_units_placed);
 	ClassDB::bind_method(D_METHOD("is_land_outpost_alive"), &SimulationCore::is_land_outpost_alive);
 	ClassDB::bind_method(D_METHOD("is_sea_outpost_alive"), &SimulationCore::is_sea_outpost_alive);
+	ClassDB::bind_method(D_METHOD("get_land_outpost_hp"), &SimulationCore::get_land_outpost_hp);
+	ClassDB::bind_method(D_METHOD("get_sea_outpost_hp"), &SimulationCore::get_sea_outpost_hp);
+	ClassDB::bind_method(D_METHOD("get_land_outpost_max"), &SimulationCore::get_land_outpost_max);
+	ClassDB::bind_method(D_METHOD("get_sea_outpost_max"), &SimulationCore::get_sea_outpost_max);
 	ClassDB::bind_method(D_METHOD("is_hq_alive"), &SimulationCore::is_hq_alive);
 	ClassDB::bind_method(D_METHOD("spend", "front", "amount"), &SimulationCore::spend);
 	ClassDB::bind_method(D_METHOD("gain", "front", "amount"), &SimulationCore::gain);
 	ClassDB::bind_method(D_METHOD("damage_hq", "amount"), &SimulationCore::damage_hq);
 	ClassDB::bind_method(D_METHOD("set_outpost_alive", "front", "alive"), &SimulationCore::set_outpost_alive);
 	ClassDB::bind_method(D_METHOD("note_unit_placed"), &SimulationCore::note_unit_placed);
-	ClassDB::bind_method(D_METHOD("spawn_raider", "front", "path", "hp", "speed", "damage"), &SimulationCore::spawn_raider);
+	ClassDB::bind_method(D_METHOD("spawn_raider", "front", "path", "hp", "speed", "damage", "outpost_path_i"), &SimulationCore::spawn_raider, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("damage_raider", "id", "amount"), &SimulationCore::damage_raider);
 	ClassDB::bind_method(D_METHOD("tick", "delta", "income_enabled"), &SimulationCore::tick, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("get_raiders"), &SimulationCore::get_raiders);
@@ -56,6 +60,8 @@ void SimulationCore::reset_run(int start_land, int start_sea, int start_hq) {
 	hq_max_hp = start_hq;
 	enemies_killed = 0;
 	units_placed = 0;
+	land_outpost_hp = land_outpost_max;
+	sea_outpost_hp = sea_outpost_max;
 	land_outpost_alive = true;
 	sea_outpost_alive = true;
 	income_acc = 0.0f;
@@ -72,6 +78,10 @@ int SimulationCore::get_enemies_killed() const { return enemies_killed; }
 int SimulationCore::get_units_placed() const { return units_placed; }
 bool SimulationCore::is_land_outpost_alive() const { return land_outpost_alive; }
 bool SimulationCore::is_sea_outpost_alive() const { return sea_outpost_alive; }
+int SimulationCore::get_land_outpost_hp() const { return land_outpost_hp; }
+int SimulationCore::get_sea_outpost_hp() const { return sea_outpost_hp; }
+int SimulationCore::get_land_outpost_max() const { return land_outpost_max; }
+int SimulationCore::get_sea_outpost_max() const { return sea_outpost_max; }
 bool SimulationCore::is_hq_alive() const { return hq_hp > 0; }
 
 bool SimulationCore::spend(int front, int amount) {
@@ -116,8 +126,60 @@ void SimulationCore::damage_hq(int amount) {
 void SimulationCore::set_outpost_alive(int front, bool alive) {
 	if (front == 0) {
 		land_outpost_alive = alive;
+		if (!alive) {
+			land_outpost_hp = 0;
+		} else if (land_outpost_hp <= 0) {
+			land_outpost_hp = land_outpost_max;
+		}
 	} else if (front == 1) {
 		sea_outpost_alive = alive;
+		if (!alive) {
+			sea_outpost_hp = 0;
+		} else if (sea_outpost_hp <= 0) {
+			sea_outpost_hp = sea_outpost_max;
+		}
+	}
+}
+
+void SimulationCore::damage_outpost(int front, int amount, Array &events) {
+	if (amount <= 0) {
+		return;
+	}
+	bool was_alive = (front == 0) ? land_outpost_alive : sea_outpost_alive;
+	if (!was_alive) {
+		return;
+	}
+	if (front == 0) {
+		land_outpost_hp = std::max(0, land_outpost_hp - amount);
+		if (land_outpost_hp <= 0) {
+			land_outpost_alive = false;
+		}
+	} else if (front == 1) {
+		sea_outpost_hp = std::max(0, sea_outpost_hp - amount);
+		if (sea_outpost_hp <= 0) {
+			sea_outpost_alive = false;
+		}
+	} else {
+		return;
+	}
+
+	Dictionary dmg;
+	dmg["type"] = "outpost_damaged";
+	dmg["front"] = front;
+	dmg["amount"] = amount;
+	dmg["hp"] = (front == 0) ? land_outpost_hp : sea_outpost_hp;
+	dmg["max_hp"] = (front == 0) ? land_outpost_max : sea_outpost_max;
+	dmg["alive"] = (front == 0) ? land_outpost_alive : sea_outpost_alive;
+	events.push_back(dmg);
+
+	bool now_alive = (front == 0) ? land_outpost_alive : sea_outpost_alive;
+	if (was_alive && !now_alive) {
+		Dictionary lost;
+		lost["type"] = "outpost_lost";
+		lost["front"] = front;
+		// Economic only — no HQ auto-loss
+		lost["economic_only"] = true;
+		events.push_back(lost);
 	}
 }
 
@@ -125,7 +187,7 @@ void SimulationCore::note_unit_placed() {
 	units_placed += 1;
 }
 
-int SimulationCore::spawn_raider(int front, PackedVector2Array path, float hp, float speed, float damage) {
+int SimulationCore::spawn_raider(int front, PackedVector2Array path, float hp, float speed, float damage, int outpost_path_i) {
 	if (path.size() == 0) {
 		return -1;
 	}
@@ -140,6 +202,13 @@ int SimulationCore::spawn_raider(int front, PackedVector2Array path, float hp, f
 	r.path_i = 0;
 	r.position = path[0];
 	r.alive = true;
+	r.struck_outpost = false;
+	if (outpost_path_i < 0) {
+		// Default: first strike near middle of path (not spawn, not HQ)
+		r.outpost_path_i = std::max(1, static_cast<int>(path.size()) / 2);
+	} else {
+		r.outpost_path_i = outpost_path_i;
+	}
 	raiders.push_back(r);
 	return r.id;
 }
@@ -185,7 +254,6 @@ Array SimulationCore::tick(double delta, bool income_enabled) {
 			continue;
 		}
 		if (r.path_i >= r.path.size() - 1) {
-			// Reached HQ end
 			damage_hq(static_cast<int>(r.damage));
 			r.alive = false;
 			Dictionary ev;
@@ -210,12 +278,18 @@ Array SimulationCore::tick(double delta, bool income_enabled) {
 		if (dist <= step || dist < 0.001f) {
 			r.position = target;
 			r.path_i += 1;
+			// Deterministic outpost strike once when passing the marked waypoint
+			if (!r.struck_outpost && r.path_i >= r.outpost_path_i) {
+				r.struck_outpost = true;
+				// Outpost strike = half HQ damage, economic pressure
+				int strike = std::max(4, static_cast<int>(r.damage));
+				damage_outpost(r.front, strike, events);
+			}
 		} else {
 			r.position += dir.normalized() * step;
 		}
 	}
 
-	// Compact dead raiders occasionally to keep list small
 	raiders.erase(std::remove_if(raiders.begin(), raiders.end(),
 						  [](const RaiderData &r) { return !r.alive; }),
 			raiders.end());
@@ -235,6 +309,7 @@ Array SimulationCore::get_raiders() const {
 		d["hp"] = r.hp;
 		d["max_hp"] = r.max_hp;
 		d["position"] = r.position;
+		d["path_i"] = r.path_i;
 		out.push_back(d);
 	}
 	return out;
@@ -251,7 +326,6 @@ int SimulationCore::get_raider_count() const {
 }
 
 void SimulationCore::_process(double delta) {
-	// Keep legacy entity move system for smoke tests.
 	auto view = registry.view<Position, Velocity>();
 	for (auto entity : view) {
 		auto &pos = view.get<Position>(entity);

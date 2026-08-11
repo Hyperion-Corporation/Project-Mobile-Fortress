@@ -11,7 +11,7 @@
 namespace godot {
 
 /// Headless dual-front sim slice for Slice-0 / G2.
-/// Godot owns presentation; this node owns resources, HQ, and raider motion.
+/// Godot owns presentation; this node owns resources, HQ, outposts, and raider motion.
 class SimulationCore : public Node {
 	GDCLASS(SimulationCore, Node)
 
@@ -24,6 +24,11 @@ private:
 	int hq_max_hp = 100;
 	int enemies_killed = 0;
 	int units_placed = 0;
+
+	int land_outpost_hp = 40;
+	int sea_outpost_hp = 40;
+	int land_outpost_max = 40;
+	int sea_outpost_max = 40;
 	bool land_outpost_alive = true;
 	bool sea_outpost_alive = true;
 
@@ -38,12 +43,16 @@ private:
 		float speed = 25.0f;
 		float damage = 6.0f;
 		int path_i = 0;
+		int outpost_path_i = -1; // path index that threatens the outpost
+		bool struck_outpost = false;
 		Vector2 position;
 		PackedVector2Array path;
 		bool alive = true;
 	};
 
 	std::vector<RaiderData> raiders;
+
+	void damage_outpost(int front, int amount, Array &events);
 
 protected:
 	static void _bind_methods();
@@ -62,6 +71,10 @@ public:
 	int get_units_placed() const;
 	bool is_land_outpost_alive() const;
 	bool is_sea_outpost_alive() const;
+	int get_land_outpost_hp() const;
+	int get_sea_outpost_hp() const;
+	int get_land_outpost_max() const;
+	int get_sea_outpost_max() const;
 	bool is_hq_alive() const;
 
 	bool spend(int front, int amount);
@@ -71,15 +84,14 @@ public:
 	void note_unit_placed();
 
 	/// Returns raider id, or -1 on failure.
-	int spawn_raider(int front, PackedVector2Array path, float hp, float speed, float damage);
+	/// outpost_path_i: path index where this raider deals one outpost strike (-1 = mid path).
+	int spawn_raider(int front, PackedVector2Array path, float hp, float speed, float damage, int outpost_path_i = -1);
 	void damage_raider(int id, float amount);
-	/// Advances raiders along paths. Returns events: [{type, id, front, damage_to_hq?}...]
+	/// Advances raiders along paths. Returns events (income, outpost_*, hq_*).
 	Array tick(double delta, bool income_enabled = true);
-	/// Snapshot of alive raiders for rendering.
 	Array get_raiders() const;
 	int get_raider_count() const;
 
-	// Legacy smoke API
 	void spawn_entity(const String &type, Vector2 position);
 	void _process(double delta) override;
 };
