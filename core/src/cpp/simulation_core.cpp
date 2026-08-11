@@ -52,6 +52,7 @@ void SimulationCore::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("damage_raider", "id", "amount"), &SimulationCore::damage_raider);
 	ClassDB::bind_method(D_METHOD("spawn_defender", "front", "type", "position", "range_px", "damage", "cooldown", "own_env_mult", "cross_env_mult", "aura_radius", "aura_bonus"),
 			&SimulationCore::spawn_defender, DEFVAL(1.0f), DEFVAL(0.0f), DEFVAL(0.0f), DEFVAL(0.0f));
+	ClassDB::bind_method(D_METHOD("upgrade_defender", "id"), &SimulationCore::upgrade_defender);
 	ClassDB::bind_method(D_METHOD("start_defender_travel", "id", "to", "new_front", "duration"), &SimulationCore::start_defender_travel, DEFVAL(1.6f));
 	ClassDB::bind_method(D_METHOD("cast_hero_ability", "id"), &SimulationCore::cast_hero_ability);
 	ClassDB::bind_method(D_METHOD("tick", "delta", "income_enabled"), &SimulationCore::tick, DEFVAL(true));
@@ -327,6 +328,17 @@ int SimulationCore::spawn_defender(int front, const String &type, Vector2 positi
 	defenders.push_back(d);
 	units_placed += 1;
 	return d.id;
+}
+
+bool SimulationCore::upgrade_defender(int id) {
+	for (auto &d : defenders) {
+		if (d.id == id && d.alive && !d.traveling) {
+			d.damage *= 1.25f;
+			d.range_px += 12.0f;
+			return true;
+		}
+	}
+	return false;
 }
 
 bool SimulationCore::start_defender_travel(int id, Vector2 to, int new_front, float duration) {
@@ -949,6 +961,7 @@ Array SimulationCore::get_defenders() const {
 		dict["position"] = d.position;
 		dict["traveling"] = d.traveling;
 		dict["range_px"] = d.range_px;
+		dict["damage"] = d.damage;
 		dict["ability_cooldown_left"] = d.ability_cooldown_left;
 		out.push_back(dict);
 	}

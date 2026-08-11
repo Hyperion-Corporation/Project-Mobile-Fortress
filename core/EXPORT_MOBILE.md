@@ -26,6 +26,16 @@ Install templates (one-time, ~1.2 GB):
 bash scripts/install_godot_export_templates.sh
 ```
 
+The Gradle-backed Android preset also needs the per-project build template,
+which is generated locally with:
+
+```bash
+$GODOT --headless --path core --install-android-build-template
+```
+
+The generated `core/android/` directory is local build infrastructure and is
+ignored by Git.
+
 ### Android (Linux/macOS)
 - Android SDK (`ANDROID_HOME` or `~/Android/Sdk`)
 - Platforms **android-33+**, build-tools

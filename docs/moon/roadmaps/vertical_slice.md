@@ -33,7 +33,7 @@ Ship an **offline**, **dual-front** (land + sea) Wōkòu-era fortress-defense pr
 | VS1 | Dual-front grid core loop (G2) | L | ✅ Done | Classic `main.gd` + modular `battle.tscn` (#128) |
 | VS2 | Naive pathfinding (lane waypoints) | S | ✅ Slice-0 done | Flow Field remains G3 |
 | VS3 | Touch/click placement for dual grids | S | ✅ Slice-0 done | Mouse/click both fronts |
-| VS4 | Build vs combat phase shell | M | ✅ Slice-0 done | Build timer + combat |
+| VS4 | Build vs combat phase shell | M | ✅ Slice-0 done | Build timer + combat; `upgrade_defender` (damage/range boost) added to `SimulationCore`, bound to `upgrade_unit` input, covered by `simulation_smoke.gd` |
 | VS5 | Resource + Trading Outpost economy | M | ✅ Done | C++ mid-path outpost HP; economic loss |
 | VS6 | Hero + cross-front support | M | ✅ Done | Aura, pulse, travel, cross mults |
 | VS7 | Ukiyo-e-readable art | M | ✅ Done | Palette + iso tile atlas |

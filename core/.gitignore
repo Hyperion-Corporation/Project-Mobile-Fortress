@@ -20,6 +20,7 @@ bin/
 
 # Mobile export artifacts (export_presets.cfg IS committed — no secrets in repo presets)
 exports/
+android/
 android/build/
 android/.build_version
 *.apk

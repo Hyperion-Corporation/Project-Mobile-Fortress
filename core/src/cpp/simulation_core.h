@@ -166,6 +166,7 @@ public:
 
 	int spawn_defender(int front, const String &type, Vector2 position, float range_px, float damage, float cooldown,
 			float own_env_mult = 1.0f, float cross_env_mult = 0.0f, float aura_radius = 0.0f, float aura_bonus = 0.0f);
+	bool upgrade_defender(int id);
 	bool start_defender_travel(int id, Vector2 to, int new_front, float duration = 1.6f);
 	Dictionary cast_hero_ability(int id);
 

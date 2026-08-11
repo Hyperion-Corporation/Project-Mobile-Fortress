@@ -127,6 +127,22 @@ func _init() -> void:
 	if cross_raiders.is_empty() or float(cross_raiders[0].get("hp", 20.0)) >= 10.0:
 		failures.append("cross-front damage or commander aura was not applied")
 
+	# Build-phase upgrade increases defender damage and range
+	var upgrade_id: int = sim.spawn_defender(0, "spearman", Vector2(10, 10), 60.0, 8.0, 1.0)
+	var before_upgrade: Array = sim.get_defenders()
+	var before_damage := 0.0
+	for defender in before_upgrade:
+		if int(defender.get("id", -1)) == upgrade_id:
+			before_damage = float(defender.get("damage", 0.0))
+	if not sim.upgrade_defender(upgrade_id):
+		failures.append("defender upgrade was rejected")
+	else:
+		var after_upgrade: Array = sim.get_defenders()
+		for defender in after_upgrade:
+			if int(defender.get("id", -1)) == upgrade_id:
+				if float(defender.get("damage", 0.0)) <= before_damage:
+					failures.append("defender upgrade did not increase damage")
+
 	# Level JSON + C++-owned wave spawn
 	sim.reset_run(40, 40, 100)
 	if not sim.load_level_json("res://assets/levels/slice0_dual_front.json"):
