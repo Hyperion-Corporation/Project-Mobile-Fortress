@@ -45,13 +45,19 @@ Godot → Import → select core/project.godot → Run
 - **Preferred:** `SimulationCore` GDExtension (`bin/libmobile_fortress_core.so`) — HQ, dual currencies, raider pathing.
 - **Fallback:** pure GDScript if the `.so` is missing.
 - Build native lib: see [`BUILD_CPP.md`](BUILD_CPP.md).
-- Run the C++ bridge contract test: `godot --path core --headless --script res://tests/simulation_smoke.gd`.
-- Run the active scene gameplay smoke test: `godot --path core --headless --script res://tests/gameplay_smoke.gd`.
-- Run the default entry-point smoke test: `godot --path core --headless --script res://tests/main_menu_smoke.gd`.
-- Run the offline result persistence smoke test: `godot --path core --headless --script res://tests/game_session_smoke.gd`.
+- C++ bridge: `godot --path core --headless --script res://tests/simulation_smoke.gd`
+- Modular battle: `godot --path core --headless --script res://tests/modular_battle_smoke.gd`
+- FlatBuffers S4: `godot --path core --headless --script res://tests/flatbuffers_smoke.gd`
+- Menu entry: `godot --path core --headless --script res://tests/main_menu_smoke.gd`
+- GameSession: `godot --path core --headless --script res://tests/game_session_smoke.gd`
+
+### FlatBuffers save/load (S4)
+
+In modular battle: **S** writes `user://mf_slice0_snapshot.bin`, **L** restores.  
+API: `SimulationCore.save_state()` / `load_state(PackedByteArray)` — schema `src/schema/simulation_state.fbs`.
 
 ## Next engineering steps
 
-- Promote modular `scenes/battle` when structure helps (or keep `main.gd` as Slice-0).
-- FlatBuffers snapshots (S4); richer EnTT combat systems.
+- Flow Field pathing (G3 / S2).
+- Richer EnTT combat systems.
 - Export smoke Android/iOS (VS9).

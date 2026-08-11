@@ -11,6 +11,11 @@ func _init() -> void:
 	var sim: Node = ClassDB.instantiate("SimulationCore")
 	root.add_child(sim)
 	sim.reset_run(10, 20, 100)
+	if not sim.load_level_json("res://assets/levels/slice0_dual_front.json"):
+		failures.append("slice0 level JSON did not load")
+	if sim.get_wave_count() != 4 or sim.get_build_phase_seconds() <= 0.0:
+		failures.append("slice0 wave/build settings were not loaded")
+	sim.reset_run(10, 20, 100)
 	if sim.get_land_resources() != 10 or sim.get_sea_resources() != 20:
 		failures.append("reset_run did not set front resources")
 	if not sim.spend(0, 4) or sim.get_land_resources() != 6:
@@ -138,6 +143,21 @@ func _init() -> void:
 			sim.tick(0.1, false)
 		if sim.get_current_wave() < 1 and sim.get_raider_count() < 1:
 			failures.append("C++ wave spawn after start_combat failed")
+
+	# Native save/load round-trip preserves offline simulation state
+	sim.reset_run(33, 44, 88)
+	sim.spawn_defender(1, "arquebusier", Vector2(12, 24), 80.0, 10.0, 0.8)
+	sim.spawn_raider(1, pulse_path, 18.0, 5.0, 1.0, 99)
+	var saved_state: PackedByteArray = sim.save_state()
+	if saved_state.is_empty():
+		failures.append("native save_state returned empty data")
+	sim.reset_run(1, 2, 3)
+	if not sim.load_state(saved_state):
+		failures.append("native load_state rejected saved data")
+	if sim.get_land_resources() != 33 or sim.get_sea_resources() != 44 or sim.get_hq_hp() != 88:
+		failures.append("native save/load did not restore scalar state")
+	if sim.get_defender_count() != 1 or sim.get_raider_count() != 1:
+		failures.append("native save/load did not restore entities")
 
 	sim.queue_free()
 	_finish(failures)
