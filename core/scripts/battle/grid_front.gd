@@ -27,6 +27,7 @@ func setup(p_origin: Vector2, p_front: String, p_cols: int = 8, p_rows: int = 5)
 	_build_default_lane()
 	_build_visuals()
 	_ensure_click_layer()
+	block_cell(Vector2i(4, 2))
 
 
 func _build_default_lane() -> void:

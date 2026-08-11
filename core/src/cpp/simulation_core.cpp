@@ -61,6 +61,9 @@ void SimulationCore::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("save_state"), &SimulationCore::save_state);
 	ClassDB::bind_method(D_METHOD("load_state", "data"), &SimulationCore::load_state);
 
+	ClassDB::bind_method(D_METHOD("init_grids", "size"), &SimulationCore::init_grids);
+	ClassDB::bind_method(D_METHOD("set_cell_solid", "front", "cell", "solid"), &SimulationCore::set_cell_solid);
+
 	ClassDB::bind_method(D_METHOD("get_raiders"), &SimulationCore::get_raiders);
 	ClassDB::bind_method(D_METHOD("get_defenders"), &SimulationCore::get_defenders);
 	ClassDB::bind_method(D_METHOD("get_raider_count"), &SimulationCore::get_raider_count);
@@ -91,6 +94,11 @@ void SimulationCore::reset_run(int start_land, int start_sea, int start_hq) {
 	registry.clear();
 	next_raider_id = 1;
 	next_defender_id = 10001;
+
+	if (grid_size.x > 0 && grid_size.y > 0) {
+		update_flow_field(0, Vector2i(grid_size.x - 1, grid_size.y / 2));
+		update_flow_field(1, Vector2i(grid_size.x - 1, grid_size.y / 2));
+	}
 	in_combat = false;
 	combat_time = 0.0f;
 	current_wave = 0;
@@ -440,20 +448,18 @@ void SimulationCore::check_and_spawn_waves(Array &events) {
 		WaveData w = waves[current_wave];
 
 		for (int i = 0; i < w.land_count; i++) {
-			Vector2 start_pos = Vector2(-20.0f - static_cast<float>(i) * 20.0f, 150.0f);
-			PackedVector2Array path;
-			path.push_back(start_pos);
-			path.push_back(Vector2(400.0f, 150.0f)); // naive lane endpoint HQ
+			Vector2 start_pos = map_to_local(0, Vector2i(0, grid_size.y > 0 ? grid_size.y / 2 : 2));
+			start_pos.x -= static_cast<float>(i) * 32.0f; // stagger
+			PackedVector2Array path; // Unused for Flow Field
 			float hp = 50.0f + static_cast<float>(current_wave) * 3.0f;
 			float speed = 26.0f + static_cast<float>(current_wave % 4) * 2.0f;
 			spawn_raider(0, path, hp, speed, 6.0f, -1);
 		}
 
 		for (int i = 0; i < w.sea_count; i++) {
-			Vector2 start_pos = Vector2(-20.0f - static_cast<float>(i) * 20.0f, 250.0f);
-			PackedVector2Array path;
-			path.push_back(start_pos);
-			path.push_back(Vector2(400.0f, 250.0f));
+			Vector2 start_pos = map_to_local(1, Vector2i(0, grid_size.y > 0 ? grid_size.y / 2 : 2));
+			start_pos.x -= static_cast<float>(i) * 32.0f; // stagger
+			PackedVector2Array path; // Unused for Flow Field
 			float hp = 50.0f + static_cast<float>(current_wave) * 3.0f;
 			float speed = 26.0f + static_cast<float>(current_wave % 4) * 2.0f;
 			spawn_raider(1, path, hp, speed, 6.0f, -1);
@@ -834,13 +840,13 @@ Array SimulationCore::tick(double delta, bool income_enabled) {
 	run_travel(delta);
 
 	for (auto &r : raiders) {
-		if (!r.alive) {
-			continue;
-		}
-		if (r.path.size() == 0) {
-			continue;
-		}
-		if (r.path_i >= r.path.size() - 1) {
+		if (!r.alive) continue;
+
+		Vector2i cell = local_to_map(r.front, r.position);
+		auto &grid = (r.front == 0) ? land_flow : sea_flow;
+
+		// If reached HQ
+		if (cell.x >= grid_size.x - 1) {
 			damage_hq(static_cast<int>(r.damage));
 			r.alive = false;
 			Dictionary ev;
@@ -858,20 +864,34 @@ Array SimulationCore::tick(double delta, bool income_enabled) {
 			continue;
 		}
 
-		Vector2 target = r.path[r.path_i + 1];
-		Vector2 dir = target - r.position;
+		Vector2 target_pos;
+		if (cell.x < 0 || cell.x >= grid_size.x || cell.y < 0 || cell.y >= grid_size.y) {
+			// Off grid (just spawned), move to (0, mid)
+			target_pos = map_to_local(r.front, Vector2i(0, grid_size.y > 0 ? grid_size.y / 2 : 2));
+		} else {
+			int idx = cell.y * grid_size.x + cell.x;
+			Vector2i dir = grid[idx].dir;
+			if (dir == Vector2i(0, 0)) {
+				// Blocked or at target, just move right if possible
+				dir = Vector2i(1, 0);
+			}
+			Vector2i next_cell = cell + dir;
+			target_pos = map_to_local(r.front, next_cell);
+		}
+
+		Vector2 dir = target_pos - r.position;
 		float dist = dir.length();
 		float step = r.speed * static_cast<float>(delta);
-		if (dist <= step || dist < 0.001f) {
-			r.position = target;
-			r.path_i += 1;
-			if (!r.struck_outpost && r.path_i >= r.outpost_path_i) {
-				r.struck_outpost = true;
-				int strike = std::max(4, static_cast<int>(r.damage));
-				damage_outpost(r.front, strike, events);
-			}
-		} else {
-			r.position += dir.normalized() * step;
+
+		if (dist > 0.001f) {
+			r.position += (dir / dist) * step;
+		}
+
+		// Outpost hit logic (legacy)
+		if (!r.struck_outpost && cell.x >= grid_size.x / 2) {
+			r.struck_outpost = true;
+			int strike = std::max(4, static_cast<int>(r.damage));
+			damage_outpost(r.front, strike, events);
 		}
 	}
 
@@ -959,6 +979,102 @@ int SimulationCore::get_defender_count() const {
 		}
 	}
 	return n;
+}
+
+void SimulationCore::init_grids(Vector2i size) {
+	grid_size = size;
+	land_flow.resize(size.x * size.y);
+	sea_flow.resize(size.x * size.y);
+	for (auto &c : land_flow) { c.solid = false; c.cost = 9999; }
+	for (auto &c : sea_flow) { c.solid = false; c.cost = 9999; }
+	UtilityFunctions::print("[MF] C++ Flow Field initialized ", size.x, "x", size.y);
+}
+
+void SimulationCore::set_cell_solid(int front, Vector2i cell, bool solid) {
+	if (cell.x < 0 || cell.y < 0 || cell.x >= grid_size.x || cell.y >= grid_size.y) return;
+	auto &grid = (front == 0) ? land_flow : sea_flow;
+	grid[cell.y * grid_size.x + cell.x].solid = solid;
+	update_flow_field(front, Vector2i(grid_size.x - 1, grid_size.y / 2));
+}
+
+void SimulationCore::mark_cell_solid(int front, Vector2i cell, bool solid) {
+	set_cell_solid(front, cell, solid);
+}
+
+void SimulationCore::update_flow_field(int front, Vector2i target) {
+	if (grid_size.x <= 0 || grid_size.y <= 0) return;
+	auto &grid = (front == 0) ? land_flow : sea_flow;
+
+	for (auto &c : grid) {
+		c.cost = 9999;
+		c.dir = Vector2i(0, 0);
+	}
+
+	std::vector<Vector2i> queue;
+	int ty = std::clamp(target.y, 0, grid_size.y - 1);
+	int tx = std::clamp(target.x, 0, grid_size.x - 1);
+	Vector2i t(tx, ty);
+
+	grid[t.y * grid_size.x + t.x].cost = 0;
+	queue.push_back(t);
+
+	Vector2i dirs[4] = { Vector2i(1,0), Vector2i(-1,0), Vector2i(0,1), Vector2i(0,-1) };
+
+	int head = 0;
+	while(head < queue.size()) {
+		Vector2i curr = queue[head++];
+		int curr_cost = grid[curr.y * grid_size.x + curr.x].cost;
+
+		for (auto d : dirs) {
+			Vector2i next = curr + d;
+			if (next.x < 0 || next.y < 0 || next.x >= grid_size.x || next.y >= grid_size.y) continue;
+
+			int idx = next.y * grid_size.x + next.x;
+			if (grid[idx].solid) continue;
+
+			if (curr_cost + 1 < grid[idx].cost) {
+				grid[idx].cost = curr_cost + 1;
+				grid[idx].dir = Vector2i(-d.x, -d.y); // point back to curr
+				queue.push_back(next);
+			}
+		}
+	}
+}
+
+Vector2 SimulationCore::map_to_local(int front, Vector2i cell) const {
+	float tile_w = 64.0f;
+	float tile_h = 32.0f;
+	float px = (cell.x - cell.y) * (tile_w * 0.5f);
+	float py = (cell.x + cell.y) * (tile_h * 0.5f);
+	if (front == 1) {
+		px += 300.0f;
+		py += 600.0f;
+	} else {
+		px += 300.0f;
+		py += 200.0f;
+	}
+	return Vector2(px, py);
+}
+
+Vector2i SimulationCore::local_to_map(int front, Vector2 pos) const {
+	float tile_w = 64.0f;
+	float tile_h = 32.0f;
+	float px = pos.x;
+	float py = pos.y;
+	if (front == 1) {
+		px -= 300.0f;
+		py -= 600.0f;
+	} else {
+		px -= 300.0f;
+		py -= 200.0f;
+	}
+
+	float dx = px / (tile_w * 0.5f);
+	float dy = py / (tile_h * 0.5f);
+
+	int cx = std::round((dy + dx) * 0.5f);
+	int cy = std::round((dy - dx) * 0.5f);
+	return Vector2i(cx, cy);
 }
 
 void SimulationCore::_process(double delta) {

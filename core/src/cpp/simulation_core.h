@@ -83,9 +83,18 @@ private:
 		bool fired = false;
 	};
 
+	struct FlowCell {
+		int cost = 9999;
+		Vector2i dir = Vector2i(0, 0); // direction to best neighbor
+		bool solid = false;
+	};
+
 	std::vector<RaiderData> raiders;
 	std::vector<DefenderData> defenders;
 	std::vector<WaveData> waves;
+	std::vector<FlowCell> land_flow;
+	std::vector<FlowCell> sea_flow;
+	Vector2i grid_size;
 
 	PackedVector2Array land_path;
 	PackedVector2Array sea_path;
@@ -96,12 +105,19 @@ private:
 	float build_phase_seconds = 40.0f;
 	float victory_time = 55.0f;
 
+	bool flow_active() const;
+	void update_flow_field(int front, Vector2i target);
+	Vector2 map_to_local(int front, Vector2i cell) const;
+	Vector2i local_to_map(int front, Vector2 pos) const;
+	void advance_raider_along_path(RaiderData &r, double delta, Array &events);
+	void advance_raider_along_flow(RaiderData &r, double delta, Array &events);
 	void damage_outpost(int front, int amount, Array &events);
 	void run_defender_combat(double delta, Array &events);
 	void run_travel(double delta);
 	void check_and_spawn_waves(Array &events);
 	float total_aura_at(Vector2 pos) const;
 	void spawn_wave_raiders(int front, int count, int wave_index);
+	PackedVector2Array default_lane_path(int front) const;
 
 protected:
 	static void _bind_methods();
@@ -137,6 +153,10 @@ public:
 	void damage_hq(int amount);
 	void set_outpost_alive(int front, bool alive);
 	void note_unit_placed();
+
+	/// Optional flow-field grid (S2). When inactive, raiders use waypoint paths only.
+	void init_grids(Vector2i size);
+	void set_cell_solid(int front, Vector2i cell, bool solid);
 
 	/// Register lane paths used when C++ spawns wave raiders.
 	void set_lane_path(int front, PackedVector2Array path);

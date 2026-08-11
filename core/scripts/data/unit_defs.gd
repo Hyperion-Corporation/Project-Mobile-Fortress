@@ -106,7 +106,7 @@ static func catalog() -> Dictionary:
 			"currency": "sea",
 			"hp": 28,
 			"damage": 6,
-			"range": 3.5,
+			"range": 12.0,
 			"cooldown": 1.1,
 			"color": PALETTE["gold"],
 			"own_env_mult": 0.55,

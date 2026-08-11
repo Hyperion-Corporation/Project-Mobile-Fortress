@@ -79,14 +79,18 @@ func _setup_grids() -> void:
 	land_grid = GridFront.new()
 	land_grid.name = "LandGrid"
 	land_host.add_child(land_grid)
-	land_grid.setup(Vector2.ZERO, "land", 8, 5)
-	land_grid.cell_clicked.connect(_on_cell_clicked)
 
 	sea_grid = GridFront.new()
 	sea_grid.name = "SeaGrid"
 	sea_host.add_child(sea_grid)
-	sea_grid.setup(Vector2.ZERO, "sea", 8, 5)
-	sea_grid.cell_clicked.connect(_on_cell_clicked)
+
+	if has_node("LandMap"):
+		land_grid.setup(Vector2.ZERO, "land", 8, 5)
+		land_grid.cell_clicked.connect(_on_cell_clicked)
+	if has_node("SeaMap"):
+		sea_grid.setup(Vector2.ZERO, "sea", 8, 5)
+		sea_grid.cell_clicked.connect(_on_cell_clicked)
+	sim.init_grids(Vector2i(8, 5))
 
 
 func _wire_hud() -> void:
@@ -226,7 +230,9 @@ func _on_cell_clicked(front_id: String, cell: Vector2i) -> void:
 				var old: Dictionary = cell_by_defender[pending_hero_id]
 				var og: GridFront = land_grid if str(old.front) == "land" else sea_grid
 				og.clear_occupant(old.cell)
+				sim.set_cell_solid(0 if str(old.front) == "land" else 1, old.cell, false)
 			grid.set_occupant(cell, pending_hero_id)
+			sim.set_cell_solid(new_front, cell, true)
 			cell_by_defender[pending_hero_id] = {"front": front_id, "cell": cell}
 			status_message = "Commander redeploying…"
 			pending_hero_id = -1
@@ -274,12 +280,17 @@ func _on_cell_clicked(front_id: String, cell: Vector2i) -> void:
 	var cross_m: float = float(def.get("cross_env_mult", 0.0))
 	var aura_r: float = float(def.get("aura_radius", 0.0)) * 48.0
 	var aura_b: float = float(def.get("aura_damage_bonus", 0.0))
-	var place_front: int = 0 if front_id == "land" else 1
+	var front_id_int := 0 if front_id == "land" else 1
 	var did2: int = sim.spawn_defender(
-		place_front, selected_unit_id, pos, range_px, damage, cooldown, own_m, cross_m, aura_r, aura_b
+		front_id_int, selected_unit_id, pos, range_px, damage, cooldown, own_m, cross_m, aura_r, aura_b
 	)
 	if did2 < 0:
 		return
+
+	# Block flow field for basic units, heroes are dynamic and don't block
+	if not def.get("is_hero", false):
+		sim.set_cell_solid(front_id_int, cell, true)
+
 	grid.set_occupant(cell, did2)
 	cell_by_defender[did2] = {"front": front_id, "cell": cell}
 	_sync_session_from_sim()
@@ -289,6 +300,9 @@ func _on_cell_clicked(front_id: String, cell: Vector2i) -> void:
 
 func _sync_visuals() -> void:
 	var live_ids: Dictionary = {}
+	live_ids["outpost_0"] = true
+	live_ids["outpost_1"] = true
+
 	for r in sim.get_raiders():
 		var id: int = int(r["id"])
 		live_ids[id] = true
@@ -319,8 +333,27 @@ func _sync_visuals() -> void:
 		if not live_ids.has(id):
 			_free_visual(id)
 
+	# Sync Outposts
+	_sync_outpost(0, sim.get_land_outpost_hp(), sim.is_land_outpost_alive(), land_grid)
+	_sync_outpost(1, sim.get_sea_outpost_hp(), sim.is_sea_outpost_alive(), sea_grid)
 
-func _free_visual(id: int) -> void:
+func _sync_outpost(front_id: int, hp: float, alive: bool, grid: GridFront) -> void:
+	var id_key := "outpost_" + str(front_id)
+	if not alive:
+		_free_visual(id_key)
+		return
+	if not visual_nodes.has(id_key):
+		var sprite := ColorRect.new()
+		sprite.size = Vector2(32, 32)
+		sprite.color = Color.GOLD if front_id == 0 else Color.LIGHT_CYAN
+		units_root.add_child(sprite)
+		visual_nodes[id_key] = sprite
+	var node: ColorRect = visual_nodes[id_key]
+	var cell := Vector2i(4, 2)
+	node.global_position = grid.cell_to_global_center(cell) - node.size * 0.5
+	node.modulate = Color(1.0, hp / 100.0, hp / 100.0)
+
+func _free_visual(id: Variant) -> void:
 	if visual_nodes.has(id):
 		var n: Node = visual_nodes[id]
 		if is_instance_valid(n):
