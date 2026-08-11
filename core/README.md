@@ -46,6 +46,6 @@ Godot → Import → select core/project.godot → Run
 
 ## Next engineering steps
 
-- Outpost loss driven from C++ mid-path events.
-- Promote modular `scenes/battle` when structure helps.
+- Promote modular `scenes/battle` when structure helps (or keep `main.gd` as Slice-0).
 - FlatBuffers snapshots (S4); richer EnTT combat systems.
+- Export smoke Android/iOS (VS9).
