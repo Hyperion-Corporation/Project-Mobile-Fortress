@@ -22,12 +22,12 @@
 | --- | --- | --- | --- |
 | S0 | **Spike:** Godot↔C++ boundary (GDExtension) | M | ✅ **Done** — `SimulationCore` loads in Godot 4.7 |
 | S1 | C++ workspace (CMake) with EnTT skeleton | L | ✅ **Done** — `core/CMakeLists.txt` + EnTT components |
-| S2 | Pathfinding in C++ (Flow Field later; lane paths now) | L | 🚧 **Partial** — lane waypoints primary; optional `init_grids`/`set_cell_solid` flow field (#69) |
+| S2 | Pathfinding in C++ (Flow Field later; lane paths now) | L | 🚧 **Partial** — staggered-row flow entries; steps refuse solid cells; lane fallback if grids off |
 | S3 | Wire godot-cpp so Godot scenes call into the sim | M | ✅ **Done** — modular `battle_root` + classic `main.gd` |
 | S4 | FlatBuffers state snapshot for save/load and later replication | M | ✅ **Done** — `save_state`/`load_state` + `src/schema/simulation_state.fbs` |
-| S5 | Move dual-front game logic into C++; Godot presentation | XL | 🚧 **In progress** — defenders/raiders/outposts/combat in C++; UX still Godot |
+| S5 | Move dual-front game logic into C++; Godot presentation | XL | 🚧 **In progress** — combat + wave-on-flow in C++ `SimWorld`; UX still Godot |
 | S6 | Async/job bridging sim thread ↔ Godot main (TSan) | M | 📋 Pending (retarget from Kotlin/Swift era) |
-| S7 | Cross-platform regression suite (soft determinism) | L | 🚧 **Partial** — headless smokes in `core/tests/` |
+| S7 | Cross-platform regression suite (soft determinism) | L | 🚧 **Partial** — `ctest` `sim_world_tests` + headless smokes; Godot CI job added |
 | S8 | Android 13+ / iOS 17+ Godot export packaging | M | 🚧 **Partial** — presets + smoke; **Android debug APK exported** (2026-08-11); NDK arm64 sim + signed store pipelines still open |
 
 Effort key: S = days, M = 1–2 weeks, L = 3–6 weeks, XL = multi-month/cross-cutting.

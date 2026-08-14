@@ -39,7 +39,7 @@ Ship an **offline**, **dual-front** (land + sea) Wōkòu-era fortress-defense pr
 | VS7 | Ukiyo-e-readable art | M | ✅ Done | Palette + iso tile atlas |
 | VS8 | Offline save/load + results export | S | ✅ **Done** | `OfflinePersistence` + results/history JSON + FlatBuffers snapshot UI/resume |
 | VS9 | Android 13+ + iOS 17+ export smoke (Godot export templates) | M | ✅ Done | Config smoke + **Android debug APK** via `export_mobile_smoke.sh --export-android`; iOS needs macOS |
-| VS10 | Collaborator playtest + “shows promise” decision record | S | 📋 | Exit gate for Phase 1a |
+| VS10 | Collaborator playtest + "shows promise" decision record | S | 🚧 **Protocol ready** — see [`VS10_PLAYTEST_PROTOCOL.md`](../VS10_PLAYTEST_PROTOCOL.md); sessions pending | Exit gate for Phase 1a |
 
 ## Explicitly out of scope for Slice-0
 

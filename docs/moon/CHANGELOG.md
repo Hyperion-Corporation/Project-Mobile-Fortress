@@ -7,6 +7,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (2026-08-14, ID7 Unit & Outpost Visualizer)
+
+- **ID7 Unit & Outpost Visualizer:** `UnitVisualizerView.tsx` interactive tactical 2.5D/3D model inspector (`/dashboard/visualizer`) supporting 360° rotation, action states (Idle, Attack, March), 3 shader palette filters (Paper/Ink, Coastal Day, Dusk Wōkòu), range projection rings, unit combat spec sheets (HP, DPS, range, deployment cost, abilities), and quick navigation strip.
+
+### Changed (2026-08-14, T20 U3 preload fix + T21 G7 income)
+
+- **T20 / U3:** `main_menu.gd` and `settings_smoke.gd` `preload` `settings_dialog.gd` so headless `--script` does not depend on the global class cache. Dialog spacing uses `add_theme_constant_override`. Settings + main-menu smokes PASS.
+- **T21 / G7:** Combat income is `outpost_income(hp, max, alive)` — 2 at full HP, 1 while damaged-but-standing, 0 after loss. Income events expose `land_income` / `sea_income`.
+
+### Added (2026-08-14, ID6 Zoomable coastal lore & outpost map)
+
+- **ID6 Lore map:** `LoreMapView.tsx` zoomable coastal defense map (`/dashboard/lore-map`) with 3 zoom scales (Regional coast, District garrison, Outpost focus), interactive Flow Field vectors, raid corridors, outpost inspector (Citadel, Northern Grain Outpost, Inland Silk Depot, Trading Cove, Strait Trading Post), faction filtering, and quick navigation integration.
+
+### Added (2026-08-14, U3 Settings & telemetry consent dialog)
+
+- **U3 Settings dialog:** `SettingsDialog.gd` modal component (Master/BGM/SFX sliders with percentage feedback, fast tap placement and screen shake toggles, tactical raid alerts, and 3-tier telemetry consent selection). Persisted via `OfflinePersistence.read_settings()` / `write_settings()` to `user://settings.json`. Integrated into `main_menu.gd` via `SettingsBtn` and verified with `main_menu_smoke.gd` and `settings_smoke.gd`.
+
+### Added (2026-08-14, T19 ID3 dashboard skeleton)
+
+- **ID3 internal dashboard:** React dashboard views (`DashboardView.tsx` overview, `RunHistoryView.tsx` run history & survival metrics, `CiStatusView.tsx` CI workflow/test status, `PlaytestNotesView.tsx` VS10 playtest session log), shared `useDashboardData` hook reading `public/dashboard-data/*.json`, routes wired in `router.tsx`, navigation topbar updated, and 15 vitest unit tests in `dashboard.test.ts`.
+
+### Changed (2026-08-14, T18 G3 flow depth)
+
+- **G3:** Flow-wave raiders spawn on staggered entry rows instead of a single mid-row. `pick_flow_step` will not walk into a solid cell (outposts/defenders force a detour). Heroes no longer mark their cell solid (`kind == HERO`). Native tests + `simulation_smoke.gd` stagger check.
+
+### Changed (2026-08-14, T17 G8 progression wiring)
+
+- **G8:** `GameSession.end_run` calls `Progression.record_run()` after extras merge and writes `stars`, `prestige_earned`, `total_prestige`, `best_stars` into `last_run_results.json` / history. Second `end_run` on the same run does not rescore. Result HUD and last-run summary show stars/prestige. Smoke: `progression_smoke.gd`.
+
+### Changed (2026-08-14, T12 wave-on-flow + T13 native tests)
+
+- **T12 / S2 / G3:** `spawn_wave_raiders` prefers an empty path when `flow_active()` so modular `start_combat()` (which still registers lane waypoints) drives raiders via BFS flow. Lane/default paths remain the fallback when grids were never initialized. `get_raiders()` exposes `path_len` / `uses_flow`.
+- **T13 / Q3 / S7 / Q2:** Godot-free `mf::SimWorld` owns the sim; `SimulationCore` is the GDExtension wrapper. doctest target `sim_world_tests` + `ctest`. New workflow `.github/workflows/godot-core.yml` (CMake tests + optional Godot 4.7.1 `simulation_smoke.gd`). Existing Android CI jobs untouched.
+
+### Changed (2026-08-14, T11 Godot UX polish)
+
+- **U2 pause overlay:** `GameSession.set_paused` / `pause_changed`; modular HUD `PauseOverlay` (Resume / Save snapshot / Main Menu). Combat tick, placement, upgrade, and hero pulse freeze while paused.
+- **U4 HUD:** dedicated Resource/Trading outpost strip, wave label, bottom status line; phase copy (`BUILD · Place defenders` / `COMBAT · Hold the coast`); HQ and dual-currency counters no longer overload a single debug string.
+- **U1 menu theme:** paper/indigo/cinnabar bands, 倭寇 subtitle, “Defend the Coast” entry.
+- Headless smokes: `main_menu_smoke.gd` (theme), `modular_battle_smoke.gd` (pause freeze + outpost strip).
+
 ### Changed (2026-08-11, VS4 unit-upgrade + T8 verification close-out)
 
 - **VS4 build-phase upgrade:** `SimulationCore::upgrade_defender` (C++) boosts a placed defender's damage (+25%) and range (+12px) while it isn't traveling; bound to the new `upgrade_unit` Godot input action (`U` key) and exposed via `get_defenders()`'s `damage` field; covered by a new case in `core/tests/simulation_smoke.gd`. Strengthens VS-A4 (build/position/upgrade phase).

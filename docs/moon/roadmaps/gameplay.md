@@ -12,12 +12,12 @@ Scope: the Wōkòu-pirate-era tower-defense core loop and its meta-progression l
 | --- | --- | --- | --- | --- |
 | G1 | ~~Demo entity (`Ball`) with bounce physics~~ — template placeholder, superseded by G2+ | S | ✅ Done (superseded) | — |
 | G2 | Dual-front grid fortress-defense core loop (land + sea): place units, defend HQ, cross-front support | L | 🚧 **Playable** — polish remaining | Slice-0; epic #128 |
-| G3 | Flow Field pathfinding for enemy raiders (land and naval); naive lane pathing ships in Slice-0 | L | 🚧 **Partial** — C++ BFS flow field API + solid cells; lanes still drive modular waves | Post Slice-0 polish |
+| G3 | Flow Field pathfinding for enemy raiders (land and naval); naive lane pathing ships in Slice-0 | L | 🚧 **Partial** — waves use staggered-row flow + solid detour; lanes if grids off | Post Slice-0 polish |
 | G4 | Hero-commander system: grid place, aura, active CD, reposition travel — **not** power-gacha | M | 🚧 **Minimal in Slice-0** (Qi aura + E pulse + travel) | Expand post-slice |
 | G5 | Data-driven level/wave definitions (JSON) | M | 🚧 **Partial** — `assets/levels/slice0_dual_front.json` | Slice-0 |
 | G6 | Build vs combat phases | M | 🚧 **Partial** — build timer + combat (day/night UX polish later) | Slice-0 |
-| G7 | Resource / Trading Outpost economy; outpost loss economic only | L | 🚧 **Partial** — dual currency, income, C++ mid-path outpost HP | Slice-0 |
-| G8 | Score/progression system (per-level stars, HQ prestige) | M | 📋 Pending | Launch path |
+| G7 | Resource / Trading Outpost economy; outpost loss economic only | L | 🚧 **Partial** — income 1–2 / tick scaled by remaining OP HP; 0 after loss | Slice-0 |
+| G8 | Score/progression system (per-level stars, HQ prestige) | M | 🚧 **Slice-0 wired** — stars + HQ prestige persist via `Progression` / `end_run`; no 4X meta | Launch path |
 | G9 | Coastal-territory light-4X meta-map; settlement capture later season | XL | 📋 Deferred | Post-launch |
 | G10 | Touch/click placement for dual grids (Godot) | S | 🚧 **Partial** — mouse/click placement both fronts | Slice-0 |
 | G11 | Sensor input optional | M | 📋 Deferred | Nice-to-have |
