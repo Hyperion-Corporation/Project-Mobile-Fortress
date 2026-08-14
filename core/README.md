@@ -65,6 +65,7 @@ Main menu shows last-run summary and **Resume last snapshot** when a bin exists.
 - Multi-hero E: `godot --path core --headless --script res://tests/hero_e_smoke.gd`
 - DT8 unlock: `godot --path core --headless --script res://tests/dev_access_smoke.gd`
 - DT5/DT4 overlay: `godot --path core --headless --script res://tests/dev_diag_smoke.gd`
+- DT1/DT2 cheats: `godot --path core --headless --script res://tests/debug_cheats_smoke.gd`
 - FlatBuffers S4: `godot --path core --headless --script res://tests/flatbuffers_smoke.gd`
 - VS8 offline: `godot --path core --headless --script res://tests/game_session_smoke.gd`  
   and `res://tests/offline_persistence_smoke.gd`

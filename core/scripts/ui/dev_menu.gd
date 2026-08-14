@@ -37,7 +37,7 @@ func _build() -> void:
 	panel.offset_left = -360
 	panel.offset_top = 12
 	panel.offset_right = -12
-	panel.offset_bottom = 320
+	panel.offset_bottom = 430
 	var style := StyleBoxFlat.new()
 	style.bg_color = PAPER
 	style.border_color = CINNABAR
@@ -107,6 +107,31 @@ func _build() -> void:
 	_speed_slider.value_changed.connect(_on_speed_changed)
 	speed_row.add_child(_speed_slider)
 	vbox.add_child(speed_row)
+
+	var cheat_sec := Label.new()
+	cheat_sec.text = "CHEATS (DT1 / DT2)"
+	cheat_sec.add_theme_color_override("font_color", CINNABAR)
+	cheat_sec.add_theme_font_size_override("font_size", 13)
+	vbox.add_child(cheat_sec)
+
+	var row1 := HBoxContainer.new()
+	row1.add_theme_constant_override("separation", 6)
+	_add_cheat_btn(row1, "Fill 兩", _on_fill_res)
+	_add_cheat_btn(row1, "∞ 兩", _on_toggle_infinite)
+	_add_cheat_btn(row1, "Income now", _on_income_now)
+	vbox.add_child(row1)
+	var row2 := HBoxContainer.new()
+	row2.add_theme_constant_override("separation", 6)
+	_add_cheat_btn(row2, "Skip build", _on_skip_build)
+	_add_cheat_btn(row2, "Invuln", _on_toggle_invuln)
+	_add_cheat_btn(row2, "Kill raiders", _on_kill_raiders)
+	vbox.add_child(row2)
+	var row3 := HBoxContainer.new()
+	row3.add_theme_constant_override("separation", 6)
+	_add_cheat_btn(row3, "No waves", _on_toggle_waves)
+	_add_cheat_btn(row3, "Force win", _on_force_win)
+	_add_cheat_btn(row3, "Force lose", _on_force_lose)
+	vbox.add_child(row3)
 
 	var hint := Label.new()
 	hint.text = "~ / F12 close · pause uses the same T11 clock"
@@ -192,3 +217,86 @@ func _refresh_diag() -> void:
 	_diag.text = "FPS %.0f · tick %.2f ms\nraiders L %d / S %d · defenders %d\n%s" % [
 		fps, tick_ms, land_n, sea_n, defs, mem_line
 	]
+
+
+func _add_cheat_btn(row: HBoxContainer, caption: String, cb: Callable) -> void:
+	var b := Button.new()
+	b.text = caption
+	b.pressed.connect(cb)
+	row.add_child(b)
+
+
+func _find_sim() -> Node:
+	if get_tree() == null:
+		return null
+	return get_tree().root.find_child("SimulationCore", true, false)
+
+
+func _find_battle() -> Node:
+	if get_tree() == null:
+		return null
+	return get_tree().root.find_child("BattleRoot", true, false)
+
+
+func _on_fill_res() -> void:
+	var sim := _find_sim()
+	if sim and sim.has_method("debug_set_resources"):
+		sim.debug_set_resources(-1, 999)
+
+
+func _on_toggle_infinite() -> void:
+	var sim := _find_sim()
+	if sim and sim.has_method("debug_set_infinite_resources"):
+		var on: bool = not bool(sim.debug_infinite_resources(-1))
+		sim.debug_set_infinite_resources(-1, on)
+
+
+func _on_income_now() -> void:
+	var sim := _find_sim()
+	if sim and sim.has_method("debug_apply_income"):
+		sim.debug_apply_income()
+
+
+func _on_skip_build() -> void:
+	var battle := _find_battle()
+	if battle and battle.has_method("_start_combat"):
+		battle.build_time_left = 0.0
+		battle._start_combat()
+
+
+func _on_toggle_invuln() -> void:
+	var sim := _find_sim()
+	if sim and sim.has_method("debug_set_invincible"):
+		sim.debug_set_invincible(not bool(sim.debug_invincible()))
+
+
+func _on_kill_raiders() -> void:
+	var sim := _find_sim()
+	if sim and sim.has_method("debug_kill_all_raiders"):
+		sim.debug_kill_all_raiders()
+
+
+func _on_toggle_waves() -> void:
+	var sim := _find_sim()
+	if sim and sim.has_method("debug_set_waves_disabled"):
+		sim.debug_set_waves_disabled(not bool(sim.debug_waves_disabled()))
+
+
+func _on_force_win() -> void:
+	var battle := _find_battle()
+	if battle and battle.has_method("_finish"):
+		battle._finish(true, "DT2 force win")
+	else:
+		var session := _session()
+		if session:
+			session.end_run(true, "DT2 force win")
+
+
+func _on_force_lose() -> void:
+	var battle := _find_battle()
+	if battle and battle.has_method("_finish"):
+		battle._finish(false, "DT2 force lose")
+	else:
+		var session := _session()
+		if session:
+			session.end_run(false, "DT2 force lose")

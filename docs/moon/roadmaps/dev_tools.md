@@ -34,8 +34,8 @@ table's row order:
 
 | # | Item | Effort | Status | Notes |
 | --- | --- | --- | --- | --- |
-| DT1 | Economy cheats: infinite/set resources on demand, instant outpost income, skip build-phase timer | S | 📋 Pending | Per-front toggle (land/sea/both). Implement as explicit `SimWorld` debug methods, not by poking fields from GDScript. |
-| DT2 | Combat cheats: HQ/unit invincibility, one-shot kill raiders, force win/force lose a run instantly, disable wave spawning | S | 📋 Pending | Force win/lose **must** route through `GameSession.end_run` so G8/VS8 persistence is what gets tested, not a fake overlay. |
+| DT1 | Economy cheats: infinite/set resources on demand, instant outpost income, skip build-phase timer | S | 🚧 **Slice-0 wired (T28)** — `debug_set_resources` / infinite spend / `debug_apply_income`; skip-build via `_start_combat` | Per-front toggle (land/sea/both). Implement as explicit `SimWorld` debug methods, not by poking fields from GDScript. |
+| DT2 | Combat cheats: HQ/unit invincibility, one-shot kill raiders, force win/force lose a run instantly, disable wave spawning | S | 🚧 **Slice-0 wired (T28)** — invuln + kill-all + no-waves; force end via `_finish`/`end_run` | Force win/lose **must** route through `GameSession.end_run` so G8/VS8 persistence is what gets tested, not a fake overlay. |
 | DT3 | Spawn/scenario control: manually spawn any raider/unit type at a chosen cell, jump to a specific wave number, reload the current level | M | 📋 Pending | **No RNG-seed control in v1** — `SimWorld` has no RNG today (BFS flow is deterministic); revisit once Q4/S7 grow a real seed. Jump-to-wave + cell spawn reuse existing `spawn_raider` / `spawn_defender`. |
 | DT4 | Time control: pause/step simulation frame-by-frame, adjustable game speed (0.5x–10x) | S | 🚧 **Slice-0 wired (T26)** — pause/step/speed on `GameSession` clock | Frame-step is the highest-value piece — reuse T11's existing pause clock (`GameSession.set_paused`); do not add a second simulation clock. |
 

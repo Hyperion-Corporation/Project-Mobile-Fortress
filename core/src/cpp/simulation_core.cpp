@@ -149,6 +149,15 @@ void SimulationCore::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_raider_count"), &SimulationCore::get_raider_count);
 	ClassDB::bind_method(D_METHOD("get_defender_count"), &SimulationCore::get_defender_count);
 	ClassDB::bind_method(D_METHOD("spawn_entity", "type", "position"), &SimulationCore::spawn_entity);
+	ClassDB::bind_method(D_METHOD("debug_set_resources", "front", "amount"), &SimulationCore::debug_set_resources);
+	ClassDB::bind_method(D_METHOD("debug_set_infinite_resources", "front", "enabled"), &SimulationCore::debug_set_infinite_resources);
+	ClassDB::bind_method(D_METHOD("debug_infinite_resources", "front"), &SimulationCore::debug_infinite_resources);
+	ClassDB::bind_method(D_METHOD("debug_apply_income"), &SimulationCore::debug_apply_income);
+	ClassDB::bind_method(D_METHOD("debug_set_invincible", "enabled"), &SimulationCore::debug_set_invincible);
+	ClassDB::bind_method(D_METHOD("debug_invincible"), &SimulationCore::debug_invincible);
+	ClassDB::bind_method(D_METHOD("debug_set_waves_disabled", "disabled"), &SimulationCore::debug_set_waves_disabled);
+	ClassDB::bind_method(D_METHOD("debug_waves_disabled"), &SimulationCore::debug_waves_disabled);
+	ClassDB::bind_method(D_METHOD("debug_kill_all_raiders"), &SimulationCore::debug_kill_all_raiders);
 }
 
 SimulationCore::SimulationCore() {
@@ -361,6 +370,16 @@ void SimulationCore::init_grids(Vector2i size) {
 void SimulationCore::set_cell_solid(int front, Vector2i cell, bool solid) {
 	world.set_cell_solid(front, mf::Vec2i(cell.x, cell.y), solid);
 }
+
+void SimulationCore::debug_set_resources(int front, int amount) { world.debug_set_resources(front, amount); }
+void SimulationCore::debug_set_infinite_resources(int front, bool enabled) { world.debug_set_infinite_resources(front, enabled); }
+bool SimulationCore::debug_infinite_resources(int front) const { return world.debug_infinite_resources(front); }
+void SimulationCore::debug_apply_income() { world.debug_apply_income(); }
+void SimulationCore::debug_set_invincible(bool enabled) { world.debug_set_invincible(enabled); }
+bool SimulationCore::debug_invincible() const { return world.debug_invincible(); }
+void SimulationCore::debug_set_waves_disabled(bool disabled) { world.debug_set_waves_disabled(disabled); }
+bool SimulationCore::debug_waves_disabled() const { return world.debug_waves_disabled(); }
+int SimulationCore::debug_kill_all_raiders() { return world.debug_kill_all_raiders(); }
 
 void SimulationCore::_process(double delta) {
 	auto view = registry.view<Position, Velocity>();

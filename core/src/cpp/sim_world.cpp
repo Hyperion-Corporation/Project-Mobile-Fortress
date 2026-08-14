@@ -29,6 +29,10 @@ void SimWorld::reset_run(int start_land, int start_sea, int start_hq) {
 	in_combat_ = false;
 	combat_time_ = 0.0f;
 	current_wave_ = 0;
+	infinite_land_ = false;
+	infinite_sea_ = false;
+	invincible_ = false;
+	waves_disabled_ = false;
 	for (auto &w : waves_) {
 		w.fired = false;
 	}
@@ -43,6 +47,9 @@ bool SimWorld::spend(int front, int amount) {
 		return false;
 	}
 	if (front == 0) {
+		if (infinite_land_) {
+			return true;
+		}
 		if (land_resources_ < amount) {
 			return false;
 		}
@@ -50,6 +57,9 @@ bool SimWorld::spend(int front, int amount) {
 		return true;
 	}
 	if (front == 1) {
+		if (infinite_sea_) {
+			return true;
+		}
 		if (sea_resources_ < amount) {
 			return false;
 		}
@@ -84,7 +94,7 @@ void SimWorld::gain(int front, int amount) {
 }
 
 void SimWorld::damage_hq(int amount) {
-	if (amount <= 0) {
+	if (invincible_ || amount <= 0) {
 		return;
 	}
 	hq_hp_ = std::max(0, hq_hp_ - amount);
@@ -402,7 +412,7 @@ void SimWorld::spawn_wave_raiders(int front, int count, int wave_index) {
 }
 
 void SimWorld::check_and_spawn_waves(std::vector<SimEvent> &events) {
-	if (!in_combat_ || current_wave_ >= static_cast<int>(waves_.size())) {
+	if (waves_disabled_ || !in_combat_ || current_wave_ >= static_cast<int>(waves_.size())) {
 		return;
 	}
 	if (combat_time_ >= waves_[current_wave_].delay) {
@@ -603,7 +613,7 @@ void SimWorld::advance_raider_along_flow(Raider &r, double delta, std::vector<Si
 }
 
 void SimWorld::damage_outpost(int front, int amount, std::vector<SimEvent> &events) {
-	if (amount <= 0) {
+	if (invincible_ || amount <= 0) {
 		return;
 	}
 	const bool was_alive = (front == 0) ? land_outpost_alive_ : sea_outpost_alive_;
@@ -998,6 +1008,60 @@ bool SimWorld::load_state(const uint8_t *data, size_t size) {
 		}
 	}
 	return true;
+}
+
+void SimWorld::debug_set_resources(int front, int amount) {
+	amount = std::max(0, amount);
+	if (front == 0 || front < 0) {
+		land_resources_ = amount;
+	}
+	if (front == 1 || front < 0) {
+		sea_resources_ = amount;
+	}
+}
+
+void SimWorld::debug_set_infinite_resources(int front, bool enabled) {
+	if (front == 0 || front < 0) {
+		infinite_land_ = enabled;
+	}
+	if (front == 1 || front < 0) {
+		infinite_sea_ = enabled;
+	}
+}
+
+bool SimWorld::debug_infinite_resources(int front) const {
+	if (front == 0) {
+		return infinite_land_;
+	}
+	if (front == 1) {
+		return infinite_sea_;
+	}
+	return infinite_land_ && infinite_sea_;
+}
+
+void SimWorld::debug_apply_income() {
+	land_resources_ += outpost_income(land_outpost_hp_, land_outpost_max_, land_outpost_alive_);
+	sea_resources_ += outpost_income(sea_outpost_hp_, sea_outpost_max_, sea_outpost_alive_);
+}
+
+void SimWorld::debug_set_invincible(bool enabled) {
+	invincible_ = enabled;
+}
+
+void SimWorld::debug_set_waves_disabled(bool disabled) {
+	waves_disabled_ = disabled;
+}
+
+int SimWorld::debug_kill_all_raiders() {
+	int n = 0;
+	for (auto &r : raiders_) {
+		if (r.alive) {
+			r.alive = false;
+			enemies_killed_ += 1;
+			n += 1;
+		}
+	}
+	return n;
 }
 
 } // namespace mf

@@ -93,6 +93,16 @@ public:
 
 	void spawn_entity(const String &type, Vector2 position);
 	void _process(double delta) override;
+
+	void debug_set_resources(int front, int amount);
+	void debug_set_infinite_resources(int front, bool enabled);
+	bool debug_infinite_resources(int front) const;
+	void debug_apply_income();
+	void debug_set_invincible(bool enabled);
+	bool debug_invincible() const;
+	void debug_set_waves_disabled(bool disabled);
+	bool debug_waves_disabled() const;
+	int debug_kill_all_raiders();
 };
 
 } // namespace godot

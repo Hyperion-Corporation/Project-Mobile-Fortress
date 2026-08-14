@@ -227,3 +227,38 @@ TEST_CASE("G4 Capitão Dias salvo hits the opposite front only") {
 	CHECK_FALSE(again.success);
 	CHECK(again.reason == "on_cooldown");
 }
+
+TEST_CASE("DT1 economy debug APIs") {
+	SimWorld world;
+	world.reset_run(5, 5, 100);
+	world.debug_set_resources(-1, 80);
+	CHECK(world.land_resources() == 80);
+	CHECK(world.sea_resources() == 80);
+	world.debug_set_infinite_resources(0, true);
+	CHECK(world.spend(0, 1000));
+	CHECK(world.land_resources() == 80);
+	CHECK_FALSE(world.spend(1, 1000));
+	world.debug_apply_income();
+	CHECK(world.land_resources() == 82);
+	CHECK(world.sea_resources() == 82);
+	world.reset_run(5, 5, 100);
+	CHECK_FALSE(world.debug_infinite_resources(0));
+}
+
+TEST_CASE("DT2 combat debug APIs") {
+	SimWorld world;
+	world.reset_run(10, 10, 50);
+	world.debug_set_invincible(true);
+	world.damage_hq(40);
+	CHECK(world.hq_hp() == 50);
+	world.add_wave(0.0f, 2, 0);
+	world.debug_set_waves_disabled(true);
+	world.start_combat();
+	world.tick(0.1, false);
+	CHECK(world.raider_count() == 0);
+	world.debug_set_waves_disabled(false);
+	world.tick(0.1, false);
+	CHECK(world.raider_count() >= 1);
+	CHECK(world.debug_kill_all_raiders() >= 1);
+	CHECK(world.raider_count() == 0);
+}

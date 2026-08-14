@@ -183,6 +183,16 @@ public:
 	int raider_count() const;
 	int defender_count() const;
 
+	void debug_set_resources(int front, int amount);
+	void debug_set_infinite_resources(int front, bool enabled);
+	bool debug_infinite_resources(int front) const;
+	void debug_apply_income();
+	void debug_set_invincible(bool enabled);
+	bool debug_invincible() const { return invincible_; }
+	void debug_set_waves_disabled(bool disabled);
+	bool debug_waves_disabled() const { return waves_disabled_; }
+	int debug_kill_all_raiders();
+
 private:
 	void update_flow_field(int front, Vec2i target);
 	Vec2 map_to_local(int front, Vec2i cell) const;
@@ -228,6 +238,10 @@ private:
 	bool in_combat_ = false;
 	float build_phase_seconds_ = 40.0f;
 	float victory_time_ = 55.0f;
+	bool infinite_land_ = false;
+	bool infinite_sea_ = false;
+	bool invincible_ = false;
+	bool waves_disabled_ = false;
 };
 
 } // namespace mf
