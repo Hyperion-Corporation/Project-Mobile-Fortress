@@ -16,6 +16,8 @@ func _run() -> void:
 		failures.append("default_settings missing required keys")
 	if def.get("telemetry_tier") != "anonymous":
 		failures.append("default telemetry tier expected 'anonymous', got: %s" % str(def.get("telemetry_tier")))
+	if bool(def.get("developer_mode", true)):
+		failures.append("developer_mode must default off and stay separate from telemetry")
 
 	# 2. Test writing & reading custom settings
 	var custom := {
@@ -63,6 +65,11 @@ func _run() -> void:
 		failures.append("Reset defaults did not restore MasterSlider to 80%%")
 	if dlg._telemetry_option.selected != 1:
 		failures.append("Reset defaults did not restore TelemetryOption to 'anonymous' (idx 1)")
+	var dev_check: CheckBox = dlg.get_node_or_null("Center/SettingsPanel/MainVBox/DeveloperModeCheck")
+	if dev_check == null:
+		failures.append("DeveloperModeCheck missing from settings")
+	elif dev_check.button_pressed:
+		failures.append("Reset defaults left Developer Mode on")
 
 	# 5. Test saving through dialog (array so the lambda can mutate it)
 	var saved_notified := [false]

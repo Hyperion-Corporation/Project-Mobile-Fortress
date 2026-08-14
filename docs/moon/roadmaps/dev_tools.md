@@ -46,7 +46,7 @@ table's row order:
 | DT5 | On-screen diagnostics overlay: FPS, raider/unit counts, sim tick time, memory — toggleable HUD layer | S | 📋 Pending | Feeds VS-A8's 30+ FPS / 10–40 unit acceptance check directly. Define FPS/tick sampling explicitly; report memory only where a supported Godot API exists rather than promising portable numbers. Layout: top-right semi-transparent widget (FPS, sim tick ms, active raiders land/sea, defender count). |
 | DT6 | Level/scenario picker: jump straight to any level or wave setup from a dev menu instead of always starting `slice0_dual_front` | S | ⏸ Blocked | Blocked on G5 having ≥2 level JSONs. Until then, "reload current JSON + jump wave" lives under DT3 — no picker UI over a single file. |
 | DT7 | Playtest session logging: structured event/action log matching `VS10_PLAYTEST_PROTOCOL.md`'s session template, plus a one-press **"Sync to Dashboard"** pipeline action (owner decision — see [DT7 data path](#dt7-data-path-locked)) | M | 📋 Pending | One-tap `[📝 Mark Session Event]` button timestamps notable moments during a session; separate "Sync to Dashboard" button runs the pipeline. |
-| DT8 | Dev-menu access/unlock mechanism | S | 📋 **Pending — T25, next up** | Foundational — DT1–DT7 hang off this. See [Gating](#gating-locked). |
+| DT8 | Dev-menu access/unlock mechanism | S | 🚧 **Slice-0 wired (T25)** — `~`/F12, 5-tap version label, Settings Developer Mode (not telemetry) | Foundational — DT1–DT7 hang off this. See [Gating](#gating-locked). |
 
 ## Gating (locked)
 

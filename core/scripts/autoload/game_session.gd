@@ -2,14 +2,19 @@ extends Node
 ## Global session state for offline Slice-0 (save hooks, civ pair, run stats).
 
 const ProgressionScript := preload("res://scripts/data/progression.gd")
+const DevMenuScript := preload("res://scripts/ui/dev_menu.gd")
 const CIV_PRIMARY := "Ming"
 const CIV_SUPPORT := "Portuguese"
+const DEV_TAP_WINDOW := 2.5
+const DEV_TAP_NEEDED := 5
 
 signal phase_changed(phase: String)
 signal resources_changed(land: int, sea: int)
 signal hq_changed(hp: int, max_hp: int)
 signal pause_changed(paused: bool)
 signal run_ended(victory: bool, reason: String)
+signal developer_mode_changed(enabled: bool)
+signal dev_menu_toggled(open: bool)
 
 var land_currency: int = 40
 var sea_currency: int = 40
@@ -23,6 +28,79 @@ var outposts_lost: int = 0
 var is_paused: bool = false
 var last_result: Dictionary = {}
 var _run_recorded: bool = false
+
+var developer_mode: bool = false
+var _dev_menu: CanvasLayer
+var _dev_taps: Array[float] = []
+
+
+func _ready() -> void:
+	developer_mode = bool(OfflinePersistence.read_settings().get("developer_mode", false))
+	_ensure_dev_menu()
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if not event is InputEventKey or not event.pressed or event.echo:
+		return
+	var key := event as InputEventKey
+	if key.keycode == KEY_F12 or key.physical_keycode == KEY_F12 \
+			or key.keycode == KEY_QUOTELEFT or key.physical_keycode == KEY_QUOTELEFT \
+			or key.keycode == KEY_ASCIITILDE or key.physical_keycode == KEY_ASCIITILDE:
+		set_developer_mode(true)
+		toggle_dev_menu()
+		get_viewport().set_input_as_handled()
+
+
+func set_developer_mode(enabled: bool, persist: bool = true) -> void:
+	if developer_mode == enabled:
+		return
+	developer_mode = enabled
+	if persist:
+		var settings: Dictionary = OfflinePersistence.read_settings()
+		settings["developer_mode"] = enabled
+		OfflinePersistence.write_settings(settings)
+	developer_mode_changed.emit(enabled)
+	if not enabled:
+		set_dev_menu_open(false)
+
+
+func register_dev_tap() -> bool:
+	var now := Time.get_unix_time_from_system()
+	_dev_taps.append(now)
+	while _dev_taps.size() > 0 and now - _dev_taps[0] > DEV_TAP_WINDOW:
+		_dev_taps.pop_front()
+	if _dev_taps.size() >= DEV_TAP_NEEDED:
+		_dev_taps.clear()
+		set_developer_mode(true)
+		set_dev_menu_open(true)
+		return true
+	return false
+
+
+func toggle_dev_menu() -> void:
+	_ensure_dev_menu()
+	set_dev_menu_open(not _dev_menu.visible)
+
+
+func set_dev_menu_open(open: bool) -> void:
+	_ensure_dev_menu()
+	if open and not developer_mode:
+		return
+	if _dev_menu.visible == open:
+		return
+	_dev_menu.visible = open
+	dev_menu_toggled.emit(open)
+
+
+func is_dev_menu_open() -> bool:
+	return _dev_menu != null and _dev_menu.visible
+
+
+func _ensure_dev_menu() -> void:
+	if _dev_menu != null and is_instance_valid(_dev_menu):
+		return
+	_dev_menu = DevMenuScript.new()
+	add_child(_dev_menu)
 
 
 func set_paused(paused: bool) -> void:

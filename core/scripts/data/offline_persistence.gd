@@ -23,7 +23,8 @@ static func default_settings() -> Dictionary:
 		"fast_placement": true,
 		"screen_shake": true,
 		"notifications_enabled": false,
-		"telemetry_tier": "anonymous" # "none", "anonymous", "full"
+		"telemetry_tier": "anonymous", # "none", "anonymous", "full"
+		"developer_mode": false, # DT8 — not a telemetry tier
 	}
 
 

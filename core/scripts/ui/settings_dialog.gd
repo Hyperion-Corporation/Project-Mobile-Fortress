@@ -27,6 +27,7 @@ var _screen_shake_check: CheckBox
 var _notifications_check: CheckBox
 var _telemetry_option: OptionButton
 var _telemetry_desc: Label
+var _developer_mode_check: CheckBox
 
 var _save_btn: Button
 var _reset_btn: Button
@@ -81,6 +82,8 @@ func _update_ui_from_settings() -> void:
 			_:
 				_telemetry_option.selected = 1
 		_update_telemetry_desc(_telemetry_option.selected)
+	if _developer_mode_check:
+		_developer_mode_check.button_pressed = bool(_current_settings.get("developer_mode", false))
 
 
 func _save_settings() -> void:
@@ -98,6 +101,10 @@ func _save_settings() -> void:
 			_current_settings["telemetry_tier"] = "anonymous"
 		2:
 			_current_settings["telemetry_tier"] = "full"
+	_current_settings["developer_mode"] = _developer_mode_check.button_pressed
+	var session := get_tree().root.get_node_or_null("GameSession")
+	if session:
+		session.set_developer_mode(_developer_mode_check.button_pressed, false)
 
 	OfflinePersistence.write_settings(_current_settings)
 	settings_saved.emit(_current_settings)
@@ -145,7 +152,7 @@ func _build_ui() -> void:
 
 	var panel := PanelContainer.new()
 	panel.name = "SettingsPanel"
-	panel.custom_minimum_size = Vector2(580, 520)
+	panel.custom_minimum_size = Vector2(580, 580)
 
 	var style := StyleBoxFlat.new()
 	style.bg_color = PANEL_BG
@@ -325,6 +332,17 @@ func _build_ui() -> void:
 	priv_vbox.add_child(_telemetry_desc)
 
 	main_vbox.add_child(priv_vbox)
+
+	var dev_sec := Label.new()
+	dev_sec.text = "DEVELOPER MODE"
+	dev_sec.add_theme_font_size_override("font_size", 14)
+	dev_sec.add_theme_color_override("font_color", INDIGO)
+	main_vbox.add_child(dev_sec)
+	_developer_mode_check = CheckBox.new()
+	_developer_mode_check.name = "DeveloperModeCheck"
+	_developer_mode_check.text = "Enable developer tools (not telemetry)"
+	_developer_mode_check.add_theme_color_override("font_color", DUSK)
+	main_vbox.add_child(_developer_mode_check)
 
 	# Action Buttons
 	var btn_hbox := HBoxContainer.new()

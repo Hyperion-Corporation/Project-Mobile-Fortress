@@ -37,6 +37,8 @@ func _run() -> void:
 	var subtitle: Label = menu.get_node_or_null("Center/VBox/Subtitle")
 	if subtitle == null or not subtitle.text.contains("倭寇"):
 		failures.append("subtitle missing 倭寇 theme")
+	if menu.get_node_or_null("VersionLabel") == null:
+		failures.append("DT8 version label missing (5-tap target)")
 
 	var settings_btn: Button = menu.get_node_or_null("Center/VBox/SettingsBtn")
 	if settings_btn:

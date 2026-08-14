@@ -40,6 +40,7 @@ func _ready() -> void:
 		start_btn.text = "Defend the Coast"
 	classic_btn.text = "Classic prototype"
 	_ensure_resume_and_history_ui(has_cpp)
+	_ensure_version_label()
 	_refresh_last_run()
 
 
@@ -114,6 +115,36 @@ func _ensure_resume_and_history_ui(has_cpp: bool) -> void:
 		vbox.move_child(_last_run_label, classic_btn.get_index())
 	else:
 		_last_run_label = vbox.get_node("LastRunLabel")
+
+
+func _ensure_version_label() -> void:
+	if get_node_or_null("VersionLabel") != null:
+		return
+	var version := Label.new()
+	version.name = "VersionLabel"
+	version.text = "Slice-0 · DT8"
+	version.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	version.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
+	version.offset_top = -28
+	version.offset_bottom = -8
+	version.add_theme_color_override("font_color", Color(0.35, 0.32, 0.30, 1))
+	version.add_theme_font_size_override("font_size", 12)
+	version.mouse_filter = Control.MOUSE_FILTER_STOP
+	version.gui_input.connect(_on_version_gui_input)
+	add_child(version)
+
+
+func _on_version_gui_input(event: InputEvent) -> void:
+	var tapped := false
+	if event is InputEventMouseButton:
+		var mouse := event as InputEventMouseButton
+		tapped = mouse.pressed and mouse.button_index == MOUSE_BUTTON_LEFT
+	elif event is InputEventScreenTouch:
+		tapped = (event as InputEventScreenTouch).pressed
+	if tapped:
+		var session := get_tree().root.get_node_or_null("GameSession")
+		if session:
+			session.register_dev_tap()
 
 
 func _open_settings() -> void:

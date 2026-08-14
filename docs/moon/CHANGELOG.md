@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed (2026-08-14, T25 DT8 developer unlock)
+
+- **DT8:** Runtime unlock — persist `developer_mode` separately from U3 telemetry. `~` / F12 unlocks and toggles a stub overlay; 5-tap the main-menu version label; Settings checkbox "Enable developer tools (not telemetry)". No DT1–DT7 cheats yet. Smoke: `dev_access_smoke.gd`.
+
 ### Changed (2026-08-14, T23 G4 Capitão Dias)
 
 - **G4:** Second commander `hero_dias` (Portuguese, sea 兩, both fronts). Active **salvo** damages every raider on the opposite front (22 dmg, 10s CD). One of each hero type. E casts every **ready** hero on the field (a cooling hero no longer aborts the rest). Sidebar + key 5. Native + `simulation_smoke.gd` + `hero_e_smoke.gd`.
