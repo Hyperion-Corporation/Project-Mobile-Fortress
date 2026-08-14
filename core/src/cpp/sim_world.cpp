@@ -1064,4 +1064,50 @@ int SimWorld::debug_kill_all_raiders() {
 	return n;
 }
 
+bool SimWorld::debug_jump_wave(int wave_index) {
+	if (wave_index < 0 || wave_index >= static_cast<int>(waves_.size())) {
+		return false;
+	}
+	in_combat_ = true;
+	for (int i = 0; i < static_cast<int>(waves_.size()); ++i) {
+		waves_[static_cast<size_t>(i)].fired = i < wave_index;
+	}
+	current_wave_ = wave_index;
+	combat_time_ = waves_[static_cast<size_t>(wave_index)].delay;
+	return true;
+}
+
+int SimWorld::debug_spawn_raider_at(int front, Vec2i cell, float hp, float speed, float damage) {
+	std::vector<Vec2> path;
+	int entry_row = cell.y;
+	if (!flow_active()) {
+		path = default_lane_path(front);
+		if (front == 0 && !land_path_.empty()) {
+			path = land_path_;
+		} else if (front == 1 && !sea_path_.empty()) {
+			path = sea_path_;
+		}
+		const Vec2 at = map_to_local(front, cell);
+		if (path.empty()) {
+			path.push_back(at);
+		} else {
+			path[0] = at;
+		}
+		entry_row = -1;
+	}
+	const int id = spawn_raider(front, path, hp, speed, damage, -1, entry_row);
+	if (id < 0) {
+		return -1;
+	}
+	const Vec2 at = map_to_local(front, cell);
+	for (auto &r : raiders_) {
+		if (r.id == id) {
+			r.position = at;
+			r.entry_row = cell.y;
+			break;
+		}
+	}
+	return id;
+}
+
 } // namespace mf

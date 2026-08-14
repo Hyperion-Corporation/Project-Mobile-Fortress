@@ -6,6 +6,7 @@
 
 using mf::SimWorld;
 using mf::Vec2;
+using mf::Vec2i;
 
 TEST_CASE("reset_run sets resource and HQ invariants") {
 	SimWorld world;
@@ -261,4 +262,30 @@ TEST_CASE("DT2 combat debug APIs") {
 	CHECK(world.raider_count() >= 1);
 	CHECK(world.debug_kill_all_raiders() >= 1);
 	CHECK(world.raider_count() == 0);
+}
+
+TEST_CASE("DT3 jump wave skips earlier waves") {
+	SimWorld world;
+	world.reset_run(10, 10, 100);
+	world.add_wave(0.0f, 1, 0);
+	world.add_wave(10.0f, 3, 0);
+	world.add_wave(20.0f, 1, 0);
+	CHECK_FALSE(world.debug_jump_wave(-1));
+	CHECK_FALSE(world.debug_jump_wave(3));
+	CHECK(world.debug_jump_wave(1));
+	CHECK(world.in_combat());
+	CHECK(world.current_wave() == 1);
+	world.tick(0.05, false);
+	CHECK(world.current_wave() == 2);
+	CHECK(world.raider_count() == 3);
+}
+
+TEST_CASE("DT3 spawn raider at cell") {
+	SimWorld world;
+	world.reset_run(10, 10, 100);
+	world.init_grids(8, 5);
+	const int id = world.debug_spawn_raider_at(0, Vec2i(2, 1), 40.0f, 20.0f, 6.0f);
+	CHECK(id > 0);
+	REQUIRE_FALSE(world.raiders().empty());
+	CHECK(world.map_cell(0, world.raiders()[0].position) == Vec2i(2, 1));
 }

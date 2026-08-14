@@ -192,6 +192,10 @@ public:
 	void debug_set_waves_disabled(bool disabled);
 	bool debug_waves_disabled() const { return waves_disabled_; }
 	int debug_kill_all_raiders();
+	/// Skip to 0-based `wave_index` so the next tick fires only that wave. Starts combat. No RNG.
+	bool debug_jump_wave(int wave_index);
+	/// Reuses `spawn_raider`, then places the raider on `cell` (flow from there, or lane starting there).
+	int debug_spawn_raider_at(int front, Vec2i cell, float hp = 50.0f, float speed = 26.0f, float damage = 6.0f);
 
 private:
 	void update_flow_field(int front, Vec2i target);

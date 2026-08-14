@@ -103,6 +103,8 @@ public:
 	void debug_set_waves_disabled(bool disabled);
 	bool debug_waves_disabled() const;
 	int debug_kill_all_raiders();
+	bool debug_jump_wave(int wave_index);
+	int debug_spawn_raider_at(int front, Vector2i cell, float hp = 50.0f, float speed = 26.0f, float damage = 6.0f);
 };
 
 } // namespace godot

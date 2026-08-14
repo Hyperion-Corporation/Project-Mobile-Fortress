@@ -158,6 +158,9 @@ void SimulationCore::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("debug_set_waves_disabled", "disabled"), &SimulationCore::debug_set_waves_disabled);
 	ClassDB::bind_method(D_METHOD("debug_waves_disabled"), &SimulationCore::debug_waves_disabled);
 	ClassDB::bind_method(D_METHOD("debug_kill_all_raiders"), &SimulationCore::debug_kill_all_raiders);
+	ClassDB::bind_method(D_METHOD("debug_jump_wave", "wave_index"), &SimulationCore::debug_jump_wave);
+	ClassDB::bind_method(D_METHOD("debug_spawn_raider_at", "front", "cell", "hp", "speed", "damage"),
+			&SimulationCore::debug_spawn_raider_at, DEFVAL(50.0f), DEFVAL(26.0f), DEFVAL(6.0f));
 }
 
 SimulationCore::SimulationCore() {
@@ -380,6 +383,10 @@ bool SimulationCore::debug_invincible() const { return world.debug_invincible();
 void SimulationCore::debug_set_waves_disabled(bool disabled) { world.debug_set_waves_disabled(disabled); }
 bool SimulationCore::debug_waves_disabled() const { return world.debug_waves_disabled(); }
 int SimulationCore::debug_kill_all_raiders() { return world.debug_kill_all_raiders(); }
+bool SimulationCore::debug_jump_wave(int wave_index) { return world.debug_jump_wave(wave_index); }
+int SimulationCore::debug_spawn_raider_at(int front, Vector2i cell, float hp, float speed, float damage) {
+	return world.debug_spawn_raider_at(front, mf::Vec2i(cell.x, cell.y), hp, speed, damage);
+}
 
 void SimulationCore::_process(double delta) {
 	auto view = registry.view<Position, Velocity>();

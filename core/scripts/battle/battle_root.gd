@@ -41,6 +41,7 @@ var start_land := 40
 var start_sea := 40
 var start_hq := 100
 var victory_time := 55.0
+var debug_click_spawn: String = "" ## DT3: if set, next grid click spawns this type for free
 
 
 func _ready() -> void:
@@ -266,6 +267,10 @@ func _on_unit_selected(id: String) -> void:
 
 
 func _on_cell_clicked(front_id: String, cell: Vector2i) -> void:
+	if debug_click_spawn != "" and phase != Phase.RESULT and not run_over:
+		var front_i := 0 if front_id == "land" else 1
+		debug_spawn_at_cell(debug_click_spawn, front_i, cell)
+		return
 	if run_over or GameSession.is_paused or phase == Phase.RESULT:
 		return
 	var grid: GridFront = land_grid if front_id == "land" else sea_grid
@@ -605,3 +610,86 @@ func _unhandled_input(event: InputEvent) -> void:
 func _return_to_menu() -> void:
 	GameSession.set_paused(false)
 	get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
+
+
+func debug_resolve_front(type_id: String, front: int) -> int:
+	if front == 0 or front == 1:
+		return front
+	var def: Dictionary = UnitDefs.get_def(type_id)
+	if type_id == "raider_sea" or int(def.get("front", UnitDefs.Front.LAND)) == UnitDefs.Front.SEA:
+		return 1
+	return 0
+
+
+func debug_spawn_at_cell(type_id: String, front: int, cell: Vector2i) -> int:
+	if sim == null or run_over or phase == Phase.RESULT:
+		return -1
+	var def: Dictionary = UnitDefs.get_def(type_id)
+	if def.is_empty():
+		return -1
+	front = debug_resolve_front(type_id, front)
+	var grid: GridFront = land_grid if front == 0 else sea_grid
+	if grid == null or not grid.in_bounds(cell):
+		return -1
+	var kind: int = int(def.get("kind", UnitDefs.Kind.DEFENDER))
+	if kind == UnitDefs.Kind.RAIDER:
+		var hp: float = float(def.get("hp", 50))
+		var speed: float = float(def.get("speed", 26))
+		var dmg: float = float(def.get("damage", 6))
+		var rid := -1
+		if sim.has_method("debug_spawn_raider_at"):
+			rid = int(sim.debug_spawn_raider_at(front, cell, hp, speed, dmg))
+		else:
+			rid = int(sim.spawn_raider(front, PackedVector2Array(), hp, speed, dmg, -1, cell.y))
+		if rid >= 0:
+			status_message = "DT3 spawned %s on %s %s" % [type_id, "land" if front == 0 else "sea", str(cell)]
+			_sync_visuals()
+		return rid
+	if grid.occupants.has(cell):
+		status_message = "DT3 cell occupied"
+		return -1
+	var pos: Vector2 = grid.cell_to_global_center(cell)
+	var range_px: float = float(def.get("range", 1.5)) * 48.0
+	var damage: float = float(def.get("damage", 10))
+	var cooldown: float = float(def.get("cooldown", 1.0))
+	var own_m: float = float(def.get("own_env_mult", 1.0))
+	var cross_m: float = float(def.get("cross_env_mult", 0.0))
+	var aura_r: float = float(def.get("aura_radius", 0.0)) * 48.0
+	var aura_b: float = float(def.get("aura_damage_bonus", 0.0))
+	var did: int = sim.spawn_defender(
+		front, type_id, pos, range_px, damage, cooldown, own_m, cross_m, aura_r, aura_b
+	)
+	if did < 0:
+		status_message = "DT3 could not spawn %s" % type_id
+		return -1
+	if kind != UnitDefs.Kind.HERO:
+		sim.set_cell_solid(front, cell, true)
+	grid.set_occupant(cell, did)
+	cell_by_defender[did] = {"front": "land" if front == 0 else "sea", "cell": cell}
+	status_message = "DT3 spawned %s on %s %s" % [type_id, "land" if front == 0 else "sea", str(cell)]
+	_sync_session_from_sim()
+	_sync_visuals()
+	return did
+
+
+func debug_jump_wave(wave_number: int) -> bool:
+	if sim == null or not sim.has_method("debug_jump_wave") or run_over or phase == Phase.RESULT:
+		return false
+	if phase == Phase.BUILD:
+		if land_grid:
+			sim.set_lane_path(0, land_grid.path_world_points())
+		if sea_grid:
+			sim.set_lane_path(1, sea_grid.path_world_points())
+		if not bool(sim.get_in_combat()):
+			sim.start_combat()
+		_set_phase(Phase.COMBAT)
+	var ok: bool = bool(sim.debug_jump_wave(wave_number - 1))
+	wave_index = sim.get_current_wave()
+	combat_time = sim.get_combat_time()
+	status_message = ("DT3 jump to wave %d" % wave_number) if ok else ("DT3 jump failed (wave %d)" % wave_number)
+	_update_hud()
+	return ok
+
+
+func debug_reload_level() -> void:
+	_restart()

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed (2026-08-14, T32 DT3 spawn / jump-wave / reload)
+
+- **DT3:** `SimWorld.debug_jump_wave` (0-based) starts combat and fires only that wave on the next tick — earlier waves marked fired, no RNG. `debug_spawn_raider_at` reuses `spawn_raider` and places on a cell (flow from there, or lane starting there). Overlay: type + cell spawn, click-to-spawn, 1-based Jump wave, Reload level (`BattleRoot._restart` / `load_level_json`). Defender spawn is free via `BattleRoot.debug_spawn_at_cell`. Smoke: `scenario_control_smoke.gd`.
+
 ### Changed (2026-08-14, T30 DT1 per-front cheat UI)
 
 - Dev overlay `FrontSelect` (Land / Sea / Both) drives Fill 兩 and ∞ 兩. Native `debug_set_resources` / `debug_set_infinite_resources` were already per-front. `debug_cheats_smoke.gd` covers land-only fill and land-only infinite.

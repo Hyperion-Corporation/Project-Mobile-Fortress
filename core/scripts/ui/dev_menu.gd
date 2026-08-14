@@ -1,5 +1,7 @@
 extends CanvasLayer
-## DT8 overlay + DT5 diagnostics + DT4 pause/step/speed (same clock as T11).
+## DT8 overlay + DT5 diagnostics + DT4 pause/step/speed + DT3 spawn/jump/reload.
+
+const UnitDefsScript := preload("res://scripts/data/unit_defs.gd")
 
 const INK := Color(0.10, 0.09, 0.12, 1)
 const PAPER := Color(0.93, 0.86, 0.74, 0.94)
@@ -10,6 +12,11 @@ var _speed_slider: HSlider
 var _speed_label: Label
 var _pause_btn: Button
 var _front_select: OptionButton
+var _type_select: OptionButton
+var _cell_x: SpinBox
+var _cell_y: SpinBox
+var _wave_spin: SpinBox
+var _click_spawn_btn: Button
 
 
 func _ready() -> void:
@@ -38,7 +45,7 @@ func _build() -> void:
 	panel.offset_left = -360
 	panel.offset_top = 12
 	panel.offset_right = -12
-	panel.offset_bottom = 430
+	panel.offset_bottom = 700
 	var style := StyleBoxFlat.new()
 	style.bg_color = PAPER
 	style.border_color = CINNABAR
@@ -59,7 +66,7 @@ func _build() -> void:
 
 	var title := Label.new()
 	title.name = "Title"
-	title.text = "DEVELOPER · DT4 / DT5"
+	title.text = "DEVELOPER · DT3 / DT4 / DT5"
 	title.add_theme_color_override("font_color", CINNABAR)
 	title.add_theme_font_size_override("font_size", 16)
 	vbox.add_child(title)
@@ -149,6 +156,74 @@ func _build() -> void:
 	_add_cheat_btn(row3, "Force lose", _on_force_lose)
 	vbox.add_child(row3)
 
+	var scen_sec := Label.new()
+	scen_sec.text = "SCENARIO (DT3)"
+	scen_sec.add_theme_color_override("font_color", CINNABAR)
+	scen_sec.add_theme_font_size_override("font_size", 13)
+	vbox.add_child(scen_sec)
+
+	var type_row := HBoxContainer.new()
+	type_row.add_theme_constant_override("separation", 6)
+	var type_lbl := Label.new()
+	type_lbl.text = "Type"
+	type_lbl.add_theme_color_override("font_color", INK)
+	type_row.add_child(type_lbl)
+	_type_select = OptionButton.new()
+	_type_select.name = "SpawnTypeSelect"
+	for unit_id in UnitDefsScript.catalog().keys():
+		_type_select.add_item(str(unit_id))
+	type_row.add_child(_type_select)
+	vbox.add_child(type_row)
+
+	var cell_row := HBoxContainer.new()
+	cell_row.add_theme_constant_override("separation", 6)
+	var cell_lbl := Label.new()
+	cell_lbl.text = "Cell"
+	cell_lbl.add_theme_color_override("font_color", INK)
+	cell_row.add_child(cell_lbl)
+	_cell_x = SpinBox.new()
+	_cell_x.name = "CellX"
+	_cell_x.min_value = 0
+	_cell_x.max_value = 7
+	_cell_x.value = 2
+	_cell_x.rounded = true
+	cell_row.add_child(_cell_x)
+	_cell_y = SpinBox.new()
+	_cell_y.name = "CellY"
+	_cell_y.min_value = 0
+	_cell_y.max_value = 4
+	_cell_y.value = 1
+	_cell_y.rounded = true
+	cell_row.add_child(_cell_y)
+	vbox.add_child(cell_row)
+
+	var spawn_row := HBoxContainer.new()
+	spawn_row.add_theme_constant_override("separation", 6)
+	_add_cheat_btn(spawn_row, "Spawn at cell", _on_spawn_at_cell, "SpawnAtCellBtn")
+	_click_spawn_btn = Button.new()
+	_click_spawn_btn.name = "ClickSpawnBtn"
+	_click_spawn_btn.text = "Click spawn"
+	_click_spawn_btn.pressed.connect(_on_toggle_click_spawn)
+	spawn_row.add_child(_click_spawn_btn)
+	vbox.add_child(spawn_row)
+
+	var wave_row := HBoxContainer.new()
+	wave_row.add_theme_constant_override("separation", 6)
+	var wave_lbl := Label.new()
+	wave_lbl.text = "Wave"
+	wave_lbl.add_theme_color_override("font_color", INK)
+	wave_row.add_child(wave_lbl)
+	_wave_spin = SpinBox.new()
+	_wave_spin.name = "WaveSpin"
+	_wave_spin.min_value = 1
+	_wave_spin.max_value = 8
+	_wave_spin.value = 1
+	_wave_spin.rounded = true
+	wave_row.add_child(_wave_spin)
+	_add_cheat_btn(wave_row, "Jump wave", _on_jump_wave, "JumpWaveBtn")
+	_add_cheat_btn(wave_row, "Reload level", _on_reload_level, "ReloadLevelBtn")
+	vbox.add_child(wave_row)
+
 	var hint := Label.new()
 	hint.text = "~ / F12 close · pause uses the same T11 clock"
 	hint.add_theme_color_override("font_color", Color(0.3, 0.28, 0.26, 1))
@@ -233,6 +308,11 @@ func _refresh_diag() -> void:
 	_diag.text = "FPS %.0f · tick %.2f ms\nraiders L %d / S %d · defenders %d\n%s" % [
 		fps, tick_ms, land_n, sea_n, defs, mem_line
 	]
+	var sim := _find_sim()
+	if sim and sim.has_method("get_wave_count") and _wave_spin:
+		var n: int = int(sim.get_wave_count())
+		if n > 0:
+			_wave_spin.max_value = n
 
 
 func _add_cheat_btn(row: HBoxContainer, caption: String, cb: Callable, node_name: String = "") -> void:
@@ -326,3 +406,55 @@ func _on_force_lose() -> void:
 		var session := _session()
 		if session:
 			session.end_run(false, "DT2 force lose")
+
+
+func _selected_type() -> String:
+	if _type_select == null or _type_select.item_count == 0:
+		return ""
+	return _type_select.get_item_text(_type_select.selected)
+
+
+func _on_spawn_at_cell() -> void:
+	var type_id := _selected_type()
+	var cell := Vector2i(int(_cell_x.value), int(_cell_y.value))
+	var front := _selected_front()
+	var battle := _find_battle()
+	if battle and battle.has_method("debug_spawn_at_cell"):
+		battle.debug_spawn_at_cell(type_id, front, cell)
+		return
+	var sim := _find_sim()
+	if sim and sim.has_method("debug_spawn_raider_at") and type_id.begins_with("raider"):
+		sim.debug_spawn_raider_at(0 if front < 0 else front, cell)
+
+
+func _on_toggle_click_spawn() -> void:
+	var battle := _find_battle()
+	if battle == null:
+		return
+	if str(battle.debug_click_spawn) == "":
+		battle.debug_click_spawn = _selected_type()
+		if _click_spawn_btn:
+			_click_spawn_btn.text = "Click spawn: ON"
+	else:
+		battle.debug_click_spawn = ""
+		if _click_spawn_btn:
+			_click_spawn_btn.text = "Click spawn"
+
+
+func _on_jump_wave() -> void:
+	var wave_n := int(_wave_spin.value) if _wave_spin else 1
+	var battle := _find_battle()
+	if battle and battle.has_method("debug_jump_wave"):
+		battle.debug_jump_wave(wave_n)
+		return
+	var sim := _find_sim()
+	if sim and sim.has_method("debug_jump_wave"):
+		sim.debug_jump_wave(wave_n - 1)
+
+
+func _on_reload_level() -> void:
+	var battle := _find_battle()
+	if battle and battle.has_method("debug_reload_level"):
+		battle.debug_reload_level()
+	elif battle and battle.has_method("_restart"):
+		battle._restart()
