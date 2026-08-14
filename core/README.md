@@ -26,11 +26,11 @@ Godot → Import → select core/project.godot → Run
 
 | Input | Action |
 | --- | --- |
-| Sidebar / **1–4** | Spearman / Cannon / Hero / Cross-support |
+| Sidebar / **1–5** | Spearman / Cannon / Qi / Cross-support / Capitão Dias |
 | **Click** land or sea grid | Place unit (build or combat) |
 | Click hero, then empty cell | Redeploy (travel; no fire while moving) |
 | **Space** / Start Combat | Begin raid |
-| **E** / Hero Ability | Flare pulse |
+| **E** / Hero Ability | Qi flare + Dias cross-front salvo |
 | **Esc** | Pause overlay (Resume / Save / Menu) |
 
 ## Loop (Slice-0)

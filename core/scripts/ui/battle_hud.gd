@@ -62,7 +62,7 @@ func _ready() -> void:
 	set_outposts(40, 40, true, 40, 40, true)
 	set_wave(0)
 	help_label.text = (
-		"1–4 units · click land/sea · Space combat · E flare · U upgrade\n"
+		"1–5 units · click land/sea · Space combat · E hero actives · U upgrade\n"
 		+ "S snapshot · L load · Esc pause"
 	)
 	_on_pause_changed(GameSession.is_paused)
@@ -220,8 +220,16 @@ func _wire_unit_buttons() -> void:
 		"BtnArq": "arquebusier",
 		"BtnJunk": "junk",
 		"BtnHero": "hero_qi",
+		"BtnHeroDias": "hero_dias",
 		"BtnCross": "cross_support",
 	}
+	var sidebar: VBoxContainer = $Root/SideBar
+	if sidebar.get_node_or_null("BtnHeroDias") == null and sidebar.get_node_or_null("BtnHero") != null:
+		var dias_btn := Button.new()
+		dias_btn.name = "BtnHeroDias"
+		dias_btn.text = "Capitão Dias (Either)"
+		sidebar.add_child(dias_btn)
+		sidebar.move_child(dias_btn, sidebar.get_node("BtnHero").get_index() + 1)
 	for btn_name in map.keys():
 		var path := "Root/SideBar/%s" % btn_name
 		if has_node(path):

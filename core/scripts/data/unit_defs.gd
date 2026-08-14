@@ -80,6 +80,24 @@ static func catalog() -> Dictionary:
 			"own_env_mult": 1.0,
 			"cross_env_mult": 0.0,
 		},
+		"hero_dias": {
+			"name": "Capitão Dias (Hero)",
+			"front": Front.BOTH,
+			"kind": Kind.HERO,
+			"cost": 26,
+			"currency": "sea",
+			"hp": 48,
+			"damage": 10,
+			"range": 2.2,
+			"cooldown": 1.1,
+			"color": PALETTE["gold"],
+			"own_env_mult": 1.0,
+			"cross_env_mult": 0.65,
+			"aura_radius": 1.6,
+			"aura_damage_bonus": 0.2,
+			"active_cooldown": 10.0,
+			"active_damage": 22,
+		},
 		"hero_qi": {
 			"name": "Commander Qi (Hero)",
 			"front": Front.BOTH,
@@ -139,3 +157,8 @@ static func get_def(id: String) -> Dictionary:
 		push_error("Unknown unit id: %s" % id)
 		return {}
 	return c[id].duplicate(true)
+
+
+static func is_hero(id: String) -> bool:
+	var d := get_def(id)
+	return not d.is_empty() and int(d.get("kind", Kind.DEFENDER)) == Kind.HERO

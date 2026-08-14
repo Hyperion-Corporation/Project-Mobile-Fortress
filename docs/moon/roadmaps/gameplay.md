@@ -13,7 +13,7 @@ Scope: the Wōkòu-pirate-era tower-defense core loop and its meta-progression l
 | G1 | ~~Demo entity (`Ball`) with bounce physics~~ — template placeholder, superseded by G2+ | S | ✅ Done (superseded) | — |
 | G2 | Dual-front grid fortress-defense core loop (land + sea): place units, defend HQ, cross-front support | L | 🚧 **Playable** — polish remaining | Slice-0; epic #128 |
 | G3 | Flow Field pathfinding for enemy raiders (land and naval); naive lane pathing ships in Slice-0 | L | 🚧 **Partial** — waves use staggered-row flow + solid detour; lanes if grids off | Post Slice-0 polish |
-| G4 | Hero-commander system: grid place, aura, active CD, reposition travel — **not** power-gacha | M | 🚧 **Minimal in Slice-0** (Qi aura + E pulse + travel) | Expand post-slice |
+| G4 | Hero-commander system: grid place, aura, active CD, reposition travel — **not** power-gacha | M | 🚧 **Slice-0 pair** — Qi pulse + Capitão Dias cross-front salvo; one of each type | Expand post-slice |
 | G5 | Data-driven level/wave definitions (JSON) | M | 🚧 **Partial** — `assets/levels/slice0_dual_front.json` | Slice-0 |
 | G6 | Build vs combat phases | M | 🚧 **Partial** — build timer + combat (day/night UX polish later) | Slice-0 |
 | G7 | Resource / Trading Outpost economy; outpost loss economic only | L | 🚧 **Partial** — income 1–2 / tick scaled by remaining OP HP; 0 after loss | Slice-0 |

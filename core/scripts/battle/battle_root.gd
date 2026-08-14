@@ -11,6 +11,7 @@ const SELECT_KEYS := {
 	"select_unit_2": "cannon",
 	"select_unit_3": "hero_qi",
 	"select_unit_4": "cross_support",
+	"select_unit_5": "hero_dias",
 }
 
 @onready var land_host: Node2D = $LandHost
@@ -255,7 +256,7 @@ func _on_cell_clicked(front_id: String, cell: Vector2i) -> void:
 	if grid.occupants.has(cell):
 		var did: int = int(grid.occupants[cell])
 		for d in sim.get_defenders():
-			if int(d.get("id", -1)) == did and str(d.get("type", "")) == "hero_qi":
+			if int(d.get("id", -1)) == did and UnitDefs.is_hero(str(d.get("type", ""))):
 				selected_defender_id = did
 				pending_hero_id = did
 				status_message = "Commander selected — click empty cell to redeploy"
@@ -302,6 +303,8 @@ func _on_cell_clicked(front_id: String, cell: Vector2i) -> void:
 		front_id_int, selected_unit_id, pos, range_px, damage, cooldown, own_m, cross_m, aura_r, aura_b
 	)
 	if did2 < 0:
+		sim.gain(sim_front, cost)
+		status_message = "Cannot place another %s" % str(def.get("name", selected_unit_id))
 		return
 
 	# Stationary units block flow; heroes travel and must not brick a cell.
@@ -338,7 +341,7 @@ func _sync_visuals() -> void:
 		var col: Color = udef.get("color", Color.CORNFLOWER_BLUE) if not udef.is_empty() else Color.CORNFLOWER_BLUE
 		if not visual_nodes.has(id):
 			var sprite := ColorRect.new()
-			var sz := 22.0 if utype != "hero_qi" else 28.0
+			var sz := 28.0 if UnitDefs.is_hero(utype) else 22.0
 			sprite.size = Vector2(sz, sz)
 			sprite.color = col
 			units_root.add_child(sprite)
@@ -390,10 +393,14 @@ func _hero_ability() -> void:
 	var cast_happened := false
 	for d in sim.get_defenders():
 		var type := str(d.get("type", ""))
-		if type == "hero_qi" or type == "hero":
+		if UnitDefs.is_hero(type) or type == "hero":
 			var result: Dictionary = sim.cast_hero_ability(int(d.get("id", -1)))
 			if result.get("success", false):
-				status_message = "Commander signal flare! (%d hits)" % int(result.get("hits", 0))
+				var kind := str(result.get("type", "pulse"))
+				if kind == "salvo":
+					status_message = "Dias cross-front salvo! (%d hits)" % int(result.get("hits", 0))
+				else:
+					status_message = "Commander signal flare! (%d hits)" % int(result.get("hits", 0))
 				cast_happened = true
 			elif result.get("reason", "") == "on_cooldown":
 				status_message = "Hero ability CD %.1fs" % float(result.get("cooldown_left", 0.0))
@@ -526,7 +533,7 @@ func _rebuild_placement_from_sim() -> void:
 		cell_by_defender[id] = {"front": front_id, "cell": cell}
 		if sim.has_method("set_cell_solid") and not bool(d.get("traveling", false)):
 			var utype: String = str(d.get("type", ""))
-			if utype != "hero_qi" and utype != "hero":
+			if not UnitDefs.is_hero(utype) and utype != "hero":
 				sim.set_cell_solid(front, cell, true)
 
 
@@ -551,6 +558,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		if event.is_action_pressed(action):
 			_on_unit_selected(SELECT_KEYS[action])
 			return
+	if event is InputEventKey and event.pressed and not event.echo:
+		if event.physical_keycode == KEY_5:
+			_on_unit_selected("hero_dias")
 
 
 func _return_to_menu() -> void:

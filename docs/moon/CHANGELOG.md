@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed (2026-08-14, T23 G4 Capitão Dias)
+
+- **G4:** Second commander `hero_dias` (Portuguese, sea 兩, both fronts). Active **salvo** damages every raider on the opposite front (22 dmg, 10s CD). One of each hero type. E casts every hero on the field. Sidebar + key 5. Native + `simulation_smoke.gd` coverage.
+
+### Changed (2026-08-14, Grok draft pass on DT/U9/U10)
+
+- `dev_tools.md`: DT3 drops RNG-seed until `SimWorld` has RNG; DT6 blocked on G5 ≥2 levels; recommended order DT8 → DT5/DT4 → DT1/DT2 → DT3 → DT7 → DT6; reject telemetry-tier as unlock; cheats live on `SimWorld`, overlay/menu on Godot.
+- `ui_ux.md`: U9 sequenced silhouette → building tiers (existing HP/upgrade) → tiles; U9 hero art waits on T23; U10 drops website dashboard from the Godot ticket.
+
 ### Added (2026-08-14, ID7 Unit & Outpost Visualizer)
 
 - **ID7 Unit & Outpost Visualizer:** `UnitVisualizerView.tsx` interactive tactical 2.5D/3D model inspector (`/dashboard/visualizer`) supporting 360° rotation, action states (Idle, Attack, March), 3 shader palette filters (Paper/Ink, Coastal Day, Dusk Wōkòu), range projection rings, unit combat spec sheets (HP, DPS, range, deployment cost, abilities), and quick navigation strip.

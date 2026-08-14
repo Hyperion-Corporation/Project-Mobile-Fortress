@@ -112,6 +112,27 @@ func _init() -> void:
 	if cooldown_pulse.get("reason", "") != "on_cooldown":
 		failures.append("hero pulse cooldown was not enforced")
 
+	# Capitão Dias: cross-front salvo, one of each hero type
+	sim.reset_run(40, 40, 100)
+	var dias_id: int = sim.spawn_defender(
+		0, "hero_dias", Vector2(0, 0), 80.0, 10.0, 1.0, 1.0, 0.65, 80.0, 0.2
+	)
+	if dias_id <= 0:
+		failures.append("hero_dias spawn failed")
+	elif sim.spawn_defender(1, "hero_dias", Vector2(10, 0), 80.0, 10.0, 1.0) != -1:
+		failures.append("second hero_dias should be rejected")
+	else:
+		sim.spawn_raider(0, PackedVector2Array([Vector2(20, 0), Vector2(40, 0)]), 40.0, 0.0, 1.0, 99)
+		sim.spawn_raider(1, PackedVector2Array([Vector2(20, 400), Vector2(40, 400)]), 40.0, 0.0, 1.0, 99)
+		var salvo: Dictionary = sim.cast_hero_ability(dias_id)
+		if not salvo.get("success", false) or str(salvo.get("type", "")) != "salvo":
+			failures.append("Dias salvo did not fire")
+		elif int(salvo.get("hits", 0)) != 1:
+			failures.append("Dias salvo should hit only the opposite front")
+		var salvo_cd: Dictionary = sim.cast_hero_ability(dias_id)
+		if salvo_cd.get("reason", "") != "on_cooldown":
+			failures.append("Dias salvo cooldown was not enforced")
+
 	# Cross-front damage is amplified by a nearby commander aura
 	sim.reset_run(40, 40, 100)
 	sim.spawn_defender(

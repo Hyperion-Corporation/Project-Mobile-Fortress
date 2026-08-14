@@ -135,6 +135,10 @@ text = "War Junk (Sea)"
 layout_mode = 2
 text = "Hero Qi (Either)"
 
+[node name="BtnHeroDias" type="Button" parent="HUD/Root/SideBar"]
+layout_mode = 2
+text = "Capitão Dias (Either)"
+
 [node name="BtnCross" type="Button" parent="HUD/Root/SideBar"]
 layout_mode = 2
 text = "Cross-Front Battery"

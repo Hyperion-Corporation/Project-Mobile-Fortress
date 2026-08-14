@@ -59,6 +59,10 @@ bool SimWorld::spend(int front, int amount) {
 	return false;
 }
 
+bool SimWorld::is_hero_type(const std::string &type) {
+	return type == "hero_qi" || type == "hero" || type == "hero_dias";
+}
+
 int SimWorld::outpost_income(int hp, int max_hp, bool alive) {
 	if (!alive || hp <= 0 || max_hp <= 0) {
 		return 0;
@@ -173,6 +177,13 @@ void SimWorld::damage_raider(int id, float amount) {
 
 int SimWorld::spawn_defender(int front, const std::string &type, Vec2 position, float range_px, float damage, float cooldown,
 		float own_env_mult, float cross_env_mult, float aura_radius, float aura_bonus) {
+	if (is_hero_type(type)) {
+		for (const auto &existing : defenders_) {
+			if (existing.alive && existing.type == type) {
+				return -1;
+			}
+		}
+	}
 	Defender d;
 	d.id = next_defender_id_++;
 	d.front = front;
@@ -183,7 +194,7 @@ int SimWorld::spawn_defender(int front, const std::string &type, Vec2 position, 
 	d.hp = 100.0f;
 	d.cooldown = std::max(0.1f, cooldown);
 	d.cooldown_left = 0.0f;
-	d.ability_cooldown = 8.0f;
+	d.ability_cooldown = (type == "hero_dias") ? 10.0f : 8.0f;
 	d.ability_cooldown_left = 0.0f;
 	d.own_env_mult = own_env_mult;
 	d.cross_env_mult = cross_env_mult;
@@ -251,6 +262,28 @@ HeroCast SimWorld::cast_hero_ability(int id) {
 			d.ability_cooldown_left = d.ability_cooldown;
 			result.success = true;
 			result.type = "pulse";
+			result.hits = hits;
+			return result;
+		}
+		if (d.type == "hero_dias") {
+			// Cross-front salvo: Portuguese guns rake the opposite grid (no world-radius —
+			// land/sea origins are hundreds of px apart by design).
+			int hits = 0;
+			const float damage = 22.0f;
+			for (auto &r : raiders_) {
+				if (!r.alive || r.front == d.front) {
+					continue;
+				}
+				r.hp -= damage;
+				hits += 1;
+				if (r.hp <= 0.0f) {
+					r.alive = false;
+					enemies_killed_ += 1;
+				}
+			}
+			d.ability_cooldown_left = d.ability_cooldown;
+			result.success = true;
+			result.type = "salvo";
 			result.hits = hits;
 			return result;
 		}

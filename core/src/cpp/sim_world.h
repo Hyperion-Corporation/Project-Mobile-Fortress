@@ -145,6 +145,7 @@ public:
 	void gain(int front, int amount);
 	/// Combat-tick payout for one outpost: 0 if dead, else 1–2 scaled by remaining HP.
 	static int outpost_income(int hp, int max_hp, bool alive);
+	static bool is_hero_type(const std::string &type);
 	void damage_hq(int amount);
 	void set_outpost_alive(int front, bool alive);
 	void note_unit_placed() { units_placed_ += 1; }

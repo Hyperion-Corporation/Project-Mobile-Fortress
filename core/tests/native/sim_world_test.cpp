@@ -198,3 +198,32 @@ TEST_CASE("G7 outpost income scales with remaining HP") {
 	CHECK(world.land_resources() == 12);
 	CHECK(world.sea_resources() == 14);
 }
+
+TEST_CASE("G4 Capitão Dias salvo hits the opposite front only") {
+	SimWorld world;
+	world.reset_run(40, 40, 100);
+	const int dias = world.spawn_defender(0, "hero_dias", Vec2(0, 0), 80.0f, 10.0f, 1.0f, 1.0f, 0.65f, 80.0f, 0.2f);
+	REQUIRE(dias > 0);
+	CHECK(world.spawn_defender(0, "hero_dias", Vec2(10, 0), 80.0f, 10.0f, 1.0f) == -1);
+
+	const int same = world.spawn_raider(0, {Vec2(20, 0), Vec2(40, 0)}, 40.0f, 0.0f, 1.0f, 99);
+	const int opp = world.spawn_raider(1, {Vec2(20, 400), Vec2(40, 400)}, 40.0f, 0.0f, 1.0f, 99);
+	REQUIRE(same > 0);
+	REQUIRE(opp > 0);
+
+	const auto salvo = world.cast_hero_ability(dias);
+	CHECK(salvo.success);
+	CHECK(salvo.type == "salvo");
+	CHECK(salvo.hits == 1);
+	CHECK(world.raider_count() == 2);
+	for (const auto &r : world.raiders()) {
+		if (r.front == 1) {
+			CHECK(r.hp == doctest::Approx(18.0f));
+		} else {
+			CHECK(r.hp == doctest::Approx(40.0f));
+		}
+	}
+	const auto again = world.cast_hero_ability(dias);
+	CHECK_FALSE(again.success);
+	CHECK(again.reason == "on_cooldown");
+}
