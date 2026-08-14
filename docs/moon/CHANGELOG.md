@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed (2026-08-14, T30 DT1 per-front cheat UI)
+
+- Dev overlay `FrontSelect` (Land / Sea / Both) drives Fill 兩 and ∞ 兩. Native `debug_set_resources` / `debug_set_infinite_resources` were already per-front. `debug_cheats_smoke.gd` covers land-only fill and land-only infinite.
+
 ### Changed (2026-08-14, T28 DT1/DT2 god-mode cheats)
 
 - **DT1:** `SimWorld`/`SimulationCore` `debug_set_resources`, per-front infinite spend, `debug_apply_income`. Overlay skip-build zeros the Godot build timer and calls `_start_combat`.

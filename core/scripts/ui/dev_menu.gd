@@ -9,6 +9,7 @@ var _diag: Label
 var _speed_slider: HSlider
 var _speed_label: Label
 var _pause_btn: Button
+var _front_select: OptionButton
 
 
 func _ready() -> void:
@@ -114,10 +115,25 @@ func _build() -> void:
 	cheat_sec.add_theme_font_size_override("font_size", 13)
 	vbox.add_child(cheat_sec)
 
+	var front_row := HBoxContainer.new()
+	front_row.add_theme_constant_override("separation", 6)
+	var front_lbl := Label.new()
+	front_lbl.text = "Front"
+	front_lbl.add_theme_color_override("font_color", INK)
+	front_row.add_child(front_lbl)
+	_front_select = OptionButton.new()
+	_front_select.name = "FrontSelect"
+	_front_select.add_item("Land", 0)
+	_front_select.add_item("Sea", 1)
+	_front_select.add_item("Both", 2)
+	_front_select.select(2)
+	front_row.add_child(_front_select)
+	vbox.add_child(front_row)
+
 	var row1 := HBoxContainer.new()
 	row1.add_theme_constant_override("separation", 6)
-	_add_cheat_btn(row1, "Fill 兩", _on_fill_res)
-	_add_cheat_btn(row1, "∞ 兩", _on_toggle_infinite)
+	_add_cheat_btn(row1, "Fill 兩", _on_fill_res, "FillResBtn")
+	_add_cheat_btn(row1, "∞ 兩", _on_toggle_infinite, "InfiniteResBtn")
 	_add_cheat_btn(row1, "Income now", _on_income_now)
 	vbox.add_child(row1)
 	var row2 := HBoxContainer.new()
@@ -219,11 +235,20 @@ func _refresh_diag() -> void:
 	]
 
 
-func _add_cheat_btn(row: HBoxContainer, caption: String, cb: Callable) -> void:
+func _add_cheat_btn(row: HBoxContainer, caption: String, cb: Callable, node_name: String = "") -> void:
 	var b := Button.new()
 	b.text = caption
+	if node_name != "":
+		b.name = node_name
 	b.pressed.connect(cb)
 	row.add_child(b)
+
+
+func _selected_front() -> int:
+	if _front_select == null:
+		return -1
+	var id := _front_select.get_item_id(_front_select.selected)
+	return -1 if id == 2 else id
 
 
 func _find_sim() -> Node:
@@ -241,14 +266,15 @@ func _find_battle() -> Node:
 func _on_fill_res() -> void:
 	var sim := _find_sim()
 	if sim and sim.has_method("debug_set_resources"):
-		sim.debug_set_resources(-1, 999)
+		sim.debug_set_resources(_selected_front(), 999)
 
 
 func _on_toggle_infinite() -> void:
 	var sim := _find_sim()
 	if sim and sim.has_method("debug_set_infinite_resources"):
-		var on: bool = not bool(sim.debug_infinite_resources(-1))
-		sim.debug_set_infinite_resources(-1, on)
+		var front := _selected_front()
+		var on: bool = not bool(sim.debug_infinite_resources(front))
+		sim.debug_set_infinite_resources(front, on)
 
 
 func _on_income_now() -> void:

@@ -17,6 +17,7 @@ func _run() -> void:
 		return
 
 	var sim: Node = ClassDB.instantiate("SimulationCore")
+	sim.name = "SimulationCore"
 	root.add_child(sim)
 	sim.reset_run(4, 4, 40)
 	if not sim.has_method("debug_set_resources"):
@@ -57,6 +58,34 @@ func _run() -> void:
 	if str(stored.get("reason", "")) != "DT2 force lose":
 		failures.append("force lose reason not persisted")
 
+	# T30: overlay Fill 兩 honors land/sea/both
+	sim.reset_run(4, 6, 40)
+	session.set_developer_mode(true)
+	session.set_dev_menu_open(true)
+	await process_frame
+	var menu: Node = session.get_node_or_null("DevMenu")
+	var front_sel: OptionButton = menu.find_child("FrontSelect", true, false) if menu else null
+	if front_sel == null:
+		failures.append("FrontSelect missing from dev menu")
+	else:
+		front_sel.select(0)
+		menu._on_fill_res()
+		if sim.get_land_resources() != 999 or sim.get_sea_resources() != 6:
+			failures.append("Fill land should not change sea (land=%d sea=%d)" % [
+				sim.get_land_resources(), sim.get_sea_resources()
+			])
+		front_sel.select(1)
+		menu._on_fill_res()
+		if sim.get_land_resources() != 999 or sim.get_sea_resources() != 999:
+			failures.append("Fill sea should leave land filled (land=%d sea=%d)" % [
+				sim.get_land_resources(), sim.get_sea_resources()
+			])
+		front_sel.select(0)
+		menu._on_toggle_infinite()
+		if not sim.debug_infinite_resources(0) or sim.debug_infinite_resources(1):
+			failures.append("∞ 兩 on Land should not enable sea infinite")
+
+	session.set_developer_mode(false)
 	sim.queue_free()
 	_finish(failures)
 
