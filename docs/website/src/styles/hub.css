@@ -553,6 +553,146 @@
   color: var(--accent-2);
 }
 
+/* --- Flow field simulator controls (DesignPanel) --- */
+.flow-field-simulator {
+  width: 100%;
+}
+.sim-controls-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: color-mix(in srgb, black 10%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.control-group-inline {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.control-group-inline label {
+  font-weight: 600;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+.btn-group-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* --- Unit class section (DesignPanel) --- */
+.unit-class-section,
+.coastal-defense-section,
+.wokou-crisis-section {
+  width: 100%;
+}
+.section-intro {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+}
+.unit-domain-group {
+  margin-bottom: 1.5rem;
+}
+.domain-label {
+  font-family: var(--font-display);
+  color: var(--accent-gold);
+  font-size: 0.9rem;
+  margin-bottom: 0.75rem;
+}
+.unit-cards-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+.unit-card {
+  background: color-mix(in srgb, black 15%, var(--surface) 85%);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 180px;
+  flex: 1 1 auto;
+}
+.unit-name {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text);
+}
+.unit-civ {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: capitalize;
+}
+
+/* --- Coastal defense section (DesignPanel) --- */
+.defense-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+.defense-card {
+  background: color-mix(in srgb, black 15%, var(--surface) 85%);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.25rem;
+}
+.defense-card h4 {
+  font-family: var(--font-display);
+  color: var(--accent-2);
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+.defense-card p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* --- Wokou crisis section (DesignPanel) --- */
+.era-badge {
+  display: inline-block;
+  background: color-mix(in srgb, var(--accent-2) 15%, transparent);
+  border: 1px solid var(--accent-2);
+  color: var(--accent-2);
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+}
+.crisis-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+.crisis-card {
+  background: color-mix(in srgb, black 15%, var(--surface) 85%);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.25rem;
+}
+.crisis-card h4 {
+  font-family: var(--font-display);
+  color: var(--accent-3);
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+.crisis-card p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
 /* --- QA dashboard (QaPanel) --- */
 .qa-status-box {
   width: 100%;
