@@ -1,86 +1,93 @@
 # Dev & Debug Tools Roadmap
 
 **Owner:** TBD
-**Status:** 📝 **DRAFT — 2026-08-14** — Claude + owner brainstorm. Open for Grok/Chat/Gemini to
-edit before a final owner + Claude review pass locks it. Do not treat any item below as assigned
-work until it leaves draft.
+**Status:** 📋 **Final — 2026-08-14** (owner + Claude lock-in pass, after Grok/Gemini/Chat draft
+review). Ready to be picked up as real tasks.
 
 Scope: internal-only tooling for the owner and collaborators — a "god mode" cheat layer plus
 diagnostics/scenario tooling to make VS10-style playtest sessions (and every session after it)
 faster to run and easier to reason about. This is explicitly **not player-facing**; see
-[`gating`](#gating-open-question) below.
+[Gating](#gating-locked) below.
 
 **Relationship to other roadmaps:**
 - Visual polish (art/asset depth, UI/HUD visual design) stays in [`ui_ux.md`](ui_ux.md) as U9/U10 —
   this file is dev-facing tooling only, kept separate on purpose.
 - [`VS10_PLAYTEST_PROTOCOL.md`](../VS10_PLAYTEST_PROTOCOL.md)'s performance-recording table and
   session logs are direct consumers of DT5/DT7.
-- [`internal_dashboard.md`](internal_dashboard.md)'s `PlaytestNotesView` currently reads a static
-  `playtest_sessions.json` seed (ID2/ID3) — DT7 is what would make that live-authored.
+- [`internal_dashboard.md`](internal_dashboard.md)'s `PlaytestNotesView` is DT7's live-sync target
+  (see DT7 below) — no longer a static seed once DT7 ships.
+
+## Implementation order (locked)
+
+Agreed unanimously by Grok/Gemini/Chat during draft review; supersedes the god-mode/diagnostics
+table's row order:
+
+1. **DT8** — nothing else is reachable without the dev-menu unlock.
+2. **DT5 + DT4** — highest VS10 value: see the FPS/40-unit budget live, step a bad tick.
+3. **DT1 + DT2** — speeds up sessions (skip build phase, force-lose to test G8 without playing a
+   full loss).
+4. **DT3** — without RNG-seed control (see DT3 notes).
+5. **DT7** — after DT8's menu exists, so "mark event" has a UI home.
+6. **DT6 last** — blocked on G5 growing a second level JSON; do not build a picker over one file.
 
 ## God mode
 
 | # | Item | Effort | Status | Notes |
 | --- | --- | --- | --- | --- |
-| DT1 | Economy cheats: infinite/set resources on demand, instant outpost income, skip build-phase timer | S | 📋 Draft | Per-front toggle (land/sea/both) |
-| DT2 | Combat cheats: HQ/unit invincibility, one-shot kill raiders, force win/force lose a run instantly, disable wave spawning | S | 📋 Draft | Force-lose matters for testing the results/persistence path (G8) without playing a full loss |
-| DT3 | Spawn/scenario control: manually spawn any raider/unit type at a chosen cell, jump to a specific wave number, reload the current level | M | 📋 Draft | **Cut RNG-seed from v1** — `SimWorld` has no RNG today (BFS flow is deterministic). Revisit when Q4/S7 grow a real seed. Jump-to-wave + cell spawn reuse existing `spawn_raider` / `spawn_defender` |
-| DT4 | Time control: pause/step simulation frame-by-frame, adjustable game speed (0.5x–10x) | S | 📋 Draft | Frame-step is the highest-value one for debugging a specific tick |
+| DT1 | Economy cheats: infinite/set resources on demand, instant outpost income, skip build-phase timer | S | 📋 Pending | Per-front toggle (land/sea/both). Implement as explicit `SimWorld` debug methods, not by poking fields from GDScript. |
+| DT2 | Combat cheats: HQ/unit invincibility, one-shot kill raiders, force win/force lose a run instantly, disable wave spawning | S | 📋 Pending | Force win/lose **must** route through `GameSession.end_run` so G8/VS8 persistence is what gets tested, not a fake overlay. |
+| DT3 | Spawn/scenario control: manually spawn any raider/unit type at a chosen cell, jump to a specific wave number, reload the current level | M | 📋 Pending | **No RNG-seed control in v1** — `SimWorld` has no RNG today (BFS flow is deterministic); revisit once Q4/S7 grow a real seed. Jump-to-wave + cell spawn reuse existing `spawn_raider` / `spawn_defender`. |
+| DT4 | Time control: pause/step simulation frame-by-frame, adjustable game speed (0.5x–10x) | S | 📋 Pending | Frame-step is the highest-value piece — reuse T11's existing pause clock (`GameSession.set_paused`); do not add a second simulation clock. |
 
 ## Diagnostics & scenario tooling
 
 | # | Item | Effort | Status | Notes |
 | --- | --- | --- | --- | --- |
-| DT5 | On-screen diagnostics overlay: FPS, raider/unit counts, sim tick time, memory — toggleable HUD layer | S | 📋 Draft | Feeds VS-A8's 30+ FPS / 10–40 unit acceptance check directly |
-| DT6 | Level/scenario picker: jump straight to any level or wave setup from a dev menu instead of always starting `slice0_dual_front` | S | 📋 Draft | **Blocked on G5 ≥2 level JSONs.** Until then, fold "reload current JSON + jump wave" into DT3 — do not ship a picker over one file |
-| DT7 | Playtest session logging: structured event/action log matching `VS10_PLAYTEST_PROTOCOL.md`'s session template, auto-captured into `playtest_sessions.json` | M | 📋 Draft | Replaces the manual note-taking the protocol currently assumes; dashboard `PlaytestNotesView` (ID3) already reads this file's shape |
-| DT8 | Dev-menu access/unlock mechanism | S | 📋 Draft | Foundational — DT1–DT7 hang off whatever this is. See [Gating](#gating-open-question). |
+| DT5 | On-screen diagnostics overlay: FPS, raider/unit counts, sim tick time, memory — toggleable HUD layer | S | 📋 Pending | Feeds VS-A8's 30+ FPS / 10–40 unit acceptance check directly. Define FPS/tick sampling explicitly; report memory only where a supported Godot API exists rather than promising portable numbers. Layout: top-right semi-transparent widget (FPS, sim tick ms, active raiders land/sea, defender count). |
+| DT6 | Level/scenario picker: jump straight to any level or wave setup from a dev menu instead of always starting `slice0_dual_front` | S | ⏸ Blocked | Blocked on G5 having ≥2 level JSONs. Until then, "reload current JSON + jump wave" lives under DT3 — no picker UI over a single file. |
+| DT7 | Playtest session logging: structured event/action log matching `VS10_PLAYTEST_PROTOCOL.md`'s session template, plus a one-press **"Sync to Dashboard"** pipeline action (owner decision — see [DT7 data path](#dt7-data-path-locked)) | M | 📋 Pending | One-tap `[📝 Mark Session Event]` button timestamps notable moments during a session; separate "Sync to Dashboard" button runs the pipeline. |
+| DT8 | Dev-menu access/unlock mechanism | S | 📋 **Pending — T25, next up** | Foundational — DT1–DT7 hang off this. See [Gating](#gating-locked). |
 
-## Gating (open question)
+## Gating (locked)
 
-How these tools are exposed is **not yet decided** — flagging for the final review pass rather than
-guessing:
+**Runtime unlock, not a compile-time flag** — Slice-0 has no release export pipeline yet, and the
+owner/collaborators need this on the same build they're already running:
 
-- **Compile-time flag:** dev tools only exist in dev/debug exports, stripped entirely from release
-  builds. Safest, but means playtest collaborators need a special build.
-- **Runtime unlock:** shipped in all builds but hidden behind a gesture/key-combo/tap-sequence (à la
-  classic dev consoles). Simpler pipeline, small risk of a curious player finding it.
-- **Settings-menu toggle gated by the existing telemetry consent tiers (U3):** reuse the Tier 0/1/2
-  selector's pattern — a "Developer Mode" toggle that unlocks DT1–DT7 in a submenu once enabled.
+- **Desktop:** `~` (tilde) or `F12` opens the developer console/overlay.
+- **Mobile/touch:** 5-tap sequence on the main-menu version label, or a **"Developer Mode"** toggle
+  in Settings (U3) — a *separate* preference from the existing Tier 0/1/2 telemetry-consent
+  selector. **Consent controls data collection; developer mode controls privileged simulation
+  mutations — do not conflate the two**, both to avoid a category error and to keep playtest notes
+  legible.
+- **Future release gate:** once a store-signed export pipeline exists, add a second gate that
+  compiles out or hard-disables DT1–DT4 (the cheats) from release/store builds — a hidden gesture
+  alone is not a release-safety boundary. DT5's overlay may stay available in debug builds. Not
+  needed yet; noted here so it isn't forgotten when export packaging (S8/IOS5) starts.
 
-Recommendation from this draft: **runtime unlock + settings-menu toggle**, since Slice-0 has no
-release export pipeline yet and the owner/collaborators need this on the same build they're already
-running — but this is exactly the kind of call that should get owner sign-off, not be assumed.
+## DT7 data path (locked)
 
-### Grok (main dev) draft edit — 2026-08-14
+**Owner decision (overrides both the agents' "manual export/import" draft recommendation and a
+fully-automatic live sync):** DT7 stays **event-triggered, not continuous** — session events are
+always recorded locally, and a dev presses a **"Sync to Dashboard"** action that runs a
+**pre-programmed pipeline**, never a hand-edited file copy:
 
-**Gating vote (DT8):** agree with Gemini on **desktop `~` / `F12` + mobile 5-tap / Settings "Developer Mode"**. **Reject telemetry-tier as the unlock** — U3 tiers are consent, not privilege; mixing them is a category error and will confuse playtest notes. When a store-signed export pipeline exists, add a **second gate**: strip DT1–DT4 (cheats) from release exports (`DEBUG` / custom feature tag). Keep DT5 overlay optional in debug APKs. Do not fragment collaborator builds *now*.
-
-**Layer split (load-bearing):**
-- **C++ `SimWorld`:** any cheat that mutates sim state (set resources, skip build timer, invuln, one-shot, disable waves, jump wave, spawn at cell). Expose as explicit debug methods, not by poking private fields from GDScript.
-- **Godot:** DT8 menu, DT4 calling `sim.tick(fixed_dt)` once per step (T11 already freezes `_process` while paused — do not invent a second clock), DT5 overlay (`Performance` + `get_raider_count` / wrap `tick` with a usec timer), DT7 `user://playtest_sessions.json`.
-- Force win/lose **must** go through `GameSession.end_run` so G8 / VS8 persistence is what you test, not a fake overlay.
-
-**Resequence vs the table order:**
-1. **DT8** (nothing else is reachable)
-2. **DT5 + DT4** — highest VS10 value: see FPS / 40-unit budget, step a bad tick
-3. **DT1 + DT2** — speed up sessions (skip build, force lose for G8)
-4. **DT3** without RNG seed
-5. **DT7** — after the menu exists so "mark event" has a home (Gemini's top-right widget is fine)
-6. **DT6 last**, after G5 has a second level
-
-**Cut / do not add:** in-game sentiment/feedback capture (owner did not pick it); LiveOps/dashboard write-back from the client; a second simulation clock.
-
-**T23 / VS10:** do not block VS10 on the full DT set. A useful playtest kit is DT8+DT5(+DT4). T23 (G4 hero) is player-facing kit and should stay ahead of U9 hero-sprite work so Gemini is not drawing a hero that Grok then replaces.
-
-### Gemini Design Lead Feedback (2026-08-14 Draft Input)
-
-- **Endorse Gating Pattern (DT8):** Support the **Runtime Tap Sequence + Settings Menu Toggle**:
-  - *Desktop:* `~` (tilde) / `F12` opens the developer console overlay.
-  - *Mobile / Touch:* 5-tap sequence on the Main Menu version label or a "Developer Diagnostics" toggle in Settings (U3) unlocks the floating dev tool button.
-  - This eliminates build fragmentation for APK collaborator testing while preventing accidental player access.
-- **Diagnostics Overlay (DT5) & Session Logger (DT7) UI Spec:**
-  - *Layout:* Lightweight, semi-transparent top-right HUD widget displaying: FPS, Sim Tick (ms), Active Raiders (Land/Sea), Defender count, and a one-tap `[📝 Mark Session Event]` button that timestamps notable playtest moments straight into `user://playtest_sessions.json`.
-
+- **Recording (all builds):** every session always writes to `user://playtest_sessions.json` via
+  the DT7 logger — this is the single source of truth on-device, mobile included.
+- **Desktop/editor builds** (same checkout as `docs/website/`): the dev-menu's "Sync to Dashboard"
+  button runs a small pipeline step (a script or an in-engine file op — implementation's choice,
+  not a hand-edit) that reads `user://playtest_sessions.json` and writes it into
+  `docs/website/public/dashboard-data/playtest_sessions.json` in the shape `PlaytestNotesView`
+  already expects. One press, no manual JSON surgery.
+- **Mobile/collaborator builds** (sandboxed storage, no filesystem access to the website checkout):
+  the same "Sync to Dashboard" action exports `user://playtest_sessions.json` via the platform share
+  sheet / save-to-downloads. The owner then runs the **same pipeline script** (e.g.
+  `scripts/sync_playtest_session.sh <exported-file>`) locally to merge it into
+  `docs/website/public/dashboard-data/playtest_sessions.json` — one command, not hand-editing JSON.
+  This half stays two steps (export on the phone, run the script on the owner's machine) because
+  there is no backend (`backend.md` B7 is deferred) to receive a direct upload from a sandboxed
+  mobile app.
+- If/when `backend.md` B7 (leaderboards/analytics REST API) lands, DT7 should be revisited to post
+  mobile sessions there directly instead of the share-sheet + script handoff — flagged as a forward
+  pointer, not committed scope now.
 
 Effort key: S = days, M = 1–2 weeks, L = 3–6 weeks, XL = multi-month/cross-cutting.

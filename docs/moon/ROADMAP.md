@@ -69,7 +69,7 @@ Status markers: ✅ Done · 🚧 In Progress · 📋 Pending · ❌ Rejected · 
 | [`ios.md`](roadmaps/ios.md) | Godot iOS export path |
 | [`internal_dashboard.md`](roadmaps/internal_dashboard.md) | React dashboard + MFP islands |
 | [`repo_automation.md`](roadmaps/repo_automation.md) | Issue sync / agent process |
-| [`dev_tools.md`](roadmaps/dev_tools.md) | **Draft** — god mode, debug overlay, playtest tooling |
+| [`dev_tools.md`](roadmaps/dev_tools.md) | God mode, debug overlay, playtest tooling |
 
 Completed items → [`CHANGELOG.md`](CHANGELOG.md).
 
