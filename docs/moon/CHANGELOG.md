@@ -12,9 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **DT1:** `SimWorld`/`SimulationCore` `debug_set_resources`, per-front infinite spend, `debug_apply_income`. Overlay skip-build zeros the Godot build timer and calls `_start_combat`.
 - **DT2:** invuln (HQ/outposts), `debug_kill_all_raiders`, `debug_set_waves_disabled`. Force win/lose uses `BattleRoot._finish` → `GameSession.end_run`. `reset_run` clears cheat flags. Smoke: `debug_cheats_smoke.gd`.
 
-### Added (2026-08-14, U10 ThemeTokens & HUD Visual Design Pass)
+### Added (2026-08-14, T31 U10 ThemeTokens & HUD Visual Design Pass Completion)
 
-- **U10:** `theme_tokens.gd` shared design tokens (Ukiyo-e Ink/Paper/Cinnabar/Gold/Moss/Sea Indigo palette, StyleBox panel/button generators, glyph constants `兩`/`海關兩`/`🌾 糧倉`/`⛵ 港埠`/`🏰 HQ`, and `animate_fade_in`/`animate_slide_fade_in` transition helpers). Wired into `battle_hud.gd` for styled pause and results overlays, currency labels, and outpost badges. Smoke: `theme_tokens_smoke.gd`.
+- **U10:** `theme_tokens.gd` shared design tokens (Ukiyo-e Ink/Paper/Cinnabar/Gold/Moss/Sea Indigo palette, StyleBox panel/button generators, glyph constants `兩`/`海關兩`/`🌾 糧倉`/`⛵ 港埠`/`🏰 HQ`, and `animate_fade_in`/`animate_slide_fade_in` transition helpers). Adopted across `main_menu.gd`, `settings_dialog.gd`, and `battle_hud.gd`; added live wave-threat skull markers (☠ Ⅰ/Ⅱ/Ⅲ) and hero ability cooldown timer indicator (⌛) in the battle HUD. Smoke: `theme_tokens_smoke.gd`.
 
 ### Changed (2026-08-14, T26 DT5 diagnostics + DT4 time)
 

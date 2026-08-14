@@ -283,7 +283,31 @@ func set_status(text: String) -> void:
 
 func set_wave(wave: int) -> void:
 	if _wave_label != null:
-		_wave_label.text = "Wave %d" % wave if wave > 0 else "Wave —"
+		if wave <= 0:
+			_wave_label.text = "Wave —"
+			return
+		var threat_roman := "Ⅰ (Scouts)"
+		var threat_color := ThemeTokensScript.GOLD
+		if wave >= 3:
+			threat_roman = "Ⅲ (War Fleet)"
+			threat_color = ThemeTokensScript.CINNABAR
+		elif wave == 2:
+			threat_roman = "Ⅱ (Raiders)"
+			threat_color = ThemeTokensScript.OCHRE
+		_wave_label.add_theme_color_override("font_color", threat_color)
+		_wave_label.text = "Wave %d · %s %s" % [wave, ThemeTokensScript.GLYPH_THREAT_SKULL, threat_roman]
+
+
+func set_hero_cooldown(cooldown_left: float, _max_cooldown: float = 10.0) -> void:
+	if hero_btn == null:
+		return
+	if cooldown_left <= 0.0:
+		hero_btn.text = "E · Hero Ability (Ready)"
+		hero_btn.add_theme_color_override("font_color", ThemeTokensScript.GOLD)
+	else:
+		hero_btn.text = "E · Hero Ability (⌛ %.1fs)" % cooldown_left
+		hero_btn.add_theme_color_override("font_color", ThemeTokensScript.INK_MUTED)
+
 
 
 func set_selected(id: String) -> void:

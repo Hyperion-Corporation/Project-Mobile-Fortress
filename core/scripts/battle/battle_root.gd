@@ -218,6 +218,16 @@ func _update_hud() -> void:
 		)
 	if hud.has_method("set_wave"):
 		hud.set_wave(wave_index)
+	if hud.has_method("set_hero_cooldown"):
+		var max_cd := 0.0
+		var has_hero := false
+		for d in sim.get_defenders():
+			var utype := str(d.get("type", ""))
+			if UnitDefs.is_hero(utype) or utype == "hero":
+				has_hero = true
+				max_cd = maxf(max_cd, float(d.get("ability_cooldown_left", 0.0)))
+		if has_hero:
+			hud.set_hero_cooldown(max_cd)
 	if hud.has_method("set_status") and status_message != "":
 		hud.set_status(status_message)
 

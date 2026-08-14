@@ -2,16 +2,17 @@ extends Control
 ## Main menu — Wōkòu-era coastal theme (U1) over Slice-0 entry.
 
 const SettingsDialogScript := preload("res://scripts/ui/settings_dialog.gd")
+const ThemeTokensScript := preload("res://scripts/ui/theme_tokens.gd")
 
 @onready var start_btn: Button = $Center/VBox/StartBtn
 @onready var classic_btn: Button = $Center/VBox/ClassicBtn
 @onready var quit_btn: Button = $Center/VBox/QuitBtn
 @onready var blurb: Label = $Center/VBox/Blurb
 
-const PAPER := Color(0.93, 0.86, 0.74, 1)
-const DUSK := Color(0.18, 0.16, 0.18, 1)
-const INDIGO := Color(0.12, 0.20, 0.30, 1)
-const CINNABAR := Color(0.72, 0.20, 0.14, 1)
+const PAPER := ThemeTokensScript.PAPER
+const DUSK := ThemeTokensScript.INK
+const INDIGO := ThemeTokensScript.SEA_INDIGO
+const CINNABAR := ThemeTokensScript.CINNABAR
 
 var _resume_btn: Button
 var _last_run_label: Label
@@ -42,6 +43,9 @@ func _ready() -> void:
 	_ensure_resume_and_history_ui(has_cpp)
 	_ensure_version_label()
 	_refresh_last_run()
+	var center: Control = get_node_or_null("Center")
+	if center:
+		ThemeTokensScript.animate_fade_in(center, 0.25)
 
 
 func _apply_coastal_theme() -> void:

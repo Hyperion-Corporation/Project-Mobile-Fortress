@@ -6,12 +6,14 @@ extends Control
 signal settings_saved(settings: Dictionary)
 signal closed
 
-const PAPER := Color(0.93, 0.86, 0.74, 1)
-const DUSK := Color(0.18, 0.16, 0.18, 1)
-const INDIGO := Color(0.12, 0.20, 0.30, 1)
-const CINNABAR := Color(0.72, 0.20, 0.14, 1)
-const PANEL_BG := Color(0.96, 0.93, 0.88, 0.98)
-const ACCENT_BORDER := Color(0.24, 0.32, 0.40, 1)
+const ThemeTokensScript := preload("res://scripts/ui/theme_tokens.gd")
+
+const PAPER := ThemeTokensScript.PAPER
+const DUSK := ThemeTokensScript.INK
+const INDIGO := ThemeTokensScript.SEA_INDIGO
+const CINNABAR := ThemeTokensScript.CINNABAR
+const PANEL_BG := ThemeTokensScript.PAPER_CARD
+const ACCENT_BORDER := ThemeTokensScript.SEA_INDIGO_BRIGHT
 
 var _current_settings: Dictionary = {}
 
@@ -171,6 +173,7 @@ func _build_ui() -> void:
 	style.content_margin_bottom = 20
 	panel.add_theme_stylebox_override("panel", style)
 	center.add_child(panel)
+	ThemeTokensScript.animate_slide_fade_in(panel, -20.0, 0.25)
 
 	var main_vbox := VBoxContainer.new()
 	main_vbox.name = "MainVBox"
