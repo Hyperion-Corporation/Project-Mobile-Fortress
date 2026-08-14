@@ -20,6 +20,7 @@
 5. [Coding Standards](#5-coding-standards)
 6. [AI Review & Severity Protocol](#6-ai-review--severity-protocol)
 7. [Known Constraints](#7-known-constraints)
+8. [Multi-Agent Session Workflow](#8-multi-agent-session-workflow)
 
 ## 1. Project Overview & Mission
 
@@ -127,3 +128,12 @@ This project targets **simple, dependency-light 2D game clients** (per platform,
 - `core/` is assets + documentation only, not a compiled shared module — see `core/README.md` and [`docs/moon/roadmaps/shared_core.md`](../docs/moon/roadmaps/shared_core.md) (C++ is the decided direction) before assuming any logic is actually shared between the two clients.
 - The iOS client cannot be built, tested, or run inside `.devcontainer/` (Linux-only) — it requires a native macOS host or a `macos-latest` CI runner.
 - Multiplayer, gacha/monetization, and ML-driven systems (Flow Field pathfinding, WFC procgen, RL difficulty, CMAB offers) are all pre-implementation — see [`docs/moon/ROADMAP.md`](../docs/moon/ROADMAP.md) for phase sequencing before assuming any are wired up.
+
+## 8. Multi-Agent Session Workflow
+
+When multiple AI assistants (Claude, Grok, Chat/Codex, Gemini, etc.) are working this repo together in one session, coordinating through `.agent/cache/AGENT_BUS.md` (see that file's own protocol header):
+
+- **Commit your own work before ending your session.** Whichever agent implemented a change is responsible for staging and committing it — with a scoped, conventional-commit message (`feat(core): ...`, `docs(moon): ...`, etc.) — before signing off, rather than leaving it for another agent or the owner to sort out later. Group commits by module/concern the same way you'd group a manual review: don't bundle unrelated trees (e.g. `core/src/cpp/` vs `docs/website/`) into one commit just because they landed in the same session.
+- **Update the changelog and roadmap(s) as part of that same commit**, not as a follow-up: `docs/moon/CHANGELOG.md` gets an entry for what shipped, and the relevant `docs/moon/roadmaps/*.md` status line(s) move from `📋 Pending`/`🚧 Partial` to reflect reality. A task isn't done until the docs match the diff.
+- **GitHub project issues are the team lead's responsibility, not each agent's.** Whoever is acting as team lead for the session (see the current role split logged on `AGENT_BUS.md`) owns retitling/commenting/closing issues after independently verifying the work — don't post to GitHub for your own unreviewed changes.
+- If your session ends mid-task (blocked, handed off, or simply out of budget), say so on the bus instead of committing partial/broken work — an uncommitted working-tree diff plus a bus note is better than a commit that doesn't build or pass its own smokes.
