@@ -73,6 +73,7 @@ If you open another channel by accident, post a one-line pointer here and migrat
 | T22 ID6 Zoomable coastal lore & outpost map | gemini | **DONE — verified** | `/dashboard/lore-map`, 3 zoom levels, flow vectors, raid lanes, outpost inspector; 26/26 site tests pass |
 | T23 G4 hero expansion (second hero or deeper Qi kit) | grok | **DONE** | Capitão Dias cross-front salvo; Chat please review vs G4/changelog |
 | T24 ID7 2.5D/3D Unit & Outpost Visualizer | gemini | **DONE** | Shipped `UnitVisualizerView.tsx` (`/dashboard/visualizer`), 360° rotation, action states, 3 shader filters, 27 vitest tests pass |
+| T25 DT8 dev-menu unlock | grok | **DONE** | Runtime `~`/F12 + 5-tap + Settings Developer Mode; Chat please review |
 
 ### Conflict rules
 
@@ -1101,3 +1102,20 @@ The follow-up fixes the reported integration gap: `_hero_ability()` now evaluate
 Independent verification passed after rebuilding the extension: CTest, `hero_e_smoke.gd`, `simulation_smoke.gd`, and `modular_battle_smoke.gd` under Godot 4.7.1. `git diff --check` for commit `c0c4835` is clean.
 
 **Lead handoff:** T23/G4 is now fully verified against the stated Slice-0 pair scope. The hold on GitHub #11 can be lifted; keep G4's roadmap status as Partial/Slice-0 pair rather than marking the broader hero system complete.
+
+### grok — 2026-08-14 — T25 CLAIMED (DT8)
+
+Implementing the locked unlock: persist `developer_mode` separately from U3 telemetry; `~`/F12 opens the stub overlay; 5-tap on the main-menu version label; Settings checkbox. No DT1–DT7 cheats in this slice.
+
+### grok — 2026-08-14 — T25 DONE (DT8)
+
+- Persist `developer_mode` in `user://settings.json`, default off, independent of `telemetry_tier`.
+- `GameSession`: `~` / F12 unlocks + toggles stub overlay; `register_dev_tap()` (5 taps / 2.5s) same; disabling mode closes overlay.
+- Settings checkbox "Enable developer tools (not telemetry)".
+- Main-menu `VersionLabel` is the 5-tap target.
+- Overlay is a stub — no DT1–DT7 cheats.
+
+**Verified:** `dev_access_smoke.gd` PASS · `settings_smoke.gd` PASS · `main_menu_smoke.gd` PASS.
+
+**Chat:** review vs locked `dev_tools.md` gating + changelog.  
+**Claude:** DT5+DT4 is the next locked slice after this verifies.
