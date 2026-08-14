@@ -6,6 +6,7 @@ extends Node2D
 enum Phase { BUILD, COMBAT, RESULT }
 
 const LEVEL_PATH := "res://assets/levels/slice0_dual_front.json"
+const UnitTokenScript := preload("res://scripts/ui/unit_token.gd")
 const SELECT_KEYS := {
 	"select_unit_1": "spearman",
 	"select_unit_2": "cannon",
@@ -125,22 +126,44 @@ func _wire_hud() -> void:
 
 
 func _process(delta: float) -> void:
-	if run_over or GameSession.is_paused:
+	if run_over:
 		return
+	if GameSession.is_paused:
+		if GameSession.consume_step():
+			_advance_sim(GameSession.STEP_DT)
+		return
+	_advance_sim(delta * GameSession.time_scale)
+
+
+func _advance_sim(dt: float) -> void:
 	match phase:
 		Phase.BUILD:
-			build_time_left -= delta
+			build_time_left -= dt
 			_update_hud()
 			if build_time_left <= 0.0:
 				_start_combat()
 		Phase.COMBAT:
-			var events: Array = sim.tick(delta, true)
+			var t0 := Time.get_ticks_usec()
+			var events: Array = sim.tick(dt, true)
+			var elapsed := Time.get_ticks_usec() - t0
 			combat_time = sim.get_combat_time()
 			wave_index = sim.get_current_wave()
 			_process_events(events)
 			_sync_visuals()
 			_sync_session_from_sim()
+			_note_dev_stats(elapsed)
 			_update_hud()
+
+
+func _note_dev_stats(tick_usec: int) -> void:
+	var land_n := 0
+	var sea_n := 0
+	for raider in sim.get_raiders():
+		if int(raider.get("front", 0)) == 0:
+			land_n += 1
+		else:
+			sea_n += 1
+	GameSession.note_sim_frame(tick_usec, land_n, sea_n, sim.get_defender_count())
 
 
 func _process_events(events: Array) -> void:
@@ -326,29 +349,31 @@ func _sync_visuals() -> void:
 	for r in sim.get_raiders():
 		var id: int = int(r["id"])
 		live_ids[id] = true
+		var front_num := int(r.get("front", 0))
 		if not visual_nodes.has(id):
-			var sprite := ColorRect.new()
-			sprite.size = Vector2(16, 16)
-			sprite.color = UnitDefs.PALETTE["wokou"] if int(r.get("front", 0)) == 0 else UnitDefs.PALETTE["wokou_sail"]
-			raiders_root.add_child(sprite)
-			visual_nodes[id] = sprite
-		visual_nodes[id].global_position = r["position"] - Vector2(8, 8)
+			var token: Node2D = UnitTokenScript.new()
+			token.setup_raider(front_num)
+			raiders_root.add_child(token)
+			visual_nodes[id] = token
+		visual_nodes[id].global_position = r["position"]
+
 	for d in sim.get_defenders():
 		var id: int = int(d["id"])
 		live_ids[id] = true
 		var utype: String = str(d.get("type", "spearman"))
 		var udef: Dictionary = UnitDefs.get_def(utype)
-		var col: Color = udef.get("color", Color.CORNFLOWER_BLUE) if not udef.is_empty() else Color.CORNFLOWER_BLUE
 		if not visual_nodes.has(id):
-			var sprite := ColorRect.new()
-			var sz := 28.0 if UnitDefs.is_hero(utype) else 22.0
-			sprite.size = Vector2(sz, sz)
-			sprite.color = col
-			units_root.add_child(sprite)
-			visual_nodes[id] = sprite
-		var node: ColorRect = visual_nodes[id]
-		node.global_position = d["position"] - node.size * 0.5
-		node.modulate = Color(0.7, 0.7, 0.7) if bool(d.get("traveling", false)) else Color.WHITE
+			var token: Node2D = UnitTokenScript.new()
+			token.setup_defender(utype, udef)
+			units_root.add_child(token)
+			visual_nodes[id] = token
+		var node: Node2D = visual_nodes[id]
+		node.global_position = d["position"]
+		if node.has_method("set_traveling"):
+			node.set_traveling(bool(d.get("traveling", false)))
+		if node.has_method("set_selected"):
+			node.set_selected(id == selected_defender_id)
+
 	for id in visual_nodes.keys():
 		if not live_ids.has(id):
 			_free_visual(id)
@@ -357,27 +382,29 @@ func _sync_visuals() -> void:
 	_sync_outpost(0, sim.get_land_outpost_hp(), sim.is_land_outpost_alive(), land_grid)
 	_sync_outpost(1, sim.get_sea_outpost_hp(), sim.is_sea_outpost_alive(), sea_grid)
 
+
 func _sync_outpost(front_id: int, hp: float, alive: bool, grid: GridFront) -> void:
 	var id_key := "outpost_" + str(front_id)
 	if not alive:
 		_free_visual(id_key)
 		return
 	if not visual_nodes.has(id_key):
-		var sprite := ColorRect.new()
-		sprite.size = Vector2(32, 32)
-		sprite.color = Color.GOLD if front_id == 0 else Color.LIGHT_CYAN
-		units_root.add_child(sprite)
-		visual_nodes[id_key] = sprite
-	var node: ColorRect = visual_nodes[id_key]
+		var token: Node2D = UnitTokenScript.new()
+		token.setup_outpost(front_id)
+		units_root.add_child(token)
+		visual_nodes[id_key] = token
+	var node: Node2D = visual_nodes[id_key]
 	var cell := Vector2i(4, 2)
-	node.global_position = grid.cell_to_global_center(cell) - node.size * 0.5
+	node.global_position = grid.cell_to_global_center(cell)
 	var max_hp: float = 40.0
 	if front_id == 0 and sim.has_method("get_land_outpost_max"):
 		max_hp = float(sim.get_land_outpost_max())
 	elif front_id == 1 and sim.has_method("get_sea_outpost_max"):
 		max_hp = float(sim.get_sea_outpost_max())
-	var ratio: float = clampf(hp / maxf(1.0, max_hp), 0.15, 1.0)
-	node.modulate = Color(1.0, ratio, ratio)
+	var ratio: float = clampf(hp / maxf(1.0, max_hp), 0.0, 1.0)
+	if node.has_method("set_hp_ratio"):
+		node.set_hp_ratio(ratio)
+
 
 func _free_visual(id: Variant) -> void:
 	if visual_nodes.has(id):

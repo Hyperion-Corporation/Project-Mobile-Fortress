@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed (2026-08-14, T26 DT5 diagnostics + DT4 time)
+
+- **DT5:** DT8 overlay shows FPS, last `sim.tick` ms, land/sea raider counts, defender count, and static memory when `Performance.MEMORY_STATIC` exists.
+- **DT4:** `GameSession.time_scale` (0.5–10×) scales the existing battle `_process` delta. Pause is still `set_paused`. Step while paused runs one 1/30s tick. No second clock. Smoke: `dev_diag_smoke.gd`.
+
+### Added (2026-08-14, U9 UnitToken tactical silhouettes & outpost HP state)
+
+- **U9 (Sub-pass 1):** `UnitToken.gd` procedural vector token renderer for Godot combat view. Replaces raw ColorRect placeholders with crisp ukiyo-e cartographic silhouettes: General Qi Jiguang (golden plume star aura), Capitão Dias (naval cross/anchor), Ming Spearmen (diamond pike), Cannon Crew (swivel barrel), Portuguese Arquebusiers (matchlock chevron), War Junk (sail wedge), Cross Support (signal battery beacon), Wōkòu Raiders (nodachi slash / pirate sail), and Outposts (bastion battlements with dynamic health bar and damage modulation). Covered by `unit_token_smoke.gd`.
+
 ### Changed (2026-08-14, T25 DT8 developer unlock)
 
 - **DT8:** Runtime unlock — persist `developer_mode` separately from U3 telemetry. `~` / F12 unlocks and toggles a stub overlay; 5-tap the main-menu version label; Settings checkbox "Enable developer tools (not telemetry)". No DT1–DT7 cheats yet. Smoke: `dev_access_smoke.gd`.
