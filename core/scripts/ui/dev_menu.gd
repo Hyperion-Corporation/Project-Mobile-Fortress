@@ -1,12 +1,14 @@
 extends CanvasLayer
-## DT8 stub overlay — cheats (DT1–DT4) and diagnostics (DT5/DT7) land later.
+## DT8 overlay + DT5 diagnostics + DT4 pause/step/speed (same clock as T11).
 
 const INK := Color(0.10, 0.09, 0.12, 1)
 const PAPER := Color(0.93, 0.86, 0.74, 0.94)
 const CINNABAR := Color(0.72, 0.20, 0.14, 1)
 
-var _panel: PanelContainer
-var _status: Label
+var _diag: Label
+var _speed_slider: HSlider
+var _speed_label: Label
+var _pause_btn: Button
 
 
 func _ready() -> void:
@@ -17,6 +19,11 @@ func _ready() -> void:
 	_build()
 
 
+func _process(_delta: float) -> void:
+	if visible:
+		_refresh_diag()
+
+
 func _build() -> void:
 	var root := Control.new()
 	root.name = "Root"
@@ -24,13 +31,13 @@ func _build() -> void:
 	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(root)
 
-	_panel = PanelContainer.new()
-	_panel.name = "Panel"
-	_panel.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	_panel.offset_left = -340
-	_panel.offset_top = 12
-	_panel.offset_right = -12
-	_panel.offset_bottom = 168
+	var panel := PanelContainer.new()
+	panel.name = "Panel"
+	panel.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	panel.offset_left = -360
+	panel.offset_top = 12
+	panel.offset_right = -12
+	panel.offset_bottom = 320
 	var style := StyleBoxFlat.new()
 	style.bg_color = PAPER
 	style.border_color = CINNABAR
@@ -42,31 +49,67 @@ func _build() -> void:
 	style.content_margin_top = 10
 	style.content_margin_right = 12
 	style.content_margin_bottom = 10
-	_panel.add_theme_stylebox_override("panel", style)
-	root.add_child(_panel)
+	panel.add_theme_stylebox_override("panel", style)
+	root.add_child(panel)
 
 	var vbox := VBoxContainer.new()
 	vbox.add_theme_constant_override("separation", 6)
-	_panel.add_child(vbox)
+	panel.add_child(vbox)
 
 	var title := Label.new()
 	title.name = "Title"
-	title.text = "DEVELOPER MODE · DT8"
+	title.text = "DEVELOPER · DT4 / DT5"
 	title.add_theme_color_override("font_color", CINNABAR)
 	title.add_theme_font_size_override("font_size", 16)
 	vbox.add_child(title)
 
-	_status = Label.new()
-	_status.name = "Status"
-	_status.text = "Unlocked. Cheats (DT1–DT4) and overlay (DT5) are not wired yet."
-	_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_status.custom_minimum_size = Vector2(300, 0)
-	_status.add_theme_color_override("font_color", INK)
-	_status.add_theme_font_size_override("font_size", 12)
-	vbox.add_child(_status)
+	_diag = Label.new()
+	_diag.name = "DiagLabel"
+	_diag.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_diag.custom_minimum_size = Vector2(320, 0)
+	_diag.add_theme_color_override("font_color", INK)
+	_diag.add_theme_font_size_override("font_size", 12)
+	vbox.add_child(_diag)
+
+	var time_sec := Label.new()
+	time_sec.text = "TIME (DT4)"
+	time_sec.add_theme_color_override("font_color", CINNABAR)
+	time_sec.add_theme_font_size_override("font_size", 13)
+	vbox.add_child(time_sec)
+
+	var btn_row := HBoxContainer.new()
+	btn_row.add_theme_constant_override("separation", 8)
+	_pause_btn = Button.new()
+	_pause_btn.name = "PauseBtn"
+	_pause_btn.text = "Pause"
+	_pause_btn.pressed.connect(_on_pause_pressed)
+	btn_row.add_child(_pause_btn)
+	var step_btn := Button.new()
+	step_btn.name = "StepBtn"
+	step_btn.text = "Step 1/30s"
+	step_btn.pressed.connect(_on_step_pressed)
+	btn_row.add_child(step_btn)
+	vbox.add_child(btn_row)
+
+	var speed_row := HBoxContainer.new()
+	speed_row.add_theme_constant_override("separation", 8)
+	_speed_label = Label.new()
+	_speed_label.name = "SpeedLabel"
+	_speed_label.custom_minimum_size = Vector2(56, 0)
+	_speed_label.add_theme_color_override("font_color", INK)
+	speed_row.add_child(_speed_label)
+	_speed_slider = HSlider.new()
+	_speed_slider.name = "SpeedSlider"
+	_speed_slider.min_value = 0.5
+	_speed_slider.max_value = 10.0
+	_speed_slider.step = 0.5
+	_speed_slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_speed_slider.value_changed.connect(_on_speed_changed)
+	speed_row.add_child(_speed_slider)
+	vbox.add_child(speed_row)
 
 	var hint := Label.new()
-	hint.text = "~ / F12 close · Settings → Developer Mode"
+	hint.text = "~ / F12 close · pause uses the same T11 clock"
 	hint.add_theme_color_override("font_color", Color(0.3, 0.28, 0.26, 1))
 	hint.add_theme_font_size_override("font_size", 11)
 	vbox.add_child(hint)
@@ -80,3 +123,72 @@ func _build() -> void:
 			session.set_dev_menu_open(false)
 	)
 	vbox.add_child(close_btn)
+	_bind_session()
+
+
+func _bind_session() -> void:
+	var session := get_tree().root.get_node_or_null("GameSession") if get_tree() else null
+	if session == null:
+		return
+	if not session.pause_changed.is_connected(_on_pause_changed):
+		session.pause_changed.connect(_on_pause_changed)
+	_speed_slider.value = float(session.time_scale)
+	_on_speed_changed(_speed_slider.value)
+	_on_pause_changed(bool(session.is_paused))
+
+
+func _session() -> Node:
+	if get_tree() == null:
+		return null
+	return get_tree().root.get_node_or_null("GameSession")
+
+
+func _on_pause_pressed() -> void:
+	var session := _session()
+	if session:
+		session.toggle_paused()
+
+
+func _on_step_pressed() -> void:
+	var session := _session()
+	if session:
+		session.set_paused(true)
+		session.request_step()
+
+
+func _on_speed_changed(value: float) -> void:
+	var session := _session()
+	if session:
+		session.set_time_scale(value)
+		_speed_label.text = "%.1fx" % session.time_scale
+	else:
+		_speed_label.text = "%.1fx" % value
+
+
+func _on_pause_changed(paused: bool) -> void:
+	if _pause_btn:
+		_pause_btn.text = "Resume" if paused else "Pause"
+
+
+func _refresh_diag() -> void:
+	if _diag == null:
+		return
+	var session := _session()
+	var fps := Engine.get_frames_per_second()
+	var tick_ms := 0.0
+	var land_n := 0
+	var sea_n := 0
+	var defs := 0
+	if session:
+		tick_ms = float(session.last_sim_tick_ms)
+		land_n = int(session.last_raider_land)
+		sea_n = int(session.last_raider_sea)
+		defs = int(session.last_defender_count)
+	var mem_line := "mem: n/a"
+	if Performance.has_method("get_monitor"):
+		var bytes := float(Performance.get_monitor(Performance.MEMORY_STATIC))
+		if bytes > 0.0:
+			mem_line = "static mem: %.1f MB" % (bytes / (1024.0 * 1024.0))
+	_diag.text = "FPS %.0f · tick %.2f ms\nraiders L %d / S %d · defenders %d\n%s" % [
+		fps, tick_ms, land_n, sea_n, defs, mem_line
+	]

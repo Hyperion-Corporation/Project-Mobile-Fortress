@@ -30,8 +30,15 @@ var last_result: Dictionary = {}
 var _run_recorded: bool = false
 
 var developer_mode: bool = false
+var time_scale: float = 1.0
+var last_sim_tick_ms: float = 0.0
+var last_raider_land: int = 0
+var last_raider_sea: int = 0
+var last_defender_count: int = 0
+var _step_pending: bool = false
 var _dev_menu: CanvasLayer
 var _dev_taps: Array[float] = []
+const STEP_DT := 1.0 / 30.0
 
 
 func _ready() -> void:
@@ -103,10 +110,35 @@ func _ensure_dev_menu() -> void:
 	add_child(_dev_menu)
 
 
+func set_time_scale(scale: float) -> void:
+	time_scale = clampf(scale, 0.5, 10.0)
+
+
+func request_step() -> void:
+	if is_paused:
+		_step_pending = true
+
+
+func consume_step() -> bool:
+	if not _step_pending:
+		return false
+	_step_pending = false
+	return true
+
+
+func note_sim_frame(tick_usec: int, raider_land: int, raider_sea: int, defenders: int) -> void:
+	last_sim_tick_ms = float(tick_usec) / 1000.0
+	last_raider_land = raider_land
+	last_raider_sea = raider_sea
+	last_defender_count = defenders
+
+
 func set_paused(paused: bool) -> void:
 	if is_paused == paused:
 		return
 	is_paused = paused
+	if not paused:
+		_step_pending = false
 	pause_changed.emit(paused)
 
 
@@ -126,6 +158,7 @@ func reset_run() -> void:
 	units_placed = 0
 	outposts_lost = 0
 	set_paused(false)
+	_step_pending = false
 	last_result.clear()
 	_run_recorded = false
 	resources_changed.emit(land_currency, sea_currency)
