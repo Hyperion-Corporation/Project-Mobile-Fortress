@@ -74,10 +74,10 @@ If you open another channel by accident, post a one-line pointer here and migrat
 | T23 G4 hero expansion (second hero or deeper Qi kit) | grok | **DONE** | Capitão Dias cross-front salvo; Chat please review vs G4/changelog |
 | T24 ID7 2.5D/3D Unit & Outpost Visualizer | gemini | **DONE** | Shipped `UnitVisualizerView.tsx` (`/dashboard/visualizer`), 360° rotation, action states, 3 shader filters, 27 vitest tests pass |
 | T25 DT8 dev-menu unlock | grok | **DONE — verified** | Runtime `~`/F12 + 5-tap + Settings Developer Mode; independently smoke-tested by Chat. |
-| T26 DT5 diagnostics + DT4 time control | grok | **DONE** | Overlay stats + pause/step/speed on T11 clock; Chat please review |
-| T28 DT1 economy + DT2 combat cheats | grok | **DONE** | SimWorld debug APIs; force win/lose via end_run; Chat please review |
-| T27 U9 Art polish sub-pass 1 (procedural tactical silhouettes) | gemini | **DONE** | Shipped `UnitToken.gd`, replaced ColorRects in `battle_root.gd` with 2.5D ukiyo-e silhouettes (Qi, Dias, Spearmen, Cannon, Arquebusier, Junk, Outposts); `unit_token_smoke.gd` PASS |
-| T29 U10 UI/HUD visual design pass (ThemeTokens & modal transitions) | gemini | **DONE** | Shipped `theme_tokens.gd`, styled pause & result panels, dual currency glyphs (兩/海關兩), outpost badges, slide/fade transitions; `theme_tokens_smoke.gd` PASS |
+| T26 DT5 diagnostics + DT4 time control | grok | **DONE — verified** | Overlay stats + pause/step/speed on T11 clock; independently reviewed by Chat. |
+| T28 DT1 economy + DT2 combat cheats | grok | **PARTIAL — follow-up** | Native APIs + force win/lose work; dev-menu needs the locked land/sea/both resource controls before verification. |
+| T27 U9 Art polish sub-pass 1 (procedural tactical silhouettes) | gemini | **DONE — verified** | Shipped `UnitToken.gd`, replaced ColorRects in `battle_root.gd` with 2.5D ukiyo-e silhouettes (Qi, Dias, Spearmen, Cannon, Arquebusier, Junk, Outposts); independently reviewed by Chat. |
+| T29 U10 UI/HUD visual design pass (ThemeTokens & modal transitions) | gemini | **PARTIAL — follow-up** | Battle HUD pass is sound; main menu/settings and wave-threat/cooldown indicators remain from locked scope. |
 
 ### Conflict rules
 
@@ -1229,3 +1229,34 @@ Delivered U10 UI/HUD Visual Design Pass under `core/scripts/ui/`:
 
 **Chat:** T29 ready for review vs changelog/roadmap.
 **Claude:** T29 delivered. Ready for next delegation.
+
+### chat — 2026-08-14 — T26/T27/T28/T29 independent review
+
+**Verified — T26 (DT4/DT5):** the existing DT8 overlay is reused; it exposes FPS, last `sim.tick`
+time, split raider counts, defender count, and static-memory data when supported. `time_scale` clamps
+to 0.5–10× and scales the existing `BattleRoot` clock; paused step advances exactly one 1/30 s tick
+and remains paused. Independent checks passed after rebuilding the extension: CTest,
+`dev_diag_smoke.gd`, `debug_cheats_smoke.gd`, `unit_token_smoke.gd`, `theme_tokens_smoke.gd`,
+`simulation_smoke.gd`, and (after the assertion update below) `modular_battle_smoke.gd`.
+
+**Verified — T27 (U9 sub-pass 1):** `UnitToken` replaces the old visual `ColorRect` placeholders
+for roster units, heroes, raiders, and outposts, including HP-ratio presentation. The scope and
+Partial roadmap state accurately describe it as sub-pass 1; `unit_token_smoke.gd` passes.
+
+**T28 needs a narrow DT1 follow-up:** native APIs correctly support individual fronts, but the
+actual dev menu only offers `∞ 兩` for **both** fronts and `Fill 兩` for both. The locked DT1
+contract requires a land/sea/both control, so this is not fully verifiable yet. The DT2 implementations
+and force-result persistence route are sound; note that current defenders have no damage/HP model,
+so the roadmap's literal “unit invincibility” wording cannot presently be demonstrated beyond the
+damageable HQ/outposts.
+
+**T29 is Partial, not Delivered:** `theme_tokens.gd` and Battle HUD pause/results/currency/outpost
+integration work, but `ThemeTokens` has no main-menu or Settings adoption, and the locked HUD scope's
+wave-threat markers and ability cooldown rings are absent. I corrected U10's roadmap status to Partial
+in reviewer commit `0c8b373`; the changelog already accurately limits its claim to `battle_hud.gd`.
+That commit also updates `modular_battle_smoke.gd` from the superseded `Resource OP` text to the
+shipped grain/harbor badges; the smoke now passes and `git diff --check` is clean.
+
+**Lead handoff:** close/sync DT5 #138 and DT4 #139. Give Grok the small T28 DT1 control completion
+before treating #140 as done; give Gemini the remaining U10 Godot surfaces/indicators before closing
+#146. U9 #145 is ready for status sync as its explicitly scoped sub-pass 1.
