@@ -1,0 +1,78 @@
+name: Godot core
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "core/**"
+      - ".github/workflows/godot-core.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "core/**"
+      - ".github/workflows/godot-core.yml"
+
+concurrency:
+  group: godot-core-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  cmake-native-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build tools
+        run: sudo apt-get update && sudo apt-get install -y cmake ninja-build g++ git
+
+      - name: Cache FetchContent deps
+        uses: actions/cache@v4
+        with:
+          path: core/build/_deps
+          key: mf-core-deps-${{ runner.os }}-${{ hashFiles('core/CMakeLists.txt') }}
+
+      - name: Configure
+        run: cmake -S core -B core/build -G Ninja -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build native tests
+        run: cmake --build core/build --target sim_world_tests -j
+
+      - name: ctest
+        run: ctest --test-dir core/build --output-on-failure
+
+  godot-simulation-smoke:
+    runs-on: ubuntu-latest
+    needs: cmake-native-tests
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build tools
+        run: sudo apt-get update && sudo apt-get install -y cmake ninja-build g++ git unzip
+
+      - name: Cache FetchContent deps
+        uses: actions/cache@v4
+        with:
+          path: core/build/_deps
+          key: mf-core-deps-${{ runner.os }}-${{ hashFiles('core/CMakeLists.txt') }}
+
+      - name: Configure and build extension
+        run: |
+          cmake -S core -B core/build -G Ninja -DCMAKE_BUILD_TYPE=Release
+          cmake --build core/build --target mobile_fortress_core -j
+          mkdir -p core/bin
+          cp -f core/build/libmobile_fortress_core.so core/bin/libmobile_fortress_core.so
+          cp -f core/build/libmobile_fortress_core.so core/bin/libmobile_fortress_core.linux.x86_64.so
+
+      - name: Install Godot 4.7.1
+        env:
+          GODOT_URL: https://github.com/godotengine/godot-builds/releases/download/4.7.1-stable/Godot_v4.7.1-stable_linux.x86_64.zip
+        run: |
+          curl -fsSL -o /tmp/godot.zip "$GODOT_URL"
+          unzip -q /tmp/godot.zip -d /tmp/godot
+          chmod +x /tmp/godot/Godot_v4.7.1-stable_linux.x86_64
+          echo "/tmp/godot" >> "$GITHUB_PATH"
+
+      - name: SimulationCore headless smoke
+        run: |
+          /tmp/godot/Godot_v4.7.1-stable_linux.x86_64 --path core --headless --script res://tests/simulation_smoke.gd

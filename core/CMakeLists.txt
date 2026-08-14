@@ -48,3 +48,26 @@ file(GLOB_RECURSE SOURCES "src/cpp/*.cpp" "src/cpp/*.h" "src/cpp/*.hpp")
 add_library(mobile_fortress_core SHARED ${SOURCES} ${GENERATED_HEADER})
 target_include_directories(mobile_fortress_core PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
 target_link_libraries(mobile_fortress_core PRIVATE godot::cpp EnTT::EnTT flatbuffers)
+
+# Native C++ suite (Q3/S7) — no Godot process / godot-cpp
+FetchContent_Declare(
+    doctest
+    GIT_REPOSITORY https://github.com/doctest/doctest.git
+    GIT_TAG        v2.4.11
+)
+# doctest 2.4.11 still declares cmake_minimum_required < 3.5
+set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
+FetchContent_MakeAvailable(doctest)
+
+enable_testing()
+add_executable(sim_world_tests
+    src/cpp/sim_world.cpp
+    tests/native/sim_world_test.cpp
+    ${GENERATED_HEADER}
+)
+target_include_directories(sim_world_tests PRIVATE
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/cpp"
+    "${CMAKE_CURRENT_BINARY_DIR}"
+)
+target_link_libraries(sim_world_tests PRIVATE flatbuffers doctest::doctest)
+add_test(NAME sim_world_tests COMMAND sim_world_tests)

@@ -1,123 +1,31 @@
 #ifndef MF_SIMULATION_CORE_H
 #define MF_SIMULATION_CORE_H
 
+#include "sim_world.h"
+
 #include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/variant/dictionary.hpp>
 #include <godot_cpp/variant/array.hpp>
 #include <godot_cpp/variant/packed_vector2_array.hpp>
 #include <godot_cpp/variant/string.hpp>
 #include <entt/entt.hpp>
-#include <vector>
 
 namespace godot {
 
-/// Headless dual-front sim for Slice-0.
-/// Presentation (main.gd or battle_root) owns drawing; this owns state + motion + combat + waves.
+/// GDExtension façade over Godot-free `mf::SimWorld`.
 class SimulationCore : public Node {
 	GDCLASS(SimulationCore, Node)
 
 private:
+	mf::SimWorld world;
 	entt::registry registry;
 
-	int land_resources = 14;
-	int sea_resources = 14;
-	int hq_hp = 100;
-	int hq_max_hp = 100;
-	int enemies_killed = 0;
-	int units_placed = 0;
-
-	int land_outpost_hp = 40;
-	int sea_outpost_hp = 40;
-	int land_outpost_max = 40;
-	int sea_outpost_max = 40;
-	bool land_outpost_alive = true;
-	bool sea_outpost_alive = true;
-
-	float income_acc = 0.0f;
-	int next_raider_id = 1;
-	int next_defender_id = 10001;
-
-	struct RaiderData {
-		int id = 0;
-		int front = 0;
-		float hp = 55.0f;
-		float max_hp = 55.0f;
-		float speed = 25.0f;
-		float damage = 6.0f;
-		int path_i = 0;
-		int outpost_path_i = -1;
-		bool struck_outpost = false;
-		Vector2 position;
-		PackedVector2Array path;
-		bool alive = true;
-	};
-
-	struct DefenderData {
-		int id = 0;
-		int front = 0;
-		String type;
-		Vector2 position;
-		float hp = 100.0f;
-		float range_px = 150.0f;
-		float damage = 10.0f;
-		float cooldown = 1.0f;
-		float cooldown_left = 0.0f;
-		float ability_cooldown = 8.0f;
-		float ability_cooldown_left = 0.0f;
-		float own_env_mult = 1.0f;
-		float cross_env_mult = 0.0f;
-		float aura_radius = 0.0f;
-		float aura_bonus = 0.0f;
-		bool traveling = false;
-		Vector2 travel_from;
-		Vector2 travel_to;
-		float travel_t = 0.0f;
-		float travel_duration = 1.6f;
-		bool alive = true;
-	};
-
-	struct WaveData {
-		float delay = 0.0f;
-		int land_count = 0;
-		int sea_count = 0;
-		bool fired = false;
-	};
-
-	struct FlowCell {
-		int cost = 9999;
-		Vector2i dir = Vector2i(0, 0); // direction to best neighbor
-		bool solid = false;
-	};
-
-	std::vector<RaiderData> raiders;
-	std::vector<DefenderData> defenders;
-	std::vector<WaveData> waves;
-	std::vector<FlowCell> land_flow;
-	std::vector<FlowCell> sea_flow;
-	Vector2i grid_size;
-
-	PackedVector2Array land_path;
-	PackedVector2Array sea_path;
-
-	int current_wave = 0;
-	float combat_time = 0.0f;
-	bool in_combat = false;
-	float build_phase_seconds = 40.0f;
-	float victory_time = 55.0f;
-
-	bool flow_active() const;
-	void update_flow_field(int front, Vector2i target);
-	Vector2 map_to_local(int front, Vector2i cell) const;
-	Vector2i local_to_map(int front, Vector2 pos) const;
-	void advance_raider_along_path(RaiderData &r, double delta, Array &events);
-	void advance_raider_along_flow(RaiderData &r, double delta, Array &events);
-	void damage_outpost(int front, int amount, Array &events);
-	void run_defender_combat(double delta, Array &events);
-	void run_travel(double delta);
-	void check_and_spawn_waves(Array &events);
-	float total_aura_at(Vector2 pos) const;
-	void spawn_wave_raiders(int front, int count, int wave_index);
-	PackedVector2Array default_lane_path(int front) const;
+	static Vector2 to_gd(mf::Vec2 v);
+	static mf::Vec2 from_gd(Vector2 v);
+	static PackedVector2Array to_gd_path(const std::vector<mf::Vec2> &path);
+	static std::vector<mf::Vec2> from_gd_path(const PackedVector2Array &path);
+	static Dictionary to_gd_hero(const mf::HeroCast &cast);
+	static Array to_gd_events(const std::vector<mf::SimEvent> &events);
 
 protected:
 	static void _bind_methods();
@@ -154,14 +62,14 @@ public:
 	void set_outpost_alive(int front, bool alive);
 	void note_unit_placed();
 
-	/// Optional flow-field grid (S2). When inactive, raiders use waypoint paths only.
 	void init_grids(Vector2i size);
 	void set_cell_solid(int front, Vector2i cell, bool solid);
+	bool flow_active() const;
 
-	/// Register lane paths used when C++ spawns wave raiders.
 	void set_lane_path(int front, PackedVector2Array path);
 
-	int spawn_raider(int front, PackedVector2Array path, float hp, float speed, float damage, int outpost_path_i = -1);
+	int spawn_raider(int front, PackedVector2Array path, float hp, float speed, float damage, int outpost_path_i = -1,
+			int entry_row = -1);
 	void damage_raider(int id, float amount);
 
 	int spawn_defender(int front, const String &type, Vector2 position, float range_px, float damage, float cooldown,

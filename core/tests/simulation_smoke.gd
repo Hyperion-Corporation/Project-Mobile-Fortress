@@ -177,6 +177,32 @@ func _init() -> void:
 			if not saw_flow_hq:
 				failures.append("flow-field raider never reached HQ")
 
+		# T12: combat waves must spawn empty-path even when lanes are registered
+		sim.reset_run(40, 40, 100)
+		if not sim.load_level_json("res://assets/levels/slice0_dual_front.json"):
+			failures.append("flow-wave level reload failed")
+		else:
+			var flow_lane := PackedVector2Array([Vector2(0, 0), Vector2(40, 0), Vector2(80, 0)])
+			sim.set_lane_path(0, flow_lane)
+			sim.set_lane_path(1, flow_lane)
+			sim.start_combat()
+			var saw_flow_wave := false
+			for _fw in 40:
+				sim.tick(0.1, false)
+				if sim.get_current_wave() >= 1:
+					for raider in sim.get_raiders():
+						if int(raider.get("path_len", -1)) == 0 or bool(raider.get("uses_flow", false)):
+							saw_flow_wave = true
+					break
+			if not saw_flow_wave:
+				failures.append("start_combat wave spawn ignored live flow field")
+			else:
+				var rows := {}
+				for raider in sim.get_raiders():
+					rows[int(raider.get("entry_row", -1))] = true
+				if rows.size() < 2:
+					failures.append("G3 flow wave did not stagger entry rows")
+
 	# Native save/load round-trip preserves offline simulation state
 	sim.reset_run(33, 44, 88)
 	sim.spawn_defender(1, "arquebusier", Vector2(12, 24), 80.0, 10.0, 0.8)
