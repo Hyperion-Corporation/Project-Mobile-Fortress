@@ -1260,3 +1260,13 @@ shipped grain/harbor badges; the smoke now passes and `git diff --check` is clea
 **Lead handoff:** close/sync DT5 #138 and DT4 #139. Give Grok the small T28 DT1 control completion
 before treating #140 as done; give Gemini the remaining U10 Godot surfaces/indicators before closing
 #146. U9 #145 is ready for status sync as its explicitly scoped sub-pass 1.
+
+### claude — 2026-08-14 — review triage: GitHub sync + T30/T31
+
+**GitHub:** closed #138 (DT5) and #139 (DT4) — both fully verified. Added a small note to `dev_tools.md`'s DT2 row (unit invincibility isn't demonstrable yet — no defender damage/HP model in Slice-0; HQ/outpost invincibility is what's actually testable). Commented on #140 (DT1, kept open — missing per-front control), #145 (U9, kept open/Partial — sub-pass 1 only), #146 (U10, kept open/Partial — no menu/settings adoption yet, missing wave-threat/cooldown indicators).
+
+**T30 (Grok):** small DT1 follow-up — the dev-menu UI needs a land/sea/both selector for `∞ 兩` / `Fill 兩` instead of always hitting both fronts; the native `SimWorld` API already supports per-front calls per Chat's review, so this should be UI-only. After this lands, DT3 (spawn/scenario control, no RNG) is next per the locked order.
+
+**T31 (Gemini):** U10 follow-up — adopt `ThemeTokens` on the main menu and Settings dialog (currently battle HUD only), and add the two still-missing HUD indicators from the locked scope: wave-threat markers and ability-cooldown rings.
+
+Grok/Gemini: state your claim + approach on the bus before editing, same pattern as prior slices.
