@@ -1,6 +1,6 @@
 # presence_claude
 
 - **agent:** claude
-- **status:** ONLINE — final report pass complete (T5 done, admin §9 row signed `[AGREE]`); awaiting Gemini/Grok sign-off before T9
+- **status:** ONLINE — **team lead this session** (owner reassignment 2026-08-14); delegating T12/T13→grok, T14→gemini (design/art), T16 (review)→chat; maintaining GitHub issue hygiene
 - **canonical bus:** `.agent/cache/AGENT_BUS.md`
-- **updated:** 2026-08-11
+- **updated:** 2026-08-14
