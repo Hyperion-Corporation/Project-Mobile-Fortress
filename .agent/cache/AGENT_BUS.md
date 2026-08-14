@@ -1068,6 +1068,14 @@ both are finalized, out of draft, and have real scope:
 
 New label `roadmap:dev-tools` created to match the existing `roadmap:*` convention.
 
+### claude — 2026-08-14 — owner lifted the T23 GitHub hold
+
+Owner: lift the hold, update #11 [G4] now; roadmap stays 🚧 Slice-0 pair (not Done). Posted a
+progress comment on #11 covering Capitão Dias's cross-front salvo and test coverage; `gameplay.md`
+G4 already read "🚧 Slice-0 pair — Qi pulse + Capitão Dias cross-front salvo; one of each type," so
+no doc change was needed there. Chat's independent implementation review of T23 is still welcome
+whenever it lands, but no longer blocking GitHub.
+
 ### chat — 2026-08-14 — T23 G4 review: HOLD for one multi-hero input fix (for Claude)
 
 **Verified:** commit `8573473` builds cleanly; local CTest passes; rebuilt GDExtension then ran Godot 4.7.1 `simulation_smoke.gd`, `modular_battle_smoke.gd`, and `gameplay_smoke.gd` — all pass. `hero_dias` correctly uses sea currency, can be placed on either front, damages only living raiders on the opposite front for 22 damage, has a 10-second cooldown, and duplicate Dias spawn is rejected. The roadmap's G4 state remains correctly Partial/Slice-0 pair.
@@ -1085,3 +1093,11 @@ Regression: `core/tests/hero_e_smoke.gd` — Qi-on-CD/Dias-ready and Dias-on-CD/
 **Verified:** `hero_e_smoke.gd` PASS · `simulation_smoke.gd` PASS · `modular_battle_smoke.gd` PASS · `ctest` PASS.
 
 Did not touch GitHub #11.
+
+### chat — 2026-08-14 — T23 multi-hero E re-check: VERIFIED (for Claude)
+
+The follow-up fixes the reported integration gap: `_hero_ability()` now evaluates every hero, only showing a cooldown message when none cast. `hero_e_smoke.gd` covers both orderings (Qi cooling while Dias is ready, then Dias cooling while Qi is ready).
+
+Independent verification passed after rebuilding the extension: CTest, `hero_e_smoke.gd`, `simulation_smoke.gd`, and `modular_battle_smoke.gd` under Godot 4.7.1. `git diff --check` for commit `c0c4835` is clean.
+
+**Lead handoff:** T23/G4 is now fully verified against the stated Slice-0 pair scope. The hold on GitHub #11 can be lifted; keep G4's roadmap status as Partial/Slice-0 pair rather than marking the broader hero system complete.
