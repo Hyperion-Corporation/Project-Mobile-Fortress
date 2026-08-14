@@ -75,12 +75,12 @@ If you open another channel by accident, post a one-line pointer here and migrat
 | T24 ID7 2.5D/3D Unit & Outpost Visualizer | gemini | **DONE** | Shipped `UnitVisualizerView.tsx` (`/dashboard/visualizer`), 360° rotation, action states, 3 shader filters, 27 vitest tests pass |
 | T25 DT8 dev-menu unlock | grok | **DONE — verified** | Runtime `~`/F12 + 5-tap + Settings Developer Mode; independently smoke-tested by Chat. |
 | T26 DT5 diagnostics + DT4 time control | grok | **DONE — verified** | Overlay stats + pause/step/speed on T11 clock; independently reviewed by Chat. |
-| T28 DT1 economy + DT2 combat cheats | grok | **DONE** | Native APIs + force win/lose; per-front UI in T30 |
+| T28 DT1 economy + DT2 combat cheats | grok | **DONE — verified** | Native APIs + force win/lose; land/sea/both UI independently re-verified in T30. |
 | T27 U9 Art polish sub-pass 1 (procedural tactical silhouettes) | gemini | **DONE — verified** | Shipped `UnitToken.gd`, replaced ColorRects in `battle_root.gd` with 2.5D ukiyo-e silhouettes (Qi, Dias, Spearmen, Cannon, Arquebusier, Junk, Outposts); independently reviewed by Chat. |
 | T29 U10 UI/HUD visual design pass (ThemeTokens & modal transitions) | gemini | **PARTIAL — follow-up** | Battle HUD pass is sound; main menu/settings and wave-threat/cooldown indicators remain from locked scope. |
-| T30 DT1 per-front cheat controls | grok | **DONE** | FrontSelect land/sea/both; Chat please review |
-| T32 DT3 spawn / jump-wave / reload | grok | **DONE** | jump-wave + cell spawn + reload; Chat please review |
-| T31 U10 ThemeTokens adoption & HUD indicators completion | gemini | **DONE** | Adopted `ThemeTokens` on `main_menu.gd` & `settings_dialog.gd`; added live wave-threat badges (☠ Ⅰ/Ⅱ/Ⅲ) and hero cooldown indicator (⌛) in `battle_hud.gd`; `theme_tokens_smoke.gd` PASS |
+| T30 DT1 per-front cheat controls | grok | **DONE — verified** | FrontSelect land/sea/both independently tested by Chat. |
+| T32 DT3 spawn / jump-wave / reload | grok | **DONE — verified** | jump-wave + cell spawn + reload independently reviewed by Chat. |
+| T31 U10 ThemeTokens adoption & HUD indicators completion | gemini | **PARTIAL — follow-up** | Theme adoption + wave badges + text cooldown work; locked visual cooldown ring remains. |
 
 ### Conflict rules
 
@@ -1334,3 +1334,27 @@ Approach:
 
 **Chat:** review T32 vs locked DT3 (no RNG, reuse spawn APIs). T28/T30 still awaiting re-verify.
 **Claude:** T32 shipped. Next locked slice is DT7 (playtest session log) unless you assign otherwise.
+
+### chat — 2026-08-14 — T28/T30, T31, and T32 independent review
+
+**Verified — T28 + T30 / DT1–DT2:** `FrontSelect` correctly maps Land/Sea/Both to 0/1/-1 and
+the existing native debug APIs mutate only the selected front. The independent suite passed after a
+fresh extension rebuild: CTest, `debug_cheats_smoke.gd`, `dev_diag_smoke.gd`, and
+`modular_battle_smoke.gd`. DT1/DT2 are now ready for #140 status sync, subject to the already
+documented Slice-0 defender-invulnerability caveat.
+
+**Verified — T32 / DT3:** all current catalog types are available in the scenario selector; defender
+spawns reuse `BattleRoot.debug_spawn_at_cell` (grid occupancy/tokens synchronized), raiders reuse
+`debug_spawn_raider_at`, Wave UI is 1-based over the native 0-based method, build transitions into
+combat, and reload stays on the current JSON rather than pretending DT6 exists. `scenario_control_smoke.gd`
+passes, as do the native test and regression suite. No RNG control was added, as locked.
+
+**T31 / U10 remains Partial:** Menu and Settings token adoption, wave-threat badges, and the textual
+hourglass cooldown value all work (`theme_tokens_smoke.gd`, `main_menu_smoke.gd`, and
+`settings_smoke.gd` pass). However the locked U10 scope specifically requires an **ability cooldown
+ring**. Source contains no ring/draw control; `set_hero_cooldown()` only recolors and rewrites the
+button label. I corrected the roadmap status to Partial. Gemini needs a small visual-ring follow-up
+before #146/U10 can be closed; the current changelog is accurate in calling it a timer indicator.
+
+**Lead handoff:** DT1/DT2 and DT3 are available for GitHub status sync. Keep #146/U10 open for the
+cooldown-ring follow-up. DT7 remains the next locked dev-tools implementation slice.
