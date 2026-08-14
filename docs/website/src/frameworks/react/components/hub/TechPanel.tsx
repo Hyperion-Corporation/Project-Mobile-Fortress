@@ -116,19 +116,22 @@ export default function TechPanel() {
     <div className="tab-pane active" id="tab-tech">
       <div className="grid-2-col">
         <div className="panel glass">
-          <h2>Headless C++ Core &amp; FFI Architecture</h2>
+          <h2>Godot 4 + C++20 Simulation Architecture</h2>
           <p>
-            The simulation engine is isolated within a headless C++20 core, bound to the native clients via{" "}
-            <strong>JNI</strong> (Android) and <strong>Swift C++ interop</strong> (iOS).
+            The simulation engine is isolated within a headless <strong>C++20</strong> core ({" "}
+            <code>SimulationCore</code>), exposed to{" "}
+            <strong>Godot 4</strong> via <strong>GDExtension</strong> (godot-cpp + native C++ modules).
+            Android and iOS are reached via Godot's mobile export templates.
           </p>
           <ul>
             <li>
               <strong>EnTT ECS Engine</strong>: sparse-set component storage that maximizes memory cache hits on
-              mobile processors.
+              mobile processors — wave spawning, unit combat, and outpost HP all run in the C++ layer.
             </li>
             <li>
-              <strong>FlatBuffers Serialization</strong>: generates zero-copy state buffers, bypassing dynamic
-              language parsing overhead.
+              <strong>FlatBuffers Serialization</strong>: generates zero-copy state snapshots for save/load and
+              future multiplayer replication; the GDScript layer calls <code>save_state()</code>/
+              <code>load_state()</code> across the GDExtension boundary.
             </li>
           </ul>
 

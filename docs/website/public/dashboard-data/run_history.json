@@ -1,0 +1,35 @@
+[
+  {
+    "run_id": "2026-08-11T14:22:00Z",
+    "victory": true,
+    "reason": "all_waves_cleared",
+    "duration_s": 487,
+    "primary_civ": "Ming",
+    "support_civ": "Portuguese",
+    "wave_reached": 5,
+    "hq_hp_remaining": 62,
+    "smoke_ci_status": "pass"
+  },
+  {
+    "run_id": "2026-08-11T15:01:00Z",
+    "victory": false,
+    "reason": "hq_destroyed",
+    "duration_s": 312,
+    "primary_civ": "Ming",
+    "support_civ": "Portuguese",
+    "wave_reached": 3,
+    "hq_hp_remaining": 0,
+    "smoke_ci_status": "pass"
+  },
+  {
+    "run_id": "2026-08-12T09:14:00Z",
+    "victory": true,
+    "reason": "all_waves_cleared",
+    "duration_s": 523,
+    "primary_civ": "Ming",
+    "support_civ": "Portuguese",
+    "wave_reached": 5,
+    "hq_hp_remaining": 45,
+    "smoke_ci_status": "pass"
+  }
+]

@@ -1,0 +1,29 @@
+{
+  "updated": "2026-08-14T20:00:00Z",
+  "workflows": [
+    {
+      "name": "godot-core",
+      "status": "pass",
+      "last_run": "2026-08-14",
+      "tests": [
+        { "name": "sim_world_tests",  "result": "pass" },
+        { "name": "simulation_smoke", "result": "pass" },
+        { "name": "modular_battle",   "result": "pass" },
+        { "name": "gameplay_smoke",   "result": "pass" },
+        { "name": "game_session",     "result": "pass" }
+      ]
+    },
+    {
+      "name": "android-ci",
+      "status": "pass",
+      "last_run": "2026-08-14",
+      "tests": []
+    },
+    {
+      "name": "website-vitest",
+      "status": "pass",
+      "last_run": "2026-08-14",
+      "tests": [{ "name": "10 tests", "result": "pass" }]
+    }
+  ]
+}

@@ -30,24 +30,24 @@ const TABS: Tab[] = [
 
 const PHASES = [
   {
-    title: "Phase 1: Native Parity & Setup",
-    date: "Weeks 1-4",
-    desc: "Synchronize game state kinds across Kotlin Android client and Swift iOS client. Integrate shared levels asset JSON reading schemas.",
+    title: "Phase 1a: Slice-0 — Offline Dual-Front Prototype",
+    date: "2026-08-11 ✅ Complete",
+    desc: "Godot 4.7 dual land/sea fortress-defense loop with C++ SimulationCore (EnTT ECS, FlatBuffers) via GDExtension. Ming + Portuguese civs, hero abilities, offline save/load, and Android APK export smoke.",
   },
   {
-    title: "Phase 2: C++ Core Simulation Engine",
-    date: "Weeks 5-8",
-    desc: "Scaffold headless core simulation using EnTT ECS. Establish JNI/Swift-C++-interop bindings and FlatBuffers zero-copy serialization buffers.",
+    title: "Phase 1: Single-Player Polish (G3+, economy, heroes)",
+    date: "After VS10 playtest gate",
+    desc: "Flow-Field pathfinding depth (G3/S2), outpost economy tuning, hero redeployment polish, full HUD pass, and ukiyo-e art improvements — gated on collaborator 'shows promise' decision.",
   },
   {
-    title: "Phase 3: Cooperative Netcode & AWS",
-    date: "Weeks 9-12",
-    desc: "Write UDP sockets replication channels. Establish latency-graduated matchmaking queues on AWS GameLift FlexMatch.",
+    title: "Phase 3/4: Cosmetics Track + Local Wi-Fi Co-Op",
+    date: "After Phase 1 fun gate",
+    desc: "Cosmetic skin lootboxes (no gameplay power gacha), battle pass foundation, asymmetric local Wi-Fi co-op (land player + sea player), and clan/alliance social UI.",
   },
   {
-    title: "Phase 4: ML & Mathematical Optimizations",
-    date: "Weeks 13-16",
-    desc: "Deploy Genetic Algorithms for dynamic HQ layout generation, WFC PCG, and Contextual Bandits for storefront optimization.",
+    title: "Phase 5+: ML Systems + Internal Dashboard",
+    date: "Post-launch / gated research",
+    desc: "RL dynamic difficulty adjustment, swarm/evolutionary pathing experiments, CMAB offer personalization, and a static developer dashboard for playtest notes, CI smoke status, and Slice-0 run history — each gated on demonstrated need.",
   },
 ];
 

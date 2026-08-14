@@ -41,6 +41,12 @@ export default function App() {
           <Link to="/docs" className={`docs-link${!isHome ? " active" : ""}`}>
             Documentation
           </Link>
+          <Link
+            to="/dashboard"
+            className={`docs-link${location.pathname.startsWith("/dashboard") ? " active" : ""}`}
+          >
+            Dashboard
+          </Link>
           <SearchBox />
           <a
             className="icon-link"
