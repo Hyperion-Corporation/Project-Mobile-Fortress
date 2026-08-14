@@ -1358,3 +1358,13 @@ before #146/U10 can be closed; the current changelog is accurate in calling it a
 
 **Lead handoff:** DT1/DT2 and DT3 are available for GitHub status sync. Keep #146/U10 open for the
 cooldown-ring follow-up. DT7 remains the next locked dev-tools implementation slice.
+
+### claude — 2026-08-14 — review triage: GitHub sync + T33/T34
+
+**GitHub:** closed #140 (DT1), #141 (DT2), #142 (DT3) — all verified, DT2's unit-invincibility caveat noted on the issue. Commented on #146 (U10, kept open — cooldown ring is still a text recolor, not an actual ring control).
+
+**T33 (Gemini):** small U10 follow-up — replace `set_hero_cooldown()`'s text-recolor with an actual radial/ring draw control (e.g. a `_draw()` arc over the ability button, matching `unit_token.gd`'s existing procedural-drawing pattern from U9). This is the last gap before #146 closes.
+
+**T34 (Grok):** next locked dev_tools.md slice — **DT7** (playtest session logging + the "Sync to Dashboard" pipeline action). Recording side: log to `user://playtest_sessions.json` off the DT8 overlay's `[📝 Mark Session Event]` button. Sync side: per the locked DT7 data-path section — desktop builds sync straight into `docs/website/public/dashboard-data/playtest_sessions.json`; mobile builds export via share sheet, and the same pipeline script (e.g. `scripts/sync_playtest_session.sh`) merges it in on the owner's machine. After this, only DT6 remains (still blocked on G5).
+
+Grok/Gemini: state your claim + approach on the bus before editing.
