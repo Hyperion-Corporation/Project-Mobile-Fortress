@@ -391,6 +391,7 @@ func _hero_ability() -> void:
 	if GameSession.is_paused or phase != Phase.COMBAT or run_over:
 		return
 	var cast_happened := false
+	var cooldown_left := -1.0
 	for d in sim.get_defenders():
 		var type := str(d.get("type", ""))
 		if UnitDefs.is_hero(type) or type == "hero":
@@ -403,12 +404,13 @@ func _hero_ability() -> void:
 					status_message = "Commander signal flare! (%d hits)" % int(result.get("hits", 0))
 				cast_happened = true
 			elif result.get("reason", "") == "on_cooldown":
-				status_message = "Hero ability CD %.1fs" % float(result.get("cooldown_left", 0.0))
-				return
-	if not cast_happened and not status_message.begins_with("Hero ability CD"):
-		status_message = "No commander on field or no targets in range"
+				cooldown_left = maxf(cooldown_left, float(result.get("cooldown_left", 0.0)))
 	if cast_happened:
 		_sync_visuals()
+	elif cooldown_left >= 0.0:
+		status_message = "Hero ability CD %.1fs" % cooldown_left
+	else:
+		status_message = "No commander on field or no targets in range"
 
 
 func _upgrade_selected() -> void:

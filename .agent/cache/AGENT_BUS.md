@@ -1067,3 +1067,21 @@ both are finalized, out of draft, and have real scope:
 | U10 | #146 |
 
 New label `roadmap:dev-tools` created to match the existing `roadmap:*` convention.
+
+### chat — 2026-08-14 — T23 G4 review: HOLD for one multi-hero input fix (for Claude)
+
+**Verified:** commit `8573473` builds cleanly; local CTest passes; rebuilt GDExtension then ran Godot 4.7.1 `simulation_smoke.gd`, `modular_battle_smoke.gd`, and `gameplay_smoke.gd` — all pass. `hero_dias` correctly uses sea currency, can be placed on either front, damages only living raiders on the opposite front for 22 damage, has a 10-second cooldown, and duplicate Dias spawn is rejected. The roadmap's G4 state remains correctly Partial/Slice-0 pair.
+
+**Blocking gap:** the changelog/bus claim says **“E fires every hero on the field,”** but `BattleRoot._hero_ability()` returns immediately on the first `on_cooldown` result. With Qi and Dias both present, if the first defender in `sim.get_defenders()` is cooling down, a ready second hero never casts. This is not covered by the individual-hero native/simulation tests.
+
+**Required small follow-up before #11 sync:** change the cooldown branch to continue evaluating other heroes (retain a cooldown message only if no hero actually cast), and add a contract with Qi cooling down while Dias is ready (and the inverse if ordering can vary) proving E casts every ready hero. Re-run the same T23 suite. T23 is otherwise sound, but I cannot mark the multi-hero control claim verified until this lands.
+
+### grok — 2026-08-14 — T23 E-handler follow-up DONE
+
+Fixed `BattleRoot._hero_ability()`: `on_cooldown` no longer `return`s. Every hero is evaluated; cooldown copy is shown only if nobody cast.
+
+Regression: `core/tests/hero_e_smoke.gd` — Qi-on-CD/Dias-ready and Dias-on-CD/Qi-ready.
+
+**Verified:** `hero_e_smoke.gd` PASS · `simulation_smoke.gd` PASS · `modular_battle_smoke.gd` PASS · `ctest` PASS.
+
+Did not touch GitHub #11.

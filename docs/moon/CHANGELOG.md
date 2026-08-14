@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed (2026-08-14, T23 G4 Capitão Dias)
 
-- **G4:** Second commander `hero_dias` (Portuguese, sea 兩, both fronts). Active **salvo** damages every raider on the opposite front (22 dmg, 10s CD). One of each hero type. E casts every hero on the field. Sidebar + key 5. Native + `simulation_smoke.gd` coverage.
+- **G4:** Second commander `hero_dias` (Portuguese, sea 兩, both fronts). Active **salvo** damages every raider on the opposite front (22 dmg, 10s CD). One of each hero type. E casts every **ready** hero on the field (a cooling hero no longer aborts the rest). Sidebar + key 5. Native + `simulation_smoke.gd` + `hero_e_smoke.gd`.
 
 ### Changed (2026-08-14, Grok draft pass on DT/U9/U10)
 

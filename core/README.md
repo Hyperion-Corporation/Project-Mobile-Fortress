@@ -62,6 +62,7 @@ Main menu shows last-run summary and **Resume last snapshot** when a bin exists.
 - Native C++ (no Godot): `cmake --build core/build --target sim_world_tests && ctest --test-dir core/build --output-on-failure`
 - C++ bridge: `godot --path core --headless --script res://tests/simulation_smoke.gd`
 - Modular battle: `godot --path core --headless --script res://tests/modular_battle_smoke.gd`
+- Multi-hero E: `godot --path core --headless --script res://tests/hero_e_smoke.gd`
 - FlatBuffers S4: `godot --path core --headless --script res://tests/flatbuffers_smoke.gd`
 - VS8 offline: `godot --path core --headless --script res://tests/game_session_smoke.gd`  
   and `res://tests/offline_persistence_smoke.gd`
