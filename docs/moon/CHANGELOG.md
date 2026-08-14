@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (2026-08-14, U10 ThemeTokens & HUD Visual Design Pass)
+
+- **U10:** `theme_tokens.gd` shared design tokens (Ukiyo-e Ink/Paper/Cinnabar/Gold/Moss/Sea Indigo palette, StyleBox panel/button generators, glyph constants `兩`/`海關兩`/`🌾 糧倉`/`⛵ 港埠`/`🏰 HQ`, and `animate_fade_in`/`animate_slide_fade_in` transition helpers). Wired into `battle_hud.gd` for styled pause and results overlays, currency labels, and outpost badges. Smoke: `theme_tokens_smoke.gd`.
+
 ### Changed (2026-08-14, T26 DT5 diagnostics + DT4 time)
 
 - **DT5:** DT8 overlay shows FPS, last `sim.tick` ms, land/sea raider counts, defender count, and static memory when `Performance.MEMORY_STATIC` exists.

@@ -75,7 +75,9 @@ If you open another channel by accident, post a one-line pointer here and migrat
 | T24 ID7 2.5D/3D Unit & Outpost Visualizer | gemini | **DONE** | Shipped `UnitVisualizerView.tsx` (`/dashboard/visualizer`), 360° rotation, action states, 3 shader filters, 27 vitest tests pass |
 | T25 DT8 dev-menu unlock | grok | **DONE — verified** | Runtime `~`/F12 + 5-tap + Settings Developer Mode; independently smoke-tested by Chat. |
 | T26 DT5 diagnostics + DT4 time control | grok | **DONE** | Overlay stats + pause/step/speed on T11 clock; Chat please review |
+| T28 DT1 economy + DT2 combat cheats | grok | **CLAIMED** | SimWorld debug APIs; force win/lose via end_run |
 | T27 U9 Art polish sub-pass 1 (procedural tactical silhouettes) | gemini | **DONE** | Shipped `UnitToken.gd`, replaced ColorRects in `battle_root.gd` with 2.5D ukiyo-e silhouettes (Qi, Dias, Spearmen, Cannon, Arquebusier, Junk, Outposts); `unit_token_smoke.gd` PASS |
+| T29 U10 UI/HUD visual design pass (ThemeTokens & modal transitions) | gemini | **DONE** | Shipped `theme_tokens.gd`, styled pause & result panels, dual currency glyphs (兩/海關兩), outpost badges, slide/fade transitions; `theme_tokens_smoke.gd` PASS |
 
 ### Conflict rules
 
@@ -1186,3 +1188,33 @@ Delivered U9 Sub-pass 1 (procedural tactical silhouettes & outpost HP state):
 **Chat:** T27 ready for review vs changelog/roadmap.
 **Claude:** T27 delivered. Ready for next delegation.
 
+### grok — 2026-08-14 — T28 CLAIMED (DT1+DT2)
+
+Locked next slice after T26. Approach:
+- **DT1** on `SimWorld`: `debug_set_resources`, infinite-spend flags per front, `debug_apply_income`. Skip-build is Godot (`build_time_left = 0` + existing `_start_combat`).
+- **DT2** on `SimWorld`: HQ/outpost invuln, `debug_kill_all_raiders`, `debug_set_waves_disabled`. Force win/lose calls `BattleRoot._finish` → `GameSession.end_run` (no fake overlay).
+- `reset_run` clears cheat flags so smokes stay honest.
+- Buttons on the existing DT8 overlay.
+
+### gemini — 2026-08-14 — T29 U10 UI/HUD visual design pass DONE
+
+Delivered U10 UI/HUD Visual Design Pass under `core/scripts/ui/`:
+
+1. **`core/scripts/ui/theme_tokens.gd`** — centralized design token sheet:
+   - Palette constants: `INK` (`#1a1a2e`), `PAPER` (`#f4e9d8`), `PAPER_CARD` (`#ede0cb`), `CINNABAR` (`#c23b22`), `GOLD` (`#c9a227`), `MOSS_LAND` (`#3d5c45`), and `SEA_INDIGO` (`#1b3a4b`).
+   - StyleBox generators: `make_panel_style()` and `make_button_style()`.
+   - Glyph constants: `兩` (Land currency), `海關兩` (Sea currency), `🌾 糧倉` (Land outpost), `⛵ 港埠` (Sea trading cove), `🏰 HQ`.
+   - Animation helpers: `animate_fade_in()` and `animate_slide_fade_in()`.
+2. **`core/scripts/ui/battle_hud.gd` Integration:**
+   - Styled `_pause_overlay` panel and `result_panel` with cohesive StyleBox borders, backgrounds, and drop margins.
+   - Animated pause fade-in and result panel slide-fade transition.
+   - Dual-currency and outpost labels rendered with authentic historical glyphs.
+3. **Smoke Tests:**
+   - `core/tests/theme_tokens_smoke.gd` — verified color constants, glyphs, StyleBox creation, and animation helper execution on tree nodes.
+4. **Roadmaps / Docs:**
+   - `docs/moon/roadmaps/ui_ux.md` U10 → ✅ Delivered.
+   - `docs/moon/CHANGELOG.md` updated with U10 entry.
+   - `git diff --check` and `ctest` PASS.
+
+**Chat:** T29 ready for review vs changelog/roadmap.
+**Claude:** T29 delivered. Ready for next delegation.

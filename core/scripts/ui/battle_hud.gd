@@ -2,6 +2,7 @@ extends CanvasLayer
 ## Slice-0 HUD: phase, outposts, dual currency, pause overlay, save/load (U2/U4).
 
 const ProgressionScript := preload("res://scripts/data/progression.gd")
+const ThemeTokensScript := preload("res://scripts/ui/theme_tokens.gd")
 
 signal start_combat_pressed
 signal unit_selected(id: String)
@@ -151,6 +152,7 @@ func _ensure_pause_overlay() -> void:
 		panel.offset_top = -110
 		panel.offset_right = 160
 		panel.offset_bottom = 130
+		panel.add_theme_stylebox_override("panel", ThemeTokensScript.make_panel_style(ThemeTokensScript.PAPER_CARD, ThemeTokensScript.CINNABAR, 6, 14))
 		_pause_overlay.add_child(panel)
 		var vbox := VBoxContainer.new()
 		vbox.name = "VBox"
@@ -158,10 +160,10 @@ func _ensure_pause_overlay() -> void:
 		panel.add_child(vbox)
 		_pause_title = Label.new()
 		_pause_title.name = "PauseTitle"
-		_pause_title.text = "Paused"
+		_pause_title.text = "PAUSED"
 		_pause_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		_pause_title.add_theme_font_size_override("font_size", 26)
-		_pause_title.add_theme_color_override("font_color", CINNABAR)
+		_pause_title.add_theme_font_size_override("font_size", 24)
+		_pause_title.add_theme_color_override("font_color", ThemeTokensScript.CINNABAR)
 		vbox.add_child(_pause_title)
 		var hint := Label.new()
 		hint.name = "PauseHint"
@@ -210,7 +212,11 @@ func _emit_menu() -> void:
 func _on_pause_changed(paused: bool) -> void:
 	if _pause_overlay == null:
 		return
-	_pause_overlay.visible = paused and not result_panel.visible
+	var should_show := paused and not result_panel.visible
+	if should_show and not _pause_overlay.visible:
+		ThemeTokensScript.animate_fade_in(_pause_overlay, 0.2)
+	elif not should_show:
+		_pause_overlay.visible = false
 
 
 func _wire_unit_buttons() -> void:
@@ -264,7 +270,10 @@ func set_outposts(land_hp: int, land_max: int, land_alive: bool, sea_hp: int, se
 		return
 	var land_s := "lost" if not land_alive else "%d/%d" % [land_hp, land_max]
 	var sea_s := "lost" if not sea_alive else "%d/%d" % [sea_hp, sea_max]
-	_outpost_label.text = "Resource OP %s · Trading OP %s" % [land_s, sea_s]
+	_outpost_label.text = "%s %s · %s %s" % [
+		ThemeTokensScript.GLYPH_OUTPOST_LAND, land_s,
+		ThemeTokensScript.GLYPH_OUTPOST_SEA, sea_s
+	]
 
 
 func set_status(text: String) -> void:
@@ -282,23 +291,24 @@ func set_selected(id: String) -> void:
 	var n: String = str(def.get("name", id))
 	var cost: int = int(def.get("cost", 0))
 	var cur: String = str(def.get("currency", "?"))
-	selected_label.text = "Selected: %s\nCost: %d %s" % [n, cost, cur]
+	var glyph := ThemeTokensScript.GLYPH_LAND_CURRENCY if cur == "land" else ThemeTokensScript.GLYPH_SEA_CURRENCY
+	selected_label.text = "Selected: %s\nCost: %d %s" % [n, cost, glyph]
 
 
 func _on_res(land: int, sea: int) -> void:
-	land_label.add_theme_color_override("font_color", MOSS)
-	sea_label.add_theme_color_override("font_color", SEA)
-	land_label.text = "Land 兩  %d" % land
-	sea_label.text = "Sea 兩  %d" % sea
+	land_label.add_theme_color_override("font_color", ThemeTokensScript.MOSS_LAND)
+	sea_label.add_theme_color_override("font_color", ThemeTokensScript.SEA_INDIGO)
+	land_label.text = "Land %s  %d" % [ThemeTokensScript.GLYPH_LAND_CURRENCY, land]
+	sea_label.text = "Sea %s  %d" % [ThemeTokensScript.GLYPH_SEA_CURRENCY, sea]
 
 
 func _on_hq(hp: int, max_hp: int) -> void:
-	hq_label.add_theme_color_override("font_color", CINNABAR)
+	hq_label.add_theme_color_override("font_color", ThemeTokensScript.CINNABAR)
 	hq_label.text = "HQ  %d/%d" % [hp, max_hp]
 
 
 func show_result(victory: bool, reason: String, stats: Dictionary) -> void:
-	result_panel.visible = true
+	result_panel.add_theme_stylebox_override("panel", ThemeTokensScript.make_panel_style(ThemeTokensScript.PAPER_CARD, ThemeTokensScript.CINNABAR if not victory else ThemeTokensScript.GOLD, 8, 16))
 	if _pause_overlay != null:
 		_pause_overlay.visible = false
 	var title := "VICTORY" if victory else "DEFEAT"
@@ -324,3 +334,4 @@ func show_result(victory: bool, reason: String, stats: Dictionary) -> void:
 		str(stats.get("results_path", OfflinePersistence.RESULTS_PATH)),
 		OfflinePersistence.HISTORY_PATH,
 	]
+	ThemeTokensScript.animate_slide_fade_in(result_panel, -24.0, 0.35)
