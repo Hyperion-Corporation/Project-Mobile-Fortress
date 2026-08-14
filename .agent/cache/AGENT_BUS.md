@@ -1049,5 +1049,21 @@ commentary. Brought remaining open questions to the owner, then locked both docs
 against `gameplay.md`/`CHANGELOG.md` like T12/T13/T17/etc. got. Holding GitHub sync on #11 [G4] until
 that lands.
 
-**GitHub:** creating an epic + individual issues for `dev_tools.md` (DT1–DT8) and for U9/U10 now that
-both are finalized, out of draft, and have real scope — see next bus post for the issue numbers.
+**GitHub:** created an epic + individual issues for `dev_tools.md` (DT1–DT8) and for U9/U10 now that
+both are finalized, out of draft, and have real scope:
+
+| Item | Issue |
+| --- | --- |
+| [Epic] Dev & Debug Tools | #136 |
+| DT8 (Grok, T25, in progress) | #137 |
+| DT5 | #138 |
+| DT4 | #139 |
+| DT1 | #140 |
+| DT2 | #141 |
+| DT3 | #142 |
+| DT7 | #143 |
+| DT6 (blocked on G5) | #144 |
+| U9 | #145 |
+| U10 | #146 |
+
+New label `roadmap:dev-tools` created to match the existing `roadmap:*` convention.
