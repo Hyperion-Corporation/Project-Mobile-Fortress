@@ -31,7 +31,7 @@ Godot → Import → select core/project.godot → Run
 | Click hero, then empty cell | Redeploy (travel; no fire while moving) |
 | **Space** / Start Combat | Begin raid |
 | **E** / Hero Ability | Flare pulse |
-| **Esc** | Pause |
+| **Esc** | Pause overlay (Resume / Save / Menu) |
 
 ## Loop (Slice-0)
 
@@ -44,8 +44,9 @@ Godot → Import → select core/project.godot → Run
 
 | Path | Contents |
 | --- | --- |
-| `user://last_run_results.json` | Last run outcome (schema v1) |
+| `user://last_run_results.json` | Last run outcome (schema v1; includes G8 `stars` / prestige) |
 | `user://run_history.json` | Last 20 runs (`runs[]`) |
+| `user://progression.json` | G8 per-level best stars + cumulative HQ prestige |
 | `user://mf_slice0_snapshot.bin` | Modular FlatBuffers mid-run snapshot |
 | `user://mobile_fortress_slice0.json` | Classic main.gd placement save |
 
@@ -58,11 +59,13 @@ Main menu shows last-run summary and **Resume last snapshot** when a bin exists.
 - **Preferred:** `SimulationCore` GDExtension (`bin/libmobile_fortress_core.so`) — HQ, dual currencies, raider pathing.
 - **Fallback:** pure GDScript if the `.so` is missing.
 - Build native lib: see [`BUILD_CPP.md`](BUILD_CPP.md).
+- Native C++ (no Godot): `cmake --build core/build --target sim_world_tests && ctest --test-dir core/build --output-on-failure`
 - C++ bridge: `godot --path core --headless --script res://tests/simulation_smoke.gd`
 - Modular battle: `godot --path core --headless --script res://tests/modular_battle_smoke.gd`
 - FlatBuffers S4: `godot --path core --headless --script res://tests/flatbuffers_smoke.gd`
 - VS8 offline: `godot --path core --headless --script res://tests/game_session_smoke.gd`  
   and `res://tests/offline_persistence_smoke.gd`
+- G8 progression: `godot --path core --headless --script res://tests/progression_smoke.gd`
 - Menu entry: `godot --path core --headless --script res://tests/main_menu_smoke.gd`
 
 ### FlatBuffers save/load (S4)

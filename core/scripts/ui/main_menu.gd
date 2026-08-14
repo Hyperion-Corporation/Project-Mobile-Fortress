@@ -1,23 +1,31 @@
 extends Control
-## Main menu — modular battle (default) or classic main.gd prototype.
+## Main menu — Wōkòu-era coastal theme (U1) over Slice-0 entry.
+
+const SettingsDialogScript := preload("res://scripts/ui/settings_dialog.gd")
 
 @onready var start_btn: Button = $Center/VBox/StartBtn
 @onready var classic_btn: Button = $Center/VBox/ClassicBtn
 @onready var quit_btn: Button = $Center/VBox/QuitBtn
 @onready var blurb: Label = $Center/VBox/Blurb
 
+const PAPER := Color(0.93, 0.86, 0.74, 1)
+const DUSK := Color(0.18, 0.16, 0.18, 1)
+const INDIGO := Color(0.12, 0.20, 0.30, 1)
+const CINNABAR := Color(0.72, 0.20, 0.14, 1)
+
 var _resume_btn: Button
 var _last_run_label: Label
 
 
 func _ready() -> void:
+	_apply_coastal_theme()
 	var has_cpp := ClassDB.class_exists("SimulationCore")
 	blurb.text = (
-		"Mobile Fortress — Slice-0\n"
-		+ "Ming + Portuguese · dual-front · offline\n"
-		+ "Sim: %s\n\n" % ("C++ SimulationCore" if has_cpp else "GDScript fallback (classic only)")
-		+ "Modular battle uses scene graph + GDExtension.\n"
-		+ "Classic keeps the single-file canvas prototype."
+		"1540s–1560s · East Asian coast\n"
+		+ "Ming garrison + Portuguese support\n"
+		+ "Defend land outposts and sea lanes against Wōkòu raids.\n\n"
+		+ "Sim: %s · offline · dual-front"
+		% ("C++ SimulationCore" if has_cpp else "GDScript fallback (classic only)")
 	)
 	start_btn.pressed.connect(func():
 		GameSession.resume_snapshot_on_next_battle = false
@@ -27,9 +35,44 @@ func _ready() -> void:
 	quit_btn.pressed.connect(func(): get_tree().quit())
 	if not has_cpp:
 		start_btn.disabled = true
-		start_btn.text = "Modular Battle (needs GDExtension)"
+		start_btn.text = "Defend the Coast (needs GDExtension)"
+	else:
+		start_btn.text = "Defend the Coast"
+	classic_btn.text = "Classic prototype"
 	_ensure_resume_and_history_ui(has_cpp)
 	_refresh_last_run()
+
+
+func _apply_coastal_theme() -> void:
+	var bg: ColorRect = get_node_or_null("Bg")
+	if bg:
+		bg.color = PAPER
+	if get_node_or_null("Horizon") == null:
+		var horizon := ColorRect.new()
+		horizon.name = "Horizon"
+		horizon.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
+		horizon.offset_top = -220
+		horizon.color = INDIGO
+		horizon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		add_child(horizon)
+		move_child(horizon, 1)
+	if get_node_or_null("InkBand") == null:
+		var band := ColorRect.new()
+		band.name = "InkBand"
+		band.set_anchors_preset(Control.PRESET_TOP_WIDE)
+		band.offset_bottom = 8
+		band.color = CINNABAR
+		band.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		add_child(band)
+		move_child(band, 2)
+	var title: Label = get_node_or_null("Center/VBox/Title")
+	if title:
+		title.add_theme_font_size_override("font_size", 42)
+		title.add_theme_color_override("font_color", DUSK)
+	var subtitle: Label = get_node_or_null("Center/VBox/Subtitle")
+	if subtitle:
+		subtitle.text = "倭寇 Dual-Front Defense"
+		subtitle.add_theme_color_override("font_color", CINNABAR)
 
 
 func _ensure_resume_and_history_ui(has_cpp: bool) -> void:
@@ -50,6 +93,15 @@ func _ensure_resume_and_history_ui(has_cpp: bool) -> void:
 		get_tree().change_scene_to_file("res://scenes/battle/battle.tscn")
 	)
 
+	if vbox.get_node_or_null("SettingsBtn") == null:
+		var settings_btn := Button.new()
+		settings_btn.name = "SettingsBtn"
+		settings_btn.custom_minimum_size = Vector2(280, 36)
+		settings_btn.text = "Settings · 設置"
+		settings_btn.pressed.connect(_open_settings)
+		vbox.add_child(settings_btn)
+		vbox.move_child(settings_btn, quit_btn.get_index())
+
 	if vbox.get_node_or_null("LastRunLabel") == null:
 		_last_run_label = Label.new()
 		_last_run_label.name = "LastRunLabel"
@@ -62,6 +114,14 @@ func _ensure_resume_and_history_ui(has_cpp: bool) -> void:
 		vbox.move_child(_last_run_label, classic_btn.get_index())
 	else:
 		_last_run_label = vbox.get_node("LastRunLabel")
+
+
+func _open_settings() -> void:
+	if get_node_or_null("SettingsDialog") != null:
+		return
+	var dlg := SettingsDialogScript.new()
+	dlg.name = "SettingsDialog"
+	add_child(dlg)
 
 
 func _refresh_last_run() -> void:

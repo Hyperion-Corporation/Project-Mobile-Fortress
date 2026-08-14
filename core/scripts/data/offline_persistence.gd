@@ -3,12 +3,45 @@ extends RefCounted
 ## VS8 offline campaign I/O: run results JSON, append-only history, FlatBuffers snapshot bytes.
 ## All paths under user:// (device-local; no network).
 
+const ProgressionScript := preload("res://scripts/data/progression.gd")
+
 const SCHEMA_VERSION := 1
 const RESULTS_PATH := "user://last_run_results.json"
 const HISTORY_PATH := "user://run_history.json"
 const SNAPSHOT_PATH := "user://mf_slice0_snapshot.bin"
 const CLASSIC_SAVE_PATH := "user://mobile_fortress_slice0.json"
+const SETTINGS_PATH := "user://settings.json"
 const MAX_HISTORY := 20
+
+
+static func default_settings() -> Dictionary:
+	return {
+		"schema_version": SCHEMA_VERSION,
+		"master_volume": 0.8,
+		"bgm_volume": 0.7,
+		"sfx_volume": 0.9,
+		"fast_placement": true,
+		"screen_shake": true,
+		"notifications_enabled": false,
+		"telemetry_tier": "anonymous" # "none", "anonymous", "full"
+	}
+
+
+static func write_settings(settings: Dictionary) -> bool:
+	var payload := settings.duplicate(true)
+	if not payload.has("schema_version"):
+		payload["schema_version"] = SCHEMA_VERSION
+	return write_json(SETTINGS_PATH, payload)
+
+
+static func read_settings() -> Dictionary:
+	var parsed: Variant = read_json(SETTINGS_PATH)
+	if parsed is Dictionary:
+		var merged := default_settings()
+		merged.merge(parsed, true)
+		return merged
+	return default_settings()
+
 
 
 static func write_json(path: String, data: Variant) -> bool:
@@ -115,6 +148,13 @@ static func format_results_summary(result: Dictionary) -> String:
 	var placed: int = int(result.get("units_placed", 0))
 	var outposts: int = int(result.get("outposts_lost", 0))
 	var backend: String = str(result.get("sim", "unknown"))
-	return "%s — %s\nKills %d · Placed %d · Outposts lost %d · sim:%s" % [
-		title, reason, kills, placed, outposts, backend
+	var stars := int(result.get("stars", -1))
+	var star_bit := ""
+	if stars >= 0:
+		star_bit = " · %s · prestige %d" % [
+			ProgressionScript.format_stars(stars),
+			int(result.get("total_prestige", 0)),
+		]
+	return "%s — %s\nKills %d · Placed %d · Outposts lost %d · sim:%s%s" % [
+		title, reason, kills, placed, outposts, backend, star_bit
 	]

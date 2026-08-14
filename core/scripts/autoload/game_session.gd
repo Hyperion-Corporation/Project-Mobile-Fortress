@@ -1,12 +1,14 @@
 extends Node
 ## Global session state for offline Slice-0 (save hooks, civ pair, run stats).
 
+const ProgressionScript := preload("res://scripts/data/progression.gd")
 const CIV_PRIMARY := "Ming"
 const CIV_SUPPORT := "Portuguese"
 
 signal phase_changed(phase: String)
 signal resources_changed(land: int, sea: int)
 signal hq_changed(hp: int, max_hp: int)
+signal pause_changed(paused: bool)
 signal run_ended(victory: bool, reason: String)
 
 var land_currency: int = 40
@@ -20,6 +22,19 @@ var outposts_lost: int = 0
 
 var is_paused: bool = false
 var last_result: Dictionary = {}
+var _run_recorded: bool = false
+
+
+func set_paused(paused: bool) -> void:
+	if is_paused == paused:
+		return
+	is_paused = paused
+	pause_changed.emit(paused)
+
+
+func toggle_paused() -> bool:
+	set_paused(not is_paused)
+	return is_paused
 
 ## When true, next modular battle scene loads FlatBuffers snapshot after ready.
 var resume_snapshot_on_next_battle: bool = false
@@ -32,8 +47,9 @@ func reset_run() -> void:
 	enemies_killed = 0
 	units_placed = 0
 	outposts_lost = 0
-	is_paused = false
+	set_paused(false)
 	last_result.clear()
+	_run_recorded = false
 	resources_changed.emit(land_currency, sea_currency)
 	hq_changed.emit(hq_hp, hq_max_hp)
 
@@ -69,6 +85,13 @@ func damage_hq(amount: int) -> void:
 
 
 func end_run(victory: bool, reason: String, extra: Dictionary = {}) -> void:
+	if _run_recorded:
+		for key in extra.keys():
+			if key == "sim":
+				continue
+			last_result[key] = extra[key]
+		OfflinePersistence.write_results(last_result)
+		return
 	last_result = {
 		"schema_version": OfflinePersistence.SCHEMA_VERSION,
 		"timestamp_unix": Time.get_unix_time_from_system(),
@@ -88,6 +111,11 @@ func end_run(victory: bool, reason: String, extra: Dictionary = {}) -> void:
 		if key == "sim":
 			continue
 		last_result[key] = extra[key]
+	var level_id := str(last_result.get("level_id", ProgressionScript.DEFAULT_LEVEL_ID))
+	var progress: Dictionary = ProgressionScript.record_run(last_result, level_id)
+	for key in progress.keys():
+		last_result[key] = progress[key]
+	_run_recorded = true
 	OfflinePersistence.write_results(last_result)
 	OfflinePersistence.append_history(last_result)
 	run_ended.emit(victory, reason)

@@ -127,6 +127,29 @@ func _run() -> void:
 			if int(defender.get("front", -1)) != 1:
 				failures.append("hero did not arrive on the sea front")
 
+	# U2 pause overlay: Esc-equivalent flag must freeze sim and show overlay
+	var session: Node = root.get_node_or_null("GameSession")
+	if session == null:
+		failures.append("GameSession autoload missing")
+	else:
+		var combat_before_pause: float = battle.sim.get_combat_time()
+		session.set_paused(true)
+		await process_frame
+		var pause_overlay: CanvasItem = battle.hud.get_node_or_null("Root/PauseOverlay")
+		if pause_overlay == null or not pause_overlay.visible:
+			failures.append("pause overlay not visible when GameSession is paused")
+		await create_timer(0.4).timeout
+		if absf(battle.sim.get_combat_time() - combat_before_pause) > 0.001:
+			failures.append("sim combat time advanced while paused")
+		session.set_paused(false)
+		await process_frame
+		if pause_overlay != null and pause_overlay.visible:
+			failures.append("pause overlay still visible after resume")
+	if battle.hud.has_method("set_outposts"):
+		var op: Label = battle.hud.get_node_or_null("Root/TopBar/OutpostLabel")
+		if op == null or op.text.find("Resource OP") < 0:
+			failures.append("U4 outpost strip missing")
+
 	# Defenders should be able to kill over time
 	var kills_before: int = battle.sim.get_enemies_killed()
 	await create_timer(4.0).timeout

@@ -1,5 +1,7 @@
 extends CanvasLayer
-## Slice-0 HUD: phase, resources, unit picker, result panel, offline save/load (VS8).
+## Slice-0 HUD: phase, outposts, dual currency, pause overlay, save/load (U2/U4).
+
+const ProgressionScript := preload("res://scripts/data/progression.gd")
 
 signal start_combat_pressed
 signal unit_selected(id: String)
@@ -7,6 +9,13 @@ signal restart_pressed
 signal hero_ability_pressed
 signal save_pressed
 signal load_pressed
+signal resume_pressed
+signal menu_pressed
+
+const INK := Color(0.10, 0.09, 0.12, 1)
+const CINNABAR := Color(0.72, 0.20, 0.14, 1)
+const SEA := Color(0.16, 0.28, 0.42, 1)
+const MOSS := Color(0.24, 0.38, 0.28, 1)
 
 @onready var phase_label: Label = $Root/TopBar/PhaseLabel
 @onready var timer_label: Label = $Root/TopBar/TimerLabel
@@ -24,6 +33,14 @@ signal load_pressed
 var _save_btn: Button
 var _load_btn: Button
 var _menu_btn: Button
+var _pause_overlay: ColorRect
+var _pause_title: Label
+var _resume_btn: Button
+var _pause_save_btn: Button
+var _pause_menu_btn: Button
+var _outpost_label: Label
+var _status_label: Label
+var _wave_label: Label
 
 
 func _ready() -> void:
@@ -31,17 +48,24 @@ func _ready() -> void:
 	GameSession.resources_changed.connect(_on_res)
 	GameSession.hq_changed.connect(_on_hq)
 	GameSession.phase_changed.connect(set_phase)
+	if not GameSession.pause_changed.is_connected(_on_pause_changed):
+		GameSession.pause_changed.connect(_on_pause_changed)
 	start_btn.pressed.connect(func(): start_combat_pressed.emit())
 	restart_btn.pressed.connect(func(): restart_pressed.emit())
 	hero_btn.pressed.connect(func(): hero_ability_pressed.emit())
 	_wire_unit_buttons()
 	_ensure_persistence_buttons()
+	_ensure_status_strip()
+	_ensure_pause_overlay()
 	_on_res(GameSession.land_currency, GameSession.sea_currency)
 	_on_hq(GameSession.hq_hp, GameSession.hq_max_hp)
+	set_outposts(40, 40, true, 40, 40, true)
+	set_wave(0)
 	help_label.text = (
-		"1–4 units · click land/sea · Space combat · E flare\n"
-		+ "S / Save = FlatBuffers snapshot · L / Load · Esc pause"
+		"1–4 units · click land/sea · Space combat · E flare · U upgrade\n"
+		+ "S snapshot · L load · Esc pause"
 	)
+	_on_pause_changed(GameSession.is_paused)
 
 
 func _ensure_persistence_buttons() -> void:
@@ -73,7 +97,120 @@ func _ensure_persistence_buttons() -> void:
 		vbox.add_child(_menu_btn)
 	else:
 		_menu_btn = vbox.get_node("MenuBtn")
-	_menu_btn.pressed.connect(func(): get_tree().change_scene_to_file("res://scenes/main_menu.tscn"))
+	_menu_btn.pressed.connect(func(): menu_pressed.emit())
+
+
+func _ensure_status_strip() -> void:
+	var top: HBoxContainer = $Root/TopBar
+	if top.get_node_or_null("OutpostLabel") == null:
+		_outpost_label = Label.new()
+		_outpost_label.name = "OutpostLabel"
+		_outpost_label.add_theme_color_override("font_color", INK)
+		_outpost_label.add_theme_font_size_override("font_size", 14)
+		top.add_child(_outpost_label)
+	else:
+		_outpost_label = top.get_node("OutpostLabel")
+	if top.get_node_or_null("WaveLabel") == null:
+		_wave_label = Label.new()
+		_wave_label.name = "WaveLabel"
+		_wave_label.add_theme_color_override("font_color", CINNABAR)
+		_wave_label.add_theme_font_size_override("font_size", 14)
+		top.add_child(_wave_label)
+	else:
+		_wave_label = top.get_node("WaveLabel")
+	var root_ctrl: Control = $Root
+	if root_ctrl.get_node_or_null("StatusLabel") == null:
+		_status_label = Label.new()
+		_status_label.name = "StatusLabel"
+		_status_label.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
+		_status_label.offset_left = 12
+		_status_label.offset_top = -28
+		_status_label.offset_right = -300
+		_status_label.offset_bottom = -8
+		_status_label.add_theme_color_override("font_color", INK)
+		_status_label.add_theme_font_size_override("font_size", 13)
+		root_ctrl.add_child(_status_label)
+	else:
+		_status_label = root_ctrl.get_node("StatusLabel")
+
+
+func _ensure_pause_overlay() -> void:
+	var root_ctrl: Control = $Root
+	_pause_overlay = root_ctrl.get_node_or_null("PauseOverlay") as ColorRect
+	if _pause_overlay == null:
+		_pause_overlay = ColorRect.new()
+		_pause_overlay.name = "PauseOverlay"
+		_pause_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+		_pause_overlay.color = Color(0.06, 0.05, 0.07, 0.62)
+		_pause_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+		root_ctrl.add_child(_pause_overlay)
+		var panel := PanelContainer.new()
+		panel.name = "PausePanel"
+		panel.set_anchors_preset(Control.PRESET_CENTER)
+		panel.offset_left = -160
+		panel.offset_top = -110
+		panel.offset_right = 160
+		panel.offset_bottom = 130
+		_pause_overlay.add_child(panel)
+		var vbox := VBoxContainer.new()
+		vbox.name = "VBox"
+		vbox.add_theme_constant_override("separation", 10)
+		panel.add_child(vbox)
+		_pause_title = Label.new()
+		_pause_title.name = "PauseTitle"
+		_pause_title.text = "Paused"
+		_pause_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		_pause_title.add_theme_font_size_override("font_size", 26)
+		_pause_title.add_theme_color_override("font_color", CINNABAR)
+		vbox.add_child(_pause_title)
+		var hint := Label.new()
+		hint.name = "PauseHint"
+		hint.text = "Esc resumes · fortress holds"
+		hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		hint.add_theme_font_size_override("font_size", 13)
+		vbox.add_child(hint)
+		_resume_btn = Button.new()
+		_resume_btn.name = "ResumeBtn"
+		_resume_btn.text = "Resume"
+		vbox.add_child(_resume_btn)
+		_pause_save_btn = Button.new()
+		_pause_save_btn.name = "PauseSaveBtn"
+		_pause_save_btn.text = "Save snapshot"
+		vbox.add_child(_pause_save_btn)
+		_pause_menu_btn = Button.new()
+		_pause_menu_btn.name = "PauseMenuBtn"
+		_pause_menu_btn.text = "Main Menu"
+		vbox.add_child(_pause_menu_btn)
+	else:
+		_pause_title = _pause_overlay.get_node("PausePanel/VBox/PauseTitle")
+		_resume_btn = _pause_overlay.get_node("PausePanel/VBox/ResumeBtn")
+		_pause_save_btn = _pause_overlay.get_node("PausePanel/VBox/PauseSaveBtn")
+		_pause_menu_btn = _pause_overlay.get_node("PausePanel/VBox/PauseMenuBtn")
+	if not _resume_btn.pressed.is_connected(_emit_resume):
+		_resume_btn.pressed.connect(_emit_resume)
+	if not _pause_save_btn.pressed.is_connected(_emit_save):
+		_pause_save_btn.pressed.connect(_emit_save)
+	if not _pause_menu_btn.pressed.is_connected(_emit_menu):
+		_pause_menu_btn.pressed.connect(_emit_menu)
+	_pause_overlay.visible = false
+
+
+func _emit_resume() -> void:
+	resume_pressed.emit()
+
+
+func _emit_save() -> void:
+	save_pressed.emit()
+
+
+func _emit_menu() -> void:
+	menu_pressed.emit()
+
+
+func _on_pause_changed(paused: bool) -> void:
+	if _pause_overlay == null:
+		return
+	_pause_overlay.visible = paused and not result_panel.visible
 
 
 func _wire_unit_buttons() -> void:
@@ -94,16 +231,42 @@ func _wire_unit_buttons() -> void:
 
 
 func set_phase(phase: String) -> void:
-	phase_label.text = "Phase: %s" % phase
+	var pretty := phase
+	match phase:
+		"BUILD":
+			pretty = "BUILD · Place defenders"
+		"COMBAT":
+			pretty = "COMBAT · Hold the coast"
+		"RESULT":
+			pretty = "RESULT"
+	phase_label.text = pretty
 	start_btn.disabled = phase != "BUILD"
 
 
 func set_build_timer(t: float) -> void:
-	timer_label.text = "Build: %.0fs" % maxf(0.0, t)
+	timer_label.text = "Build  %.0fs" % maxf(0.0, t)
 
 
 func set_combat_timer(t: float) -> void:
-	timer_label.text = "Combat: %.0fs" % t
+	timer_label.text = "Raid  %.0fs" % t
+
+
+func set_outposts(land_hp: int, land_max: int, land_alive: bool, sea_hp: int, sea_max: int, sea_alive: bool) -> void:
+	if _outpost_label == null:
+		return
+	var land_s := "lost" if not land_alive else "%d/%d" % [land_hp, land_max]
+	var sea_s := "lost" if not sea_alive else "%d/%d" % [sea_hp, sea_max]
+	_outpost_label.text = "Resource OP %s · Trading OP %s" % [land_s, sea_s]
+
+
+func set_status(text: String) -> void:
+	if _status_label != null:
+		_status_label.text = text
+
+
+func set_wave(wave: int) -> void:
+	if _wave_label != null:
+		_wave_label.text = "Wave %d" % wave if wave > 0 else "Wave —"
 
 
 func set_selected(id: String) -> void:
@@ -115,23 +278,36 @@ func set_selected(id: String) -> void:
 
 
 func _on_res(land: int, sea: int) -> void:
-	land_label.text = "Land 兩: %d" % land
-	sea_label.text = "Sea 兩: %d" % sea
+	land_label.add_theme_color_override("font_color", MOSS)
+	sea_label.add_theme_color_override("font_color", SEA)
+	land_label.text = "Land 兩  %d" % land
+	sea_label.text = "Sea 兩  %d" % sea
 
 
 func _on_hq(hp: int, max_hp: int) -> void:
-	hq_label.text = "HQ: %d/%d" % [hp, max_hp]
+	hq_label.add_theme_color_override("font_color", CINNABAR)
+	hq_label.text = "HQ  %d/%d" % [hp, max_hp]
 
 
 func show_result(victory: bool, reason: String, stats: Dictionary) -> void:
 	result_panel.visible = true
+	if _pause_overlay != null:
+		_pause_overlay.visible = false
 	var title := "VICTORY" if victory else "DEFEAT"
+	var stars_line := ""
+	if stats.has("stars"):
+		stars_line = "Stars: %s  Prestige: +%s (HQ %s)\n" % [
+			ProgressionScript.format_stars(int(stats.get("stars", 0))),
+			str(stats.get("prestige_earned", 0)),
+			str(stats.get("total_prestige", 0)),
+		]
 	result_label.text = (
-		"%s\n%s\n\nKills: %s  Placed: %s  Outposts lost: %s\n"
+		"%s\n%s\n\n%sKills: %s  Placed: %s  Outposts lost: %s\n"
 		+ "Combat: %.0fs  Wave: %s\n\nExported: %s\nHistory: %s"
 	) % [
 		title,
 		reason,
+		stars_line,
 		str(stats.get("enemies_killed", 0)),
 		str(stats.get("units_placed", 0)),
 		str(stats.get("outposts_lost", 0)),

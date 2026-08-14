@@ -63,6 +63,7 @@ func _ready() -> void:
 	if hud.has_method("set_selected"):
 		hud.set_selected(selected_unit_id)
 	status_message = "Modular battle — C++ waves/combat; place both fronts · S/L snapshot"
+	_update_hud()
 	if GameSession.resume_snapshot_on_next_battle:
 		GameSession.resume_snapshot_on_next_battle = false
 		if load_snapshot():
@@ -116,6 +117,10 @@ func _wire_hud() -> void:
 		hud.save_pressed.connect(func(): save_snapshot())
 	if hud.has_signal("load_pressed"):
 		hud.load_pressed.connect(func(): load_snapshot())
+	if hud.has_signal("resume_pressed"):
+		hud.resume_pressed.connect(func(): GameSession.set_paused(false))
+	if hud.has_signal("menu_pressed"):
+		hud.menu_pressed.connect(_return_to_menu)
 
 
 func _process(delta: float) -> void:
@@ -178,29 +183,24 @@ func _update_hud() -> void:
 		hud.set_build_timer(build_time_left)
 	elif phase == Phase.COMBAT and hud.has_method("set_combat_timer"):
 		hud.set_combat_timer(combat_time)
-	if hud.has_node("Root/TopBar/LandRes"):
-		var land_hp: int = int(sim.get_land_outpost_hp())
-		var land_alive: bool = sim.is_land_outpost_alive()
-		hud.get_node("Root/TopBar/LandRes").text = "Land 兩: %d  OP:%s" % [
-			sim.get_land_resources(),
-			str(land_hp) if land_alive else "LOST",
-		]
-	if hud.has_node("Root/TopBar/SeaRes"):
-		var sea_hp: int = int(sim.get_sea_outpost_hp())
-		var sea_alive: bool = sim.is_sea_outpost_alive()
-		hud.get_node("Root/TopBar/SeaRes").text = "Sea 兩: %d  OP:%s" % [
-			sim.get_sea_resources(),
-			str(sea_hp) if sea_alive else "LOST",
-		]
-	if hud.has_node("Root/TopBar/HqLabel"):
-		hud.get_node("Root/TopBar/HqLabel").text = "HQ: %d/%d  W%d" % [
-			sim.get_hq_hp(), sim.get_hq_max_hp(), wave_index
-		]
-	if hud.has_node("Root/SideBar/HelpLabel") and status_message != "":
-		hud.get_node("Root/SideBar/HelpLabel").text = status_message
+	if hud.has_method("set_outposts"):
+		hud.set_outposts(
+			int(sim.get_land_outpost_hp()),
+			int(sim.get_land_outpost_max()),
+			bool(sim.is_land_outpost_alive()),
+			int(sim.get_sea_outpost_hp()),
+			int(sim.get_sea_outpost_max()),
+			bool(sim.is_sea_outpost_alive()),
+		)
+	if hud.has_method("set_wave"):
+		hud.set_wave(wave_index)
+	if hud.has_method("set_status") and status_message != "":
+		hud.set_status(status_message)
 
 
 func _start_combat() -> void:
+	if GameSession.is_paused or run_over:
+		return
 	if phase != Phase.BUILD:
 		return
 	if sim.get_defender_count() <= 0:
@@ -232,7 +232,7 @@ func _on_unit_selected(id: String) -> void:
 
 
 func _on_cell_clicked(front_id: String, cell: Vector2i) -> void:
-	if run_over or phase == Phase.RESULT:
+	if run_over or GameSession.is_paused or phase == Phase.RESULT:
 		return
 	var grid: GridFront = land_grid if front_id == "land" else sea_grid
 
@@ -304,8 +304,8 @@ func _on_cell_clicked(front_id: String, cell: Vector2i) -> void:
 	if did2 < 0:
 		return
 
-	# Block flow field for basic units, heroes are dynamic and don't block
-	if not def.get("is_hero", false):
+	# Stationary units block flow; heroes travel and must not brick a cell.
+	if int(def.get("kind", UnitDefs.Kind.DEFENDER)) != UnitDefs.Kind.HERO:
 		sim.set_cell_solid(front_id_int, cell, true)
 
 	grid.set_occupant(cell, did2)
@@ -385,7 +385,7 @@ func _free_visual(id: Variant) -> void:
 
 
 func _hero_ability() -> void:
-	if phase != Phase.COMBAT or run_over:
+	if GameSession.is_paused or phase != Phase.COMBAT or run_over:
 		return
 	var cast_happened := false
 	for d in sim.get_defenders():
@@ -405,7 +405,7 @@ func _hero_ability() -> void:
 
 
 func _upgrade_selected() -> void:
-	if phase != Phase.BUILD or run_over or selected_defender_id < 0:
+	if GameSession.is_paused or phase != Phase.BUILD or run_over or selected_defender_id < 0:
 		return
 	var front := 0
 	for defender in sim.get_defenders():
@@ -531,12 +531,16 @@ func _rebuild_placement_from_sim() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("pause_game"):
+		if not run_over:
+			GameSession.toggle_paused()
+		return
+	if GameSession.is_paused or run_over:
+		return
 	if event.is_action_pressed("toggle_phase") or event.is_action_pressed("start_combat"):
 		_start_combat()
 	elif event.is_action_pressed("hero_ability"):
 		_hero_ability()
-	elif event.is_action_pressed("pause_game"):
-		GameSession.is_paused = not GameSession.is_paused
 	elif event.is_action_pressed("save_game"):
 		save_snapshot()
 	elif event.is_action_pressed("load_game"):
@@ -547,3 +551,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		if event.is_action_pressed(action):
 			_on_unit_selected(SELECT_KEYS[action])
 			return
+
+
+func _return_to_menu() -> void:
+	GameSession.set_paused(false)
+	get_tree().change_scene_to_file("res://scenes/main_menu.tscn")

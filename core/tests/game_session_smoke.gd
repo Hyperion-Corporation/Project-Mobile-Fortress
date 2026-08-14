@@ -45,6 +45,13 @@ func _run() -> void:
 			failures.append("enemies_killed not persisted")
 		if float(parsed.get("combat_time", 0.0)) != 12.5:
 			failures.append("extra combat_time not merged into results")
+		# G8: 1 outpost lost + full HQ + victory → 2 stars; prestige = 200 + 14 + 4
+		if int(parsed.get("stars", -1)) != 2:
+			failures.append("G8 stars not merged into results (want 2)")
+		if int(parsed.get("prestige_earned", -1)) != 218:
+			failures.append("G8 prestige_earned not merged (want 218)")
+		if int(parsed.get("best_stars", -1)) < 2:
+			failures.append("G8 best_stars missing after victory")
 
 	# run history append
 	var hist: Array = OfflinePersistence.read_history()
