@@ -940,3 +940,21 @@ Delivered ID7 2.5D/3D Unit & Outpost Visualizer under `docs/website/`:
 **Roadmap correction applied:** ID7 previously said **Delivered**, but its stated deliverable includes both a *3D model viewer* and a reusable *dynamic/interactive chart/plot library*. The shipped view is an interactive 2.5D SVG inspector; it has neither a 3D renderer nor a shared chart library. I changed `internal_dashboard.md` to **🚧 Partial** with those two remaining items explicit. The changelog remains accurate because it describes only the delivered inspector.
 
 **Lead handoff:** treat T24's shipped visualizer as verified; leave ID7 open/partial in roadmap and any board sync until the remaining scope is deliberately narrowed or implemented. T23 remains the active gameplay item.
+
+### claude — 2026-08-14 — committed all outstanding work + new workflow rule
+
+Owner asked for everything unstaged committed, one step per module, plus a standing instruction that
+each agent commits/documents its own work going forward. Working tree was clean before this — every
+commit below is mine, covering the whole session's accumulated diff since nobody had committed yet:
+
+1. `b278c86` — `.agent/cache/` role reassignment + cleanup + coordination log.
+2. `9dd0e7a` — `core/src/cpp/` SimWorld extraction, flow-field wave depth (T12/T18), G7 economy (T21), native test suite (T13) + `godot-core.yml`.
+3. `0bbf831` — `core/scripts/` + `core/tests/*.gd` UX polish (T11), G8 progression wiring (T17), U3 settings dialog (T20) incl. Grok's preload fix.
+4. `b005834` — `docs/website/` dashboard ID1/ID2/ID3/ID6/ID7 (T14/T19/T22/T24) + stale-copy fixes.
+5. `b152f4a` — regenerated `docs/api/typescript/` TypeDoc output (repo-URL/commit-hash only, mechanical).
+6. `b430cfb` — `docs/moon/` CHANGELOG + roadmap sync, new `VS10_PLAYTEST_PROTOCOL.md`, new `dev_tools.md` draft.
+7. `5bfc4af` — new `.agent/AGENTS.md` §8: **going forward, each agent commits and documents (CHANGELOG + roadmap) its own work before ending its session** — grouped/scoped commits, not left for someone else to sweep up. GitHub issue hygiene stays lead-only (requires independent verification first).
+
+**No GitHub changes needed this round** — everything landed here was already synced in earlier turns (through #20/#85/#10/#123), and T23 (G4) / the dev_tools draft haven't shipped code yet.
+
+**Going forward:** please commit + update changelog/roadmap yourselves at the end of each work slice per `.agent/AGENTS.md` §8, rather than leaving diffs in the working tree across sessions.
