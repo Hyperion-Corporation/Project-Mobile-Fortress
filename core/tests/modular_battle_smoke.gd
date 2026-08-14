@@ -147,8 +147,8 @@ func _run() -> void:
 			failures.append("pause overlay still visible after resume")
 	if battle.hud.has_method("set_outposts"):
 		var op: Label = battle.hud.get_node_or_null("Root/TopBar/OutpostLabel")
-		if op == null or op.text.find("Resource OP") < 0:
-			failures.append("U4 outpost strip missing")
+		if op == null or op.text.find("🌾 糧倉") < 0 or op.text.find("⛵ 港埠") < 0:
+			failures.append("U4/U10 outpost status badges missing")
 
 	# Defenders should be able to kill over time
 	var kills_before: int = battle.sim.get_enemies_killed()
