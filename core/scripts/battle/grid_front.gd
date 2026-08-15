@@ -4,6 +4,8 @@ extends Node2D
 
 signal cell_clicked(front_id: String, cell: Vector2i)
 
+const ThemeTokensScript := preload("res://scripts/ui/theme_tokens.gd")
+
 @export var front_id: String = "land" ## "land" | "sea"
 @export var cols: int = 8
 @export var rows: int = 5
@@ -40,7 +42,6 @@ func _build_default_lane() -> void:
 func _build_visuals() -> void:
 	if _tilemap:
 		_tilemap.clear()
-		var base_tile := Vector2i(0, 0) if front_id == "land" else Vector2i(1, 0)
 		var path_tile := Vector2i(0, 1)
 		for y in rows:
 			for x in cols:
@@ -48,15 +49,84 @@ func _build_visuals() -> void:
 				if path_cells.has(cell):
 					_tilemap.set_cell(0, cell, 0, path_tile)
 				else:
-					_tilemap.set_cell(0, cell, 0, base_tile)
+					var tile := _get_environmental_tile(cell)
+					_tilemap.set_cell(0, cell, 0, tile)
 	if _label and is_instance_valid(_label):
 		_label.queue_free()
 	_label = Label.new()
-	_label.text = "LAND — Ming coast" if front_id == "land" else "SEA — Portuguese guns"
+	_label.text = "LAND — Ming Coast (🌾 糧倉)" if front_id == "land" else "SEA — Portuguese Waters (⛵ 港埠)"
 	_label.position = Vector2(4, -32)
-	_label.add_theme_color_override("font_color", UnitDefs.PALETTE["ink"])
-	_label.add_theme_font_size_override("font_size", 16)
+	_label.add_theme_color_override("font_color", ThemeTokensScript.INK)
+	_label.add_theme_font_size_override("font_size", 15)
 	add_child(_label)
+	queue_redraw()
+
+
+func _get_environmental_tile(cell: Vector2i) -> Vector2i:
+	if cell == Vector2i(4, 2):
+		return Vector2i(0, 0) if front_id == "land" else Vector2i(1, 0)
+	var h: int = ((cell.x * 73856093) ^ (cell.y * 19349663)) & 0x7FFFFFFF
+	var r := h % 10
+	if front_id == "land":
+		# Coast/marsh edge transition vs core farmland
+		if cell.y >= rows - 2 and r < 3:
+			return Vector2i(1, 0) # Coastal tidal marsh / shoreline
+		return Vector2i(0, 0) # Ming earth / grassy plain
+	else:
+		# Deep ocean vs shallow reef/shoal
+		if cell.y <= 1 and r < 3:
+			return Vector2i(0, 0) # Shallow shoal near land
+		return Vector2i(1, 0) # Deep sea waters
+
+
+func _draw() -> void:
+	if _tilemap == null or _tilemap.tile_set == null:
+		return
+	var ts: Vector2 = Vector2(_tilemap.tile_set.tile_size)
+	var half_w: float = ts.x * 0.5
+	var half_h: float = ts.y * 0.5
+
+	# 1. Subtle isometric tile grid lines for cartographic precision
+	var grid_col := Color(ThemeTokensScript.INK.r, ThemeTokensScript.INK.g, ThemeTokensScript.INK.b, 0.08)
+	for y in rows:
+		for x in cols:
+			var cell := Vector2i(x, y)
+			var local_center := cell_to_local_center(cell)
+			var pts := PackedVector2Array([
+				local_center + Vector2(0, -half_h),
+				local_center + Vector2(half_w, 0),
+				local_center + Vector2(0, half_h),
+				local_center + Vector2(-half_w, 0),
+				local_center + Vector2(0, -half_h),
+			])
+			draw_polyline(pts, grid_col, 1.0)
+
+	# 2. Outpost perimeter bastion highlight (cell (4,2))
+	var op_cell := Vector2i(4, 2)
+	var op_center := cell_to_local_center(op_cell)
+	var op_pts := PackedVector2Array([
+		op_center + Vector2(0, -half_h - 2),
+		op_center + Vector2(half_w + 4, 0),
+		op_center + Vector2(0, half_h + 2),
+		op_center + Vector2(-half_w - 4, 0),
+		op_center + Vector2(0, -half_h - 2),
+	])
+	var op_color := ThemeTokensScript.GOLD if front_id == "land" else ThemeTokensScript.SEA_INDIGO_BRIGHT
+	draw_polyline(op_pts, Color(op_color.r, op_color.g, op_color.b, 0.4), 2.0)
+
+	# 3. Ukiyo-e wave foam & elevation contours
+	if front_id == "sea":
+		var wave_col := Color(ThemeTokensScript.PAPER.r, ThemeTokensScript.PAPER.g, ThemeTokensScript.PAPER.b, 0.3)
+		for x in range(0, cols, 2):
+			var c1 := cell_to_local_center(Vector2i(x, 0))
+			draw_arc(c1 + Vector2(0, -6), 10.0, 0.1, PI - 0.1, 8, wave_col, 1.5)
+	else:
+		var grass_col := Color(ThemeTokensScript.MOSS_LAND_BRIGHT.r, ThemeTokensScript.MOSS_LAND_BRIGHT.g, ThemeTokensScript.MOSS_LAND_BRIGHT.b, 0.25)
+		for x in range(1, cols, 2):
+			var c1 := cell_to_local_center(Vector2i(x, rows - 1))
+			draw_line(c1 + Vector2(-6, 3), c1 + Vector2(0, -5), grass_col, 1.5)
+			draw_line(c1 + Vector2(0, -5), c1 + Vector2(6, 3), grass_col, 1.5)
+
 
 
 func _ensure_click_layer() -> void:

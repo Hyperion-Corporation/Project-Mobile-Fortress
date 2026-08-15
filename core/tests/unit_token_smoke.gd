@@ -67,6 +67,29 @@ func _run() -> void:
 	if not qi.is_selected:
 		failures.append("set_selected failed")
 
+	# 5. Test GridFront tile variety mapping
+	var land_grid: GridFront = load("res://scripts/battle/grid_front.gd").new()
+	land_grid.front_id = "land"
+	land_grid.cols = 8
+	land_grid.rows = 5
+	var land_tile := land_grid._get_environmental_tile(Vector2i(0, 0))
+	if land_tile != Vector2i(0, 0):
+		failures.append("land base tile mismatch: %s" % str(land_tile))
+	var outpost_tile := land_grid._get_environmental_tile(Vector2i(4, 2))
+	if outpost_tile != Vector2i(0, 0):
+		failures.append("land outpost tile mismatch: %s" % str(outpost_tile))
+
+	var sea_grid: GridFront = load("res://scripts/battle/grid_front.gd").new()
+	sea_grid.front_id = "sea"
+	sea_grid.cols = 8
+	sea_grid.rows = 5
+	var sea_tile := sea_grid._get_environmental_tile(Vector2i(0, 3))
+	if sea_tile != Vector2i(1, 0):
+		failures.append("sea base tile mismatch: %s" % str(sea_tile))
+
+	land_grid.queue_free()
+	sea_grid.queue_free()
+
 	await process_frame
 
 	spearman.queue_free()

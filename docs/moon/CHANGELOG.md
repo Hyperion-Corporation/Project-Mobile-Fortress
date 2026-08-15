@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (2026-08-15, T36 U9 Environmental Tile Variety & Art Polish Completion)
+
+- **U9:** `grid_front.gd` environmental tile variety mapping (coastal tidal marsh / shoreline vs core farmland on Land front; deep sea vs shallow reef shoals on Sea front), outpost bastion perimeter zone highlights, and procedural ukiyo-e wave foam / elevation vector contours using `_draw()`. Completes sub-passes 1, 2, and 3 for U9 art & asset polish. Smoke: `unit_token_smoke.gd`.
+
 ### Changed (2026-08-15, T34 DT7 playtest session log + dashboard sync)
 
 - **DT7:** `PlaytestLog` writes `user://playtest_sessions.json`. Overlay `[📝 Mark Session Event]` timestamps marks (tester field); `end_run` logs only if a session is already open. **Sync to Dashboard** merges into `docs/website/public/dashboard-data/playtest_sessions.json` in the existing `PlaytestNotesView` shape (events folded into `notes`). No checkout / mobile: export + `scripts/sync_playtest_session.sh <file>`. Event-triggered, not telemetry. Smoke: `playtest_log_smoke.gd`.
