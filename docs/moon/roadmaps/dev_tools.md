@@ -28,7 +28,7 @@ table's row order:
    full loss).
 4. **DT3** — without RNG-seed control (see DT3 notes).
 5. **DT7** — after DT8's menu exists, so "mark event" has a UI home.
-6. **DT6 last** — blocked on G5 growing a second level JSON; do not build a picker over one file.
+6. **DT6 last** — unblocked by T35 (two dual-front JSONs); overlay picker is T37.
 
 ## God mode
 
@@ -44,7 +44,7 @@ table's row order:
 | # | Item | Effort | Status | Notes |
 | --- | --- | --- | --- | --- |
 | DT5 | On-screen diagnostics overlay: FPS, raider/unit counts, sim tick time, memory — toggleable HUD layer | S | 🚧 **Slice-0 wired (T26)** — lives on the DT8 overlay | Feeds VS-A8's 30+ FPS / 10–40 unit acceptance check directly. FPS = `Engine.get_frames_per_second()`; tick = last `sim.tick` µs; memory = `Performance.MEMORY_STATIC` when the monitor exists. |
-| DT6 | Level/scenario picker: jump straight to any level or wave setup from a dev menu instead of always starting `slice0_dual_front` | S | 📋 Pending | Unblocked by T35 (`night_tide_dual_front`). Player `LevelSelect` is G5; DT6 is still the overlay picker. |
+| DT6 | Level/scenario picker: jump straight to any level or wave setup from a dev menu instead of always starting `slice0_dual_front` | S | 🚧 **Slice-0 wired (T37)** — overlay `LevelPickSelect` + in-place `debug_load_level` | Player `LevelSelect` is G5. Wave jump stays DT3. |
 | DT7 | Playtest session logging: structured event/action log matching `VS10_PLAYTEST_PROTOCOL.md`'s session template, plus a one-press **"Sync to Dashboard"** pipeline action (owner decision — see [DT7 data path](#dt7-data-path-locked)) | M | 🚧 **Slice-0 wired (T34)** — `user://playtest_sessions.json` + overlay Mark/Sync + `scripts/sync_playtest_session.sh` | One-tap `[📝 Mark Session Event]` button timestamps notable moments during a session; separate "Sync to Dashboard" button runs the pipeline. |
 | DT8 | Dev-menu access/unlock mechanism | S | 🚧 **Slice-0 wired (T25)** — `~`/F12, 5-tap version label, Settings Developer Mode (not telemetry) | Foundational — DT1–DT7 hang off this. See [Gating](#gating-locked). |
 

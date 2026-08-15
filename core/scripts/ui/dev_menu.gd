@@ -1,8 +1,9 @@
 extends CanvasLayer
-## DT8 overlay + DT5 diagnostics + DT4 pause/step/speed + DT3 spawn/jump/reload.
+## DT8 overlay + DT5/DT4 + DT3 spawn/jump + DT6 level picker + DT7 playtest.
 
 const UnitDefsScript := preload("res://scripts/data/unit_defs.gd")
 const PlaytestLogScript := preload("res://scripts/data/playtest_log.gd")
+const LevelCatalogScript := preload("res://scripts/data/level_catalog.gd")
 
 const INK := Color(0.10, 0.09, 0.12, 1)
 const PAPER := Color(0.93, 0.86, 0.74, 0.94)
@@ -18,6 +19,7 @@ var _cell_x: SpinBox
 var _cell_y: SpinBox
 var _wave_spin: SpinBox
 var _click_spawn_btn: Button
+var _level_pick: OptionButton
 
 
 func _ready() -> void:
@@ -67,7 +69,7 @@ func _build() -> void:
 
 	var title := Label.new()
 	title.name = "Title"
-	title.text = "DEVELOPER · DT3–DT5 / DT7"
+	title.text = "DEVELOPER · DT3–DT7"
 	title.add_theme_color_override("font_color", CINNABAR)
 	title.add_theme_font_size_override("font_size", 16)
 	vbox.add_child(title)
@@ -224,6 +226,22 @@ func _build() -> void:
 	_add_cheat_btn(wave_row, "Jump wave", _on_jump_wave, "JumpWaveBtn")
 	_add_cheat_btn(wave_row, "Reload level", _on_reload_level, "ReloadLevelBtn")
 	vbox.add_child(wave_row)
+
+	var level_sec := Label.new()
+	level_sec.text = "LEVEL (DT6)"
+	level_sec.add_theme_color_override("font_color", CINNABAR)
+	level_sec.add_theme_font_size_override("font_size", 13)
+	vbox.add_child(level_sec)
+
+	var level_row := HBoxContainer.new()
+	level_row.add_theme_constant_override("separation", 6)
+	_level_pick = OptionButton.new()
+	_level_pick.name = "LevelPickSelect"
+	_level_pick.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_populate_level_pick()
+	level_row.add_child(_level_pick)
+	_add_cheat_btn(level_row, "Load level", _on_load_level, "LoadLevelBtn")
+	vbox.add_child(level_row)
 
 	var play_sec := Label.new()
 	play_sec.text = "PLAYTEST (DT7)"
@@ -478,6 +496,44 @@ func _on_jump_wave() -> void:
 	var sim := _find_sim()
 	if sim and sim.has_method("debug_jump_wave"):
 		sim.debug_jump_wave(wave_n - 1)
+
+
+func _populate_level_pick() -> void:
+	if _level_pick == null:
+		return
+	_level_pick.clear()
+	var levels: Array = LevelCatalogScript.list_levels()
+	var current := ""
+	var session := _session()
+	if session:
+		current = str(session.selected_level_path)
+	var picked := 0
+	for i in levels.size():
+		var entry: Dictionary = levels[i]
+		_level_pick.add_item(str(entry.get("displayName", entry.get("id", "level"))), i)
+		_level_pick.set_item_metadata(i, entry)
+		if str(entry.get("path", "")) == current:
+			picked = i
+	if levels.size() > 0:
+		_level_pick.select(picked)
+
+
+func _on_load_level() -> void:
+	if _level_pick == null or _level_pick.item_count == 0:
+		return
+	var entry: Variant = _level_pick.get_item_metadata(_level_pick.selected)
+	if not entry is Dictionary:
+		return
+	var path := str(entry.get("path", ""))
+	var level_id := str(entry.get("id", ""))
+	var session := _session()
+	if session and session.has_method("set_selected_level"):
+		session.set_selected_level(path, level_id)
+	var battle := _find_battle()
+	if battle and battle.has_method("debug_load_level"):
+		battle.debug_load_level(path)
+	elif battle and battle.has_method("debug_reload_level"):
+		battle.debug_reload_level()
 
 
 func _on_reload_level() -> void:

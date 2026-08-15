@@ -699,5 +699,46 @@ func debug_jump_wave(wave_number: int) -> bool:
 	return ok
 
 
+func debug_load_level(path: String = "") -> bool:
+	if sim == null:
+		return false
+	if path != "":
+		GameSession.set_selected_level(path)
+	GameSession.reset_run()
+	run_over = false
+	pending_hero_id = -1
+	selected_defender_id = -1
+	debug_click_spawn = ""
+	for id in visual_nodes.keys():
+		_free_visual(id)
+	_clear_grid_occupants()
+	cell_by_defender.clear()
+	if sim.has_method("init_grids"):
+		sim.init_grids(Vector2i(8, 5))
+		sim.set_cell_solid(0, Vector2i(4, 2), true)
+		sim.set_cell_solid(1, Vector2i(4, 2), true)
+	if land_grid:
+		sim.set_lane_path(0, land_grid.path_world_points())
+	if sea_grid:
+		sim.set_lane_path(1, sea_grid.path_world_points())
+	if not sim.load_level_json(_level_path()):
+		status_message = "DT6 load failed"
+		_update_hud()
+		return false
+	start_land = sim.get_land_resources()
+	start_sea = sim.get_sea_resources()
+	start_hq = sim.get_hq_max_hp()
+	build_time_left = sim.get_build_phase_seconds()
+	victory_time = sim.get_victory_time()
+	combat_time = 0.0
+	wave_index = 0
+	_set_phase(Phase.BUILD)
+	_sync_visuals()
+	_sync_session_from_sim()
+	status_message = "DT6 loaded %s" % GameSession.selected_level_id
+	_update_hud()
+	return true
+
+
 func debug_reload_level() -> void:
 	_restart()
