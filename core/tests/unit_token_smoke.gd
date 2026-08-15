@@ -76,13 +76,16 @@ func _run() -> void:
 	if land_tile != Vector2i(0, 0):
 		failures.append("land base tile mismatch: %s" % str(land_tile))
 	var outpost_tile := land_grid._get_environmental_tile(Vector2i(4, 2))
-	if outpost_tile != Vector2i(0, 0):
+	if outpost_tile != Vector2i(2, 1):
 		failures.append("land outpost tile mismatch: %s" % str(outpost_tile))
 
 	var sea_grid: GridFront = load("res://scripts/battle/grid_front.gd").new()
 	sea_grid.front_id = "sea"
 	sea_grid.cols = 8
 	sea_grid.rows = 5
+	var sea_outpost_tile := sea_grid._get_environmental_tile(Vector2i(4, 2))
+	if sea_outpost_tile != Vector2i(2, 0):
+		failures.append("sea outpost tile mismatch: %s" % str(sea_outpost_tile))
 	var sea_tile := sea_grid._get_environmental_tile(Vector2i(0, 3))
 	if sea_tile != Vector2i(1, 0):
 		failures.append("sea base tile mismatch: %s" % str(sea_tile))

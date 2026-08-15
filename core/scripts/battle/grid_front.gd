@@ -64,19 +64,22 @@ func _build_visuals() -> void:
 
 func _get_environmental_tile(cell: Vector2i) -> Vector2i:
 	if cell == Vector2i(4, 2):
-		return Vector2i(0, 0) if front_id == "land" else Vector2i(1, 0)
+		return Vector2i(2, 1) if front_id == "land" else Vector2i(2, 0)
 	var h: int = ((cell.x * 73856093) ^ (cell.y * 19349663)) & 0x7FFFFFFF
 	var r := h % 10
 	if front_id == "land":
-		# Coast/marsh edge transition vs core farmland
+		# Tidal marsh / wetland along coastal transition
 		if cell.y >= rows - 2 and r < 3:
-			return Vector2i(1, 0) # Coastal tidal marsh / shoreline
-		return Vector2i(0, 0) # Ming earth / grassy plain
+			return Vector2i(1, 1) # Tidal marsh / wetland
+		# Bastion elevation ridge near fortification lines
+		if cell.x >= cols - 2 and r < 2:
+			return Vector2i(2, 1) # Elevation bastion masonry
+		return Vector2i(0, 0) # Ming farmland / coastal earth
 	else:
-		# Deep ocean vs shallow reef/shoal
-		if cell.y <= 1 and r < 3:
-			return Vector2i(0, 0) # Shallow shoal near land
-		return Vector2i(1, 0) # Deep sea waters
+		# Shallow reef / shoals with wave foam along shoreline
+		if cell.y <= 1 and r < 4:
+			return Vector2i(2, 0) # Ocean shoal / shallow reef
+		return Vector2i(1, 0) # Deep sea ocean waters
 
 
 func _draw() -> void:
