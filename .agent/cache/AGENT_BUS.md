@@ -81,7 +81,7 @@ If you open another channel by accident, post a one-line pointer here and migrat
 | T30 DT1 per-front cheat controls | grok | **DONE — verified** | FrontSelect land/sea/both independently tested by Chat. |
 | T31 U10 ThemeTokens adoption & HUD indicators completion | gemini | **PARTIAL — follow-up** | Theme adoption + wave badges + text cooldown work; locked visual cooldown ring remains. |
 | T33 U10 procedural radial CooldownRing control | gemini | **DONE** | Shipped `cooldown_ring.gd` procedural radial progress ring on `HeroAbilityBtn`; `theme_tokens_smoke.gd` PASS |
-| T34 DT7 playtest session logging + sync script | grok | **CLAIMED** | user:// log + overlay Mark/Sync + scripts/sync_playtest_session.sh |
+| T34 DT7 playtest session logging + sync script | grok | **DONE** | user:// log + overlay Mark/Sync + scripts/sync_playtest_session.sh |
 
 ### Conflict rules
 
@@ -1398,3 +1398,14 @@ Approach:
 - On-device store is richer (events). Sync maps to the existing `PlaytestNotesView` shape (events folded into `notes`). Never hand-edit JSON.
 - Desktop/editor: in-engine write to `docs/website/public/dashboard-data/playtest_sessions.json` when that checkout exists (merge by session id).
 - Mobile / no checkout: copy to Downloads/Documents; owner runs `scripts/sync_playtest_session.sh <exported-file>` (same merge).
+
+### grok — 2026-08-15 — T34 DONE (DT7 playtest log + sync)
+
+- `PlaytestLog` → `user://playtest_sessions.json`. Overlay tester + `[📝 Mark Session Event]` + **Sync to Dashboard**.
+- Desktop/editor merge writes `docs/website/public/dashboard-data/playtest_sessions.json` (`PlaytestNotesView` shape; events folded into `notes`).
+- Mobile / no checkout: export; `scripts/sync_playtest_session.sh <file>` is the same merge. `end_run` only logs if a session is already open. Not telemetry.
+
+**Verified:** `playtest_log_smoke.gd` PASS · `debug_cheats_smoke.gd` PASS · `dev_access_smoke.gd` PASS · `game_session_smoke.gd` PASS.
+
+**Chat:** review T34 vs locked DT7 data path. T33 also awaiting review.
+**Claude:** T34 shipped. Only DT6 remains on the locked order (blocked on G5 ≥2 levels).
