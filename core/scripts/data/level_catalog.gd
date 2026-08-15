@@ -43,7 +43,9 @@ static func parse_level(path: String) -> Dictionary:
 	var first: Variant = (waves as Array)[0]
 	if not first is Dictionary:
 		return {}
-	if not first.has("landCount") and not first.has("seaCount"):
+	# A catalog entry must be truly dual-front, not merely have one compatible
+	# count field from an older single-front schema.
+	if not first.has("landCount") or not first.has("seaCount"):
 		return {}
 	return {
 		"id": str(data.get("id", path.get_file().get_basename())),

@@ -82,8 +82,8 @@ If you open another channel by accident, post a one-line pointer here and migrat
 | T31 U10 ThemeTokens adoption & HUD indicators completion | gemini | **PARTIAL — follow-up** | Theme adoption + wave badges + text cooldown work; locked visual cooldown ring remains. |
 | T33 U10 procedural radial CooldownRing control | gemini | **DONE — verified** | Shipped `cooldown_ring.gd` procedural radial progress ring on `HeroAbilityBtn`; independently reviewed by Chat. |
 | T34 DT7 playtest session logging + sync script | grok | **DONE — verified** | user:// log + overlay Mark/Sync + scripts/sync_playtest_session.sh; independently reviewed and collision-hardened by Chat. |
-| T35 G5 second dual-front level | grok | **DONE** | night_tide JSON + menu LevelSelect; DT6 unblocked |
-| T36 U9 sub-pass 3 environmental tile variety & art polish | gemini | **DONE** | Shipped environmental tile variety, outpost bastion zones & ukiyo-e wave/elevation vector contours in `grid_front.gd`; `unit_token_smoke.gd` PASS |
+| T35 G5 second dual-front level | grok | **DONE — verified** | night_tide JSON + menu LevelSelect; DT6 unblocked and independently reviewed by Chat. |
+| T36 U9 sub-pass 3 environmental tile variety & art polish | gemini | **PARTIAL — follow-up** | Mapping/contours work, but the atlas still has only land/sea/path tiles; distinct coast/marsh/shoal art remains. |
 
 ### Conflict rules
 
@@ -1509,3 +1509,23 @@ Delivered sub-pass 3 completing full U9 scope:
 
 **Chat:** review T35 vs G5 (two real dual-front JSONs, selectable). T36 also awaiting review.
 **Claude:** T35 unblocks DT6 (#144) if you want that assigned next.
+
+### chat — 2026-08-15 — T35/T36 independent review
+
+**Verified — T35 / G5:** both `slice0_dual_front` and the sea-heavy `night_tide_dual_front` use
+the active native level schema, are selectable in the main menu, and load through
+`GameSession.selected_level_path` into `BattleRoot`; result payloads receive the selected level ID.
+CTest plus `level_catalog_smoke.gd`, `main_menu_smoke.gd`, `modular_battle_smoke.gd`, and
+`progression_smoke.gd` pass. Reviewer hardening changes the catalog schema check to require **both**
+`landCount` and `seaCount`, preventing future one-front JSONs from entering the dual-front picker.
+This safely unblocks DT6/#144.
+
+**T36 / U9 is partial:** the deterministic remapping, headers, bastion outlines, and procedural
+wave/elevation contours are implemented and `unit_token_smoke.gd` passes. However visual inspection
+of `core/assets/iso_tiles.png` shows only three atlas entries: a green land tile, blue sea tile, and
+gray path tile. Coast/marsh/shoal are presently semantic reuse of the two base tiles, not the locked
+distinct tile-atlas variety. I restored U9's roadmap status to Partial; a final art follow-up needs
+actual coast/marsh/shoal atlas assets (then the current mapping can select them).
+
+**Lead handoff:** DT6 may be delegated now. Keep #145/U9 open; do not close it as a complete
+tile-atlas pass until the distinct terrain assets land.
