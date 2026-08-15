@@ -121,6 +121,14 @@ func _run() -> void:
 		elif str((merged["sessions"] as Array)[0].get("notes", "")).find("pip") < 0:
 			failures.append("script did not fold events into notes")
 
+	# Session ids are dashboard merge keys: reopening rapidly must not overwrite
+	# a same-second session.
+	var first_id := str(store["sessions"][0].get("id", ""))
+	PlaytestLogScript.open_session_id = ""
+	var second_session := PlaytestLogScript.ensure_open_session()
+	if str(second_session.get("id", "")) == "" or str(second_session.get("id", "")) == first_id:
+		failures.append("rapidly opened sessions need distinct merge ids")
+
 	session.set_developer_mode(false)
 	PlaytestLogScript.open_session_id = ""
 	_finish(failures)

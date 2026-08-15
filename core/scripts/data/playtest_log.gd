@@ -52,7 +52,9 @@ static func ensure_open_session() -> Dictionary:
 				return session
 	var started := int(Time.get_unix_time_from_system())
 	var session := {
-		"id": "sess_%d" % started,
+		# Dashboard sync merges by id; seconds alone can collide when a tester
+		# closes and opens sessions rapidly.
+		"id": "sess_%d_%d" % [started, Time.get_ticks_usec()],
 		"started_unix": started,
 		"date": Time.get_date_string_from_system(),
 		"tester": tester_name,
