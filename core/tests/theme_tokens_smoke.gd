@@ -48,7 +48,18 @@ func _run() -> void:
 	if not dummy_ctrl.visible:
 		failures.append("animate_slide_fade_in did not set visible=true")
 
-	# 5. Test BattleHUD indicators instantiation & methods
+	# 5. Test CooldownRing standalone
+	var ring: Control = load("res://scripts/ui/cooldown_ring.gd").new()
+	root.add_child(ring)
+	ring.set_cooldown(5.0, 10.0)
+	if ring.is_ready():
+		failures.append("CooldownRing.is_ready should be false when cooldown_left > 0")
+	ring.set_cooldown(0.0, 10.0)
+	if not ring.is_ready():
+		failures.append("CooldownRing.is_ready should be true when cooldown_left == 0")
+	ring.queue_free()
+
+	# 6. Test BattleHUD indicators instantiation & methods
 	var hud_scene: PackedScene = load("res://scenes/battle/battle.tscn")
 	if hud_scene != null:
 		var battle_instance: Node = hud_scene.instantiate()
@@ -56,11 +67,14 @@ func _run() -> void:
 		var hud: CanvasLayer = battle_instance.get_node_or_null("HUD")
 		if hud != null:
 			hud.set_wave(3)
-			var wave_lbl: Label = hud.get_node_or_null("Root/TopBar/WaveLabel") if hud.has_node("Root/TopBar/WaveLabel") else hud.get_node_or_null("Root/TopBar/HqLabel")
 			hud.set_hero_cooldown(4.5)
 			var hero_btn: Button = hud.get_node_or_null("Root/SideBar/HeroAbilityBtn")
-			if hero_btn != null and not hero_btn.text.contains("4.5s"):
-				failures.append("set_hero_cooldown text mismatch: %s" % hero_btn.text)
+			if hero_btn != null:
+				if not hero_btn.text.contains("4.5s"):
+					failures.append("set_hero_cooldown text mismatch: %s" % hero_btn.text)
+				var ring_node: Control = hero_btn.get_node_or_null("CooldownRing")
+				if ring_node == null:
+					failures.append("CooldownRing node not found on hero_btn")
 			hud.set_hero_cooldown(0.0)
 			if hero_btn != null and not hero_btn.text.contains("Ready"):
 				failures.append("set_hero_cooldown ready text mismatch: %s" % hero_btn.text)

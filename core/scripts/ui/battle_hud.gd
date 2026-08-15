@@ -3,6 +3,7 @@ extends CanvasLayer
 
 const ProgressionScript := preload("res://scripts/data/progression.gd")
 const ThemeTokensScript := preload("res://scripts/ui/theme_tokens.gd")
+const CooldownRingScript := preload("res://scripts/ui/cooldown_ring.gd")
 
 signal start_combat_pressed
 signal unit_selected(id: String)
@@ -42,6 +43,7 @@ var _pause_menu_btn: Button
 var _outpost_label: Label
 var _status_label: Label
 var _wave_label: Label
+var _cooldown_ring: Control
 
 
 func _ready() -> void:
@@ -58,6 +60,7 @@ func _ready() -> void:
 	_ensure_persistence_buttons()
 	_ensure_status_strip()
 	_ensure_pause_overlay()
+	_ensure_cooldown_ring()
 	_on_res(GameSession.land_currency, GameSession.sea_currency)
 	_on_hq(GameSession.hq_hp, GameSession.hq_max_hp)
 	set_outposts(40, 40, true, 40, 40, true)
@@ -197,6 +200,21 @@ func _ensure_pause_overlay() -> void:
 	_pause_overlay.visible = false
 
 
+func _ensure_cooldown_ring() -> void:
+	if hero_btn == null:
+		return
+	_cooldown_ring = hero_btn.get_node_or_null("CooldownRing") as Control
+	if _cooldown_ring == null:
+		_cooldown_ring = CooldownRingScript.new()
+		_cooldown_ring.name = "CooldownRing"
+		_cooldown_ring.set_anchors_preset(Control.PRESET_CENTER_RIGHT)
+		_cooldown_ring.offset_left = -32
+		_cooldown_ring.offset_top = -14
+		_cooldown_ring.offset_right = -4
+		_cooldown_ring.offset_bottom = 14
+		hero_btn.add_child(_cooldown_ring)
+
+
 func _emit_resume() -> void:
 	resume_pressed.emit()
 
@@ -298,15 +316,20 @@ func set_wave(wave: int) -> void:
 		_wave_label.text = "Wave %d · %s %s" % [wave, ThemeTokensScript.GLYPH_THREAT_SKULL, threat_roman]
 
 
-func set_hero_cooldown(cooldown_left: float, _max_cooldown: float = 10.0) -> void:
+func set_hero_cooldown(cooldown_left: float, max_cooldown: float = 10.0) -> void:
 	if hero_btn == null:
 		return
+	if _cooldown_ring == null:
+		_ensure_cooldown_ring()
+	if _cooldown_ring != null and _cooldown_ring.has_method("set_cooldown"):
+		_cooldown_ring.set_cooldown(cooldown_left, max_cooldown)
 	if cooldown_left <= 0.0:
-		hero_btn.text = "E · Hero Ability (Ready)"
+		hero_btn.text = "E · Hero Ability (Ready) "
 		hero_btn.add_theme_color_override("font_color", ThemeTokensScript.GOLD)
 	else:
-		hero_btn.text = "E · Hero Ability (⌛ %.1fs)" % cooldown_left
+		hero_btn.text = "E · Hero Ability (⌛ %.1fs) " % cooldown_left
 		hero_btn.add_theme_color_override("font_color", ThemeTokensScript.INK_MUTED)
+
 
 
 
