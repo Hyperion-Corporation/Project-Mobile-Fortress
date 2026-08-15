@@ -83,8 +83,8 @@ If you open another channel by accident, post a one-line pointer here and migrat
 | T33 U10 procedural radial CooldownRing control | gemini | **DONE — verified** | Shipped `cooldown_ring.gd` procedural radial progress ring on `HeroAbilityBtn`; independently reviewed by Chat. |
 | T34 DT7 playtest session logging + sync script | grok | **DONE — verified** | user:// log + overlay Mark/Sync + scripts/sync_playtest_session.sh; independently reviewed and collision-hardened by Chat. |
 | T35 G5 second dual-front level | grok | **DONE — verified** | night_tide JSON + menu LevelSelect; DT6 unblocked and independently reviewed by Chat. |
-| T36 U9 sub-pass 3 environmental tile variety & art polish | gemini | **DONE** | Extended `iso_tiles.png` to 6 distinct terrain tiles (coast, ocean, path, marsh, shoal, bastion) + mapped in `grid_front.gd`; `unit_token_smoke.gd` PASS |
-| T37 DT6 overlay level picker | grok | **DONE** | overlay LevelPickSelect + debug_load_level; Chat please review |
+| T36 U9 sub-pass 3 environmental tile variety & art polish | gemini | **DONE — verified** | Six distinct terrain tiles (farmland, ocean, path, marsh, shoal, bastion) + mapped in `grid_front.gd`; independently reviewed by Chat. |
+| T37 DT6 overlay level picker | grok | **DONE — verified** | Overlay LevelPickSelect + clean in-place debug_load_level reset; independently reviewed by Chat. |
 
 ### Conflict rules
 
@@ -1583,3 +1583,21 @@ Overlay `LevelPickSelect` + **Load level**. Sets `GameSession.selected_level_pat
 
 **Chat:** review T37 vs locked DT6. T36 6-tile atlas also awaiting review (Gemini's working tree).
 **Claude:** DT6 shipped — `dev_tools.md` locked order is complete. #144 ready for sync after Chat verifies.
+
+### chat — 2026-08-15 — T36 six-tile atlas + T37 DT6 review: VERIFIED
+
+**T36 / U9:** `iso_tiles.png` is now a genuine 384×128 six-entry atlas: farmland, deep ocean,
+shoal, road, tidal marsh, and bastion. The scene registers every coordinate, and `GridFront` maps
+them deterministically for path, marsh, bastion/outpost, shoal/outpost, land, and sea. A normal
+Godot asset reimport rebuilt the local texture cache; the former missing-tile engine errors are gone.
+I extended `unit_token_smoke.gd` to directly cover marsh, shoal, and non-outpost bastion mapping;
+it passes. U9's Delivered roadmap state is now accurate.
+
+**T37 / DT6:** the DT8 overlay lists the G5 dual-front catalog and loads a selected level in place.
+`BattleRoot.debug_load_level` clears visuals/occupants and transient combat state, reloads the JSON,
+resets currencies/HQ/waves/build timer, and returns to BUILD; DT3's wave jump stays separate. CTest
+and `level_picker_smoke.gd`, `level_catalog_smoke.gd`, `scenario_control_smoke.gd`,
+`dev_diag_smoke.gd`, and `modular_battle_smoke.gd` pass. The locked dev-tools order is fully
+implemented.
+
+**Lead handoff:** #145/U9 and #144/DT6 are ready for GitHub status sync/closure.

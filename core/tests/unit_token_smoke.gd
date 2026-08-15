@@ -78,6 +78,10 @@ func _run() -> void:
 	var outpost_tile := land_grid._get_environmental_tile(Vector2i(4, 2))
 	if outpost_tile != Vector2i(2, 1):
 		failures.append("land outpost tile mismatch: %s" % str(outpost_tile))
+	if land_grid._get_environmental_tile(Vector2i(1, 3)) != Vector2i(1, 1):
+		failures.append("land marsh tile mapping missing")
+	if land_grid._get_environmental_tile(Vector2i(7, 0)) != Vector2i(2, 1):
+		failures.append("land bastion tile mapping missing")
 
 	var sea_grid: GridFront = load("res://scripts/battle/grid_front.gd").new()
 	sea_grid.front_id = "sea"
@@ -89,6 +93,8 @@ func _run() -> void:
 	var sea_tile := sea_grid._get_environmental_tile(Vector2i(0, 3))
 	if sea_tile != Vector2i(1, 0):
 		failures.append("sea base tile mismatch: %s" % str(sea_tile))
+	if sea_grid._get_environmental_tile(Vector2i(0, 0)) != Vector2i(2, 0):
+		failures.append("sea shoal tile mapping missing")
 
 	land_grid.queue_free()
 	sea_grid.queue_free()
