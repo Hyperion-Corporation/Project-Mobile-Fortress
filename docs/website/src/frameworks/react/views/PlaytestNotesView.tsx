@@ -72,9 +72,9 @@ export default function PlaytestNotesView() {
               <strong>How to record a session:</strong>
             </p>
             <ol style={{ fontSize: "0.83rem", color: "var(--text-muted)", marginTop: "0.4rem", paddingLeft: "1.25rem" }}>
-              <li>Fill in <code>docs/moon/VS10_PLAYTEST_PROTOCOL.md</code></li>
-              <li>Add a session object to <code>public/dashboard-data/playtest_sessions.json</code></li>
-              <li>Commit and push</li>
+              <li>In the Godot DT8 overlay, press <code>📝 Mark Session Event</code> during the session</li>
+              <li>Press <code>Sync to Dashboard</code> (desktop/editor) or export and run <code>scripts/sync_playtest_session.sh</code></li>
+              <li>Commit the updated <code>public/dashboard-data/playtest_sessions.json</code></li>
             </ol>
           </div>
         </div>

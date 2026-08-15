@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed (2026-08-15, T34 DT7 playtest session log + dashboard sync)
+
+- **DT7:** `PlaytestLog` writes `user://playtest_sessions.json`. Overlay `[📝 Mark Session Event]` timestamps marks (tester field); `end_run` logs only if a session is already open. **Sync to Dashboard** merges into `docs/website/public/dashboard-data/playtest_sessions.json` in the existing `PlaytestNotesView` shape (events folded into `notes`). No checkout / mobile: export + `scripts/sync_playtest_session.sh <file>`. Event-triggered, not telemetry. Smoke: `playtest_log_smoke.gd`.
+
 ### Changed (2026-08-14, T32 DT3 spawn / jump-wave / reload)
 
 - **DT3:** `SimWorld.debug_jump_wave` (0-based) starts combat and fires only that wave on the next tick — earlier waves marked fired, no RNG. `debug_spawn_raider_at` reuses `spawn_raider` and places on a cell (flow from there, or lane starting there). Overlay: type + cell spawn, click-to-spawn, 1-based Jump wave, Reload level (`BattleRoot._restart` / `load_level_json`). Defender spawn is free via `BattleRoot.debug_spawn_at_cell`. Smoke: `scenario_control_smoke.gd`.

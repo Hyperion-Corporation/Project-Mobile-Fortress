@@ -2,6 +2,7 @@ extends CanvasLayer
 ## DT8 overlay + DT5 diagnostics + DT4 pause/step/speed + DT3 spawn/jump/reload.
 
 const UnitDefsScript := preload("res://scripts/data/unit_defs.gd")
+const PlaytestLogScript := preload("res://scripts/data/playtest_log.gd")
 
 const INK := Color(0.10, 0.09, 0.12, 1)
 const PAPER := Color(0.93, 0.86, 0.74, 0.94)
@@ -45,7 +46,7 @@ func _build() -> void:
 	panel.offset_left = -360
 	panel.offset_top = 12
 	panel.offset_right = -12
-	panel.offset_bottom = 700
+	panel.offset_bottom = 800
 	var style := StyleBoxFlat.new()
 	style.bg_color = PAPER
 	style.border_color = CINNABAR
@@ -66,7 +67,7 @@ func _build() -> void:
 
 	var title := Label.new()
 	title.name = "Title"
-	title.text = "DEVELOPER · DT3 / DT4 / DT5"
+	title.text = "DEVELOPER · DT3–DT5 / DT7"
 	title.add_theme_color_override("font_color", CINNABAR)
 	title.add_theme_font_size_override("font_size", 16)
 	vbox.add_child(title)
@@ -223,6 +224,33 @@ func _build() -> void:
 	_add_cheat_btn(wave_row, "Jump wave", _on_jump_wave, "JumpWaveBtn")
 	_add_cheat_btn(wave_row, "Reload level", _on_reload_level, "ReloadLevelBtn")
 	vbox.add_child(wave_row)
+
+	var play_sec := Label.new()
+	play_sec.text = "PLAYTEST (DT7)"
+	play_sec.add_theme_color_override("font_color", CINNABAR)
+	play_sec.add_theme_font_size_override("font_size", 13)
+	vbox.add_child(play_sec)
+
+	var tester_row := HBoxContainer.new()
+	tester_row.add_theme_constant_override("separation", 6)
+	var tester_lbl := Label.new()
+	tester_lbl.text = "Tester"
+	tester_lbl.add_theme_color_override("font_color", INK)
+	tester_row.add_child(tester_lbl)
+	var tester_edit := LineEdit.new()
+	tester_edit.name = "TesterEdit"
+	tester_edit.placeholder_text = "tester"
+	tester_edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	tester_edit.text = str(PlaytestLogScript.tester_name)
+	tester_edit.text_changed.connect(_on_tester_changed)
+	tester_row.add_child(tester_edit)
+	vbox.add_child(tester_row)
+
+	var play_row := HBoxContainer.new()
+	play_row.add_theme_constant_override("separation", 6)
+	_add_cheat_btn(play_row, "📝 Mark Session Event", _on_mark_session, "MarkSessionBtn")
+	_add_cheat_btn(play_row, "Sync to Dashboard", _on_sync_dashboard, "SyncDashboardBtn")
+	vbox.add_child(play_row)
 
 	var hint := Label.new()
 	hint.text = "~ / F12 close · pause uses the same T11 clock"
@@ -458,3 +486,27 @@ func _on_reload_level() -> void:
 		battle.debug_reload_level()
 	elif battle and battle.has_method("_restart"):
 		battle._restart()
+
+
+func _on_tester_changed(value: String) -> void:
+	var session := _session()
+	if session and session.has_method("playtest_set_tester"):
+		session.playtest_set_tester(value)
+	else:
+		PlaytestLogScript.tester_name = value.strip_edges() if value.strip_edges() != "" else "tester"
+
+
+func _on_mark_session() -> void:
+	var session := _session()
+	if session and session.has_method("playtest_mark_event"):
+		session.playtest_mark_event("")
+		return
+	PlaytestLogScript.mark_event("mark")
+
+
+func _on_sync_dashboard() -> void:
+	var session := _session()
+	if session and session.has_method("playtest_sync"):
+		session.playtest_sync()
+		return
+	PlaytestLogScript.sync_to_dashboard()

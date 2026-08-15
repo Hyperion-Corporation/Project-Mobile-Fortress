@@ -3,6 +3,7 @@ extends Node
 
 const ProgressionScript := preload("res://scripts/data/progression.gd")
 const DevMenuScript := preload("res://scripts/ui/dev_menu.gd")
+const PlaytestLogScript := preload("res://scripts/data/playtest_log.gd")
 const CIV_PRIMARY := "Ming"
 const CIV_SUPPORT := "Portuguese"
 const DEV_TAP_WINDOW := 2.5
@@ -229,6 +230,7 @@ func end_run(victory: bool, reason: String, extra: Dictionary = {}) -> void:
 	_run_recorded = true
 	OfflinePersistence.write_results(last_result)
 	OfflinePersistence.append_history(last_result)
+	PlaytestLogScript.note_run_ended(last_result)
 	run_ended.emit(victory, reason)
 
 
@@ -240,3 +242,35 @@ func get_last_results() -> Dictionary:
 
 func has_last_results() -> bool:
 	return not last_result.is_empty() or OfflinePersistence.has_results()
+
+
+func playtest_set_tester(name: String) -> void:
+	PlaytestLogScript.tester_name = name.strip_edges() if name.strip_edges() != "" else "tester"
+
+
+func playtest_mark_event(note: String = "") -> Dictionary:
+	var extra := {"note": note}
+	var battle := get_tree().root.find_child("BattleRoot", true, false) if get_tree() else null
+	if battle:
+		extra["phase"] = _phase_name(battle)
+		extra["wave"] = int(battle.get("wave_index"))
+	return PlaytestLogScript.mark_event("mark", extra)
+
+
+func _phase_name(battle: Node) -> String:
+	if battle.get("phase") == null:
+		return ""
+	var p: int = int(battle.phase)
+	if p == 0:
+		return "BUILD"
+	if p == 1:
+		return "COMBAT"
+	return "RESULT"
+
+
+func playtest_sync(dest_override: String = "") -> Dictionary:
+	return PlaytestLogScript.sync_to_dashboard(dest_override)
+
+
+func playtest_export() -> String:
+	return PlaytestLogScript.export_copy()
