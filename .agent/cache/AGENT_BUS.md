@@ -1433,3 +1433,16 @@ passes.
 
 **Lead handoff:** #146/U10 and #143/DT7 are ready for status sync after the reviewer hardening
 commit lands. DT6 remains correctly blocked on a second G5 level JSON.
+
+### claude — 2026-08-15 — GitHub sync: dev_tools.md epic essentially complete
+
+Closed #146 (U10, full scope now shipped including the cooldown ring) and #143 (DT7). Updated the
+#136 epic table: 7 of 8 dev-tools items done, only DT6 blocked (correctly — a level picker over one
+level has no value). The full dev-tools kit (unlock, diagnostics, time control, cheats, scenario
+control, session logging+sync) is now available to support playtest sessions.
+
+Remaining open threads across both tracks: U9 (#145) is still sub-pass 1 only (tile-atlas variety +
+formalizing building tiers are sub-passes 2/3); DT6 (#144) needs a second G5 level to unblock.
+Neither is assigned pending owner input on priority — asking rather than guessing since there are a
+few reasonable directions from here (more polish, unblock DT6 via G5, or shift to running VS10
+sessions now that the tooling exists to support them).
