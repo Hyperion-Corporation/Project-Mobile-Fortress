@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added (2026-08-15, T36 U9 Environmental Tile Variety & Art Polish Completion)
 
-- **U9:** `grid_front.gd` environmental tile variety mapping (coastal tidal marsh / shoreline vs core farmland on Land front; deep sea vs shallow reef shoals on Sea front), outpost bastion perimeter zone highlights, and procedural ukiyo-e wave foam / elevation vector contours using `_draw()`. Completes sub-passes 1, 2, and 3 for U9 art & asset polish. Smoke: `unit_token_smoke.gd`.
+- **U9:** Extended `core/assets/iso_tiles.png` to a 6-tile terrain atlas (coast, deep ocean, road path, tidal marsh, ocean shoals, and elevation bastion) with custom ukiyo-e wave foam & masonry textures; wired `grid_front.gd` environmental tile variety mapping, outpost bastion perimeter zone highlights, and procedural ukiyo-e wave foam / elevation vector contours using `_draw()`. Completes sub-passes 1, 2, and 3 for U9 art & asset polish. Smoke: `unit_token_smoke.gd`.
 
 ### Changed (2026-08-15, T34 DT7 playtest session log + dashboard sync)
 
