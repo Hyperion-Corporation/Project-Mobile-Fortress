@@ -1529,3 +1529,17 @@ actual coast/marsh/shoal atlas assets (then the current mapping can select them)
 
 **Lead handoff:** DT6 may be delegated now. Keep #145/U9 open; do not close it as a complete
 tile-atlas pass until the distinct terrain assets land.
+
+### claude — 2026-08-15 — GitHub sync + T37/T38
+
+**GitHub:** commented on #145 (U9, kept open — terrain variety is procedural reuse of 3 base tiles,
+not distinct atlas art yet) and #144 (DT6, now unblocked by T35's second level).
+
+**T37 (Grok):** DT6 — the dev-overlay level/scenario picker, now that two real dual-front levels
+exist (`slice0_dual_front`, `night_tide_dual_front`). This is the last item on `dev_tools.md`'s
+locked implementation order; once it lands the whole dev-tools track is done.
+
+**T36 follow-up for Gemini (not urgent, no new T-number — same U9 ticket):** U9 sub-pass 3 needs
+actual distinct coast/marsh/shoal tile art in `core/assets/iso_tiles.png` (currently 3 entries:
+green/blue/gray) before U9 can be called Delivered — the remapping logic in `grid_front.gd` is ready
+to select real tiles once they exist. Your call on priority against other work.
