@@ -5,7 +5,7 @@ extends Node2D
 
 enum Phase { BUILD, COMBAT, RESULT }
 
-const LEVEL_PATH := "res://assets/levels/slice0_dual_front.json"
+const DEFAULT_LEVEL_PATH := "res://assets/levels/slice0_dual_front.json"
 const UnitTokenScript := preload("res://scripts/ui/unit_token.gd")
 const SELECT_KEYS := {
 	"select_unit_1": "spearman",
@@ -52,7 +52,7 @@ func _ready() -> void:
 	_setup_grids()
 	sim.set_lane_path(0, land_grid.path_world_points())
 	sim.set_lane_path(1, sea_grid.path_world_points())
-	if sim.load_level_json(LEVEL_PATH):
+	if sim.load_level_json(_level_path()):
 		start_land = sim.get_land_resources()
 		start_sea = sim.get_sea_resources()
 		start_hq = sim.get_hq_max_hp()
@@ -73,6 +73,13 @@ func _ready() -> void:
 			status_message = "Resumed offline FlatBuffers snapshot"
 		else:
 			status_message = "Resume failed — starting fresh build"
+
+
+func _level_path() -> String:
+	var path := str(GameSession.selected_level_path)
+	if path != "" and FileAccess.file_exists(path):
+		return path
+	return DEFAULT_LEVEL_PATH
 
 
 func _ensure_sim() -> bool:
@@ -486,6 +493,7 @@ func _finish(victory: bool, reason: String) -> void:
 	GameSession.end_run(victory, reason, {
 		"sim": "cpp",
 		"path": "modular",
+		"level_id": GameSession.selected_level_id,
 		"combat_time": combat_time,
 		"wave": wave_index,
 		"land_outpost_alive": sim.is_land_outpost_alive(),

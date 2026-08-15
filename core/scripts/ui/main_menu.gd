@@ -3,6 +3,7 @@ extends Control
 
 const SettingsDialogScript := preload("res://scripts/ui/settings_dialog.gd")
 const ThemeTokensScript := preload("res://scripts/ui/theme_tokens.gd")
+const LevelCatalogScript := preload("res://scripts/data/level_catalog.gd")
 
 @onready var start_btn: Button = $Center/VBox/StartBtn
 @onready var classic_btn: Button = $Center/VBox/ClassicBtn
@@ -40,6 +41,7 @@ func _ready() -> void:
 	else:
 		start_btn.text = "Defend the Coast"
 	classic_btn.text = "Classic prototype"
+	_ensure_level_select()
 	_ensure_resume_and_history_ui(has_cpp)
 	_ensure_version_label()
 	_refresh_last_run()
@@ -78,6 +80,44 @@ func _apply_coastal_theme() -> void:
 	if subtitle:
 		subtitle.text = "倭寇 Dual-Front Defense"
 		subtitle.add_theme_color_override("font_color", CINNABAR)
+
+
+func _ensure_level_select() -> void:
+	var vbox: VBoxContainer = $Center/VBox
+	var select: OptionButton = vbox.get_node_or_null("LevelSelect")
+	if select == null:
+		select = OptionButton.new()
+		select.name = "LevelSelect"
+		select.custom_minimum_size = Vector2(280, 36)
+		vbox.add_child(select)
+		vbox.move_child(select, start_btn.get_index())
+	select.clear()
+	var levels: Array = LevelCatalogScript.list_levels()
+	var current := str(GameSession.selected_level_path)
+	var picked := 0
+	for i in levels.size():
+		var entry: Dictionary = levels[i]
+		select.add_item(str(entry.get("displayName", entry.get("id", "level"))), i)
+		select.set_item_metadata(i, entry)
+		if str(entry.get("path", "")) == current:
+			picked = i
+	if levels.is_empty():
+		return
+	select.select(picked)
+	_apply_level_entry(levels[picked])
+	if not select.item_selected.is_connected(_on_level_selected):
+		select.item_selected.connect(_on_level_selected)
+
+
+func _on_level_selected(index: int) -> void:
+	var select: OptionButton = $Center/VBox/LevelSelect
+	var entry: Variant = select.get_item_metadata(index)
+	if entry is Dictionary:
+		_apply_level_entry(entry)
+
+
+func _apply_level_entry(entry: Dictionary) -> void:
+	GameSession.set_selected_level(str(entry.get("path", "")), str(entry.get("id", "")))
 
 
 func _ensure_resume_and_history_ui(has_cpp: bool) -> void:

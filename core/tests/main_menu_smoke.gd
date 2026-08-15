@@ -39,6 +39,11 @@ func _run() -> void:
 		failures.append("subtitle missing 倭寇 theme")
 	if menu.get_node_or_null("VersionLabel") == null:
 		failures.append("DT8 version label missing (5-tap target)")
+	var level_sel: OptionButton = menu.get_node_or_null("Center/VBox/LevelSelect")
+	if level_sel == null:
+		failures.append("LevelSelect missing")
+	elif level_sel.item_count < 2:
+		failures.append("LevelSelect should list ≥2 dual-front levels")
 
 	var settings_btn: Button = menu.get_node_or_null("Center/VBox/SettingsBtn")
 	if settings_btn:

@@ -1,0 +1,19 @@
+{
+  "id": "night_tide_dual_front",
+  "displayName": "Night Tide — Harbor Breach",
+  "civPrimary": "Ming",
+  "civSupport": "Portuguese",
+  "buildPhaseSeconds": 28,
+  "victoryTimeSeconds": 72,
+  "enemySpawnIntervalSeconds": 0.28,
+  "hqMaxHp": 90,
+  "startingLandCurrency": 32,
+  "startingSeaCurrency": 28,
+  "waves": [
+    { "delaySeconds": 1.5, "landCount": 2, "seaCount": 4, "spawnPattern": "lane" },
+    { "delaySeconds": 10.0, "landCount": 3, "seaCount": 5, "spawnPattern": "lane" },
+    { "delaySeconds": 20.0, "landCount": 4, "seaCount": 6, "spawnPattern": "lane" },
+    { "delaySeconds": 34.0, "landCount": 5, "seaCount": 7, "spawnPattern": "lane" },
+    { "delaySeconds": 50.0, "landCount": 4, "seaCount": 8, "spawnPattern": "lane" }
+  ]
+}

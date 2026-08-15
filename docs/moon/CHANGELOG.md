@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed (2026-08-15, T35 G5 second dual-front level)
+
+- **G5:** `night_tide_dual_front.json` — same schema as `slice0_dual_front`, sea-heavy night raid (28s build, 5 waves, 32/28 兩, HQ 90). `LevelCatalog` skips leftover `level_01.json`. `GameSession.selected_level_path` + main-menu `LevelSelect`; `BattleRoot` loads the selected JSON and tags `level_id` on `end_run`. Unblocks DT6 (picker not in this slice). Smoke: `level_catalog_smoke.gd`.
+
 ### Added (2026-08-15, T36 U9 Environmental Tile Variety & Art Polish Completion)
 
 - **U9:** `grid_front.gd` environmental tile variety mapping (coastal tidal marsh / shoreline vs core farmland on Land front; deep sea vs shallow reef shoals on Sea front), outpost bastion perimeter zone highlights, and procedural ukiyo-e wave foam / elevation vector contours using `_draw()`. Completes sub-passes 1, 2, and 3 for U9 art & asset polish. Smoke: `unit_token_smoke.gd`.

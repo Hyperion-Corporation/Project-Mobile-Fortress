@@ -4,6 +4,7 @@ extends Node
 const ProgressionScript := preload("res://scripts/data/progression.gd")
 const DevMenuScript := preload("res://scripts/ui/dev_menu.gd")
 const PlaytestLogScript := preload("res://scripts/data/playtest_log.gd")
+const LevelCatalogScript := preload("res://scripts/data/level_catalog.gd")
 const CIV_PRIMARY := "Ming"
 const CIV_SUPPORT := "Portuguese"
 const DEV_TAP_WINDOW := 2.5
@@ -149,6 +150,19 @@ func toggle_paused() -> bool:
 
 ## When true, next modular battle scene loads FlatBuffers snapshot after ready.
 var resume_snapshot_on_next_battle: bool = false
+var selected_level_path: String = LevelCatalogScript.DEFAULT_PATH
+var selected_level_id: String = LevelCatalogScript.DEFAULT_ID
+
+
+func set_selected_level(path: String, level_id: String = "") -> void:
+	if path == "" or not FileAccess.file_exists(path):
+		return
+	selected_level_path = path
+	if level_id != "":
+		selected_level_id = level_id
+	else:
+		var entry: Dictionary = LevelCatalogScript.parse_level(path)
+		selected_level_id = str(entry.get("id", LevelCatalogScript.DEFAULT_ID))
 
 
 func reset_run() -> void:
