@@ -15,7 +15,7 @@
 | `SKScene` | SpriteKit's scene class; its `update(_:)` method is called once per display refresh — the iOS equivalent of Android's `GameLoop` tick, without a hand-rolled thread. |
 | `xcodebuild` | Apple's command-line build tool for Xcode projects — used by `just ios-build`/`ios-test`/`ios-archive` and the `ios-test` CI job. |
 | `.xcarchive` | The archived-build format `xcodebuild archive` produces, the input to exporting a signed `.ipa` for TestFlight/App Store distribution. |
-| `core/` | The shared-assets-and-spec module — canonical raw game data plus a documented (not yet compiled) state-machine/level-schema spec both clients implement independently today. See `core/README.md` and [`moon/roadmaps/shared_core.md`](moon/roadmaps/shared_core.md) for the planned C++ core. |
+| `game/` | The shared-assets-and-spec module — canonical raw game data plus a documented (not yet compiled) state-machine/level-schema spec both clients implement independently today. See `game/README.md` and [`moon/roadmaps/shared_core.md`](moon/roadmaps/shared_core.md) for the planned C++ core. |
 | Flow Field | A vector-field pathfinding technique that computes one movement direction per grid tile (via a Dijkstra distance map) instead of a per-unit path — lets hundreds of siege units navigate for roughly the cost of one pathfinding pass. See [`moon/roadmaps/gameplay.md`](moon/roadmaps/gameplay.md). |
 | ECS | Entity-Component-System — a data-oriented architecture (entities as IDs, components as plain data, systems as stateless functions) used in Mobile Fortress' planned C++ core via [EnTT](https://github.com/skypjack/entt). |
 | EnTT | A header-only C++ ECS library — provides the sparse-set entity/component storage for the planned shared simulation core. |

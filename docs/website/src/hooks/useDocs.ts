@@ -1,6 +1,6 @@
 // Loads the body of any Markdown page this site can navigate to, keyed by
 // the same `source` string nav.generated.ts's searchIndex entries carry
-// (e.g. "docs/foo.md", "README.md", "core/README.md").
+// (e.g. "docs/foo.md", "README.md", "game/README.md").
 //
 // docs-content.generated.ts is produced by scripts/generate-nav.mjs (see its
 // "doc content manifest" section) as a static map of per-file `import()`

@@ -24,5 +24,5 @@ atlas.paste(water, (128, 0))
 path = create_diamond((150, 150, 150, 255), (100, 100, 100, 255))
 atlas.paste(path, (0, 64))
 
-atlas.save("core/assets/iso_tiles.png")
-print("Saved core/assets/iso_tiles.png")
+atlas.save("game/assets/iso_tiles.png")
+print("Saved game/assets/iso_tiles.png")

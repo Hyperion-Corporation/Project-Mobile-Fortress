@@ -26,7 +26,7 @@ documentation/architecture reconciliation task before implementation begins.
 | --- | --- | --- |
 | First deliverable | Playable offline prototype | DECIDED |
 | Presentation | Isometric 2.5D | DECIDED |
-| Engine | Godot 4; `core/project.godot` exists and targets Godot 4.7 | DECIDED / OBSERVED |
+| Engine | Godot 4; `game/project.godot` exists and targets Godot 4.7 | DECIDED / OBSERVED |
 | Simulation | C++ firm decision; server-authoritative replicated state is sufficient later | DECIDED |
 | MVP fronts | Land and sea are mandatory; initial prototype is single-player | DECIDED |
 | Core loop | Land/sea have distinct combat areas, cross-front exchanges, resources, specialized support units, heroes, and civilization strengths/weaknesses | DECIDED |

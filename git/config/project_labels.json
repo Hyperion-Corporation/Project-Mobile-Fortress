@@ -4,7 +4,7 @@
   "components": [
     { "name": "component:android",       "color": "3DDC84", "description": "android/ Kotlin client (SurfaceView game loop, Compose menus/HUD)" },
     { "name": "component:ios",           "color": "000000", "description": "ios/ Swift client (SpriteKit game loop, SwiftUI menus/HUD)" },
-    { "name": "component:core",          "color": "00599C", "description": "core/ shared assets + documented (not yet compiled) state-machine/level spec; future C++ simulation core" },
+    { "name": "component:core",          "color": "00599C", "description": "game/ shared assets + documented (not yet compiled) state-machine/level spec; future C++ simulation core" },
     { "name": "component:infra",         "color": "326CE5", "description": "infra/ optional backend scaffolding (Docker, k8s, Helm, Terraform, Ansible)" },
     { "name": "component:docs-website",  "color": "61DAFB", "description": "docs/website/ React + Vite documentation portal and design hub" },
     { "name": "component:ci-automation", "color": "C5DEF5", "description": "GitHub Actions workflows, git/ hooks and scripts, repo automation" },

@@ -1,20 +1,20 @@
-name: Godot core
+name: Godot game
 
 on:
   workflow_dispatch:
   push:
     branches: [main]
     paths:
-      - "core/**"
-      - ".github/workflows/godot-core.yml"
+      - "game/**"
+      - ".github/workflows/godot-game.yml"
   pull_request:
     branches: [main]
     paths:
-      - "core/**"
-      - ".github/workflows/godot-core.yml"
+      - "game/**"
+      - ".github/workflows/godot-game.yml"
 
 concurrency:
-  group: godot-core-${{ github.workflow }}-${{ github.ref }}
+  group: godot-game-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -29,17 +29,17 @@ jobs:
       - name: Cache FetchContent deps
         uses: actions/cache@v4
         with:
-          path: core/build/_deps
-          key: mf-core-deps-${{ runner.os }}-${{ hashFiles('core/CMakeLists.txt') }}
+          path: game/build/_deps
+          key: mf-game-deps-${{ runner.os }}-${{ hashFiles('game/CMakeLists.txt') }}
 
       - name: Configure
-        run: cmake -S core -B core/build -G Ninja -DCMAKE_BUILD_TYPE=Release
+        run: cmake -S game -B game/build -G Ninja -DCMAKE_BUILD_TYPE=Release
 
       - name: Build native tests
-        run: cmake --build core/build --target sim_world_tests -j
+        run: cmake --build game/build --target sim_world_tests -j
 
       - name: ctest
-        run: ctest --test-dir core/build --output-on-failure
+        run: ctest --test-dir game/build --output-on-failure
 
   godot-simulation-smoke:
     runs-on: ubuntu-latest
@@ -53,16 +53,16 @@ jobs:
       - name: Cache FetchContent deps
         uses: actions/cache@v4
         with:
-          path: core/build/_deps
-          key: mf-core-deps-${{ runner.os }}-${{ hashFiles('core/CMakeLists.txt') }}
+          path: game/build/_deps
+          key: mf-game-deps-${{ runner.os }}-${{ hashFiles('game/CMakeLists.txt') }}
 
       - name: Configure and build extension
         run: |
-          cmake -S core -B core/build -G Ninja -DCMAKE_BUILD_TYPE=Release
-          cmake --build core/build --target mobile_fortress_core -j
-          mkdir -p core/bin
-          cp -f core/build/libmobile_fortress_core.so core/bin/libmobile_fortress_core.so
-          cp -f core/build/libmobile_fortress_core.so core/bin/libmobile_fortress_core.linux.x86_64.so
+          cmake -S game -B game/build -G Ninja -DCMAKE_BUILD_TYPE=Release
+          cmake --build game/build --target mobile_fortress_core -j
+          mkdir -p game/bin
+          cp -f game/build/libmobile_fortress_core.so game/bin/libmobile_fortress_core.so
+          cp -f game/build/libmobile_fortress_core.so game/bin/libmobile_fortress_core.linux.x86_64.so
 
       - name: Install Godot 4.7.1
         env:
@@ -75,4 +75,4 @@ jobs:
 
       - name: SimulationCore headless smoke
         run: |
-          /tmp/godot/Godot_v4.7.1-stable_linux.x86_64 --path core --headless --script res://tests/simulation_smoke.gd
+          /tmp/godot/Godot_v4.7.1-stable_linux.x86_64 --path game --headless --script res://tests/simulation_smoke.gd

@@ -17,7 +17,7 @@ graph TD
 ```
 
 ### 1.1 Core Components
-1.  **Shared C++ Simulation Core (`core/`)**:
+1.  **Shared C++ Simulation Core (`game/`)**:
     *   Written in C++20, exposing a hand-written C ABI shim.
     *   Implements the Entity-Component-System (ECS) pattern using the [EnTT](https://github.com/skypjack/entt) library.
     *   Governs all game state modifications, wave progress, collision tracking, and path updates.

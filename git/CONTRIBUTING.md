@@ -44,7 +44,7 @@ just --list
 
 ## 2. Development Setup
 
-Two product modules: `android/app/`, a standard Android Studio Gradle module, and `ios/MyGame/`, a standard Xcode project. Raw shared assets and a documented spec live under `core/` — see [`core/README.md`](../core/README.md). See [`docs/DEVELOPMENT.md`](../docs/DEVELOPMENT.md) for full setup on both platforms and [`.devcontainer/devcontainer.json`](../.devcontainer/devcontainer.json) for a one-click containerized **Android** setup.
+Two product modules: `android/app/`, a standard Android Studio Gradle module, and `ios/MyGame/`, a standard Xcode project. Raw shared assets and a documented spec live under `game/` — see [`game/README.md`](../game/README.md). See [`docs/DEVELOPMENT.md`](../docs/DEVELOPMENT.md) for full setup on both platforms and [`.devcontainer/devcontainer.json`](../.devcontainer/devcontainer.json) for a one-click containerized **Android** setup.
 
 ## 3. Code Style Guidelines
 
@@ -65,7 +65,7 @@ Follow [`.agent/rules/kotlin.md`](../.agent/rules/kotlin.md) / [`.agent/rules/sw
 
 ## 6. Testing Requirements
 
-Every new Android `engine/` class needs a unit test; every new Android lifecycle/UI-touching change needs an instrumented test. Every new iOS `Engine/`/`Core/` type needs an `ios/Tests/` case. Changes to shared behavior (state machine, level schema) need `core/src/` updated alongside both platforms' implementations. See [`.agent/rules/testing_qa.md`](../.agent/rules/testing_qa.md).
+Every new Android `engine/` class needs a unit test; every new Android lifecycle/UI-touching change needs an instrumented test. Every new iOS `Engine/`/`Core/` type needs an `ios/Tests/` case. Changes to shared behavior (state machine, level schema) need `game/src/` updated alongside both platforms' implementations. See [`.agent/rules/testing_qa.md`](../.agent/rules/testing_qa.md).
 
 ## 7. Issue Reporting
 

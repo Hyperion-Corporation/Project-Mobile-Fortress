@@ -1,10 +1,10 @@
 import Foundation
 
 /// Decodes level/wave-layout JSON. The canonical source file lives at
-/// `core/assets/levels/` (see `core/README.md`) and is referenced directly
+/// `game/assets/levels/` (see `game/README.md`) and is referenced directly
 /// into this Xcode target — not copied — so there is exactly one copy of
 /// each level on disk. Implements the shape documented in
-/// `core/src/level-schema.json`. Kept as a thin, framework-free loader (no
+/// `game/src/level-schema.json`. Kept as a thin, framework-free loader (no
 /// SpriteKit imports) so it's trivially unit-testable — see
 /// `Tests/LevelLoaderTests.swift`.
 struct LevelWave: Codable, Equatable {

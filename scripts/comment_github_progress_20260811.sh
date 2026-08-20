@@ -13,7 +13,7 @@ Further Slice-0 progress on modular path:
 - Headless smokes: \`simulation_smoke\`, \`modular_battle_smoke\`, \`gameplay_smoke\`, \`main_menu_smoke\` — all PASS
 - Commit: \`c6e55b3\`
 
-Entry: \`core/scenes/main_menu.tscn\` → Modular Battle."
+Entry: \`game/scenes/main_menu.tscn\` → Modular Battle."
 
 gh issue comment 129 --body "## Progress update 2026-08-11
 

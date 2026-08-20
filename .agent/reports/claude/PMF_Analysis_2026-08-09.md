@@ -3,13 +3,13 @@
 **Date:** 2026-08-09
 **Author:** Claude (Claude Code)
 **Status:** Initial read-through, pre-brainstorm. Not a final roadmap proposal — see closing questions to the owner before that follows.
-**Scope reviewed:** `docs/moon/ROADMAP.md` + all `docs/moon/roadmaps/*.md`, `docs/moon/research/*`, `docs/moon/reports/Tower Defense Market Research.md`, `.agent/AGENTS.md`, `core/`, `android/`, `ios/` source trees, `docs/website/APP.md`, `infra/`, and all 100 GitHub issues (`gh issue list`).
+**Scope reviewed:** `docs/moon/ROADMAP.md` + all `docs/moon/roadmaps/*.md`, `docs/moon/research/*`, `docs/moon/reports/Tower Defense Market Research.md`, `.agent/AGENTS.md`, `game/`, `android/`, `ios/` source trees, `docs/website/APP.md`, `infra/`, and all 100 GitHub issues (`gh issue list`).
 
 ---
 
 ## 1. What this repository actually is today
 
-Strip away the docs and the honest state is: **two native "hello world" game skeletons and an extraordinarily well-developed planning apparatus.** Android's `engine/` is a bouncing `Ball` demo entity. iOS's `Scenes/` is a generic top-down shooter (`PlayerNode`/`EnemyNode`/`BulletNode`). Neither implements a single frame of Wōkòu-era tower-defense gameplay — no grid, no lanes, no towers, no HQ, no Flow Field. `core/` is assets + a markdown spec, not compiled code. `infra/` is scaffolding for a backend that doesn't exist yet. This is stated candidly in `.agent/AGENTS.md` §7 — the project is self-aware about this, which is good — but it's worth naming plainly as the starting condition for everything below.
+Strip away the docs and the honest state is: **two native "hello world" game skeletons and an extraordinarily well-developed planning apparatus.** Android's `engine/` is a bouncing `Ball` demo entity. iOS's `Scenes/` is a generic top-down shooter (`PlayerNode`/`EnemyNode`/`BulletNode`). Neither implements a single frame of Wōkòu-era tower-defense gameplay — no grid, no lanes, no towers, no HQ, no Flow Field. `game/` is assets + a markdown spec, not compiled code. `infra/` is scaffolding for a backend that doesn't exist yet. This is stated candidly in `.agent/AGENTS.md` §7 — the project is self-aware about this, which is good — but it's worth naming plainly as the starting condition for everything below.
 
 Meanwhile the roadmap/issue surface is huge and mature: 11 topic roadmaps, ~100 GitHub issues, two lengthy research documents (market research + a multiplayer-TD technical implementation report), and a fully worked-out C++/ECS/GameLift/gacha/RL architecture. The documentation-to-code ratio is unusually large even for an early-stage project.
 
@@ -78,8 +78,8 @@ You described (in this task's brief) a developer-facing dashboard for telemetry,
 ### 5.2 Shared core language
 
 **Avenue A:** Reverse to Rust + UniFFI per §3.2's reasoning — rewrite `shared_core.md` back, but keep the *trade-offs section structure* (now framing what's lost by leaving C++/org-consistency behind instead).
-**Avenue B:** Keep C++, but change the mitigation story from "manual discipline + sanitizers" to a stricter subset — e.g. mandate `Result`/`expected`-style error handling and forbid raw pointers/manual `new` anywhere in `core/` via a custom `clang-tidy` ruleset enforced pre-merge, not just CI-detected after the fact. Doesn't recover compile-time guarantees but tightens the gap.
-**Avenue C:** Defer the decision entirely — this only matters once G2/G3 exist on both platforms and Co-Op multiplayer (Phase 4) is imminent; per §5.1 that's a long way off. Keep `core/` documentation-only until the vertical slice is played, then decide with actual netcode-latency requirements in hand instead of speculatively.
+**Avenue B:** Keep C++, but change the mitigation story from "manual discipline + sanitizers" to a stricter subset — e.g. mandate `Result`/`expected`-style error handling and forbid raw pointers/manual `new` anywhere in `game/` via a custom `clang-tidy` ruleset enforced pre-merge, not just CI-detected after the fact. Doesn't recover compile-time guarantees but tightens the gap.
+**Avenue C:** Defer the decision entirely — this only matters once G2/G3 exist on both platforms and Co-Op multiplayer (Phase 4) is imminent; per §5.1 that's a long way off. Keep `game/` documentation-only until the vertical slice is played, then decide with actual netcode-latency requirements in hand instead of speculatively.
 
 ### 5.3 Issue/roadmap drift
 

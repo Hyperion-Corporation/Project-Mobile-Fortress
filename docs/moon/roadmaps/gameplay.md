@@ -6,7 +6,7 @@ Scope: the Wōkòu-pirate-era tower-defense core loop and its meta-progression l
 
 **2026-08-11 note (final multi-agent pass):** Primary client is **Godot 4** (isometric 2.5D). Dual land/sea fronts are **mandatory** in the first playable prototype. Hero **gameplay gacha is rejected** — heroes remain a core systems feature (G4) but are not monetized as power gacha (see [`monetization.md`](monetization.md)). Full Flow Field (G3) follows a fun dual-front loop (G2 / VS1), not the reverse.
 
-**2026-08-11 implementation note:** Slice-0 dual-front loop is playable in `core/` (classic `main.gd` + modular `scenes/battle/battle.tscn` over `SimulationCore` GDExtension).
+**2026-08-11 implementation note:** Slice-0 dual-front loop is playable in `game/` (classic `main.gd` + modular `scenes/battle/battle.tscn` over `SimulationCore` GDExtension).
 
 | # | Item | Effort | Status | Milestone |
 | --- | --- | --- | --- | --- |

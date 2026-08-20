@@ -36,7 +36,7 @@
 
 **Mobile Fortress** is a cooperative tower-defense mobile game: players defend a Wōkòu-pirate-era coastal fortress network — a Main HQ plus Resource Outposts (fund land units) and Trading Outposts (fund naval units) — against raids from land and sea, then extend that fight into a light 4X-style coastal-territory meta-game. The design targets an underserved market gap identified in [`docs/moon/reports/Tower Defense Market Research.md`](docs/moon/reports/Tower%20Defense%20Market%20Research.md) — a AAA-quality, historically grounded 16th-century East Asian setting is largely absent from the current top-grossing tower-defense/4X-hybrid charts.
 
-The game is a **two-platform mobile client**: a Kotlin Android client under [`android/`](android/) and a Swift iOS client under [`ios/`](ios/), each following its platform's official conventions exactly (standard Android Studio / Gradle Kotlin DSL layout, standard Xcode project layout) — Android renders via a `SurfaceView` on a fixed-timestep game loop thread, iOS via a SpriteKit `SKScene`. Both clients are converging on a shared C++ simulation core (ECS via EnTT, bridged via JNI/Swift C++ interop) so Co-Op multiplayer sessions stay deterministic across platforms — see [`docs/moon/research/Multiplayer Tower Defense Implementation.md`](docs/moon/research/Multiplayer%20Tower%20Defense%20Implementation.md) for the full technical rationale and [`docs/moon/roadmaps/shared_core.md`](docs/moon/roadmaps/shared_core.md) for the migration plan. Raw assets and the shared spec live under [`core/`](core/) — see `core/README.md` for exactly what's shared today vs. planned. Around all of that, the repository carries a cross-cutting agentic/DevOps/docs framework (`.agent/`, `docs/`, `docs/moon/`, `.github/`, `infra/`) shared with this org's other project templates.
+The game is a **two-platform mobile client**: a Kotlin Android client under [`android/`](android/) and a Swift iOS client under [`ios/`](ios/), each following its platform's official conventions exactly (standard Android Studio / Gradle Kotlin DSL layout, standard Xcode project layout) — Android renders via a `SurfaceView` on a fixed-timestep game loop thread, iOS via a SpriteKit `SKScene`. Both clients are converging on a shared C++ simulation core (ECS via EnTT, bridged via JNI/Swift C++ interop) so Co-Op multiplayer sessions stay deterministic across platforms — see [`docs/moon/research/Multiplayer Tower Defense Implementation.md`](docs/moon/research/Multiplayer%20Tower%20Defense%20Implementation.md) for the full technical rationale and [`docs/moon/roadmaps/shared_core.md`](docs/moon/roadmaps/shared_core.md) for the migration plan. Raw assets and the shared spec live under [`game/`](game/) — see `game/README.md` for exactly what's shared today vs. planned. Around all of that, the repository carries a cross-cutting agentic/DevOps/docs framework (`.agent/`, `docs/`, `docs/moon/`, `.github/`, `infra/`) shared with this org's other project templates.
 
 See [`docs/moon/ROADMAP.md`](docs/moon/ROADMAP.md) for the full game concept, architecture decisions, and phased delivery plan.
 
@@ -54,7 +54,7 @@ Project-Mobile-Fortress/
 │   ├── MyGame/               # App/, Core/, Engine/, Scenes/, UI/, Resources/
 │   ├── MyGame.xcodeproj
 │   └── Tests/                 # XCTest suite
-├── core/                     # Shared raw assets + documented (non-compiled) spec
+├── game/                     # Shared raw assets + documented (non-compiled) spec
 │   ├── assets/                # canonical level/wave JSON, shared textures/audio
 │   └── src/                   # level-schema.json, game-state-machine.md
 ├── .agent/                   # LLM coding-agent prompts, rules, skills, workflows
@@ -78,7 +78,7 @@ Project-Mobile-Fortress/
 | --- | --- |
 | `android/app/` | `MainActivity`, `GameView` (SurfaceView), `GameLoop` (fixed-timestep thread), `engine/` (GameEngine, GameState, entities), `ui/` (Compose chrome). Gradle root lives at the repo root — see below. |
 | `ios/MyGame/` | `App/` (SwiftUI `@main`), `Core/GameManager.swift` (state machine), `Engine/` (Audio/Input/Physics/Storage), `Scenes/` (`GameScene` + nodes + SwiftUI screens), `UI/` (HUD/Shop/Theme). |
-| `core/` | Canonical shared assets (`assets/levels/`) and a documented, **not compiled**, spec both clients implement independently — see `core/README.md`. |
+| `game/` | Canonical shared assets (`assets/levels/`) and a documented, **not compiled**, spec both clients implement independently — see `game/README.md`. |
 | `.agent/` | LLM coding-agent prompts, rules, skills, and workflows (source of truth for `AGENTS.md`) |
 | `.devcontainer/` | VS Code Dev Container with the Android SDK cmdline-tools, JDK 17, emulator deps — **Android only**; iOS requires a native macOS host, see `.devcontainer/README.md` |
 | `.github/` | Issue/PR templates, Dependabot config, GitHub Actions workflows (`ci.yml` runs both an Android job set and a `macos-latest` iOS job; `release.yml` builds the signed Android bundle) |

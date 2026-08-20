@@ -4,7 +4,7 @@
 
 ## Overview
 
-Mobile Fortress ships two independent native clients — an Android application module (`android/app/`, standard `com.android.application` + `kotlin-android` Gradle setup) and an iOS app (`ios/MyGame.xcodeproj`, SwiftUI-lifecycle + SpriteKit) — plus a shared-assets/spec module (`core/`, see `core/README.md`). Each client renders its game surface on a dedicated per-frame update loop decoupled from its UI-chrome framework (Android: `SurfaceView` + a fixed-timestep thread; iOS: SpriteKit's `SKScene.update(_:)`, delta-clamped); menus/HUD/settings around that surface use the platform's native declarative UI (Jetpack Compose / SwiftUI). An **optional** lightweight backend (`infra/`) can be added later for leaderboards or cloud save — both apps run fully offline without it.
+Mobile Fortress ships two independent native clients — an Android application module (`android/app/`, standard `com.android.application` + `kotlin-android` Gradle setup) and an iOS app (`ios/MyGame.xcodeproj`, SwiftUI-lifecycle + SpriteKit) — plus a shared-assets/spec module (`game/`, see `game/README.md`). Each client renders its game surface on a dedicated per-frame update loop decoupled from its UI-chrome framework (Android: `SurfaceView` + a fixed-timestep thread; iOS: SpriteKit's `SKScene.update(_:)`, delta-clamped); menus/HUD/settings around that surface use the platform's native declarative UI (Jetpack Compose / SwiftUI). An **optional** lightweight backend (`infra/`) can be added later for leaderboards or cloud save — both apps run fully offline without it.
 
 ## Android Module Boundaries (`android/app/`)
 
@@ -24,17 +24,17 @@ Mobile Fortress ships two independent native clients — an Android application 
 | --- | --- |
 | `App/MyGameApp.swift` | SwiftUI `@main` entry point; routes Menu/GameLevel/GameOver from `GameManager.state`. |
 | `App/AppDelegate.swift` | Background/terminate hooks that pause the game (SpriteKit scenes aren't part of `ScenePhase`). |
-| `Core/GameManager.swift` | `ObservableObject` state machine — the SwiftUI-side equivalent of Android's `GameEngine`/`GameState` pairing; implements the shared spec in `core/src/game-state-machine.md`. |
+| `Core/GameManager.swift` | `ObservableObject` state machine — the SwiftUI-side equivalent of Android's `GameEngine`/`GameState` pairing; implements the shared spec in `game/src/game-state-machine.md`. |
 | `Scenes/GameLevel/GameScene.swift` | `SKScene` subclass owning the per-frame update loop, physics, and input wiring. |
 | `Scenes/Nodes/` | `SKSpriteNode` subclasses (`PlayerNode`, `EnemyNode`, `BulletNode`). |
 | `Engine/Physics/`, `Engine/Input/`, `Engine/Audio/` | Contact resolution, touch handling, AVFoundation SFX/music. |
 | `Engine/Storage/` | `HighScoreStore` / `SettingsStore` — `UserDefaults` + `Codable` persistence. |
 | `UI/` | SwiftUI chrome (`MainMenuView`, `HUDView`, `ShopView`, `GameOverView`, `Theme`) — never part of the render loop. |
-| `Resources/Levels/LevelLoader.swift` | Decodes level JSON referenced directly from `core/assets/levels/` (see `core/README.md`). |
+| `Resources/Levels/LevelLoader.swift` | Decodes level JSON referenced directly from `game/assets/levels/` (see `game/README.md`). |
 
-## Shared (`core/`)
+## Shared (`game/`)
 
-Raw assets (`core/assets/`) and a documented-but-not-compiled spec (`core/src/`) for the level-data shape and the state-machine shape both clients implement independently. See `core/README.md` and `moon/roadmaps/shared_core.md` for what's real today vs. a future KMP/C++ option.
+Raw assets (`game/assets/`) and a documented-but-not-compiled spec (`game/src/`) for the level-data shape and the state-machine shape both clients implement independently. See `game/README.md` and `moon/roadmaps/shared_core.md` for what's real today vs. a future KMP/C++ option.
 
 ## Data Flow
 

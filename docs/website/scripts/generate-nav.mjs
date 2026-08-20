@@ -42,8 +42,8 @@ const EXTRA_SECTIONS = [
     children: [
       { title: "Repository Guide", source: "README.md" },
       { title: "Contributing", source: "git/CONTRIBUTING.md" },
-      { title: "Shared Core", source: "core/README.md" },
-      { title: "Game State Machine", source: "core/src/game-state-machine.md" },
+      { title: "Shared Core", source: "game/README.md" },
+      { title: "Game State Machine", source: "game/src/game-state-machine.md" },
       { title: "iOS Font Assets", source: "ios/MyGame/Resources/Fonts/README.md" },
       { title: "Development Container", source: ".devcontainer/README.md" },
     ],

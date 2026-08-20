@@ -17,7 +17,7 @@
 
 | # | Item | Effort | Status |
 | --- | --- | --- | --- |
-| IOS1 | Godot iOS export project + signing notes | M | 🚧 **Partial** — iOS preset in `core/export_presets.cfg` (min 17); Android APK path verified on Linux; iOS export needs macOS |
+| IOS1 | Godot iOS export project + signing notes | M | 🚧 **Partial** — iOS preset in `game/export_presets.cfg` (min 17); Android APK path verified on Linux; iOS export needs macOS |
 | IOS2 | Touch/UI polish for dual-front isometric controls on iPhone/iPad | M | 📋 Pending |
 | IOS3 | Consume shared C++ sim via godot-cpp/module (not UniFFI) | M | 🚧 **Partial** — gdextension declares ios.arm64 path; dylib build on macOS |
 | IOS4 | Haptics / platform services as needed | S | 📋 Deferred |

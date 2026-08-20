@@ -1,4 +1,4 @@
-# core/ — Mobile Fortress (Godot 4 Slice-0)
+# game/ — Mobile Fortress (Godot 4 Slice-0)
 
 Playable **offline dual-front** prototype for Mobile Fortress.
 
@@ -15,10 +15,10 @@ Playable **offline dual-front** prototype for Mobile Fortress.
 
 1. Install [Godot 4.3+](https://godotengine.org/download) (tested 4.7).
 2. Build the extension if needed: see [`BUILD_CPP.md`](BUILD_CPP.md).
-3. **Import / open this `core/` folder** → **F5**.
+3. **Import / open this `game/` folder** → **F5**.
 
 ```text
-Godot → Import → select core/project.godot → Run
+Godot → Import → select game/project.godot → Run
 # menu: Modular Battle (C++ view)  |  Classic main.gd prototype
 ```
 
@@ -59,22 +59,22 @@ Main menu shows last-run summary and **Resume last snapshot** when a bin exists.
 - **Preferred:** `SimulationCore` GDExtension (`bin/libmobile_fortress_core.so`) — HQ, dual currencies, raider pathing.
 - **Fallback:** pure GDScript if the `.so` is missing.
 - Build native lib: see [`BUILD_CPP.md`](BUILD_CPP.md).
-- Native C++ (no Godot): `cmake --build core/build --target sim_world_tests && ctest --test-dir core/build --output-on-failure`
-- C++ bridge: `godot --path core --headless --script res://tests/simulation_smoke.gd`
-- Modular battle: `godot --path core --headless --script res://tests/modular_battle_smoke.gd`
-- Multi-hero E: `godot --path core --headless --script res://tests/hero_e_smoke.gd`
-- DT8 unlock: `godot --path core --headless --script res://tests/dev_access_smoke.gd`
-- DT5/DT4 overlay: `godot --path core --headless --script res://tests/dev_diag_smoke.gd`
-- DT1/DT2 cheats: `godot --path core --headless --script res://tests/debug_cheats_smoke.gd`
-- DT3 spawn / jump-wave: `godot --path core --headless --script res://tests/scenario_control_smoke.gd`
-- DT7 playtest log: `godot --path core --headless --script res://tests/playtest_log_smoke.gd`
-- G5 level catalog: `godot --path core --headless --script res://tests/level_catalog_smoke.gd`
-- DT6 overlay picker: `godot --path core --headless --script res://tests/level_picker_smoke.gd`
-- FlatBuffers S4: `godot --path core --headless --script res://tests/flatbuffers_smoke.gd`
-- VS8 offline: `godot --path core --headless --script res://tests/game_session_smoke.gd`  
+- Native C++ (no Godot): `cmake --build game/build --target sim_world_tests && ctest --test-dir game/build --output-on-failure`
+- C++ bridge: `godot --path game --headless --script res://tests/simulation_smoke.gd`
+- Modular battle: `godot --path game --headless --script res://tests/modular_battle_smoke.gd`
+- Multi-hero E: `godot --path game --headless --script res://tests/hero_e_smoke.gd`
+- DT8 unlock: `godot --path game --headless --script res://tests/dev_access_smoke.gd`
+- DT5/DT4 overlay: `godot --path game --headless --script res://tests/dev_diag_smoke.gd`
+- DT1/DT2 cheats: `godot --path game --headless --script res://tests/debug_cheats_smoke.gd`
+- DT3 spawn / jump-wave: `godot --path game --headless --script res://tests/scenario_control_smoke.gd`
+- DT7 playtest log: `godot --path game --headless --script res://tests/playtest_log_smoke.gd`
+- G5 level catalog: `godot --path game --headless --script res://tests/level_catalog_smoke.gd`
+- DT6 overlay picker: `godot --path game --headless --script res://tests/level_picker_smoke.gd`
+- FlatBuffers S4: `godot --path game --headless --script res://tests/flatbuffers_smoke.gd`
+- VS8 offline: `godot --path game --headless --script res://tests/game_session_smoke.gd`  
   and `res://tests/offline_persistence_smoke.gd`
-- G8 progression: `godot --path core --headless --script res://tests/progression_smoke.gd`
-- Menu entry: `godot --path core --headless --script res://tests/main_menu_smoke.gd`
+- G8 progression: `godot --path game --headless --script res://tests/progression_smoke.gd`
+- Menu entry: `godot --path game --headless --script res://tests/main_menu_smoke.gd`
 
 ### FlatBuffers save/load (S4)
 

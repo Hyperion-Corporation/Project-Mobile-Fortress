@@ -54,8 +54,8 @@ Storybook (`stories/`), built standalone into `public/storybook/`.
 
 Unlike `Image-Toolkit` (which has a real standalone React app under `frontend/` to mount
 verbatim), this repository has no existing TypeScript/React codebase outside `docs/website/`
-itself — `android/` is Kotlin, `ios/` is Swift, and `core/` is deliberately not a compiled shared
-module (see `core/README.md`). So the Aurelia, Apollo, and Astro islands here are self-contained,
+itself — `android/` is Kotlin, `ios/` is Swift, and `game/` is deliberately not a compiled shared
+module (see `game/README.md`). So the Aurelia, Apollo, and Astro islands here are self-contained,
 authored within `docs/website/`, not imports of a pre-existing app. What they're *not* is a
 placeholder: each reads and renders this project's real data (the GA convergence simulation, the
 docs/content graph, the raid-lane flow field) rather than a generic demo.

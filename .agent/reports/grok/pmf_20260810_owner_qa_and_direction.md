@@ -28,7 +28,7 @@ Grok’s immediate deliverables:
 | --- | --- |
 | `android/` | SurfaceView + fixed-timestep demo (`Ball`) — **to be abandoned** as primary client |
 | `ios/` | SpriteKit top-down shooter skeleton — **to be abandoned** as primary client |
-| `core/` | Assets + state-machine docs **and** new **Godot 4.7** `project.godot` (Forward Plus, Jolt) — OBSERVED Godot seed already present |
+| `game/` | Assets + state-machine docs **and** new **Godot 4.7** `project.godot` (Forward Plus, Jolt) — OBSERVED Godot seed already present |
 | `docs/moon/` | Mature roadmaps; still largely dual-native + C++ sim narrative |
 | `docs/website/` | Most “finished” product surface (React host + islands) |
 | `infra/` | Scaffold only; **no cloud budget** yet |
@@ -44,7 +44,7 @@ Claude’s 2026-08-09 analysis remains largely correct on diagnosis (docs ahead 
 
 - **Mandatory dual fronts** (land + sea) as core identity, not a later skin.
 - **Asymmetric co-op** (land player / sea player) as a **launch pillar**, but **not** in the first offline prototype.
-- **Isometric 2.5D** presentation on **Godot 4**, simulation/core systems in **C++**.
+- **Isometric 2.5D** presentation on **Godot 4**, simulation/game systems in **C++**.
 - **Ming + Portuguese** default civ pairing for MVP.
 - **Ukiyo-e-readable** art bar even for Slice-0 (not pure greyboxes forever).
 - Heroes as **grid-placed auras + active abilities**, not pure card ults and not free RTS micro forever.
@@ -60,7 +60,7 @@ Success in 90 days: a **playable dual-front vertical slice that shows promise**,
 
 | Prior default | New default | Notes |
 | --- | --- | --- |
-| Android SurfaceView + iOS SpriteKit | **Godot 4** single game client exported to Android/iOS | Owner open to C++ engine unification; Godot config already under `core/` |
+| Android SurfaceView + iOS SpriteKit | **Godot 4** single game client exported to Android/iOS | Owner open to C++ engine unification; Godot config already under `game/` |
 | Dual native UI firm | Not firm; KMP optional where helpful | Reduces dual-client tax |
 | minSdk 24 / iOS 16 (template) | **Android 13+ / iOS 17+** | Update CI + docs when roadmaps move |
 
@@ -171,7 +171,7 @@ Therefore:
 | Buildings/HQ/outposts | Readable faction + function icons on grid | Seasonal skins (lootbox cosmetics) |
 | UI/HUD | Historical-aesthetic chrome; large touch targets | Clan/meta surfaces |
 | Audio | Optional later (engineer candidate) | SFX for placement, raid horns, sea/land stingers |
-| Tooling | Godot import pipeline under `core/` | CI art lint / max texture budgets |
+| Tooling | Godot import pipeline under `game/` | CI art lint / max texture budgets |
 
 ---
 

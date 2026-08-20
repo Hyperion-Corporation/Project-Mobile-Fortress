@@ -87,7 +87,7 @@ Legacy Android SurfaceView + iOS SpriteKit skeletons, CI/CD, docs, `.agent/`, `i
 
 | # | Item | Status |
 | --- | --- | --- |
-| VS0 | Godot 4 client expansion from `core/project.godot` | 🚧 |
+| VS0 | Godot 4 client expansion from `game/project.godot` | 🚧 |
 | VS1 | **G2 dual-front core loop** | 📋 **Next implement** |
 | VS2–VS10 | Pathing stub, input, phases, outposts, hero/support, art, save, exports, playtest | 📋 |
 

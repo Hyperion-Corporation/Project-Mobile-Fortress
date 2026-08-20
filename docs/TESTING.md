@@ -10,7 +10,7 @@
 
 - **Android unit tests**: pure `engine/` logic — entity update math, collision detection, `GameState` serialization round-trips, the fixed-timestep accumulator's catch-up cap. No Android framework classes.
 - **Android instrumented tests**: anything touching real framework behavior — `Activity`/`SurfaceView` lifecycle transitions, Compose screen rendering and interaction, permission flows.
-- **iOS tests** (`ios/Tests/`): `GameManagerTests` (state-machine transitions), `HighScoreStoreTests` (persistence + ranking), `LevelLoaderTests` (JSON decoding against `core/src/level-schema.json`), `PhysicsMathTests` (pure movement math on `PlayerNode`, no live `SKScene`/physics simulation required). Kept framework-light on purpose — none of these need a running app or UI interaction, only a simulator to host the test bundle.
+- **iOS tests** (`ios/Tests/`): `GameManagerTests` (state-machine transitions), `HighScoreStoreTests` (persistence + ranking), `LevelLoaderTests` (JSON decoding against `game/src/level-schema.json`), `PhysicsMathTests` (pure movement math on `PlayerNode`, no live `SKScene`/physics simulation required). Kept framework-light on purpose — none of these need a running app or UI interaction, only a simulator to host the test bundle.
 
 ## CI
 

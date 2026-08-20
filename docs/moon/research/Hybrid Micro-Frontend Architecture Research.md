@@ -49,7 +49,7 @@ Delivering a unified and coherent user experience across a massively heterogeneo
 
 ### **Singleton Initialization and Cache Normalization**
 
-The core Apollo Client must be instantiated in an isolated, framework-agnostic JavaScript module. This module leverages the @apollo/client/core package to construct the ApolloClient instance and its accompanying InMemoryCache30. The InMemoryCache operates by normalizing GraphQL responses, flattening hierarchical data into a flat lookup table indexed by unique identifiers. By utilizing this normalized cache, the architecture ensures that a complex GraphQL entity fetched by the React 3D visualization module is instantly available to the Vue macro-shell and the Aurelia telemetry components without requiring additional network roundtrips32.
+The core Apollo Client must be instantiated in an isolated, framework-agnostic JavaScript module. This module leverages the @apollo/client/game package to construct the ApolloClient instance and its accompanying InMemoryCache30. The InMemoryCache operates by normalizing GraphQL responses, flattening hierarchical data into a flat lookup table indexed by unique identifiers. By utilizing this normalized cache, the architecture ensures that a complex GraphQL entity fetched by the React 3D visualization module is instantly available to the Vue macro-shell and the Aurelia telemetry components without requiring additional network roundtrips32.
 
 ### **Framework Injection Strategies**
 

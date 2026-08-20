@@ -12,7 +12,7 @@ sim for HQ/resources/raider motion.
 ## Build
 
 ```bash
-cd core
+cd game
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build -j$(nproc)
 mkdir -p bin
@@ -24,8 +24,8 @@ cp -f build/libmobile_fortress_core.so bin/libmobile_fortress_core.linux.x86_64.
 Native C++ tests (Q3/S7, no Godot process):
 
 ```bash
-cmake --build core/build --target sim_world_tests -j$(nproc)
-ctest --test-dir core/build --output-on-failure
+cmake --build game/build --target sim_world_tests -j$(nproc)
+ctest --test-dir game/build --output-on-failure
 ```
 
 `mobile_fortress_core.gdextension` points Godot at `res://bin/libmobile_fortress_core.linux.x86_64.so` (and platform-specific names for Android/iOS when cross-built). Use **`;` comments only** in `.gdextension` files (`#` breaks library resolution in Godot’s ConfigFile parser).
@@ -49,7 +49,7 @@ Schema: `src/schema/simulation_state.fbs` (generated into build dir by `flatc`).
 
 ```bash
 # FlatBuffers contract test
-godot --path core --headless --script res://tests/flatbuffers_smoke.gd
+godot --path game --headless --script res://tests/flatbuffers_smoke.gd
 ```
 
 When `init_grids` has been called, `start_combat` / wave spawn uses **empty-path flow-field** raiders on **staggered entry rows**. Flow steps refuse solid cells. Lane waypoints remain the fallback when flow is inactive.

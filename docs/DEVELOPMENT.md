@@ -1,6 +1,6 @@
 # Development Guide
 
-This is a two-client monorepo: Android/Kotlin under [`android/`](https://github.com/ACFHarbinger/Project-Mobile-Fortress/tree/main/android) and iOS/Swift under [`ios/`](https://github.com/ACFHarbinger/Project-Mobile-Fortress/tree/main/ios), sharing raw assets and a documented spec under [`core/`](https://github.com/ACFHarbinger/Project-Mobile-Fortress/tree/main/core) (see `core/README.md` for what's actually shared vs. aspirational).
+This is a two-client monorepo: Android/Kotlin under [`android/`](https://github.com/ACFHarbinger/Project-Mobile-Fortress/tree/main/android) and iOS/Swift under [`ios/`](https://github.com/ACFHarbinger/Project-Mobile-Fortress/tree/main/ios), sharing raw assets and a documented spec under [`game/`](https://github.com/ACFHarbinger/Project-Mobile-Fortress/tree/main/game) (see `game/README.md` for what's actually shared vs. aspirational).
 
 ## Prerequisites (both platforms)
 

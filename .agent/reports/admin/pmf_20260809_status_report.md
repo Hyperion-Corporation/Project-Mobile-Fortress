@@ -111,8 +111,8 @@ the first prototype.
 
 ### 2.2 Repository evidence
 
-- `README.md`, `docs/ARCHITECTURE.md`, and `core/README.md`.
-- `android/`, `ios/`, `core/`, `infra/`, and `docs/website/` implementation.
+- `README.md`, `docs/ARCHITECTURE.md`, and `game/README.md`.
+- `android/`, `ios/`, `game/`, `infra/`, and `docs/website/` implementation.
 - `docs/moon/ROADMAP.md`, `docs/moon/roadmaps/`, research, design documents, and changelog.
 - GitHub roadmap issues and product-metrics issues for `ACFHarbinger/Project-Mobile-Fortress`.
 - Build, test, lint, and documentation-site verification results.

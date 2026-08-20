@@ -23,7 +23,7 @@ Labels: **DECIDED** | **PROVISIONAL** | **OPEN** | **RESEARCH**
 
 | ID | Decision | Status | Owner answer (condensed) |
 | --- | --- | --- | --- |
-| E1 | Engine | DECIDED | **Godot 4** (abandon SurfaceView / SpriteKit skeletons). `core/` already has Godot project config. |
+| E1 | Engine | DECIDED | **Godot 4** (abandon SurfaceView / SpriteKit skeletons). `game/` already has Godot project config. |
 | E2 | Simulation language | DECIDED | **C++ firm** (with Godot); Rust not under consideration for sim core |
 | E3 | Client strategy | DECIDED | Prefer **single client path** (Godot export + optional Kotlin Multiplatform where useful); separate native Kotlin + Swift UI layers are **not** a firm requirement |
 | E4 | Ship Android + iOS together | DECIDED | Aim to ship together via Godot/KMP path |

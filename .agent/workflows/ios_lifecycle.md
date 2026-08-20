@@ -10,7 +10,7 @@ Applies to `ios/MyGame/App/AppDelegate.swift`, `ios/MyGame/App/MyGameApp.swift`,
 
 ## Steps
 
-1. Read [`.agent/rules/swift.md`](../rules/swift.md) and [`core/src/game-state-machine.md`](../../core/src/game-state-machine.md).
+1. Read [`.agent/rules/swift.md`](../rules/swift.md) and [`game/src/game-state-machine.md`](../../game/src/game-state-machine.md).
 2. Map out every relevant lifecycle transition your change affects: `AppDelegate.applicationDidEnterBackground`/`applicationWillTerminate`, SwiftUI's `ScenePhase` (if adopted beyond the current `@UIApplicationDelegateAdaptor` hooks), and `GameManager.pause()`/`resume()` on the game-state side. SpriteKit's `SKScene` has no view-controller-style lifecycle of its own — it only stops calling `update(_:)` when the hosting `SpriteView` is torn down, so backgrounding must be handled explicitly via `AppDelegate`, not assumed.
 3. Verify `GameManager.pause()` is actually reached on backgrounding/termination — a game left in `.playing` while backgrounded means the (paused, since `GameScene.update` gates on `GameManager.shared.state == .playing`) scene silently resumes simulating a stale `deltaTime` on foreground if this check is ever removed.
 4. If the change affects saved state, round-trip it: background the app (⌘⇧H in the simulator, or the Home gesture on device), force-quit, relaunch, and confirm state restores correctly (not just "app didn't crash").

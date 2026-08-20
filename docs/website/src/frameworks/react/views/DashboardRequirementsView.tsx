@@ -307,7 +307,7 @@ export default function DashboardRequirementsView() {
             <p style={{ color: "var(--text-muted)", fontSize: "0.88rem" }}>
               Written by <code>OfflinePersistence</code> to <code>user://last_run_results.json</code> at
               session end. Devs export a batch JSON array after playtesting; the dashboard reads it
-              statically. Schema source: <code>core/scripts/game_session.gd</code>.
+              statically. Schema source: <code>game/scripts/game_session.gd</code>.
             </p>
             <pre
               style={{

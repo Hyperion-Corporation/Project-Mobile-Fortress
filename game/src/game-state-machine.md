@@ -1,7 +1,7 @@
 # Shared game state machine (spec, not code)
 
 Both clients implement this same state shape independently — see
-[`core/README.md`](../README.md) for why there's no compiled shared module
+[`game/README.md`](../README.md) for why there's no compiled shared module
 yet. If you change one client's states/transitions, mirror it here and in
 the other client.
 

@@ -46,7 +46,7 @@ Goal: evolve the **React 19 + Vite documentation portal** (`docs/website/`) into
 | Aurelia | `src/frameworks/aurelia/convergence-chart-app.ts` + `mount.ts` + React wrapper (`ConvergenceChartWrapper.tsx`) | **Delivered** (MFP6) — HQ-layout GA convergence chart, visualizes `src/simulations/` |
 | GraphQL / Apollo | `src/frameworks/apollo/{client,queries,data}.ts` + `ApolloLorePanel.tsx`; schema at `src/graphql/schema.graphql` | **Delivered** (MFP8, MFP9, MFP11 — client-resolved, no live server) — real `@apollo/client` `useQuery` calls against real schema fields, resolved locally from `src/stories/` lore + a curated outpost/raid-lane layout |
 | WASM | — | **Not present** in website; shared **C++** core planned for game clients ([`shared_core.md`](shared_core.md)) |
-| Game clients | `android/`, `ios/`, `core/` | Native TD game — multi-framework work here targets the **docs/website** surface unless noted |
+| Game clients | `android/`, `ios/`, `game/` | Native TD game — multi-framework work here targets the **docs/website** surface unless noted |
 | Deploy | `.github/workflows/docs.yml` → `docs/website/dist` | Static SPA on `gh-pages`; no runtime API |
 
 ### Deliverable index
@@ -66,7 +66,7 @@ Goal: evolve the **React 19 + Vite documentation portal** (`docs/website/`) into
 | MFP11 | Static-export GraphQL strategy: build-time fixtures / MSW; no required live endpoint on `gh-pages` | M | MFP8, MFP9 | ✅ `client.ts`'s local `ApolloLink` resolves schema fields from repo data — no live endpoint |
 | MFP12 | WASM toolchain for website compute demos (`wasm-pack`/C++/AssemblyScript), loader module, CI artifact check | L | MFP2 | ⬜ |
 | MFP13 | WASM worker for hub/sim demos (flow-field, GA layout, audio DSP slice) with pure-JS fallback and cancel | L | MFP12 | ⬜ |
-| MFP14 | Bridge narrative: document how website WASM demos relate to future **C++ `core/`** simulation (shared concepts, not shared binary yet) | M | MFP13, shared_core | 🔬 |
+| MFP14 | Bridge narrative: document how website WASM demos relate to future **C++ `game/`** simulation (shared concepts, not shared binary yet) | M | MFP13, shared_core | 🔬 |
 | MFP15 | Test matrix: unit mount/unmount, cache broadcast, Cypress/docs smoke, per-island budgets | L | MFP4, MFP10, MFP13 | 🔄 directive/hook unit tests ported to React Testing Library; cache broadcast (`test/unit/apollo/cache-broadcast.test.ts`) and per-island gzip budgets (`scripts/check-island-budgets.mjs`, wired into `postbuild`) now ✅; Cypress/docs smoke beyond the ad hoc real-browser checks done while fixing the `stack/next/` surface still ⬜ as a committed spec |
 | MFP16 | Authoring guide: when host vs foreign-root island vs WASM; teardown rules; ADR links | M | MFP7, MFP11, MFP15 | ✅ [Authoring guide](#authoring-guide), below |
 

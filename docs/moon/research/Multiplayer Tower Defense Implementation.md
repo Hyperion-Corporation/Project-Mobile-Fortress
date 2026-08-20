@@ -14,7 +14,7 @@ The architectural foundation relies on a rigid directory topology that isolates 
 | :---- | :---- |
 | android/app/ | Contains the Kotlin Android client, utilizing MainActivity, GameView (SurfaceView), a fixed-timestep GameLoop, and Jetpack Compose for non-gameplay UI chrome1. |
 | ios/MyGame/ | Contains the Swift iOS client, utilizing an App/ SwiftUI @main entry point, GameManager.swift state machines, and GameScene SpriteKit nodes1. |
-| core/ | Houses canonical shared assets, non-compiled specifications (level/wave JSON schemas), and acts as the bridging layer for the shared game engine1. |
+| game/ | Houses canonical shared assets, non-compiled specifications (level/wave JSON schemas), and acts as the bridging layer for the shared game engine1. |
 | .agent/ & infra/ | Contains LLM coding-agent prompts for automated scaffolding, alongside optional backend provisioning (Docker, Kubernetes, Terraform) for leaderboards and cloud saves1. |
 
 The critical architectural decision detailed in the template's Architecture Decision Records (ADRs 0002 and 0003\) is the eschewal of a heavy, shared rendering engine in favor of native 2D rendering surfaces (SurfaceView and SpriteKit)1. This necessitates that the shared core functions purely as a headless simulation engine, ingesting user inputs and outputting canonical state matrices for the native clients to render.

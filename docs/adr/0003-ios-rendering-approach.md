@@ -24,5 +24,5 @@ Unlike Android's `GameLoop`, no hand-rolled thread/accumulator is needed: Sprite
 ## Consequences
 
 - `Engine/`, `Scenes/Nodes/`, and `Core/GameManager.swift` stay framework-light where possible (no `UIKit` imports in `Engine/Storage/`, for instance) so they're unit-testable without booting a full SpriteKit scene — mirrors the Android `engine/` package's JVM-testability goal.
-- The Android and iOS game loops are *not* the same code and never will be without the Option A/B investment described in `docs/moon/roadmaps/shared_core.md` — gameplay behavior can drift between platforms unless both sides are updated together and `core/src/game-state-machine.md` is kept current.
+- The Android and iOS game loops are *not* the same code and never will be without the Option A/B investment described in `docs/moon/roadmaps/shared_core.md` — gameplay behavior can drift between platforms unless both sides are updated together and `game/src/game-state-machine.md` is kept current.
 - Teams needing 3D, complex physics, or genuinely shared cross-platform logic should revisit `docs/moon/roadmaps/shared_core.md`'s options rather than extending SpriteKit past what it's good at.

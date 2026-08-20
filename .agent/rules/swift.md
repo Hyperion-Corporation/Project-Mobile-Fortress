@@ -6,7 +6,7 @@
 - Use `ObservableObject` + `@Published` for SwiftUI-observable state (`GameManager`) rather than `NotificationCenter` broadcasts, except where bridging out of SpriteKit's non-SwiftUI node tree genuinely requires it (`GameScene` reads `GameManager.shared` directly since `SKScene` isn't part of the view hierarchy).
 - No force-unwraps (`!`) or force-tries (`try!`) outside test code — prefer `guard let`, `if let`, or `try?` with an explicit fallback.
 - Keep `Codable` models (`GameSettings`, `HighScoreEntry`, `LevelDefinition`) free of SpriteKit/UIKit imports so they stay trivially unit-testable — see [`Engine/Storage/`](../../ios/MyGame/Engine/Storage) and [`Resources/Levels/LevelLoader.swift`](../../ios/MyGame/Resources/Levels/LevelLoader.swift).
-- Match the shared state-machine spec in [`core/src/game-state-machine.md`](../../core/src/game-state-machine.md) when changing `GameManager.GameStateKind` — update that doc and the Android side's equivalent states in the same PR, not just the Swift enum.
+- Match the shared state-machine spec in [`game/src/game-state-machine.md`](../../game/src/game-state-machine.md) when changing `GameManager.GameStateKind` — update that doc and the Android side's equivalent states in the same PR, not just the Swift enum.
 
 ## Anti-patterns
 

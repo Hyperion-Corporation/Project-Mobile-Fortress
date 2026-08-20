@@ -91,5 +91,5 @@ draw.polygon([
 ], fill=(160, 95, 75, 255), outline=(100, 50, 36, 255))
 draw.line([(cx, cy - 12), (cx, cy + 6)], fill=(115, 60, 45, 255), width=2)
 
-img.save("core/assets/iso_tiles.png")
+img.save("game/assets/iso_tiles.png")
 print("Saved 384x128 iso_tiles.png with 6 distinct terrain tiles")

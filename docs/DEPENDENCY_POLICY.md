@@ -119,7 +119,7 @@ Once approved: add to the correct manifest (`gradle/libs.versions.toml`, `docs/w
 ### `docs/website`
 
 - `mermaid` and `katex` are both lazy-loaded per-page (dynamic `import()`), not bundled into the initial chunk — keep new heavy rendering dependencies lazy the same way rather than adding to the main bundle's parse/execute cost.
-- `highlight.js`'s language grammars are registered individually (`highlight.js/lib/core` + explicit `registerLanguage` calls) rather than importing the "all languages" bundle, to keep the bundle small — add a new language registration rather than switching to the full bundle.
+- `highlight.js`'s language grammars are registered individually (`highlight.js/lib/game` + explicit `registerLanguage` calls) rather than importing the "all languages" bundle, to keep the bundle small — add a new language registration rather than switching to the full bundle.
 
 ### Shared C++ core (planned)
 

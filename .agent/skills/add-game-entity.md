@@ -18,4 +18,4 @@
 
 ## If the entity should exist conceptually on both platforms
 
-Update [`core/src/game-state-machine.md`](../../core/src/game-state-machine.md) if it affects game state, and implement it independently on both platforms — there is no shared entity code (see [`core/README.md`](../../core/README.md)). Keep the two implementations' *behavior* in sync (speed, size, scoring), not their code.
+Update [`game/src/game-state-machine.md`](../../game/src/game-state-machine.md) if it affects game state, and implement it independently on both platforms — there is no shared entity code (see [`game/README.md`](../../game/README.md)). Keep the two implementations' *behavior* in sync (speed, size, scoring), not their code.

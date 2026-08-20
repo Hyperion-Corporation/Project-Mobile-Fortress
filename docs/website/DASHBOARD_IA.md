@@ -125,7 +125,7 @@ Dashboard
 **Key behaviours:**
 - All derived metrics (wave survival %, avg duration, HQ HP histogram) computed client-side from `run_history.json`
 - Sparkline bars are simple `<div>` elements sized by percentage — no charting library needed for P0/P1 scale
-- Export guide links to `core/README.md` export section
+- Export guide links to `game/README.md` export section
 
 ---
 

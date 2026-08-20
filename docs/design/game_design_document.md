@@ -297,8 +297,8 @@ In the 4X Strategic Loop, players coordinate raw material convoys (e.g., iron, t
 *   **iOS (`ios/`)**:
     *   Entry: `MyGameApp.swift` hosting SpriteKit's `SKScene` within a SwiftUI view.
     *   Engine: `GameScene.swift` rendering a basic moving sprite and shooting projectiles.
-*   **Core (`core/`)**:
-    *   Contains static asset specifications and basic game state descriptions in [game-state-machine.md](file:///home/pkhunter/Repositories/Repos/Project-Mobile-Fortress/core/src/game-state-machine.md).
+*   **Core (`game/`)**:
+    *   Contains static asset specifications and basic game state descriptions in [game-state-machine.md](file:///home/pkhunter/Repositories/Repos/Project-Mobile-Fortress/game/src/game-state-machine.md).
     *   No shared compiled library; each app implements logic independently.
 
 ### 9.2 Architectural Gaps

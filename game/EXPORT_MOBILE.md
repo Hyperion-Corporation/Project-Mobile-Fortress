@@ -1,7 +1,7 @@
 # Mobile export smoke (VS9 / S8)
 
 Targets: **Android 13+** (API 33), **iOS 17+**.  
-Godot project: this `core/` folder.
+Godot project: this `game/` folder.
 
 ## Architecture
 
@@ -30,10 +30,10 @@ The Gradle-backed Android preset also needs the per-project build template,
 which is generated locally with:
 
 ```bash
-$GODOT --headless --path core --install-android-build-template
+$GODOT --headless --path game --install-android-build-template
 ```
 
-The generated `core/android/` directory is local build infrastructure and is
+The generated `game/android/` directory is local build infrastructure and is
 ignored by Git.
 
 ### Android (Linux/macOS)
@@ -86,7 +86,7 @@ Exit codes:
 ## Manual Godot CLI export
 
 ```bash
-cd core
+cd game
 mkdir -p exports/android
 $GODOT --headless --path . --export-debug "Android Debug" exports/android/MobileFortress-debug.apk
 ```

@@ -27,4 +27,4 @@ Use `SurfaceView` + `Canvas` with a dedicated fixed-timestep `GameLoop` thread (
 
 ## Update (2026-08-03)
 
-The project gained a native iOS client (`ios/`) using SpriteKit rather than a Kotlin Multiplatform/cross-platform swap of this Android surface — see [ADR 0003](0003-ios-rendering-approach.md). The two clients are independent native implementations kept in sync by convention (see `core/README.md`) today, moving to a shared C++ core per `docs/moon/roadmaps/shared_core.md`.
+The project gained a native iOS client (`ios/`) using SpriteKit rather than a Kotlin Multiplatform/cross-platform swap of this Android surface — see [ADR 0003](0003-ios-rendering-approach.md). The two clients are independent native implementations kept in sync by convention (see `game/README.md`) today, moving to a shared C++ core per `docs/moon/roadmaps/shared_core.md`.

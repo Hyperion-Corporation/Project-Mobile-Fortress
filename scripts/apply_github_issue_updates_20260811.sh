@@ -29,10 +29,10 @@ gh issue edit 129 --title "[Epic] Godot 4 + C++ simulation (S0/S1/S3 done; S5 in
 echo "== Close completed shared-core items =="
 gh issue close 68 --comment "## Status 2026-08-11 — DONE
 
-CMake + FetchContent godot-cpp/EnTT workspace is in \`core/\`. \`SimulationCore\` GDExtension builds and loads in Godot 4.7.
+CMake + FetchContent godot-cpp/EnTT workspace is in \`game/\`. \`SimulationCore\` GDExtension builds and loads in Godot 4.7.
 
-- Build: \`core/BUILD_CPP.md\`, \`core/CMakeLists.txt\`
-- Smoke: \`core/tests/simulation_smoke.gd\`
+- Build: \`game/BUILD_CPP.md\`, \`game/CMakeLists.txt\`
+- Smoke: \`game/tests/simulation_smoke.gd\`
 
 Roadmap: \`docs/moon/roadmaps/shared_core.md\` S1. Epic #129."
 
@@ -40,9 +40,9 @@ gh issue close 70 --comment "## Status 2026-08-11 — DONE
 
 Godot presentation calls into C++:
 
-- Classic: \`core/main.gd\` → \`SimulationCore\`
-- Modular: \`core/scripts/battle/battle_root.gd\` → \`SimulationCore\`
-- Extension: \`core/mobile_fortress_core.gdextension\`
+- Classic: \`game/main.gd\` → \`SimulationCore\`
+- Modular: \`game/scripts/battle/battle_root.gd\` → \`SimulationCore\`
+- Extension: \`game/mobile_fortress_core.gdextension\`
 
 Roadmap: \`docs/moon/roadmaps/shared_core.md\` S3. Epic #129."
 
@@ -67,9 +67,9 @@ gh issue comment 128 --body "## Progress 2026-08-11
 - #60 Q10 collaborator playtest (exit gate)
 
 ### Code entry
-- Menu: \`core/scenes/main_menu.tscn\`
-- Modular: \`core/scenes/battle/battle.tscn\`
-- Classic: \`core/main.tscn\`
+- Menu: \`game/scenes/main_menu.tscn\`
+- Modular: \`game/scenes/battle/battle.tscn\`
+- Classic: \`game/main.tscn\`
 - Roadmap: \`docs/moon/roadmaps/vertical_slice.md\`"
 
 gh issue comment 129 --body "## Progress 2026-08-11
@@ -83,10 +83,10 @@ gh issue comment 129 --body "## Progress 2026-08-11
 | S4 | FlatBuffers | Open (#71) |
 | S5 | Logic in C++ | **IN PROGRESS** — defenders/raiders/outposts/combat |
 | S6 | Async bridge | Open (#73 retargeted Godot) |
-| S7 | Regression suite | Partial — \`core/tests/*_smoke.gd\` |
+| S7 | Regression suite | Partial — \`game/tests/*_smoke.gd\` |
 | S8 | Mobile export | Open |
 
-Build: \`core/BUILD_CPP.md\`."
+Build: \`game/BUILD_CPP.md\`."
 
 gh issue comment 9 --body "## Progress 2026-08-11 — Slice-0 baseline playable
 
@@ -108,7 +108,7 @@ Do not close until major dual-front combat/economy is majority-C++ with presenta
 
 gh issue comment 11 --body "Slice-0 minimal hero is implemented (aura, active pulse, redeploy travel) in both classic and modular paths. Keep open for expanded hero roster/abilities post-slice."
 gh issue comment 85 --body "Slice-0 partial: dual land/sea currencies, income while outposts alive, C++ mid-path outpost damage and economic-only loss. Keep open for richer economy."
-gh issue comment 12 --body "Partial: \`core/assets/levels/slice0_dual_front.json\` drives waves/build timer/start resources. Full schema alignment with \`level-schema.json\` still open."
+gh issue comment 12 --body "Partial: \`game/assets/levels/slice0_dual_front.json\` drives waves/build timer/start resources. Full schema alignment with \`level-schema.json\` still open."
 gh issue comment 13 --body "Slice-0 shell done (BUILD timer → COMBAT). Full day/night UX polish and cognitive-load design remain."
 gh issue comment 16 --body "Mouse/click dual-front placement works in classic and modular views. Mobile touch polish still open."
 gh issue comment 21 --body "Partial HUD in modular battle (phase, resources, outpost HP, HQ) and classic canvas HUD. Full ukiyo-e chrome still open."
@@ -119,7 +119,7 @@ if ! gh issue list --search "in:title S0 GDExtension" --json number --jq 'length
   gh issue create --title "[S0] Godot↔C++ GDExtension boundary spike (DONE)" \
     --label "enhancement" \
     --label "roadmap:shared-core" \
-    --body "Completed 2026-08-11. \`SimulationCore\` via godot-cpp. See shared_core.md S0 and core/BUILD_CPP.md. Parent epic #129."
+    --body "Completed 2026-08-11. \`SimulationCore\` via godot-cpp. See shared_core.md S0 and game/BUILD_CPP.md. Parent epic #129."
 fi
 
 # Create G12 if missing

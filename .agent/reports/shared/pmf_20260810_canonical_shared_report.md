@@ -39,7 +39,7 @@ player controlling both fronts for now.
 
 ## 3. Technical direction
 
-Godot 4 is the primary game client; `core/project.godot` is present and targets
+Godot 4 is the primary game client; `game/project.godot` is present and targets
 Godot 4.7. C++ is the firm systems/simulation language, using both `godot-cpp`
 and dedicated C++ modules to run native C/C++ code. The prior
 SurfaceView/SpriteKit presentation plan is superseded as the primary client

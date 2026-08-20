@@ -14,17 +14,17 @@
 
 ```bash
 # Build the native sim extension (if not already built)
-cd core && cmake -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build -j$(nproc)
+cd game && cmake -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build -j$(nproc)
 cp build/libmobile_fortress_core.so bin/libmobile_fortress_core.linux.template_debug.x86_64.so
 
 # Open the project in Godot 4.7+
-godot --path core/
+godot --path game/
 # Press Play (F5) — default scene: scenes/main_menu.tscn
 ```
 
 > iOS testers: see `docs/moon/roadmaps/ios.md` — requires a macOS host or CI build.  
-> Android testers: install the debug APK from `core/exports/android/MobileFortress-debug.apk`
-> (run `bash core/scripts/export_mobile_smoke.sh --export-android` to rebuild if stale).
+> Android testers: install the debug APK from `game/exports/android/MobileFortress-debug.apk`
+> (run `bash game/scripts/export_mobile_smoke.sh --export-android` to rebuild if stale).
 
 ### 2 — Mandatory acceptance checks (VS-A1 – VS-A11)
 

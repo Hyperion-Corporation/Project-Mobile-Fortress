@@ -7,7 +7,7 @@ on:
     paths:
       - "android/**"
       - "ios/**"
-      - "core/**"
+      - "game/**"
       - "gradle/**"
       - ".github/workflows/ci.yml"
       - "build.gradle.kts"
@@ -18,7 +18,7 @@ on:
     paths:
       - "android/**"
       - "ios/**"
-      - "core/**"
+      - "game/**"
       - "gradle/**"
       - ".github/workflows/ci.yml"
       - "build.gradle.kts"

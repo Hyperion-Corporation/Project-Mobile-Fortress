@@ -8,11 +8,11 @@ gh issue close 71 --comment "## Status 2026-08-11 — DONE
 
 FlatBuffers snapshot API is live on \`SimulationCore\`:
 
-- Schema: \`core/src/schema/simulation_state.fbs\`
+- Schema: \`game/src/schema/simulation_state.fbs\`
 - \`save_state() -> PackedByteArray\`
 - \`load_state(bytes) -> bool\` (verifier)
 - Modular battle: **S**/**L** → \`user://mf_slice0_snapshot.bin\`
-- Smoke: \`core/tests/flatbuffers_smoke.gd\` (PASS)
+- Smoke: \`game/tests/flatbuffers_smoke.gd\` (PASS)
 - CMake generates header via \`flatc\`
 
 Epic #129. Roadmap: \`shared_core.md\` S4."

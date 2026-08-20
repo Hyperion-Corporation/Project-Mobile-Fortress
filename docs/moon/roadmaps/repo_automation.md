@@ -39,4 +39,4 @@ functional and adapted to this repo in the meantime.
 | Date | Revision | Change |
 | --- | --- | --- |
 | 2026-08-09 | R1 | Initial roadmap: tracks the `git/` automation suite audit/adaptation (RA1–RA3, delivered) and the deferred deterministic-sync mode (RA4, backlog). |
-| 2026-08-09 | R2 | Added RA5 (thin-pointer issue bodies) after a multi-agent brainstorm session found and fixed concrete issue/roadmap content drift (stale Rust references in the shared-core/performance/iOS issues; GCP vs. AWS in B4). Also fixed this file's own stale `multi_framework_platform.md` cross-reference to `internal_dashboard.md` (the file was renamed the same session). |
+| 2026-08-09 | R2 | Added RA5 (thin-pointer issue bodies) after a multi-agent brainstorm session found and fixed concrete issue/roadmap content drift (stale Rust references in the shared-game/performance/iOS issues; GCP vs. AWS in B4). Also fixed this file's own stale `multi_framework_platform.md` cross-reference to `internal_dashboard.md` (the file was renamed the same session). |

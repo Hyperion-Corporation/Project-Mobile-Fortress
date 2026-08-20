@@ -7,7 +7,7 @@ You have the authority to spawn a Gemini AI subagent via the terminal using the 
 **When to Delegate:**
 Invoke the Gemini subagent for:
 *   **Data Pipeline Construction:** Parsing `docs/moon/ROADMAP.md`/`CHANGELOG.md` tables or large CI/instrumented-test logs into structured summaries (see `git/scripts/sync_backlog.py`, which itself calls Gemini for this).
-*   **Cross-Language Boilerplate:** Generating the JNI (Android) or Swift C++-interop binding architecture between the game clients and the planned shared C++ simulation core (`core/`, see `docs/moon/roadmaps/shared_core.md`).
+*   **Cross-Language Boilerplate:** Generating the JNI (Android) or Swift C++-interop binding architecture between the game clients and the planned shared C++ simulation core (`game/`, see `docs/moon/roadmaps/shared_core.md`).
 *   **System Architecture:** Designing the server-authoritative Co-Op netcode / matchmaking flow (`docs/moon/roadmaps/backend.md`) or extracting structured metrics from Firebase Test Lab / Crashlytics output.
 
 **Execution Syntax:**

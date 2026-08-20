@@ -7,7 +7,7 @@
 With the decision to pivot to Godot 4 and C++, my focus shifts entirely from Swift/Kotlin dual-maintenance to a unified C++ simulation core and Godot bindings. The core simulation will reside in C++ to guarantee performance headroom for Swarm/Evolutionary pathing and the RL DDA logic. This pass corrects one item from my 2026-08-10 note (Kotlin Multiplatform) that the owner did not actually decide, and re-verifies the Godot seed directly against the repository rather than by report.
 
 ## 2. OBSERVED (re-verified 2026-08-11)
-- `core/project.godot` exists and declares `config_version=5`, `config/features=PackedStringArray("4.7", "Forward Plus")`, and `3d/physics_engine="Jolt Physics"` — the Godot 4.7 seed Grok flagged is real, not aspirational.
+- `game/project.godot` exists and declares `config_version=5`, `config/features=PackedStringArray("4.7", "Forward Plus")`, and `3d/physics_engine="Jolt Physics"` — the Godot 4.7 seed Grok flagged is real, not aspirational.
 - No `.gdextension` file exists anywhere in the repo yet — the Godot↔C++ boundary is genuinely unstarted, confirming it should stay **OPEN** per the admin report (§5, C4) rather than being treated as already chosen.
 - `android/app/` and `ios/MyGame/` still exist as full source trees (SurfaceView `Ball` demo / SpriteKit shooter skeleton). Nothing in the repo currently retires or archives them — they remain reference/retiree candidates per Grok's report, not yet acted on.
 - No Kotlin Multiplatform configuration exists anywhere in the build files (only doc mentions). **Correction:** my 2026-08-10 report listed "Client Deployment: Kotlin Multiplatform for mobile packaging" as a mandate — this was my own inference, not an owner decision, and the canonical shared report (§3) confirms separate native Kotlin/Swift clients (KMP included) are **not required**. I withdraw that line.
@@ -45,6 +45,6 @@ With the decision to pivot to Godot 4 and C++, my focus shifts entirely from Swi
 - **Scale:** Minimum 10 units, maximum 40 on low-end devices.
 
 ### 3. Next Steps
-- Establish the Godot 4 + C++ project skeleton in `core/`.
+- Establish the Godot 4 + C++ project skeleton in `game/`.
 - Prepare the architecture blueprint for the isometric 2.5D rendering pipeline.
 - Assist Grok in defining the engineering sub-tasks for the Godot Epic.
