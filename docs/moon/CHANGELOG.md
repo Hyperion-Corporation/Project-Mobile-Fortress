@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed (2026-10-08, T53 review — legacy CI gates)
+
+- Android build and instrumented jobs now directly depend on `changes`, making their path-gate outputs available. An unavailable Git diff range runs both legacy trees conservatively instead of considering only the last commit. Verified the actual gate shell for six path sets, an unavailable base, and manual dispatch; real Actions execution remains for the lead after push.
+
 ### Added (2026-10-08, T52 level schema refresh + validation smoke + P3 flow-recompute bench)
 
 - **Level schema refresh:** `game/src/level-schema.json` now describes the dual-front level JSONs as the loaders actually read them (cross-checked against `SimulationCore.load_level_json` and `LevelCatalog`): required `id`/`displayName`/`waves`, per-wave `delaySeconds` + `landCount`/`seaCount`, loader-read optionals (`startingLandCurrency`, `startingSeaCurrency`, `hqMaxHp`, `buildPhaseSeconds`, `victoryTimeSeconds`), and carried-but-unread informational keys (`civPrimary`, `civSupport`, `enemySpawnIntervalSeconds`, `spawnPattern`). The legacy `level_01.json` single-front leftover is documented as non-conforming and catalog-skipped. No level JSON was changed.

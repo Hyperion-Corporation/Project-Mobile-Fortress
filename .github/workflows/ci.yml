@@ -95,11 +95,11 @@ jobs:
               exit 1
               ;;
           esac
-          changed="$(git diff --name-only "$range" 2>/dev/null || true)"
-          if [[ -z "$changed" ]]; then
-            # Range unavailable (force-push, shallow history): fall back to
-            # the last commit so the gate stays conservative.
-            changed="$(git diff --name-only HEAD^..HEAD 2>/dev/null || true)"
+          if ! changed="$(git diff --name-only "$range")"; then
+            # An unavailable base must not hide earlier tree changes.
+            echo "android=true" >> "$GITHUB_OUTPUT"
+            echo "ios=true" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
           printf 'changed paths:\n%s\n' "$changed"
           android=false
@@ -164,7 +164,7 @@ jobs:
 
   android-build-debug:
     runs-on: ubuntu-latest
-    needs: android-lint-and-unit-test
+    needs: [changes, android-lint-and-unit-test]
     if: needs.changes.outputs.android == 'true'
     steps:
       - uses: actions/checkout@v7
@@ -182,7 +182,7 @@ jobs:
 
   android-instrumented-tests:
     runs-on: ubuntu-latest
-    needs: android-lint-and-unit-test
+    needs: [changes, android-lint-and-unit-test]
     if: needs.changes.outputs.android == 'true'
     strategy:
       matrix:
