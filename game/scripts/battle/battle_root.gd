@@ -603,10 +603,15 @@ func is_touch_gesture_active() -> bool:
 
 
 func _input(event: InputEvent) -> void:
+	# In-progress gestures stay here so a drag can cross both grids (and over HUD)
+	# without being stolen. New presses wait for _unhandled_input so GUI Controls
+	# (HUD buttons, pause/modal overlays) consume the finger first.
 	if event is InputEventScreenTouch:
-		_on_screen_touch(event as InputEventScreenTouch)
+		if is_touch_gesture_active():
+			_on_screen_touch(event as InputEventScreenTouch)
 	elif event is InputEventScreenDrag:
-		_on_screen_drag(event as InputEventScreenDrag)
+		if is_touch_gesture_active():
+			_on_screen_drag(event as InputEventScreenDrag)
 	elif event is InputEventMouseButton and is_touch_gesture_active():
 		get_viewport().set_input_as_handled()
 
@@ -747,7 +752,10 @@ func _probe_grids(vp_pos: Vector2) -> bool:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventScreenTouch or event is InputEventScreenDrag:
+	if event is InputEventScreenTouch:
+		_on_screen_touch(event as InputEventScreenTouch)
+		return
+	if event is InputEventScreenDrag:
 		return
 	if event.is_action_pressed("pause_game"):
 		if not run_over:

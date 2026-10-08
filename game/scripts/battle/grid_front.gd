@@ -204,7 +204,9 @@ func _ensure_click_layer() -> void:
 		tile_h = float(ts.y)
 	_click_area.position = Vector2(-tile_w, -tile_h)
 	_click_area.size = Vector2(cols * tile_w * 0.85 + tile_w, rows * tile_h * 0.85 + tile_h * 2.0)
-	_click_area.mouse_filter = Control.MOUSE_FILTER_STOP
+	# PASS: desktop mouse still reaches gui_input, but ScreenTouch is not consumed
+	# so BattleRoot._unhandled_input can place after HUD/modals have had their chance.
+	_click_area.mouse_filter = Control.MOUSE_FILTER_PASS
 	_click_area.gui_input.connect(_on_click_input)
 	add_child(_click_area)
 

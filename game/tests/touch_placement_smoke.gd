@@ -49,6 +49,65 @@ func _run() -> void:
 				break
 	var sea_a: Vector2i = sea_cells[0]
 
+	# HUD overlap: a STOP Control over a placeable cell must consume the finger.
+	# This fails if BattleRoot._input starts a gesture before GUI hit-testing.
+	battle.selected_unit_id = "spearman"
+	var overlay_cell := Vector2i(1, 0)
+	if not battle.land_grid.is_placeable(overlay_cell):
+		overlay_cell = land_a
+	var overlay_center: Vector2 = _cell_vp(battle, battle.land_grid, overlay_cell)
+	var hud_root: Control = battle.hud.get_node("Root") as Control
+	var hud_btn := Button.new()
+	hud_btn.name = "TouchGuiProbeBtn"
+	hud_btn.text = "STOP"
+	hud_btn.mouse_filter = Control.MOUSE_FILTER_STOP
+	hud_btn.size = Vector2(40, 40)
+	hud_btn.position = overlay_center - Vector2(20, 20)
+	var hud_clicks := {"n": 0}
+	hud_btn.pressed.connect(func(): hud_clicks["n"] = int(hud_clicks["n"]) + 1)
+	hud_root.add_child(hud_btn)
+	await process_frame
+	var btn_center: Vector2 = hud_btn.get_global_rect().get_center()
+	var hud_before: int = int(battle.sim.get_defender_count())
+	_push_touch(battle, 0, true, btn_center)
+	_push_emulated_mouse(battle, btn_center, true)
+	_push_touch(battle, 0, false, btn_center)
+	_push_emulated_mouse(battle, btn_center, false)
+	await process_frame
+	if int(battle.sim.get_defender_count()) != hud_before:
+		failures.append("HUD button over grid placed a unit")
+	if battle.land_grid.occupants.has(overlay_cell):
+		failures.append("HUD button occupied grid cell %s" % str(overlay_cell))
+	if battle.is_touch_gesture_active():
+		failures.append("HUD button left a touch gesture active")
+	if int(hud_clicks["n"]) < 1:
+		failures.append("HUD button over grid was not activated")
+	hud_btn.queue_free()
+	await process_frame
+
+	# Pause overlay: a tap on a grid cell while paused must place nothing.
+	var pause_cell: Vector2i = overlay_cell
+	if battle.land_grid.occupants.has(pause_cell):
+		pause_cell = land_a
+	var pause_before: int = int(battle.sim.get_defender_count())
+	var session: Node = root.get_node_or_null("GameSession")
+	if session == null:
+		failures.append("GameSession autoload missing")
+	else:
+		session.set_paused(true)
+		await process_frame
+		_push_touch(battle, 0, true, _cell_vp(battle, battle.land_grid, pause_cell))
+		_push_touch(battle, 0, false, _cell_vp(battle, battle.land_grid, pause_cell))
+		await process_frame
+		if int(battle.sim.get_defender_count()) != pause_before:
+			failures.append("touch while paused placed a unit")
+		if battle.land_grid.occupants.has(pause_cell):
+			failures.append("touch while paused occupied %s" % str(pause_cell))
+		if battle.is_touch_gesture_active():
+			failures.append("paused touch left a gesture active")
+		session.set_paused(false)
+		await process_frame
+
 	# Boundary regressions: short motion still cancels outside the grid, and
 	# sub-threshold motion previews the press cell that a tap will commit.
 	var edge_center: Vector2 = _cell_vp(battle, battle.land_grid, Vector2i(0, 0))
@@ -278,6 +337,15 @@ func _push_drag(battle: Node, index: int, vp_pos: Vector2, relative: Vector2) ->
 	ev.index = index
 	ev.position = vp_pos
 	ev.relative = relative
+	battle.get_viewport().push_input(ev, true)
+
+
+func _push_emulated_mouse(battle: Node, vp_pos: Vector2, pressed: bool) -> void:
+	var ev := InputEventMouseButton.new()
+	ev.button_index = MOUSE_BUTTON_LEFT
+	ev.pressed = pressed
+	ev.position = vp_pos
+	ev.global_position = vp_pos
 	battle.get_viewport().push_input(ev, true)
 
 

@@ -1706,3 +1706,26 @@ XDG_DATA_HOME=/tmp/claude-1000/-home-pkhunter-Repositories-Game-Project-Mobile-F
 Executed each of `touch_placement_smoke`, `modular_battle_smoke`, `gameplay_smoke`, `hero_e_smoke`, `scenario_control_smoke`, `level_picker_smoke`, `unit_token_smoke`: **all PASS**, both original required suite and final fixed suite. Extended touch smoke's intentional original-code regression run: **FAIL as expected**; restored fixed code immediately. Also ran the prefixed `godot --path game --headless --script /tmp/t40_review_probe.gd` before/after fixes: off-grid short-release placement and wrong-front validity changed `true -> false`; touch-through-STOP-button placement remains `true` (diagnostic exits 0, not a passing acceptance test). Probe reproduction is described above. `git diff --check`: PASS. CTest / website tests not applicable (neither changed).
 
 **Claude:** do not merge as complete G10 yet. Small fixes are committed; remaining GUI routing issue and integration-test gap are explicit. No push, PR, GitHub, branch switch, merge or other-worktree edits.
+
+### cursor — 2026-10-08 — T40 HOLD follow-up DONE
+
+**Shipped:** GUI-aware touch routing. New presses wait for `_unhandled_input` so any interactive Control (HUD, pause/modal overlay, injected STOP button) consumes the finger; in-progress drags/releases stay in `_input` so a finger can still cross both grids. Grid `_click_area` is `MOUSE_FILTER_PASS` so it does not steal ScreenTouch. Emulated mouse is still swallowed only while a gesture is active. G10 → ✅ Done. IOS2 stays 🚧 Partial (no device verification).
+
+**Smoke regressions (viewport `push_input`):** STOP `Button` (40×40) over land cell `(1,0)` places nothing and still fires `pressed`; a tap while `GameSession` is paused places nothing. Against the pre-follow-up `_input` path those HUD assertions failed (exit 1, three errors: placed, occupied `(1, 0)`, button not activated); pause already no-op'd via the existing `is_paused` guard. Restored the fix immediately.
+
+**Verify** (`XDG_DATA_HOME=/tmp/claude-1000/-home-pkhunter-Repositories-Game-Project-Mobile-Fortress/958b3fca-a5da-42fb-9038-c6c4289a5ec4/scratchpad/xdg/cursor` prefix on every godot):
+
+- `godot --path game --headless --script res://tests/touch_placement_smoke.gd` → PASS
+- `godot --path game --headless --script res://tests/modular_battle_smoke.gd` → PASS
+- `godot --path game --headless --script res://tests/gameplay_smoke.gd` → PASS
+- `godot --path game --headless --script res://tests/hero_e_smoke.gd` → PASS
+- `godot --path game --headless --script res://tests/scenario_control_smoke.gd` → PASS
+- `godot --path game --headless --script res://tests/level_picker_smoke.gd` → PASS
+- `godot --path game --headless --script res://tests/unit_token_smoke.gd` → PASS
+- `godot --path game --headless --script res://tests/dev_diag_smoke.gd` → PASS
+- `godot --path game --headless --script res://tests/dev_access_smoke.gd` → PASS
+
+`git diff --check`: PASS.
+
+**Chat:** re-review HOLD (GUI routing + viewport HUD/pause cases). **Claude:** G10 ready after Chat verifies; IOS2 stays Partial.
+

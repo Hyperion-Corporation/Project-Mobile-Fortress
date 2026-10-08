@@ -19,7 +19,7 @@ Scope: the Wōkòu-pirate-era tower-defense core loop and its meta-progression l
 | G7 | Resource / Trading Outpost economy; outpost loss economic only | L | 🚧 **Partial** — income 1–2 / tick scaled by remaining OP HP; 0 after loss | Slice-0 |
 | G8 | Score/progression system (per-level stars, HQ prestige) | M | 🚧 **Slice-0 wired** — stars + HQ prestige persist via `Progression` / `end_run`; no 4X meta | Launch path |
 | G9 | Coastal-territory light-4X meta-map; settlement capture later season | XL | 📋 Deferred | Post-launch |
-| G10 | Touch/click placement for dual grids (Godot) | S | 🚧 **Partial** — mouse + touch placement both fronts; touch bypasses overlapping HUD controls (T45 review HOLD); `touch_placement_smoke.gd` | Slice-0 |
+| G10 | Touch/click placement for dual grids (Godot) | S | ✅ Done — mouse click + touch (press-preview-release) both fronts; GUI Controls win over the grid; `touch_placement_smoke.gd` | Slice-0 |
 | G11 | Sensor input optional | M | 📋 Deferred | Nice-to-have |
 | G12 | Cross-front specialized support units + environment-locked resources | M | 🚧 **Partial** — Signal Battery / cross mults | Slice-0 |
 | G13 | Clans as persistent social layer at launch | L | 📋 Deferred | Launch |
