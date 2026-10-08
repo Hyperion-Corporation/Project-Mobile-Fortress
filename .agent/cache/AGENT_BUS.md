@@ -3092,3 +3092,37 @@ Native `ctest` passed, including the fixed-seed flow properties and the v1/v2 be
 - **Docs:** changelog, `shared_core.md` S2, `qa_testing.md` Q3, `performance.md` P4. Did not touch S7 (Muse Harbinger's cell this round).
 - **Handoff:** ready for Codex Harbinger under T66.
 
+### Gemini Harbinger — 2026-10-08 — T59 DONE: battle HUD phone-scale targets & citadel rank
+
+- **Commit:** `2250145` (`feat(ui): battle HUD phone-scale targets and citadel rank progress`) on `harbinger`.
+- **Files touched:**
+  - `game/scripts/ui/battle_hud.gd`: Responsive density sizing ($\ge 48\text{ dp}$ in both dimensions, $1.15\times$ Large Text scale), multi-column SideBar grid reflow (3 columns in compact phone landscape, 2 columns otherwise), non-overlapping TopBar & SideBar offsets, dedicated `PauseBtn` and `SpeedBtn` (1x/2x/3x), Citadel Rank prestige tier and progress display in `show_result(...)`.
+  - `game/tests/battle_hud_layout_smoke.gd`: New headless layout smoke asserting rendered window pixels $\ge 47.9\text{ px}$ across 4 viewports (1280×720, 720×1280, 390×844, 844×390) and `large_text` on/off, containment, non-overlap, grid coverage $\le$ baseline, and Citadel Rank text presence.
+  - `docs/moon/roadmaps/ui_ux.md`: Updated U4 (Battle HUD delivered) and U8 (Full Game touch targets delivered).
+  - `docs/moon/roadmaps/ios.md`: Updated IOS2 status line.
+  - `docs/moon/CHANGELOG.md`: Added T59 entry (landed in `f05d0f2`).
+- **Touch Target & Layout Verification:**
+  - Every interactive HUD button (all 7 unit buttons, `StartCombatBtn`, `HeroAbilityBtn`, `PauseBtn`, `SpeedBtn`, `SaveBtn`, `LoadBtn`, `ResumeBtn`, `PauseSaveBtn`, `PauseMenuBtn`, `RestartBtn`, `MenuBtn`) verified $\ge 47.9\text{ px}$ in rendered window dimensions (`abs(vp_final_xform.basis_xform(r.size))`).
+  - Zero overlapping controls and zero clipping outside viewport.
+  - Grid coverage at 1280×720 baseline is exactly 16,640.0 px² (from `StatusLabel`), identical before and after (0.0 px² delta).
+- **Citadel Rank:** Result panel displays Citadel Rank prestige tier (`Progression.get_prestige_tier`) and progression percentage / remaining points to next rank (`Progression.get_next_prestige_tier`) or max rank state.
+- **Smokes:** `scripts/run_godot_smokes.sh` — 26/26 passed, 0 failed.
+- **Lane integrity:** Did NOT touch `battle_root.gd` or `main_menu.gd` (Cursor Harbinger owns in T61). No edits to C++ or `.so`. Did not push to remote.
+- **Handoff:** Ready for Codex Harbinger under T66.
+
+### Cursor Harbinger — 2026-10-08 — T61 CLAIMED: one affordability rule; menu rank + campaign stars
+
+**Today's battle (read, not yet edited).** Spawn front is always the clicked grid (`front_id_int` 0=land / 1=sea). Charge is own-currency first (`sim.spend` on land=0 if `currency=="land"` else sea=1). If that spend fails **and** the clicked grid's wallet is a different front, it tries that wallet; if the wallets are the same, it stops. Touch preview is `own_wallet >= cost OR placed_front_wallet >= cost` (no charge). Land-only / sea-only still reject the wrong grid before spend. DT3 `debug_spawn_at_cell` is free and stays that way.
+
+| Unit | Own currency | Land grid: spawn / pay | Sea grid: spawn / pay |
+| --- | --- | --- | --- |
+| spearman, cannon | land | land / land (no fallback) | rejected land-only |
+| arquebusier, junk | sea | rejected sea-only | sea / sea (no fallback) |
+| hero_qi | land | land / land | sea / land first, else sea |
+| hero_dias, Signal Battery | sea | land / sea first, else land | sea / sea |
+
+Spawn-fail refund always `gain`s the **own-currency** wallet, even if the placed-front wallet paid. That looks like a bug; T61 will preserve it and flag it in DONE.
+
+**Approach:** `UnitDefs.placement_plan(id, placed_front, land, sea)` becomes the single answer for "allowed here?" and "which wallet pays" (own first, then other-front fallback). `can_afford(id, land, sea)` stays own-currency-only so T57 tests keep passing; an optional `placed_front` uses the plan. `battle_root` placement + touch preview call it — no second spend path. Menu `CampaignRankLabel` shows T58 title, next-rank progress, `total_stars()`. New `placement_afford_smoke.gd` plus `unit_catalog_smoke` extensions; mutating the helper's fallback must fail the battle smoke.
+
+
