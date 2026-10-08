@@ -2798,3 +2798,36 @@ Full evidence: same report §T52. Done means:
 Review T49, T54, T55 by commit hash when each DONE block lands; same rules as T53.
 
 **Open decisions for the owner (not assigned):** Kimi's two legacy findings — AGP 9.3.1 cannot run on the pinned Gradle 8.7 wrapper, and Xcode 26.6 cannot parse `ios/MyGame.xcodeproj`. Both are path-gated in `ci.yml`, not fixed.
+
+### qwen — 2026-10-08 — T54 DONE: T51 HOLD follow-up
+
+- **Commit:** `f9d9e90` (`fix(website): T54 HOLD follow-up — cross-front affordability, real tsc, mutation-proof tests`) on `harbinger`.
+- **Lane:** `docs/website/src/frameworks/react/views/DualFrontDemoView.tsx`, `docs/website/test/unit/components/dual-front-demo-view.test.tsx`, `docs/website/test/unit/simulations/dual-front-demo.test.ts`, `.github/workflows/website.yml`. No other agents' files touched.
+
+**All four HOLD items resolved:**
+
+1. **Cross-front affordability fixed.** `DualFrontDemoView.tsx`: a `front: "both"` unit is now enabled when *either* wallet can afford it (`def.cost <= state.landBudget || def.cost <= state.seaBudget`). Placement still charges the selected front's wallet. New component test: place six Spearmen on land (land=0, sea=60), assert Signal Battery button is still enabled. **PASS.**
+
+2. **Real type-check in CI.** `website.yml` now runs `node scripts/generate-nav.mjs` before `npx tsc -b --pretty false` (no `--noCheck`). Verified: `tsc -b --pretty false` exits 0 with generated file present.
+
+3. **Mutation-proof combat tests.**
+   - Cross-support test now asserts exact HP loss on each front independently: land raiders take `round(6 * 0.55) = 3` per hit (divisibility check), sea raiders take `round(6 * 1.15) = 7` per hit (divisibility check). Both fronts must have at least one damaged raider.
+   - Hero ability test now asserts *every* spawned land raider took exactly 28 damage (not just "some raider lost some HP"), and sea raiders are undamaged.
+   - **Mutation results (all on disposable copies, restored after):**
+     - Zero `closest.hp -= crossDmg` → **1 FAIL** (`cross_support fires at raiders on both fronts with exact HP loss`)
+     - Zero `closest.hp -= ownDmg` → **1 FAIL** (same test)
+     - Zero `t.hp -= def.activeDamage` → **1 FAIL** (`hero ability deals area damage to all raiders in range on its front`)
+
+4. **320px header + island budget evidence.**
+   - **Header:** no browser available in this environment for rendered measurement. CSS changes are structural (brand-name hidden at ≤480px, padding/gaps reduced, search trigger min-width removed at ≤640px). The claim that controls fit at 320px rests on the CSS rules, not a rendered screenshot. If a rendered measurement is required, it must come from a browser-equipped reviewer.
+   - **Island budget:** `npm run build` + `check-island-budgets.mjs` → Aurelia island **66.1 kB gzip** (budget 300 kB) — **OK**. No new island chunks from slice 2 (demo is native React, bundled into the main index chunk).
+
+**Verification:**
+- `npx vitest run` → **79/79 PASS** (9 files; 78 pre-existing + 1 new affordability test).
+- `npx tsc -b --pretty false` → exit 0.
+- `npx eslint -c stack/eslint/eslint.config.js src/simulations/dualFrontDemo.ts src/frameworks/react/views/DualFrontDemoView.tsx` → exit 0.
+- `SITE_BASE=/Project-Mobile-Fortress/ npm run build` → success; island budget PASS.
+
+**Test counts:** 63 → 79 vitest tests (+16 from original T51, +1 affordability test from T54).
+
+**Handoff:** ready for Chat re-review under T56.
