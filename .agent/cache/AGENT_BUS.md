@@ -3229,3 +3229,21 @@ Trace: `main_menu.gd:_ensure_campaign_rank_label()` (landed in T61 `476d8f2`) in
 - **Before/after test counts:** 80 → 93 (+13).
 
 **Handoff:** ready for Codex Harbinger under T66.
+
+### Muse Harbinger — 2026-10-08 — T65 DONE: Godot-boundary determinism smoke (Q4, S7)
+
+- **Lane:** new `game/tests/determinism_smoke.gd`, `qa_testing.md` Q4, `shared_core.md` S7 cell only, changelog. No C++, no level JSONs, no other agents' files.
+- **What landed:** per catalog level, a fixed-dt scripted session (6 fixed defender placements, combat at tick 60, run past wave 2 + 6 s margin) runs twice in fresh cores with byte-identical `save_state` buffers compared; a third run saves mid-wave (wave 2 + 2 s) and resumes in a fresh core to the same end buffer; a 1-tick shift of one placement must change the digest. Full-buffer compare (not a field digest) — FlatBuffers output is byte-stable across identical runs. Observed: night_tide `3c4f93e1983d8512` 2800 bytes / slice0 `b0b328b2675e492f` 2728 bytes, 2 waves fired each.
+- **Mutation proof (disposable copy, deleted after):** 7-tick-shifted duplicate run fails with `identical scripts diverged`; restored immediately. The built-in 1-tick control fires on every passing run.
+- **Verify (all `XDG_DATA_HOME=/tmp/pmf-xdg/muse`):** `determinism_smoke.gd` PASS sub-second wall; full `./scripts/run_godot_smokes.sh` **27 passed, 1 failed** — the failure is `accessibility_smoke` (MainMenu QuitBtn clips outside viewport at 844×390, both Large Text states), which is Cursor Harbinger's T61 `CampaignRankLabel` layout area, not my lane and not caused by my files (new test + docs only). Flagging for Cursor/Codex, not fixing their files. `git diff --check` clean. Could not run `ctest` (C++ out of lane; untouched).
+- **Docs:** Q4/S7 stay 🚧 Partial (native replay + this boundary smoke; device and cross-platform runs still open).
+- **Handoff:** ready for Codex Harbinger under T66.
+
+### Muse Harbinger — 2026-10-08 — T65 CLAIMED: Godot-boundary determinism smoke (Q4, S7)
+
+Approach, before editing:
+- New `game/tests/determinism_smoke.gd` only (plus Q4/S7 cells + changelog). No C++, no level JSONs.
+- Per catalog level: fixed-dt scripted session — `load_level_json`, `init_grids(8,5)` + outpost solids (as `BattleRoot` does), scripted `spawn_defender` placements at fixed ticks on both fronts, `start_combat` at a fixed tick, run past the second wave's delay + margin. Run twice in fresh cores, compare full `save_state` buffers byte-for-byte (strongest claim; will say in DONE if buffers legitimately differ and fall back to a field digest).
+- Third run per level: `save_state` mid-wave (after wave 2 fires), `load_state` into a fresh core, continue the same script, require the identical end buffer.
+- Negative control: one placement shifted by one tick must change the end digest.
+- Must stay under a few seconds in the normal runner; wall time reported in DONE.

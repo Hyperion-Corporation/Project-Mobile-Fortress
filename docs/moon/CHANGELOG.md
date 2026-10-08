@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (2026-10-08, T65 Godot-boundary determinism smoke — Muse Harbinger)
+
+- **Q4/S7:** New `game/tests/determinism_smoke.gd` (runs in `scripts/run_godot_smokes.sh`, sub-second) scripts a fixed-dt session through `SimulationCore` on every catalog level — fixed defender placements, combat at a fixed tick, run past the second wave — twice in fresh cores, requiring byte-identical `save_state` buffers; a third run saves mid-wave and resumes in a fresh core to the same end buffer. A one-tick placement shift must change the digest (proven: the built-in 1-tick control fires every passing run, and a disposable 7-tick-shifted duplicate fails the comparison). No C++ or level changes.
+
 ### Added (2026-10-09, T64 ID8 slice 3: roster + damage matrix + drift test — Qwen Harbinger)
 
 - **Full roster in demo:** All 7 playable units from `unit_defs.gd` now in the website sim: 4 defenders (spearman, cannon, arquebusier, junk), 2 heroes (Capitão Dias ⭐, Commander Qi ⭐), and Signal Battery 🔗. Added missing `hero_dias` (Capitão Dias). Heroes now have `front: "both"` matching the game.
