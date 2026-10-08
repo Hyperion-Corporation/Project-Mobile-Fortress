@@ -1,11 +1,11 @@
 # presence_grok
 
 - **agent:** grok
-- **status:** ONLINE — main dev; T37 DONE (DT6 overlay picker)
-- **session:** PMF post-Slice-0 implementation 2026-08-15
+- **status:** ONLINE — T38 DONE (A4 heuristic DDA baseline, partial: not wired into battle or DT5)
+- **session:** PMF 2026-10-08 round, branch `agent/grok/T38-a4-dda`
 - **canonical bus:** `.agent/cache/AGENT_BUS.md`
 - **consensus:** `.agent/cache/CONSENSUS_DONE.md`
 - **report:** `.agent/reports/grok/pmf_20260810_owner_qa_and_direction.md`
-- **claim:** T37 shipped — awaiting Chat review
-- **assignments:** locked DT order complete
-- **updated:** 2026-08-15
+- **claim:** T38 shipped — awaiting Chat review
+- **assignments:** A4 director in SimWorld, off by default; `dda_smoke.gd`
+- **updated:** 2026-10-08

@@ -289,3 +289,272 @@ TEST_CASE("DT3 spawn raider at cell") {
 	REQUIRE_FALSE(world.raiders().empty());
 	CHECK(world.map_cell(0, world.raiders()[0].position) == Vec2i(2, 1));
 }
+
+namespace {
+
+struct RunSnap {
+	int hq = 0;
+	int land = 0;
+	int sea = 0;
+	int killed = 0;
+	int wave = 0;
+	int raiders = 0;
+	float intensity = 0.0f;
+	std::vector<int> ids;
+	std::vector<float> hp;
+	std::vector<float> speed;
+	std::vector<float> x;
+};
+
+bool near(float a, float b) {
+	return std::fabs(a - b) < 0.001f;
+}
+
+RunSnap snap_of(const SimWorld &world) {
+	RunSnap snap;
+	snap.hq = world.hq_hp();
+	snap.land = world.land_resources();
+	snap.sea = world.sea_resources();
+	snap.killed = world.enemies_killed();
+	snap.wave = world.current_wave();
+	snap.raiders = world.raider_count();
+	snap.intensity = world.dda_intensity();
+	for (const auto &r : world.raiders()) {
+		snap.ids.push_back(r.id);
+		snap.hp.push_back(r.hp);
+		snap.speed.push_back(r.speed);
+		snap.x.push_back(r.position.x);
+	}
+	return snap;
+}
+
+void check_same_run(const RunSnap &a, const RunSnap &b) {
+	CHECK(a.hq == b.hq);
+	CHECK(a.land == b.land);
+	CHECK(a.sea == b.sea);
+	CHECK(a.killed == b.killed);
+	CHECK(a.wave == b.wave);
+	CHECK(a.raiders == b.raiders);
+	CHECK(a.intensity == doctest::Approx(b.intensity));
+	CHECK(a.ids == b.ids);
+	REQUIRE(a.hp.size() == b.hp.size());
+	for (size_t i = 0; i < a.hp.size(); ++i) {
+		CHECK(a.hp[i] == b.hp[i]);
+		CHECK(a.speed[i] == b.speed[i]);
+		CHECK(a.x[i] == b.x[i]);
+	}
+}
+
+const std::vector<Vec2> kLongLane{Vec2(0.0f, 0.0f), Vec2(800.0f, 0.0f)};
+
+} // namespace
+
+TEST_CASE("A4 DDA disabled matches an untouched baseline") {
+	auto play = [](bool explicit_off) {
+		SimWorld world;
+		world.reset_run(14, 14, 100);
+		if (explicit_off) {
+			world.set_dda_enabled(false);
+		}
+		CHECK_FALSE(world.dda_enabled());
+		world.damage_hq(40);
+		world.set_outpost_alive(1, false);
+		CHECK(world.dda_intensity() == doctest::Approx(1.0f));
+		world.set_lane_path(0, kLongLane);
+		world.set_lane_path(1, kLongLane);
+		world.add_wave(0.0f, 3, 2);
+		world.add_wave(1.0f, 4, 1);
+		world.spawn_defender(0, "spearman", Vec2(120.0f, 0.0f), 90.0f, 12.0f, 0.35f);
+		world.start_combat();
+		for (int i = 0; i < 90; ++i) {
+			world.tick(1.0 / 30.0, true);
+		}
+		auto snap = snap_of(world);
+		CHECK(snap.intensity == doctest::Approx(1.0f));
+		return snap;
+	};
+	check_same_run(play(false), play(true));
+
+	SimWorld authored;
+	authored.reset_run(14, 14, 100);
+	authored.set_lane_path(0, kLongLane);
+	authored.set_lane_path(1, kLongLane);
+	authored.add_wave(0.0f, 3, 2);
+	authored.start_combat();
+	authored.tick(0.05, false);
+	CHECK(authored.raider_count() == 5);
+	for (const auto &r : authored.raiders()) {
+		CHECK(r.hp == doctest::Approx(50.0f));
+		CHECK(r.max_hp == doctest::Approx(50.0f));
+		CHECK(r.speed == doctest::Approx(26.0f));
+	}
+}
+
+TEST_CASE("A4 intensity drops when the player is losing and eases only later waves") {
+	SimWorld world;
+	world.reset_run(14, 14, 100);
+	world.set_dda_enabled(true);
+	CHECK(world.dda_enabled());
+	CHECK(world.dda_intensity() == doctest::Approx(1.0f));
+	world.set_lane_path(0, kLongLane);
+	world.set_lane_path(1, kLongLane);
+	world.add_wave(0.0f, 4, 0);
+	world.add_wave(1.0f, 4, 4);
+	world.start_combat();
+	world.tick(0.05, false);
+	REQUIRE(world.current_wave() == 1);
+	REQUIRE(world.raider_count() == 4);
+	for (const auto &r : world.raiders()) {
+		CHECK(r.hp == doctest::Approx(50.0f));
+		CHECK(r.speed == doctest::Approx(26.0f));
+	}
+
+	world.damage_hq(100);
+	world.set_outpost_alive(0, false);
+	world.set_outpost_alive(1, false);
+	REQUIRE(world.spend(0, 14));
+	REQUIRE(world.spend(1, 14));
+	CHECK(world.dda_intensity() == SimWorld::DDA_INTENSITY_MIN);
+
+	world.tick(0.05, false);
+	CHECK(world.current_wave() == 1);
+	CHECK(world.raider_count() == 4);
+	for (const auto &r : world.raiders()) {
+		CHECK(r.hp == doctest::Approx(50.0f));
+	}
+	// Authored delay is not pulled forward when intensity is at the floor.
+	world.tick(0.80, false);
+	CHECK(world.combat_time() == doctest::Approx(0.90f));
+	CHECK(world.current_wave() == 1);
+	CHECK(world.raider_count() == 4);
+
+	world.tick(0.20, false);
+	CHECK(world.current_wave() == 2);
+	int authored_hp = 0;
+	int eased = 0;
+	for (const auto &r : world.raiders()) {
+		if (near(r.hp, 50.0f)) {
+			authored_hp += 1;
+			CHECK(r.speed == doctest::Approx(26.0f));
+		} else {
+			eased += 1;
+			CHECK(r.hp == doctest::Approx(53.0f * SimWorld::DDA_INTENSITY_MIN));
+			CHECK(r.max_hp == doctest::Approx(53.0f * SimWorld::DDA_INTENSITY_MIN));
+			CHECK(r.speed == doctest::Approx(28.0f));
+		}
+	}
+	CHECK(authored_hp == 4);
+	CHECK(eased == 6);
+
+	const int manual = world.spawn_raider(0, kLongLane, 12.0f, 10.0f, 1.0f);
+	REQUIRE(manual > 0);
+	for (const auto &r : world.raiders()) {
+		if (r.id == manual) {
+			CHECK(r.hp == doctest::Approx(12.0f));
+		}
+	}
+}
+
+TEST_CASE("A4 intensity rises when the player is dominating and clamps") {
+	SimWorld world;
+	world.reset_run(14, 14, 100);
+	world.set_dda_enabled(true);
+	world.gain(0, 100);
+	world.gain(1, 100);
+	const float stockpiled = world.dda_intensity();
+	CHECK(stockpiled > 1.0f);
+	CHECK(stockpiled < SimWorld::DDA_INTENSITY_MAX);
+
+	world.set_lane_path(0, kLongLane);
+	world.set_lane_path(1, kLongLane);
+	world.add_wave(0.0f, 2, 0);
+	world.add_wave(3.0f, 4, 4);
+	world.start_combat();
+	world.tick(0.05, false);
+	REQUIRE(world.raider_count() == 2);
+	for (const auto &r : world.raiders()) {
+		CHECK(r.hp == doctest::Approx(50.0f * stockpiled));
+		CHECK(r.hp > 50.0f);
+	}
+	CHECK(world.debug_kill_all_raiders() == 2);
+	world.tick(0.05, false);
+	CHECK(world.raider_count() == 0);
+	CHECK(world.dda_intensity() == SimWorld::DDA_INTENSITY_MAX);
+
+	world.tick(3.0, false);
+	CHECK(world.current_wave() == 2);
+	CHECK(world.raider_count() == 10);
+	for (const auto &r : world.raiders()) {
+		CHECK(r.hp == doctest::Approx(53.0f * SimWorld::DDA_INTENSITY_MAX));
+		CHECK(r.speed == doctest::Approx(28.0f));
+	}
+
+	// Preference survives a new raid; the clear sample does not.
+	world.reset_run(14, 14, 100);
+	CHECK(world.dda_enabled());
+	CHECK(world.dda_intensity() == doctest::Approx(1.0f));
+}
+
+TEST_CASE("A4 two identical runs stay deterministic and load drops the clear sample") {
+	auto play = []() {
+		SimWorld world;
+		world.reset_run(14, 14, 100);
+		world.set_dda_enabled(true);
+		world.gain(0, 100);
+		world.gain(1, 100);
+		world.damage_hq(10);
+		world.set_lane_path(0, kLongLane);
+		world.set_lane_path(1, kLongLane);
+		world.add_wave(0.0f, 3, 2);
+		world.add_wave(1.5f, 4, 4);
+		world.spawn_defender(0, "spearman", Vec2(200.0f, 0.0f), 100.0f, 8.0f, 0.5f);
+		world.start_combat();
+		world.tick(0.05, false);
+		world.debug_kill_all_raiders();
+		world.tick(0.05, false);
+		for (int i = 0; i < 60; ++i) {
+			world.tick(1.0 / 30.0, false);
+		}
+		return world;
+	};
+	const SimWorld first = play();
+	const SimWorld second = play();
+	check_same_run(snap_of(first), snap_of(second));
+	CHECK(first.dda_intensity() <= SimWorld::DDA_INTENSITY_MAX);
+	CHECK(first.dda_intensity() >= SimWorld::DDA_INTENSITY_MIN);
+
+	const auto blob = first.save_state();
+	REQUIRE_FALSE(blob.empty());
+	SimWorld restored = first;
+	REQUIRE(restored.load_state(blob.data(), blob.size()));
+	CHECK(restored.dda_enabled());
+	CHECK(restored.hq_hp() == first.hq_hp());
+	CHECK(restored.land_resources() == first.land_resources());
+	// Clear sample is dropped and the purse baseline is rebased to the loaded
+	// purse, so the stockpile and fast-clear bonuses are gone. HQ damage
+	// still comes from the snapshot, which keeps intensity under the neutral 1.
+	CHECK(restored.dda_intensity() < 1.0f);
+	CHECK(restored.dda_intensity() > SimWorld::DDA_INTENSITY_MIN);
+	CHECK(first.dda_intensity() > 1.0f);
+	CHECK(restored.dda_intensity() < first.dda_intensity());
+
+	SimWorld fresh;
+	CHECK_FALSE(fresh.dda_enabled());
+	REQUIRE(fresh.load_state(blob.data(), blob.size()));
+	CHECK_FALSE(fresh.dda_enabled());
+	CHECK(fresh.dda_intensity() == doctest::Approx(1.0f));
+}
+
+TEST_CASE("A4 combined purse does not overflow valid per-front balances") {
+	SimWorld world;
+	world.reset_run(1500000000, 1500000000, 100);
+	CHECK(world.dda_intensity() == 1.0f);
+	world.set_dda_enabled(true);
+	CHECK(world.dda_intensity() == doctest::Approx(1.0f));
+	REQUIRE(world.spend(0, 250000000));
+	REQUIRE(world.spend(1, 250000000));
+	CHECK(world.dda_intensity() == doctest::Approx(1.0f - SimWorld::DDA_PURSE_WEIGHT / 6.0f));
+	const auto blob = world.save_state();
+	REQUIRE(world.load_state(blob.data(), blob.size()));
+	CHECK(world.dda_intensity() == doctest::Approx(1.0f));
+}

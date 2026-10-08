@@ -2113,3 +2113,73 @@ this is one playable toy, not the whole dashboard-demo roadmap item.
 itself fits. Existing lint warnings and Vite's large-chunk advisory remain. Additional ID8 demo
 families remain deferred. Generated files restored, only reviewed source/docs committed; no
 push, branch switch, PR, GitHub operation, or other worktree edit.
+### grok — 2026-10-08 — T38 DONE
+
+**Shipped:** A4 heuristic DDA inside `SimWorld`, off by default (`699773a`). Intensity is clamped to 0.75–1.25 from four signals: HQ HP fraction, outposts lost, how fast the previous wave left the field empty, and unspent currency versus the purse captured at `reset_run`. It scales only the count (deterministic round, at least 1 if the authored count is positive) and HP of a wave at the moment it spawns. Speed, damage, authored delay, already-spawned raiders, and direct `spawn_raider` / debug spawns are unchanged. No RNG. The hot path adds no heap traffic; the disabled branch does not multiply, so existing outcomes stay the same.
+
+**API:** `SimulationCore.set_dda_enabled` / `dda_enabled` / `get_dda_intensity` (returns 1 while off). `GameSession.dda_enabled` plus `apply_dda(sim)` is the session toggle. The flag survives `reset_run` and `load_state` on that object. It is not in the snapshot.
+
+**Deliberately left out (A4 row is 🚧 Partial):**
+- Modular battle does not call `apply_dda`. `game/scripts/battle/**` is T40's lane. A playtest enables it with `GameSession.set_dda_enabled(true)` then `GameSession.apply_dda(sim)`.
+- DT5 overlay was not edited, so it does not show intensity yet. The getter is there for that.
+- Spawn interval is not scaled. Wave delays are absolute combat-clock timestamps shared with victory and `debug_jump_wave`.
+- FlatBuffers schema was not extended. On load the clear-time sample is dropped and the purse baseline is rebased to the loaded purse. HQ, outposts, and currency still round-trip, so the next unspawned wave is deterministic; it just has no clear-time term until a new wave cycle. That is acceptable for a director that is off by default and whose other three signals are already in the snapshot.
+- The existing 40-raider cap still drops extras if a scaled wave would exceed it. Slice-0 counts stay well under that.
+
+**Verification (this worktree):**
+- `cmake -S game -B game/build -DCMAKE_BUILD_TYPE=Release` with `FETCHCONTENT_SOURCE_DIR_*` pointed at local copies of the main checkout's already-fetched godot-cpp/entt/flatbuffers/doctest trees (a fresh GitHub clone of godot-cpp was stalled). Configure exit 0.
+- `cmake --build game/build -j$(nproc)` exit 0. Copied `game/build/libmobile_fortress_core.so` to `game/bin/libmobile_fortress_core.so` and `game/bin/libmobile_fortress_core.linux.x86_64.so`.
+- `ctest --test-dir game/build --output-on-failure` — 1/1 `sim_world_tests` Passed. The four A4 cases (disabled == baseline, losing eases later waves and clamps to 0.75, dominating clamps to 1.25, two runs match and load drops the clear sample) are in that binary.
+- `godot --path game --headless --import` aborted rc 134 after the filesystem scan (`cannot connect to daemon at tcp:5037`). Smokes still ran.
+- With `XDG_DATA_HOME=/tmp/claude-1000/-home-pkhunter-Repositories-Game-Project-Mobile-Fortress/958b3fca-a5da-42fb-9038-c6c4289a5ec4/scratchpad/xdg/grok`: `dda_smoke.gd` PASS rc 0, `simulation_smoke.gd` PASS rc 0, `modular_battle_smoke.gd` PASS rc 0, `scenario_control_smoke.gd` PASS rc 0, `flatbuffers_smoke.gd` PASS rc 0, `game_session_smoke.gd` PASS rc 0 (session script was touched).
+
+
+### chat — 2026-10-08 — T38 review: VERIFIED WITH FIXES
+
+**Reviewed:** all of `git diff main...HEAD` and commits `699773a` / `ca9909d`, against the T38 brief,
+`.agent/AGENTS.md` §§5–6 and applicable review/performance/testing rules. Implementation stays in
+its assigned lane (the allowed session toggle plus required coordination/docs). The director is
+default-off, deterministic, bounded, and scales only pending-wave count/HP; its added observation
+and arithmetic allocate no heap memory. API bindings, disabled behavior, reset/load semantics,
+changelog, A4 row, and Grok's handoff were checked. No website changes or website checks apply.
+
+**Fixed (`8253a03`):**
+- **MEDIUM:** combined land+sea purse used signed `int`, overflowing even when each balance was valid.
+  A neutral 1.5-billion-per-front start returned 0.88, and spending could increase intensity. Promoted
+  the sum and baseline to `int64_t` at reset, load, and evaluation; added a regression covering spend
+  and load. The reproducer failed before the fix and passes afterward.
+- **MEDIUM:** `dda_smoke.gd` indexed `base_hp[0]` after detecting an empty array, so missing spawns
+  could abort the test coroutine before `quit(1)`. Guarded the access. A temporary empty-array probe
+  now reports `DDA smoke: FAIL (2)` and exits 1 rather than hanging.
+- **MEDIUM:** hoisted the purse-ratio tuning cap into `DDA_PURSE_RATIO_MAX`; derived the initial
+  baseline from the actual default balances instead of duplicating 28.
+- **LOW:** clarified the changelog/header: saving does not reset DDA, loading clears the timing sample
+  and rebases the purse for the remainder of the run; resumed decisions can differ from uninterrupted
+  play. A4 remains **🚧 Partial**, now explicitly naming battle hookup and playtest validation.
+
+**Independent verification (final source/library):**
+- `cmake -S game -B game/build -DCMAKE_BUILD_TYPE=Release && cmake --build game/build -j$(nproc)`:
+  exit 0 (existing local dependency cache; only a doctest CMake deprecation warning).
+- `cp game/build/libmobile_fortress_core.so game/bin/libmobile_fortress_core.so` and
+  `cp game/build/libmobile_fortress_core.so game/bin/libmobile_fortress_core.linux.x86_64.so`: exit 0.
+- `ctest --test-dir game/build --output-on-failure`: PASS, 1/1 executable, 20 native cases.
+- Each `godot --path game --headless --script res://tests/<name>.gd`, prefixed with
+  `XDG_DATA_HOME=/tmp/claude-1000/-home-pkhunter-Repositories-Game-Project-Mobile-Fortress/958b3fca-a5da-42fb-9038-c6c4289a5ec4/scratchpad/xdg/grok`:
+  `dda_smoke`, `simulation_smoke`, `modular_battle_smoke`, `scenario_control_smoke`,
+  `flatbuffers_smoke`, `game_session_smoke` — all PASS, exit 0. Existing imports were sufficient;
+  no editor import was needed. The additional temporary smoke failure probe used the same prefix.
+- Separately compiled `main` and reviewed `sim_world.cpp`/`.h` with an identical 1,800-tick fixed-dt
+  replay driver: all serialized per-tick snapshots byte-identical with DDA disabled (1,843,312 bytes;
+  SHA256 `09b7231781314f39f906a5cf94af3e291663486d06bb9227b6e27632ef1af56e`). Harness:
+  `/tmp/t38-review-baseline-rupr9dqp`; compiled with `c++ -std=c++20 -O2`, generated-schema and
+  cached FlatBuffers include paths, then compared both executables' binary output.
+- Mutation check: compiled a temporary copy with the pending-wave scaling call removed, linked the
+  native test object, and ran `mutant --test-case=A4*`: exit 1, 2 cases / 31 assertions failed.
+  This confirms the feature tests reject a director that no longer changes waves. Log:
+  `/tmp/t38-review-mutation-2kn545dj/result.txt`. Repository implementation was never mutated.
+- `git diff --check`: PASS. Temporary in-repo failure probe removed.
+
+**Remaining scope:** battle does not apply the session toggle automatically and DT5 does not display
+intensity; no RL or playtest-balance claim is approved. Load intentionally resets DDA observations
+without a schema change, as allowed by the brief; the receiving object's enable flag is retained.
+The native/API baseline is mergeable with these fixes; A4 is not a completed shipping integration.

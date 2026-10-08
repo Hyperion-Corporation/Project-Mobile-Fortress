@@ -161,6 +161,9 @@ void SimulationCore::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("debug_jump_wave", "wave_index"), &SimulationCore::debug_jump_wave);
 	ClassDB::bind_method(D_METHOD("debug_spawn_raider_at", "front", "cell", "hp", "speed", "damage"),
 			&SimulationCore::debug_spawn_raider_at, DEFVAL(50.0f), DEFVAL(26.0f), DEFVAL(6.0f));
+	ClassDB::bind_method(D_METHOD("set_dda_enabled", "enabled"), &SimulationCore::set_dda_enabled);
+	ClassDB::bind_method(D_METHOD("dda_enabled"), &SimulationCore::dda_enabled);
+	ClassDB::bind_method(D_METHOD("get_dda_intensity"), &SimulationCore::get_dda_intensity);
 }
 
 SimulationCore::SimulationCore() {
@@ -387,6 +390,10 @@ bool SimulationCore::debug_jump_wave(int wave_index) { return world.debug_jump_w
 int SimulationCore::debug_spawn_raider_at(int front, Vector2i cell, float hp, float speed, float damage) {
 	return world.debug_spawn_raider_at(front, mf::Vec2i(cell.x, cell.y), hp, speed, damage);
 }
+
+void SimulationCore::set_dda_enabled(bool enabled) { world.set_dda_enabled(enabled); }
+bool SimulationCore::dda_enabled() const { return world.dda_enabled(); }
+float SimulationCore::get_dda_intensity() const { return world.dda_intensity(); }
 
 void SimulationCore::_process(double delta) {
 	auto view = registry.view<Position, Velocity>();

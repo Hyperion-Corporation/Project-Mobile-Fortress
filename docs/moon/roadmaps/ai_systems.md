@@ -11,7 +11,7 @@ Scope: procedural content, dynamic difficulty, pathing research, monetization/re
 | A1 | WFC raid-map generation | L | 📋 Research | Nice research — do not block Slice-0 |
 | A2 | MILP-augmented WFC for solvability | L | 📋 Research | After A1 |
 | A3 | Nested WFC for large maps | M | 📋 Research | Only if A1/A2 backtracking costs measured |
-| A4 | Heuristic rule-based DDA (shipping baseline) | M | 📋 Pending | Committed baseline before RL |
+| A4 | Heuristic rule-based DDA (shipping baseline) | M | 🚧 Partial | Native/API baseline reviewed (T45); battle hookup and playtest validation remain before shipping |
 | A5 | RL continuous-action DDA (hidden fine-tune of baseline intensity) | XL | 📋 Pending | **Blocked:** A4 + playtest evidence that rules fail a flow metric |
 | A6 | Two-agent imitation + adversarial RL difficulty | XL | 📋 Deferred | After A5 evaluated |
 | A7 | CMAB (LinUCB) personalized offers — opt-in cohorts | XL | 📋 Deferred | Needs live non-personalized store baseline |

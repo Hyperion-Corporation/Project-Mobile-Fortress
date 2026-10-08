@@ -105,6 +105,11 @@ public:
 	int debug_kill_all_raiders();
 	bool debug_jump_wave(int wave_index);
 	int debug_spawn_raider_at(int front, Vector2i cell, float hp = 50.0f, float speed = 26.0f, float damage = 6.0f);
+
+	/// A4 heuristic director. Off by default. Intensity is 1 while disabled.
+	void set_dda_enabled(bool enabled);
+	bool dda_enabled() const;
+	float get_dda_intensity() const;
 };
 
 } // namespace godot
