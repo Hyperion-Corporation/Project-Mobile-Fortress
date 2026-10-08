@@ -68,7 +68,7 @@ Everything below lists each piece of state with: C++ type, location, snapshot co
 | `land_outpost_hp_` | `int` | `sim_world.h:221` (default 40) | yes — `land_outpost_hp` (`.fbs:63`) | HP, 0..`land_outpost_max_` | `damage_outpost(0,·)` from a land raider crossing mid-path (`sim_world.cpp:615`), `set_outpost_alive` (`:103`), `reset_run`, `load_state` |
 | `land_outpost_max_` | `int` | `sim_world.h:223` (default 40) | yes — `land_outpost_max` (`.fbs:65`, default 40) | HP; not settable from level JSON — hardcoded default | `load_state` (only if snapshot value > 0); initialized at construction; `reset_run` retains the maximum and restores HP to it |
 | `land_outpost_alive_` | `bool` | `sim_world.h:225` (default true) | yes — `land_outpost_alive` (`.fbs:67`) | — | `damage_outpost` (false when hp reaches 0), `set_outpost_alive`, `reset_run`, `load_state` |
-| `land_flow_` | `std::vector<FlowCell>` | `sim_world.h:234` | **no** (see §8.3) | `FlowCell` = `{int cost = 9999; Vec2i dir{0,0}; bool solid = false;}` (`sim_world.h:112`) — 8×5 = 40 cells; cost is BFS steps (9999 unreachable), dir is a cardinal cell step or zero, solid blocks traversal | `init_grids` (`sim_world.cpp:654`), `set_cell_solid(0,·)` (`:738`, triggers `update_flow_field`), `update_flow_field` (`:750`); GD: placement/redeploy solidify cells, outpost cell (4,2) |
+| `land_flow_` | `std::vector<FlowCell>` | `sim_world.h:234` | yes — `land_flow` (schema v2; see §8) | `FlowCell` = `{int cost = 9999; Vec2i dir{0,0}; bool solid = false;}` (`sim_world.h:112`) — 8×5 = 40 cells; cost is BFS steps (9999 unreachable), dir is a cardinal cell step or zero, solid blocks traversal | `init_grids` (`sim_world.cpp:654`), `set_cell_solid(0,·)` (`:738`, triggers `update_flow_field`), `update_flow_field` (`:750`); GD: placement/redeploy solidify cells, outpost cell (4,2) |
 | `land_path_` | `std::vector<Vec2>` (px) | `sim_world.h:237` | yes — `land_path` (`.fbs:88`) | world-space px polyline | `set_lane_path(0,·)` (`sim_world.cpp:121`), `load_state`; GD: `battle_root.gd:53` sets it from the land `GridFront` |
 
 Land outpost income rule: `outpost_income(hp, max, alive)` (`sim_world.cpp:76`) returns 0 if dead, HP ≤ 0, or max HP ≤ 0, else `max(1, 2*hp/max)` — i.e. a standing outpost pays 1–2 兩 per income tick. Outpost loss is economic only (loss event carries `economic_only = true`, `sim_world.cpp:649`).
@@ -81,7 +81,7 @@ Exact mirror of §2 with `sea` names — no structural asymmetry in the core:
 | --- | --- | --- | --- | --- |
 | `sea_resources_` | `int` | `sim_world.h:216` (default 14) | yes — `sea_resources` (`.fbs:60`) | same mutators as land, front=1; `infinite_sea_` guards `spend` |
 | `sea_outpost_hp_` / `sea_outpost_max_` / `sea_outpost_alive_` | `int`/`int`/`bool` | `sim_world.h:222`/`224`/`226` | yes — `.fbs:64`/`66`/`68` | sea raider crossing mid-path damages the Trading Outpost |
-| `sea_flow_` | `std::vector<FlowCell>` | `sim_world.h:235` | **no** | same 8×5 shape, rebuilt by `init_grids` |
+| `sea_flow_` | `std::vector<FlowCell>` | `sim_world.h:235` | yes — `sea_flow` (schema v2; see §8) | same 8×5 shape, rebuilt by `init_grids` |
 | `sea_path_` | `std::vector<Vec2>` | `sim_world.h:238` | yes — `sea_path` (`.fbs:89`) | set from the sea `GridFront` (`battle_root.gd:54`) |
 
 If neither grid nor lane path exists, wave spawning falls back to `default_lane_path(front)` (`sim_world.cpp:129`): land y = 150, sea y = 250, x from −20 to 400.
@@ -105,7 +105,7 @@ One HQ serves both fronts — a raider from *either* front that reaches the righ
 | `next_raider_id_` | `int` | `sim_world.h:228` (starts 1) | yes — `next_raider_id` (`.fbs:79`) | count; raiders use 1.., defenders 10001.. | `spawn_raider` (`:134`) |
 | `next_defender_id_` | `int` | `sim_world.h:229` (starts 10001) | yes — `next_defender_id` (`.fbs:80`) | — | `spawn_defender` |
 | `waves_` | `std::vector<Wave>` | `sim_world.h:233` | yes — `waves` (`.fbs:85`) | `Wave` = `{float delay; int land_count; int sea_count; bool fired}` (`sim_world.h:105`) — delay in combat seconds; counts normally ≥ 0, not validated; `fired` is a flag, initially false (`.fbs:51`–`54`) | `add_wave` (`:444`), `clear_waves` (`:440`), `check_and_spawn_waves` (fires), `start_combat`/`reset_run` (clear `fired`), `debug_jump_wave`, `load_state`; GD: `load_level_json` builds from level JSON |
-| `grid_size_` | `Vec2i` | `sim_world.h:236` | **no** (see §8.3) | cells; 8×5 today | `init_grids` only |
+| `grid_size_` | `Vec2i` | `sim_world.h:236` | yes — `grid_width` / `grid_height` (schema v2; 0 means uninitialized) | cells; 8×5 today | `init_grids` only |
 
 Victory condition (all shared): `in_combat_ && combat_time_ >= victory_time_ && raider_count() == 0 && all waves fired` (`tick`, `sim_world.cpp:508`). Defeat is `hq_hp_ <= 0` (emitted as `hq_destroyed`).
 
@@ -128,7 +128,7 @@ Victory condition (all shared): `in_combat_ && combat_time_ >= victory_time_ && 
 | `struck_outpost` | `bool` | yes (`.fbs:45`) | one-shot outpost strike flag | advance (lane: `path_i >= outpost_path_i`; flow: `cell.x >= grid_size_.x/2`) |
 | `alive` | `bool` | yes (`.fbs:46`) | — | combat/hero/debug kills, HQ arrival |
 | `position` | `Vec2` | yes (`.fbs:47`) | world px | advance functions per tick |
-| `entry_row` | `int` | **no** | grid row (0..height−1) or −1 | `spawn_raider`/`pick_entry_row`/`debug_spawn_raider_at` |
+| `entry_row` | `int` | yes — `entry_row` (schema v2, default −1) | grid row (0..height−1) or −1 | `spawn_raider`/`pick_entry_row`/`debug_spawn_raider_at` |
 
 Spawn cap: `spawn_raider` refuses when `raiders_.size() >= 40` (`sim_world.cpp:136`).
 
@@ -189,24 +189,32 @@ If the JSON has no `waves` array (or yields no dictionary entries), `load_level_
 
 ### 8. FlatBuffers snapshot coverage (S4)
 
-`SimWorld::save_state` (`sim_world.cpp:820`) serializes to the schema in `game/src/schema/simulation_state.fbs` (`root_type SimulationState`, `schema_version:int = 1`); `SimulationCore.save_state()`/`load_state()` expose it to Godot, and `OfflinePersistence.write_snapshot`/`read_snapshot` (`game/scripts/data/offline_persistence.gd`) persist the bytes at `user://mf_slice0_snapshot.bin`. `BattleRoot` saves on **S**/Save, auto-saves at run end (`battle_root.gd:492`), and resumes via `GameSession.resume_snapshot_on_next_battle` (`battle_root.gd:70`). The schema header comment already names its second purpose: "Used for offline save/load and later net replication."
+`SimWorld::save_state` serializes to the schema in `game/src/schema/simulation_state.fbs` (`root_type SimulationState`). New snapshots write `schema_version` 2. `SimulationCore.save_state()`/`load_state()` expose it to Godot, and `OfflinePersistence.write_snapshot`/`read_snapshot` (`game/scripts/data/offline_persistence.gd`) persist the bytes at `user://mf_slice0_snapshot.bin`. `BattleRoot` saves on **S**/Save, auto-saves at run end, and resumes via `GameSession.resume_snapshot_on_next_battle`. The schema header comment already names its second purpose: "Used for offline save/load and later net replication." File:line cites elsewhere in this doc are the T41 baseline and are not renumbered here.
 
 ### 8.1 What the snapshot covers
 
-Every scalar and collection in §2–§5 marked "yes" — i.e. the full `SimulationState` table: both economies, HQ, both outposts, kill/place counters, phase/clock/wave index, build/victory timers, income accumulator, both id allocators, all defenders (including travel and cross-front multiplier state), all raiders (including lane paths and the strike flag), the wave schedule, both lane paths, and `schema_version`.
+Every scalar and collection in §2–§5 marked "yes", plus the schema v2 fields: `grid_width` / `grid_height`, both `land_flow` and `sea_flow` (`FlowCell` cost, direction, solid), `Raider.entry_row`, and the DDA inputs `dda_enabled`, `dda_wave_open`, `dda_wave_spawn_time`, `dda_last_clear_seconds`, and `dda_purse_baseline`. That is both economies, HQ, both outposts, kill/place counters, phase/clock/wave index, build/victory timers, income accumulator, both id allocators, all defenders (including travel and cross-front multiplier state), all raiders (including lane paths, the strike flag, and entry row), the wave schedule, both lane paths, and `schema_version`.
 
-### 8.2 Load-time guards in `load_state` (`sim_world.cpp:877`)
+DDA inputs are the scalars `dda_intensity()` does not recompute from HQ, outposts, and currency. With them stored, a v2 resume makes the same next-wave count and HP decision as the run that was saved.
 
-FlatBuffers verification runs first (`VerifySimulationStateBuffer`); then: `land/sea_outpost_max` kept only if > 0, `build_phase_seconds`/`victory_time` only if > 0, `next_raider_id`/`next_defender_id` only if > 0 (else 1 / 10001), raider `max_hp` falls back to `hp`, defender `travel_duration` falls back to 1.6 s. Other serialized scalars are copied without semantic validation; missing vectors become empty, missing entity strings become empty, and missing Vec2 structs retain zero defaults on the newly constructed entities. `schema_version` is a snapshot-only `int` (`.fbs:92`), always written as 1 and **not checked on load**; there is no corresponding `SimWorld` member. FlatBuffers verification checks buffer structure, not HP/count/front/range invariants.
+### 8.2 Load-time guards in `load_state`
 
-### 8.3 In runtime state but NOT in the snapshot — real findings
+FlatBuffers verification runs first (`VerifySimulationStateBuffer`); then: `land/sea_outpost_max` kept only if > 0, `build_phase_seconds`/`victory_time` only if > 0, `next_raider_id`/`next_defender_id` only if > 0 (else 1 / 10001), raider `max_hp` falls back to `hp`, defender `travel_duration` falls back to 1.6 s. Other serialized scalars are copied without semantic validation; missing vectors become empty, missing entity strings become empty, and missing Vec2 structs retain zero defaults on the newly constructed entities. `schema_version` is a snapshot-only `int`. There is no corresponding `SimWorld` member. FlatBuffers verification checks buffer structure, not HP/count/front/range invariants.
 
-These pieces of `SimWorld` state exist at runtime and are lost (or rebuilt by fixed setup) across save/load:
+`schema_version` selects the flow and DDA rules:
 
-1. **`land_flow_` / `sea_flow_` and `grid_size_` (flow-field grids).** Not serialized. `load_state` leaves existing grids/solids untouched. Fresh `BattleRoot` setup initializes 8×5 with outpost solids `(4,2)`. `_rebuild_placement_from_sim` adds solids only for stationary non-heroes; it does not clear old C++ solids on an in-session load. Occupants are rebuilt from current positions for any in-bounds defender, including travelers, rather than restoring reserved destinations. Hero redeploy clears the origin and reserves the destination during play, but that destination solid is not reconstructed on fresh load (even for an arrived hero). Thus load is not an exact reconstruction of flow or placement locks. Loading flow raiders into a new core without `init_grids` leaves them stationary: their paths are empty and `tick` has no active flow to advance them. Only future wave spawns choose lane/default paths in that situation.
-2. **`Raider.entry_row`.** Not serialized (no field in the `.fbs` Raider table, not written by `save_state`, not restored by `load_state` — it keeps the struct default −1). A flow-mode raider that is still off-grid (left of column 0) when saved will, after load, steer toward the mid row fallback instead of its assigned row (`advance_raider_along_flow`, `sim_world.cpp:597`). Minor today (spawns enter at column 0 quickly) but it is a genuine schema gap.
-3. **Debug/cheat flags: `infinite_land_`, `infinite_sea_` (`sim_world.h:245`/`246`), `invincible_` (`:247`), `waves_disabled_` (`:248`).** All four are `bool`, default false, no units; mutated by `debug_set_infinite_resources`, `debug_set_invincible`, `debug_set_waves_disabled`, and cleared by `reset_run`. Not serialized. A cheated run saved mid-combat and reloaded in a fresh process resumes with cheats off (in-session loads keep current values because `load_state` does not touch these members). The source does not establish whether this omission is intentional; it means the snapshot alone does not fully reconstruct observed behavior.
-4. **No snapshot for `SimulationCore`'s EnTT registry** (`simulation_core.h:21`) — its `Position`/`Velocity`/`Health` components are legacy scaffolding (`spawn_entity`/`_process`, unused by the dual-front battle) and carry no game state. Listed only to preempt "is anything else alive in C++?" questions.
+- **Version ≥ 2.** `grid_width` and `grid_height` replace `grid_size_`. Both must be 0 (grids cleared) or both positive and each flow vector must be exactly `width * height` cells (otherwise `load_state` returns false before mutating). Each cell's cost, direction, and solid bit are copied, not recomputed. DDA enable, wave-open, spawn time, last clear, and purse baseline are copied. A baseline of 0 is stored as 1, matching `dda_intensity()`. `entry_row` is copied (older raiders that omit the field read as −1).
+- **Version 1 (snapshots written before these fields existed).** Flow grids and `grid_size_` on the receiver are left alone. The DDA enable flag is left alone. The clear sample is dropped and the purse baseline rebases to the loaded land+sea total. A pre-change fixture in `game/tests/native/fixtures/s4_v1_midcombat.bin` locks this.
+
+Either version, on success, clears the four cheat flags. A failed verification or a rejected v2 grid does not clear them, because `load_state` returns before mutating.
+
+### 8.3 Findings from T41 / T38 — resolution (T47)
+
+1. **`land_flow_` / `sea_flow_` and `grid_size_`.** Resolved for schema v2: both grids and the size are stored and restored exactly, including solids. A fresh core that never called `init_grids` can advance flow raiders after load. v1 snapshots still leave the receiver's grids in place, so an old save loaded into a core that has not set up grids still cannot move pathless raiders. GDScript placement mirrors (`GridFront.occupants`, `BattleRoot.cell_by_defender` in §9) are still outside this snapshot. C++ solids no longer depend on `_rebuild_placement_from_sim` to exist after a v2 load; that GDScript rebuild can still disagree with the restored solids until it is taught to trust them.
+2. **`Raider.entry_row`.** Resolved for schema v2. An off-grid flow raider keeps its assigned row across save/load. v1 raiders still load as −1 and steer to the mid-row fallback until they are on a cell.
+3. **Debug/cheat flags: `infinite_land_`, `infinite_sea_`, `invincible_`, `waves_disabled_`.** Deliberately not persisted. They are dev-session toggles, not raid state, and a saved run must not resume god mode in a fresh process or after an in-session load. Every successful `load_state` sets all four to false. `reset_run` still clears them too.
+4. **DDA enable flag and its inputs (T38).** Resolved for schema v2, as listed in §8.1. v1 keeps the old session-flag / rebase behavior described in §8.2, so resumed decisions from an old snapshot can still differ from uninterrupted play until the next clear.
+5. **No snapshot for `SimulationCore`'s EnTT registry** (`simulation_core.h`) — its `Position`/`Velocity`/`Health` components are legacy scaffolding (`spawn_entity`/`_process`, unused by the dual-front battle) and carry no game state. Still omitted on purpose.
 
 ### 9. GDScript state: presentation and gameplay orchestration
 
@@ -262,7 +270,7 @@ A per-tick delta does not need new concepts — it is a diff over the existing `
 - **Shared:** hq_hp changes, wave-fired index, `in_combat`/`current_wave`/clock transitions, victory/defeat, build countdown, pause/speed/step decisions and level identity (§9); any other snapshot field that changes must be replicated or explicitly derived.
 - **On join or resync:** the full snapshot (already implemented and verified by `flatbuffers_smoke.gd`) is the state-transfer primitive; deltas only need to cover the gap between snapshots.
 
-Schema work this implies (a `schema_version` bump, not a change to the shipped v1 file): add the flow grids (or their solid masks + `grid_size_`) and `Raider.entry_row` and include the gameplay orchestration/placement state in §9 before claiming exact reconstruction, and decide whether cheat flags belong in a dev-only snapshot variant.
+Schema v2 (appended fields; v1 buffers still load) now carries the flow grids, `grid_size_`, `Raider.entry_row`, and the DDA inputs. Cheat flags stay out of the snapshot and reset on load. Exact reconstruction still also needs the gameplay orchestration and placement mirrors in §9.
 
 ### Open questions
 

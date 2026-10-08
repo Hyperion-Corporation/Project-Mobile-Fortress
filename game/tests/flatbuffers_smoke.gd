@@ -75,6 +75,40 @@ func _init() -> void:
 	if not sim.load_state(bytes2):
 		failures.append("second load_state failed")
 
+	# Schema v2: flow grids, off-grid entry_row, and DDA inputs survive a load
+	# into a fresh core. Cheat flags are reset on load.
+	sim.init_grids(Vector2i(8, 5))
+	sim.set_cell_solid(0, Vector2i(1, 0), true)
+	sim.set_dda_enabled(true)
+	sim.gain(0, 40)
+	var intensity_before: float = sim.get_dda_intensity()
+	var flow_id: int = sim.spawn_raider(0, PackedVector2Array(), 30.0, 20.0, 4.0, -1, 0)
+	if flow_id <= 0:
+		failures.append("flow raider spawn failed")
+	sim.debug_set_infinite_resources(0, true)
+	sim.debug_set_invincible(true)
+	sim.debug_set_waves_disabled(true)
+	var flow_bytes: PackedByteArray = sim.save_state()
+	var fresh: Node = ClassDB.instantiate("SimulationCore")
+	root.add_child(fresh)
+	if not fresh.load_state(flow_bytes):
+		failures.append("fresh load of flow snapshot failed")
+	if not fresh.flow_active():
+		failures.append("flow grids not restored on a fresh core")
+	if not fresh.dda_enabled():
+		failures.append("dda flag not restored")
+	if not is_equal_approx(float(fresh.get_dda_intensity()), intensity_before):
+		failures.append("dda intensity not restored (%s vs %s)" % [fresh.get_dda_intensity(), intensity_before])
+	if fresh.debug_infinite_resources(0) or fresh.debug_invincible() or fresh.debug_waves_disabled():
+		failures.append("cheat flags survived load")
+	var found_row := false
+	for raider in fresh.get_raiders():
+		if int(raider.get("id", -1)) == flow_id and int(raider.get("entry_row", -99)) == 0:
+			found_row = true
+	if not found_row:
+		failures.append("entry_row not restored")
+	fresh.queue_free()
+
 	sim.queue_free()
 	_finish(failures)
 

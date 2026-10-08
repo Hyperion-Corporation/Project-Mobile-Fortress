@@ -859,7 +859,7 @@ std::vector<uint8_t> SimWorld::save_state() const {
 		MobileFortress::Schema::Vec2 pos(r.position.x, r.position.y);
 		fbs_raiders.push_back(CreateRaider(
 				builder, r.id, r.front, path_vec, r.hp, r.max_hp, r.speed, r.damage, r.path_i,
-				r.outpost_path_i, r.struck_outpost, r.alive, &pos));
+				r.outpost_path_i, r.struck_outpost, r.alive, &pos, r.entry_row));
 	}
 	std::vector<flatbuffers::Offset<MobileFortress::Schema::Wave>> fbs_waves;
 	fbs_waves.reserve(waves_.size());
@@ -876,13 +876,27 @@ std::vector<uint8_t> SimWorld::save_state() const {
 	for (const auto &p : sea_path_) {
 		sea_pts.emplace_back(p.x, p.y);
 	}
+	auto pack_flow = [&builder](const std::vector<FlowCell> &grid) {
+		std::vector<MobileFortress::Schema::FlowCell> cells;
+		cells.reserve(grid.size());
+		for (const auto &c : grid) {
+			const MobileFortress::Schema::Vec2i dir(c.dir.x, c.dir.y);
+			cells.emplace_back(c.cost, dir, c.solid);
+		}
+		return builder.CreateVectorOfStructs(cells);
+	};
+	const auto land_flow = pack_flow(land_flow_);
+	const auto sea_flow = pack_flow(sea_flow_);
+	// 2 = flow grids, grid size, entry_row, and DDA inputs. See simulation_state.fbs.
 	auto state = CreateSimulationState(
 			builder, land_resources_, sea_resources_, hq_hp_, hq_max_hp_, land_outpost_hp_, sea_outpost_hp_,
 			land_outpost_max_, sea_outpost_max_, land_outpost_alive_, sea_outpost_alive_, enemies_killed_,
 			units_placed_, in_combat_, combat_time_, current_wave_, build_phase_seconds_, victory_time_,
 			income_acc_, next_raider_id_, next_defender_id_, builder.CreateVector(fbs_defenders),
 			builder.CreateVector(fbs_raiders), builder.CreateVector(fbs_waves),
-			builder.CreateVectorOfStructs(land_pts), builder.CreateVectorOfStructs(sea_pts), 1);
+			builder.CreateVectorOfStructs(land_pts), builder.CreateVectorOfStructs(sea_pts), 2, grid_size_.x,
+			grid_size_.y, land_flow, sea_flow, dda_enabled_, dda_wave_open_, dda_wave_spawn_time_,
+			dda_last_clear_seconds_, dda_purse_baseline_);
 	builder.Finish(state);
 	std::vector<uint8_t> out(builder.GetSize());
 	std::memcpy(out.data(), builder.GetBufferPointer(), builder.GetSize());
@@ -901,6 +915,29 @@ bool SimWorld::load_state(const uint8_t *data, size_t size) {
 	const SimulationState *state = GetSimulationState(data);
 	if (state == nullptr) {
 		return false;
+	}
+	const int schema_version = state->schema_version();
+	int flow_w = 0;
+	int flow_h = 0;
+	size_t flow_n = 0;
+	if (schema_version >= 2) {
+		flow_w = state->grid_width();
+		flow_h = state->grid_height();
+		if (flow_w < 0 || flow_h < 0 || (flow_w == 0) != (flow_h == 0)) {
+			return false;
+		}
+		if (flow_w > 0) {
+			if (flow_w > 4096 || flow_h > 4096) {
+				return false;
+			}
+			flow_n = static_cast<size_t>(flow_w) * static_cast<size_t>(flow_h);
+			const auto *land_cells = state->land_flow();
+			const auto *sea_cells = state->sea_flow();
+			if (land_cells == nullptr || sea_cells == nullptr || land_cells->size() != flow_n ||
+					sea_cells->size() != flow_n) {
+				return false;
+			}
+		}
 	}
 	land_resources_ = state->land_resources();
 	sea_resources_ = state->sea_resources();
@@ -994,6 +1031,7 @@ bool SimWorld::load_state(const uint8_t *data, size_t size) {
 					}
 				}
 			}
+			cr.entry_row = r->entry_row();
 			raiders_.push_back(cr);
 		}
 	}
@@ -1022,11 +1060,47 @@ bool SimWorld::load_state(const uint8_t *data, size_t size) {
 			}
 		}
 	}
-	// A4 clear-time is not in the snapshot. Drop it and rebase purse so the
-	// next unspawned wave uses HQ, outposts, and post-load economy only.
-	// The enable flag is session state and is left alone.
-	reset_dda_observation();
-	dda_purse_baseline_ = std::max<int64_t>(1, static_cast<int64_t>(land_resources_) + sea_resources_);
+	if (schema_version >= 2) {
+		if (flow_n == 0) {
+			grid_size_ = Vec2i(0, 0);
+			land_flow_.clear();
+			sea_flow_.clear();
+		} else {
+			auto read_grid = [](const auto *cells, size_t n, std::vector<FlowCell> &out) {
+				out.resize(n);
+				for (size_t i = 0; i < n; ++i) {
+					const auto *c = cells->Get(static_cast<flatbuffers::uoffset_t>(i));
+					FlowCell cell;
+					if (c != nullptr) {
+						cell.cost = c->cost();
+						const auto dir = c->dir();
+						cell.dir = Vec2i(dir.x(), dir.y());
+						cell.solid = c->solid();
+					}
+					out[i] = cell;
+				}
+			};
+			read_grid(state->land_flow(), flow_n, land_flow_);
+			read_grid(state->sea_flow(), flow_n, sea_flow_);
+			grid_size_ = Vec2i(flow_w, flow_h);
+		}
+		dda_enabled_ = state->dda_enabled();
+		dda_wave_open_ = state->dda_wave_open();
+		dda_wave_spawn_time_ = state->dda_wave_spawn_time();
+		dda_last_clear_seconds_ = state->dda_last_clear_seconds();
+		const int64_t baseline = state->dda_purse_baseline();
+		dda_purse_baseline_ = baseline > 0 ? baseline : 1;
+	} else {
+		// v1 has no flow or DDA fields. Keep the receiver's grids and enable
+		// flag; drop the clear sample and rebase the purse, as before.
+		reset_dda_observation();
+		dda_purse_baseline_ = std::max<int64_t>(1, static_cast<int64_t>(land_resources_) + sea_resources_);
+	}
+	// Cheats are session-local. A resumed or reloaded run starts clean.
+	infinite_land_ = false;
+	infinite_sea_ = false;
+	invincible_ = false;
+	waves_disabled_ = false;
 	return true;
 }
 

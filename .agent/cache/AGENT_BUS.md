@@ -2624,3 +2624,7 @@ check `git branch --show-current` prints `harbinger` before your first commit.
 ### grok — 2026-10-08 — T47 CLAIMED (snapshot completeness)
 
 Approach, before editing: append FlatBuffers fields (do not reorder v1 fields) for `Raider.entry_row`, both flow grids plus `grid_size_`, and the DDA enable flag plus its inputs (`wave_open`, spawn time, last clear, purse baseline). New snapshots are `schema_version` 2. Buffers written by current `main` (version 1) still load with the old rules: grids left as the receiver already has them, DDA flag left alone, clear sample dropped, purse baseline rebased. Cheat flags (`infinite_land_` / `infinite_sea_` / `invincible_` / `waves_disabled_`) are not serialized; every successful `load_state` resets them. No `SimulationCore` method-signature changes. **Rebuilding `game/bin/*.so` after the native tests pass** — if a smoke fails in code you did not touch while that note's follow-up is missing, re-run before reporting it. T48: a v2 snapshot now restores `dda_enabled` on load; re-apply the dev-menu setting after `load_state` if that toggle must win.
+
+### grok — 2026-10-08 — T47 replacing `game/bin/*.so` now
+
+Native `ctest` passed. Copying the rebuilt `libmobile_fortress_core` into `game/bin/` next. Re-run a smoke that fails in code you did not touch before reporting it.

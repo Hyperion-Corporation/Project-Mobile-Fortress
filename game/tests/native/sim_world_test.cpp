@@ -495,7 +495,7 @@ TEST_CASE("A4 intensity rises when the player is dominating and clamps") {
 	CHECK(world.dda_intensity() == doctest::Approx(1.0f));
 }
 
-TEST_CASE("A4 two identical runs stay deterministic and load drops the clear sample") {
+TEST_CASE("A4 two identical runs stay deterministic and load keeps DDA inputs") {
 	auto play = []() {
 		SimWorld world;
 		world.reset_run(14, 14, 100);
@@ -530,19 +530,16 @@ TEST_CASE("A4 two identical runs stay deterministic and load drops the clear sam
 	CHECK(restored.dda_enabled());
 	CHECK(restored.hq_hp() == first.hq_hp());
 	CHECK(restored.land_resources() == first.land_resources());
-	// Clear sample is dropped and the purse baseline is rebased to the loaded
-	// purse, so the stockpile and fast-clear bonuses are gone. HQ damage
-	// still comes from the snapshot, which keeps intensity under the neutral 1.
-	CHECK(restored.dda_intensity() < 1.0f);
-	CHECK(restored.dda_intensity() > SimWorld::DDA_INTENSITY_MIN);
+	// Schema v2 keeps the clear sample and the purse baseline, so intensity
+	// matches the run that was saved. HQ damage still comes from the snapshot.
 	CHECK(first.dda_intensity() > 1.0f);
-	CHECK(restored.dda_intensity() < first.dda_intensity());
+	CHECK(restored.dda_intensity() == doctest::Approx(first.dda_intensity()));
 
 	SimWorld fresh;
 	CHECK_FALSE(fresh.dda_enabled());
 	REQUIRE(fresh.load_state(blob.data(), blob.size()));
-	CHECK_FALSE(fresh.dda_enabled());
-	CHECK(fresh.dda_intensity() == doctest::Approx(1.0f));
+	CHECK(fresh.dda_enabled());
+	CHECK(fresh.dda_intensity() == doctest::Approx(first.dda_intensity()));
 }
 
 TEST_CASE("A4 combined purse does not overflow valid per-front balances") {
@@ -556,5 +553,146 @@ TEST_CASE("A4 combined purse does not overflow valid per-front balances") {
 	CHECK(world.dda_intensity() == doctest::Approx(1.0f - SimWorld::DDA_PURSE_WEIGHT / 6.0f));
 	const auto blob = world.save_state();
 	REQUIRE(world.load_state(blob.data(), blob.size()));
-	CHECK(world.dda_intensity() == doctest::Approx(1.0f));
+	CHECK(world.dda_intensity() == doctest::Approx(1.0f - SimWorld::DDA_PURSE_WEIGHT / 6.0f));
+}
+
+namespace {
+
+void expect_flow_and_raiders_match(const SimWorld &a, const SimWorld &b) {
+	check_same_run(snap_of(a), snap_of(b));
+	CHECK(a.dda_enabled() == b.dda_enabled());
+	CHECK(a.flow_active() == b.flow_active());
+	REQUIRE(a.raiders().size() == b.raiders().size());
+	for (size_t i = 0; i < a.raiders().size(); ++i) {
+		CHECK(a.raiders()[i].entry_row == b.raiders()[i].entry_row);
+		CHECK(a.raiders()[i].position.x == doctest::Approx(b.raiders()[i].position.x));
+		CHECK(a.raiders()[i].position.y == doctest::Approx(b.raiders()[i].position.y));
+		CHECK(a.raiders()[i].hp == doctest::Approx(b.raiders()[i].hp));
+	}
+	CHECK(a.defender_count() == b.defender_count());
+	if (!a.flow_active()) {
+		return;
+	}
+	for (int front = 0; front < 2; ++front) {
+		for (int y = 0; y < 5; ++y) {
+			for (int x = 0; x < 8; ++x) {
+				const Vec2i cell(x, y);
+				CHECK(a.is_cell_solid(front, cell) == b.is_cell_solid(front, cell));
+				CHECK(a.flow_dir_at(front, cell) == b.flow_dir_at(front, cell));
+			}
+		}
+	}
+}
+
+SimWorld mid_combat_flow_world() {
+	SimWorld world;
+	world.reset_run(40, 18, 100);
+	world.gain(0, 20);
+	world.damage_hq(10);
+	world.init_grids(8, 5);
+	world.set_cell_solid(0, Vec2i(1, 0), true);
+	world.set_cell_solid(1, Vec2i(4, 2), true);
+	world.set_lane_path(0, kLongLane);
+	world.set_lane_path(1, kLongLane);
+	world.set_victory_time(300.0f);
+	world.set_dda_enabled(true);
+	world.add_wave(0.0f, 2, 1);
+	world.add_wave(1.2f, 3, 2);
+	world.spawn_defender(0, "spearman", Vec2(-500.0f, -500.0f), 10.0f, 4.0f, 0.5f);
+	world.start_combat();
+	world.tick(0.05, false);
+	world.debug_kill_all_raiders();
+	world.tick(0.05, false);
+	const int id = world.spawn_raider(0, {}, 36.0f, 28.0f, 6.0f, -1, 4);
+	REQUIRE(id > 0);
+	REQUIRE_FALSE(world.raiders().empty());
+	CHECK(world.raiders().back().entry_row == 4);
+	CHECK(world.dda_intensity() > 1.0f);
+	return world;
+}
+
+} // namespace
+
+TEST_CASE("schema v2 save/load then N ticks matches uninterrupted flow combat with DDA on") {
+	SimWorld live = mid_combat_flow_world();
+	const auto blob = live.save_state();
+	REQUIRE_FALSE(blob.empty());
+
+	SimWorld resumed;
+	CHECK_FALSE(resumed.flow_active());
+	CHECK_FALSE(resumed.dda_enabled());
+	REQUIRE(resumed.load_state(blob.data(), blob.size()));
+	expect_flow_and_raiders_match(live, resumed);
+	CHECK(resumed.is_cell_solid(0, Vec2i(1, 0)));
+	CHECK(resumed.is_cell_solid(1, Vec2i(4, 2)));
+	CHECK_FALSE(resumed.is_cell_solid(0, Vec2i(0, 0)));
+	REQUIRE_FALSE(resumed.raiders().empty());
+	CHECK(resumed.raiders().back().entry_row == 4);
+
+	SimWorld cheated = live;
+	cheated.debug_set_infinite_resources(0, true);
+	cheated.debug_set_infinite_resources(1, true);
+	cheated.debug_set_invincible(true);
+	cheated.debug_set_waves_disabled(true);
+	const auto cheat_blob = cheated.save_state();
+	REQUIRE(cheated.load_state(cheat_blob.data(), cheat_blob.size()));
+	CHECK_FALSE(cheated.debug_infinite_resources(0));
+	CHECK_FALSE(cheated.debug_infinite_resources(1));
+	CHECK_FALSE(cheated.debug_invincible());
+	CHECK_FALSE(cheated.debug_waves_disabled());
+	CHECK(cheated.dda_enabled());
+	CHECK(cheated.flow_active());
+	CHECK(cheated.is_cell_solid(0, Vec2i(1, 0)));
+
+	constexpr int kTicks = 130;
+	constexpr double kDt = 1.0 / 30.0;
+	for (int i = 0; i < kTicks; ++i) {
+		live.tick(kDt, true);
+		resumed.tick(kDt, true);
+	}
+	expect_flow_and_raiders_match(live, resumed);
+	CHECK(live.current_wave() >= 2);
+	CHECK(live.raider_count() > 1);
+}
+
+#include "fixtures/s4_v1_midcombat.inc"
+
+TEST_CASE("schema v1 snapshot still loads and does not invent flow or DDA") {
+	REQUIRE(s4_v1_midcombat_len > 16);
+	SimWorld fresh;
+	REQUIRE(fresh.load_state(s4_v1_midcombat, s4_v1_midcombat_len));
+	CHECK(fresh.land_resources() == 21);
+	CHECK(fresh.sea_resources() == 22);
+	CHECK(fresh.hq_hp() == 77);
+	CHECK(fresh.defender_count() == 1);
+	CHECK(fresh.raider_count() == 1);
+	REQUIRE_FALSE(fresh.raiders().empty());
+	CHECK(fresh.raiders()[0].entry_row == -1);
+	CHECK_FALSE(fresh.flow_active());
+	CHECK_FALSE(fresh.dda_enabled());
+	CHECK(fresh.dda_intensity() == doctest::Approx(1.0f));
+	CHECK_FALSE(fresh.debug_infinite_resources(0));
+	CHECK_FALSE(fresh.debug_invincible());
+	CHECK_FALSE(fresh.debug_waves_disabled());
+
+	SimWorld primed;
+	primed.init_grids(8, 5);
+	primed.set_cell_solid(0, Vec2i(3, 1), true);
+	primed.set_dda_enabled(true);
+	primed.gain(0, 50);
+	primed.debug_set_infinite_resources(0, true);
+	primed.debug_set_invincible(true);
+	primed.debug_set_waves_disabled(true);
+	REQUIRE(primed.load_state(s4_v1_midcombat, s4_v1_midcombat_len));
+	CHECK(primed.flow_active());
+	CHECK(primed.is_cell_solid(0, Vec2i(3, 1)));
+	CHECK(primed.dda_enabled());
+	CHECK(primed.land_resources() == 21);
+	REQUIRE_FALSE(primed.raiders().empty());
+	CHECK(primed.raiders()[0].entry_row == -1);
+	CHECK_FALSE(primed.debug_infinite_resources(0));
+	CHECK_FALSE(primed.debug_invincible());
+	CHECK_FALSE(primed.debug_waves_disabled());
+	// v1 rebases the purse to the loaded wallets and drops the clear sample.
+	CHECK(primed.dda_intensity() == doctest::Approx(1.0f));
 }

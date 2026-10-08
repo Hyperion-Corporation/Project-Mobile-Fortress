@@ -204,14 +204,18 @@ public:
 	//                   stockpiling or going broke is the signal.
 	//
 	// No RNG. The director stores a handful of scalars. It does not allocate.
-	// The enable flag is session state: reset_run and load_state keep it.
-	// The clear sample is dropped on reset_run, start_combat, debug_jump_wave,
-	// and load_state, and load_state rebases the purse baseline to the loaded
-	// purse. HQ, outposts, and currency themselves still come from the
-	// snapshot. Resumed decisions are deterministic from the loaded state,
-	// but can differ from uninterrupted play: the missing clear sample lasts
-	// until the next wave clears, and the rebased purse lasts until reset/load.
-	// FlatBuffers is unchanged.
+	// Schema v2 snapshots store the enable flag and the inputs that
+	// `dda_intensity()` does not recompute from HQ/outposts/currency: whether
+	// a wave is still open, that wave's spawn time, the last clear sample, and
+	// the purse baseline. `load_state` of a v2 buffer restores those, so a
+	// resumed run makes the same next-wave decision as uninterrupted play.
+	// A v1 buffer has none of those fields: the enable flag stays whatever the
+	// receiver already had, the clear sample is dropped, and the purse
+	// baseline rebases to the loaded currency (the pre-v2 rule).
+	// `reset_run`, `start_combat`, and `debug_jump_wave` still drop the clear
+	// sample. `reset_run` keeps the enable flag and recaptures the baseline.
+	// DT1/DT2 cheat flags are not in the snapshot. Every successful
+	// `load_state` turns them off.
 
 	std::vector<SimEvent> tick(double delta, bool income_enabled = true);
 

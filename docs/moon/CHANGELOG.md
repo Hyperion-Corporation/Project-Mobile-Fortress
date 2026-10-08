@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed (2026-10-08, T47 snapshot completeness — S4/S5)
+
+- **S4 / S5:** Schema v2 appends `Raider.entry_row`, `grid_width` / `grid_height`, both flow grids (cost, direction, solid), and the DDA inputs (`dda_enabled`, wave-open, spawn time, last clear, purse baseline). `save_state` / `load_state` round-trip them. A resumed mid-combat run with flow grids live and DDA on matches the same ticks without the round trip (`sim_world_tests`). Snapshots written before this change are version 1: they still load, leave the receiver's grids and DDA flag alone, drop the clear sample, and rebase the purse. Fixture: `game/tests/native/fixtures/s4_v1_midcombat.bin`.
+- DT1/DT2 cheat flags are not stored. Every successful `load_state` turns infinite resources, invulnerability, and disabled waves off. `SimulationCore` method signatures are unchanged. `flatbuffers_smoke.gd` covers a fresh-core restore of flow, entry row, and DDA, and the cheat reset.
+- `docs/design/dual_front_state_schema.md` §8 marks the T41/T38 gaps resolved or, for cheat flags and the legacy EnTT registry, deliberately omitted.
+
 ### Added (2026-10-08, T46 U8 mobile touch-target sizing & responsive menu reflow)
 
 - **U8 (Menu & Settings):** Density-aware touch target sizing (`ThemeTokens.compute_density_min_size`, `ThemeTokens.apply_density_min_height`) scales interactive controls to ≥48dp in actual rendered window pixels under Godot 4 `canvas_items`/`expand` stretch across desktop, portrait, and phone viewports (`1280×720`, `720×1280`, `390×844`, `844×390`).

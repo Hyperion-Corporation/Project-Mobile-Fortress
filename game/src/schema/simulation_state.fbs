@@ -8,6 +8,18 @@ struct Vec2 {
   y:float;
 }
 
+struct Vec2i {
+  x:int;
+  y:int;
+}
+
+// One flow-field cell. Appended in schema v2; absent from v1 snapshots.
+struct FlowCell {
+  cost:int;
+  dir:Vec2i;
+  solid:bool;
+}
+
 table Defender {
   id:int;
   front:int;
@@ -45,6 +57,8 @@ table Raider {
   struck_outpost:bool = false;
   alive:bool = true;
   position:Vec2;
+  // Grid row used while a flow raider is still off-grid. -1 on v1 snapshots.
+  entry_row:int = -1;
 }
 
 table Wave {
@@ -88,8 +102,23 @@ table SimulationState {
   land_path:[Vec2];
   sea_path:[Vec2];
 
-  // Schema version for forward compatibility
+  // Schema version for forward compatibility.
+  // 1 = snapshots written before flow/DDA fields existed.
+  // 2 = also stores grid size, both flow grids, and DDA inputs.
   schema_version:int = 1;
+
+  // v2. Width/height 0 means grids were not initialized.
+  grid_width:int = 0;
+  grid_height:int = 0;
+  land_flow:[FlowCell];
+  sea_flow:[FlowCell];
+
+  // v2 DDA inputs. Cheat flags are intentionally absent (reset on load).
+  dda_enabled:bool = false;
+  dda_wave_open:bool = false;
+  dda_wave_spawn_time:float = 0.0;
+  dda_last_clear_seconds:float = -1.0;
+  dda_purse_baseline:int64 = 0;
 }
 
 root_type SimulationState;
