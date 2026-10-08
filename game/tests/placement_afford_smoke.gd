@@ -131,6 +131,32 @@ func _check_battle(failures: Array[String]) -> void:
 		if battle.sim.get_land_resources() != 0:
 			failures.append("spearman should spend the land wallet")
 
+	# Infinite-wallet cheats must still reach SimWorld.spend with an empty purse.
+	battle.sim.debug_set_resources(0, 0)
+	battle.sim.debug_set_resources(1, 0)
+	battle.sim.debug_set_infinite_resources(0, true)
+	battle.selected_unit_id = "spearman"
+	land_cell = _first_placeable(battle.land_grid)
+	defs_before = battle.sim.get_defender_count()
+	if not battle._preview_valid_for(battle.land_grid, land_cell):
+		failures.append("infinite land wallet should allow placement preview")
+	battle._on_cell_clicked("land", land_cell)
+	if battle.sim.get_defender_count() != defs_before + 1:
+		failures.append("infinite land wallet should place Spearman with zero land")
+	if battle.sim.get_land_resources() != 0:
+		failures.append("infinite land placement should not deduct resources")
+	# Sea-currency support on land must use infinite own currency before fallback.
+	battle.sim.debug_set_infinite_resources(0, false)
+	battle.sim.debug_set_infinite_resources(1, true)
+	battle.sim.debug_set_resources(0, 20)
+	battle.selected_unit_id = "cross_support"
+	land_cell = _first_placeable(battle.land_grid)
+	defs_before = battle.sim.get_defender_count()
+	battle._on_cell_clicked("land", land_cell)
+	if battle.sim.get_defender_count() != defs_before + 1 or battle.sim.get_land_resources() != 20:
+		failures.append("infinite sea must pay before finite land fallback")
+	battle.sim.debug_set_infinite_resources(1, false)
+
 	battle.queue_free()
 	await process_frame
 

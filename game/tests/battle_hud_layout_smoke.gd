@@ -5,7 +5,7 @@ extends SceneTree
 ##   1280×720, 720×1280, 390×844, 844×390, with Large Text off and on.
 ## - No interactive controls overlap each other and none clip outside the viewport.
 ## - Rendered window pixel dimensions are measured via get_final_transform().basis_xform().
-## - Grid coverage at 1280×720 does not exceed baseline (0 px²).
+## - Grid coverage at 1280×720 does not exceed pre-T59 baseline (16640 px²).
 ## - Results panel displays citadel rank title and progress to the next rank.
 
 const ThemeTokensScript := preload("res://scripts/ui/theme_tokens.gd")
@@ -25,22 +25,10 @@ func _run() -> void:
 		_finish(failures)
 		return
 
-	# =========================================================================
-	# 1. Measure Baseline Grid Coverage at 1280×720
-	# =========================================================================
-	root.size = Vector2i(1280, 720)
-	var baseline_battle: Node2D = battle_scene.instantiate()
-	root.add_child(baseline_battle)
-	await process_frame
-	await process_frame
-
-	var land_rect: Rect2 = _get_grid_bounding_rect(baseline_battle.land_grid)
-	var sea_rect: Rect2 = _get_grid_bounding_rect(baseline_battle.sea_grid)
-	var baseline_covered: float = _compute_hud_grid_coverage(baseline_battle.hud, land_rect, sea_rect)
-	print("Baseline 1280x720 HUD grid coverage: %.1f px² (Land: %s, Sea: %s)" % [baseline_covered, land_rect, sea_rect])
-
-	baseline_battle.queue_free()
-	await process_frame
+	# Measured independently from 2250145^ at 1280×720, Large Text off:
+	# StatusLabel intersects the two grid bounding boxes by 16640 px².
+	# Never derive the reference from the HUD under test: that hides regressions.
+	var baseline_covered := 16640.0
 
 	# =========================================================================
 	# 2. Test Phone-Scale Targets across Viewports & Large Text

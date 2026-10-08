@@ -344,9 +344,7 @@ func _on_cell_clicked(front_id: String, cell: Vector2i) -> void:
 	var def: Dictionary = UnitDefs.get_def(selected_unit_id)
 	if def.is_empty():
 		return
-	var plan: Dictionary = UnitDefs.placement_plan(
-		selected_unit_id, front_id, sim.get_land_resources(), sim.get_sea_resources()
-	)
+	var plan: Dictionary = _selected_placement_plan(front_id)
 	if not bool(plan.get("allowed", false)):
 		status_message = (
 			"That unit is sea-only" if str(plan.get("reason", "")) == "sea_only"
@@ -723,6 +721,19 @@ func _clear_touch_previews() -> void:
 		sea_grid.clear_touch_preview()
 
 
+# Infinite wallets can pay even when the displayed balance is zero. Adapt those
+# balances once so placement and preview still share UnitDefs' wallet priority.
+func _selected_placement_plan(front_id: String) -> Dictionary:
+	var cost := int(UnitDefs.get_def(selected_unit_id).get("cost", 0))
+	var land: int = sim.get_land_resources()
+	var sea: int = sim.get_sea_resources()
+	if sim.debug_infinite_resources(0):
+		land = maxi(land, cost)
+	if sim.debug_infinite_resources(1):
+		sea = maxi(sea, cost)
+	return UnitDefs.placement_plan(selected_unit_id, front_id, land, sea)
+
+
 func _preview_valid_for(grid: GridFront, cell: Vector2i) -> bool:
 	if grid.occupants.has(cell):
 		return true
@@ -741,9 +752,7 @@ func _preview_valid_for(grid: GridFront, cell: Vector2i) -> bool:
 		for defender in sim.get_defenders():
 			if str(defender.type) == selected_unit_id:
 				return false
-	return UnitDefs.can_afford(
-		selected_unit_id, sim.get_land_resources(), sim.get_sea_resources(), grid.front_id
-	)
+	return str(_selected_placement_plan(grid.front_id).get("wallet", "")) != ""
 
 
 func _probe_grids(vp_pos: Vector2) -> bool:

@@ -3247,3 +3247,15 @@ Approach, before editing:
 - Third run per level: `save_state` mid-wave (after wave 2 fires), `load_state` into a fresh core, continue the same script, require the identical end buffer.
 - Negative control: one placement shifted by one tick must change the end digest.
 - Must stay under a few seconds in the normal runner; wall time reported in DONE.
+
+### Codex Harbinger — 2026-10-09 — T66 CLAIMED
+
+Reviewing DONE commits T59–T65 on harbinger, including shared progression, placement/damage behavior, independent checks and disposable-copy mutations. Will reproduce the reported compact-landscape menu regression, claim small fix-ups before editing, and record per-task verdicts in `.agent/reports/chat/` and this bus. No pushes or GitHub changes; no shared native-library replacements.
+
+### Codex Harbinger — 2026-10-09 — T66 small fix-ups CLAIMED
+
+Reproduced T61's QuitBtn clipping at 844×390 with a saved snapshot + last-run/history text; a clean profile conceals it. Claiming `main_menu.gd`, `accessibility_smoke.gd`, `battle_hud_layout_smoke.gd`, and U8/changelog for compact-menu space, returning-player/label containment coverage, and a fixed pre-T59 HUD coverage baseline (independently measured 16640 px² before and after). Also claiming small review-document accuracy updates to AGENTS/README, TESTING/VS10/cache README and affected roadmap notes. T64 has reproducible range/cooldown drift-test omissions, wrong cross-placement wallet, and rounded damage; broader website parity work will be HOLD with exact repros, not silently redesigned in review.
+
+### Codex Harbinger — 2026-10-09 — T66 placement regression fix CLAIMED
+
+T61 pre-check bypasses `SimWorld::spend`'s infinite-wallet allowance: zero land + infinite land now rejects Spearman, unlike pre-T61. Claiming `battle_root.gd`, `placement_afford_smoke.gd`, G12/changelog for a small adapter that passes effective infinite-wallet balances into the existing UnitDefs rule for placement and preview; no normal economy or native API change.

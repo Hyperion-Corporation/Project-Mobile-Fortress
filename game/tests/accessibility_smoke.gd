@@ -401,6 +401,16 @@ func _run() -> void:
 			root.size = vp_size
 			var test_menu: Control = menu_scene.instantiate()
 			root.add_child(test_menu)
+			# Exercise the largest ordinary menu: a returning player with a save
+			# and last-run/history summary, without depending on user:// contents.
+			test_menu.get_node("Center/VBox/ResumeBtn").show()
+			test_menu.get_node("Center/VBox/LastRunLabel").text = (
+				OfflinePersistence.format_results_summary({
+					"victory": true, "reason": "All waves cleared", "enemies_killed": 12,
+					"units_placed": 6, "sim": "C++", "stars": 3, "total_prestige": 870
+				}) + "\n"
+				+ "(20 run(s) in offline history)"
+			)
 			await process_frame
 			await process_frame
 			await create_timer(0.3).timeout
@@ -439,6 +449,11 @@ func _run() -> void:
 						all_menu_nodes.append(child as Control)
 			if menu_version != null:
 				all_menu_nodes.append(menu_version)
+
+			# Rank and history labels need containment too, not only buttons.
+			for ctrl: Control in all_menu_nodes:
+				if not vp_rect.encloses(ctrl.get_global_rect()):
+					failures.append("MainMenu content %s clips at vp %s (large_text=%s)" % [ctrl.name, vp_size, large_text_enabled])
 
 			for i in range(all_menu_nodes.size()):
 				for j in range(i + 1, all_menu_nodes.size()):

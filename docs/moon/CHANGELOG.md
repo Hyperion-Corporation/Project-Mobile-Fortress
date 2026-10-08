@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed (2026-10-09, T66 menu and review guards) — Codex Harbinger
+
+- Placement and preview preserve infinite-wallet mode with an empty purse, including own-wallet priority before a finite fallback. The new T61 affordability pre-check had rejected these placements.
+- Returning-player menus with Resume and history text no longer clip Quit at 844×390: compact landscape omits the introductory blurb and retains rank, history and full-size actions. Accessibility smoke now exercises that state and checks labels, including campaign rank, for containment.
+- Battle HUD coverage is checked against the independently measured pre-T59 16640 px² reference instead of measuring a baseline from the same implementation under test.
+
 ### Added (2026-10-08, T65 Godot-boundary determinism smoke — Muse Harbinger)
 
 - **Q4/S7:** New `game/tests/determinism_smoke.gd` (runs in `scripts/run_godot_smokes.sh`, sub-second) scripts a fixed-dt session through `SimulationCore` on every catalog level — fixed defender placements, combat at a fixed tick, run past the second wave — twice in fresh cores, requiring byte-identical `save_state` buffers; a third run saves mid-wave and resumes in a fresh core to the same end buffer. A one-tick placement shift must change the digest (proven: the built-in 1-tick control fires every passing run, and a disposable 7-tick-shifted duplicate fails the comparison). No C++ or level changes.

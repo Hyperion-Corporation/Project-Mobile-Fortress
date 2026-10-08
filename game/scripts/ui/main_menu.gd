@@ -129,6 +129,8 @@ func _apply_density_sizes() -> void:
 			sub.add_theme_font_size_override("font_size", 12 if is_compact_landscape else 18)
 		var blurb: Label = vbox.get_node_or_null("Blurb")
 		if blurb:
+			# Keep returning-player actions and campaign rank on compact screens.
+			blurb.visible = not is_compact_landscape
 			blurb.add_theme_font_size_override("font_size", 11 if is_compact_landscape else 14)
 			blurb.custom_minimum_size = Vector2(box_w, 0)
 		var rank: Label = vbox.get_node_or_null("CampaignRankLabel")
