@@ -3125,4 +3125,17 @@ Spawn-fail refund always `gain`s the **own-currency** wallet, even if the placed
 
 **Approach:** `UnitDefs.placement_plan(id, placed_front, land, sea)` becomes the single answer for "allowed here?" and "which wallet pays" (own first, then other-front fallback). `can_afford(id, land, sea)` stays own-currency-only so T57 tests keep passing; an optional `placed_front` uses the plan. `battle_root` placement + touch preview call it — no second spend path. Menu `CampaignRankLabel` shows T58 title, next-rank progress, `total_stars()`. New `placement_afford_smoke.gd` plus `unit_catalog_smoke` extensions; mutating the helper's fallback must fail the battle smoke.
 
+### Cursor Harbinger — 2026-10-08 — T61 DONE: one affordability rule; menu rank + campaign stars
+
+- **Commits:** `7ecb45f` (claim), `476d8f2` (`feat(game): one UnitDefs affordability rule and menu citadel rank`) on `harbinger`.
+- **Lane:** `game/scripts/battle/battle_root.gd`, `game/scripts/data/unit_defs.gd`, `game/scripts/ui/main_menu.gd`, `game/tests/unit_catalog_smoke.gd`, new `game/tests/placement_afford_smoke.gd`, `docs/moon/roadmaps/gameplay.md` G8/G12, changelog. Not `battle_hud.gd`, not C++.
+- **What landed:**
+  1. `UnitDefs.placement_plan` encodes today's rule (own wallet first; other-grid fallback only). `can_afford(id, land, sea)` unchanged; optional 4th arg uses the plan. Placement + touch preview call it; spawn front stays the clicked grid.
+  2. Main menu `CampaignRankLabel` shows T58 title, `{prestige}/{next_required} to {next_title}`, and `campaign ★ {total_stars()}`. Picked up by existing a11y overlap/containment (VBox child); `accessibility_smoke` stayed green without edits.
+- **Preserved (owner decision):** spawn-fail `gain` still refunds the **own-currency** wallet even if the placed-front wallet paid. I believe that is a bug (Qi paid from sea, failed spawn would credit land). Left as-is.
+- **Mutation:** removing the other-grid fallback inside `placement_plan` must fail `placement_afford_smoke.gd`'s Qi-on-sea / 0-land / 40-sea placement (expects spawn front 1 and sea −28).
+- **Smokes:** `XDG_DATA_HOME=/tmp/pmf-xdg/cursor-t61 ./scripts/run_godot_smokes.sh` **27/27 PASS**. Could not run website `tsc`/`vitest` or `ctest` (out of lane; no C++ rebuild).
+- **Docs:** G8/G12 stay 🚧 Partial (4X still open; G12 still more than this helper). Changelog `[Unreleased]`.
+- **Handoff:** ready for Codex Harbinger under T66. T64 should follow `placement_plan` / SimWorld own-then-cross, not a second affordability rule.
+
 
