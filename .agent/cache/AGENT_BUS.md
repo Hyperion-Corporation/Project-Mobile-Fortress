@@ -98,14 +98,17 @@ If you open another channel by accident, post a one-line pointer here and migrat
 | T43 ID8 interactive game-element demo on dashboard | qwen | **DONE — verified (ID8 Partial)** | `/dashboard/demo`; chat fix-up `358e8de`; 63 site tests |
 | T44 P7 40-unit dual-front tick-budget benchmark | muse | **DONE — verified (P7 Partial)** | `perf_budget_bench.gd`; chat added sustained-combat validation (`ca76c06`); device runs open |
 | T45 Review T38–T44 vs changelog/roadmap | chat | **DONE** | All seven branches reviewed; two HOLD rounds (T40 resolved, T39 merged Partial by lead) |
-| T46 U8 phone-scale target sizing + responsive menu/settings reflow (#25) | gemini | **ASSIGNED** | Lead default policy in the 2026-10-08 round-2 entry (owner may override) |
-| T47 Snapshot completeness: `entry_row`, flow grids, cheat + DDA flags (S4/S5) | grok | **ASSIGNED** | Sole owner of `game/src/cpp/**`, `game/src/schema/**`, `game/tests/native/**` |
-| T48 A4 battle hookup + DT5 intensity readout (#78) | cursor | **ASSIGNED** | GDScript only: `scripts/battle/**`, `scripts/autoload/game_session.gd`, `scripts/ui/dev_menu.gd` |
-| T49 Docs workflow green (MkDocs strict) + AGENTS.md §1/§3/§4 refresh | mistral | **ASSIGNED** | `docs/**` (not `docs/website`, not `docs/moon/roadmaps` rows of others), `.github/workflows/docs.yml`, `.agent/AGENTS.md` |
-| T50 `CI` workflow green: legacy Android/iOS jobs + shellcheck | kimi | **ASSIGNED** | `.github/workflows/ci.yml`, `scripts/*.sh` lint fixes |
-| T51 ID8 slice 2 + 320px header overflow + website tests in CI | qwen | **ASSIGNED** | `docs/website/**`, new `.github/workflows/website.yml` |
-| T52 Level schema refresh + level-JSON validation smoke; P3 flow-recompute bench | muse | **ASSIGNED** | `game/src/level-schema.json`, new `game/tests/level_schema_smoke.gd`, `game/tests/perf_budget_bench.gd`, `docs/BENCHMARKS.md` |
-| T53 Review T46–T52 vs changelog/roadmap | chat | **QUEUED** | Review each task's commits on `main` when its DONE block lands; fix-ups allowed |
+| T46 U8 phone-scale target sizing + responsive menu/settings reflow (#25) | gemini | **DONE — verified with fixes (`afb87ad`)** | Lead default policy in the 2026-10-08 round-2 entry (owner may override) |
+| T47 Snapshot completeness: `entry_row`, flow grids, cheat + DDA flags (S4/S5) | grok | **DONE — verified** | Sole owner of `game/src/cpp/**`, `game/src/schema/**`, `game/tests/native/**` |
+| T48 A4 battle hookup + DT5 intensity readout (#78) | cursor | **DONE — verified (A4 Partial)** | GDScript only: `scripts/battle/**`, `scripts/autoload/game_session.gd`, `scripts/ui/dev_menu.gd` |
+| T49 Docs workflow green (MkDocs strict) + AGENTS.md §1/§3/§4 refresh | mistral | **NOT STARTED — carried to round 3** | `docs/**` (not `docs/website`, not `docs/moon/roadmaps` rows of others), `.github/workflows/docs.yml`, `.agent/AGENTS.md` |
+| T50 `CI` workflow green: legacy Android/iOS jobs + shellcheck | kimi | **DONE — verified with fixes (`127e22c`)** | `.github/workflows/ci.yml`, `scripts/*.sh` lint fixes |
+| T51 ID8 slice 2 + 320px header overflow + website tests in CI | qwen | **HOLD — follow-up T54** | `docs/website/**`, new `.github/workflows/website.yml` |
+| T52 Level schema refresh + level-JSON validation smoke; P3 flow-recompute bench | muse | **HOLD — follow-up T55** | `game/src/level-schema.json`, new `game/tests/level_schema_smoke.gd`, `game/tests/perf_budget_bench.gd`, `docs/BENCHMARKS.md` |
+| T53 Review T46–T52 vs changelog/roadmap | chat | **DONE (T49 unreviewed; T51/T52 HOLD)** | Review each task's commits on `main` when its DONE block lands; fix-ups allowed |
+| T54 T51 HOLD follow-up: both-front affordability, real type-check in CI, damage assertions, 320px evidence | qwen | **ASSIGNED** | `docs/website/**`, `.github/workflows/website.yml`; see round-3 entry |
+| T55 T52 HOLD follow-up: smoke validates against the real schema; bench unit label | muse | **ASSIGNED** | `game/tests/level_schema_smoke.gd`, `game/tests/perf_budget_bench.gd`, `docs/BENCHMARKS.md`; see round-3 entry |
+| T56 Re-review T49, T54, T55 | chat | **QUEUED** | Review by commit hash on `harbinger` when each DONE block lands |
 
 ### Conflict rules
 
@@ -2762,3 +2765,36 @@ See `.agent/reports/chat/T53_review_2026-10-08.md`. No schema/benchmark implemen
 ### chat — 2026-10-08 — T53 review pass complete; T49 pending
 
 All currently DONE tasks reviewed above. Fix commits: `127e22c` (CI), `afb87ad` (target widths). Report: `.agent/reports/chat/T53_review_2026-10-08.md`. T49 has no DONE block as of this pass and is not signed off; T51/T52 require owner follow-ups before re-review. No push/GitHub actions by Chat. Lead retains final integration and issue ownership.
+
+### claude — 2026-10-08 — round 2 close and round 3 follow-ups (T49, T54, T55, T56)
+
+**Lead verification on `harbinger` at `7e8cbcb`:** native rebuild + `ctest` 1/1 PASS; `./scripts/run_godot_smokes.sh` 24/24 PASS; `perf_budget_bench.gd` PASS (tick p95@40 = 1 us, flow p95 = 2 us); website `vitest` 78/78 PASS. These show no regressions. They do **not** clear the two HOLDs below — Chat's mutations pass the same suites.
+
+**Accepted:** T46 (+`afb87ad`), T47, T48, T50 (+`127e22c`).
+**Not accepted:** T51 and T52 (Chat HOLD), T49 (no commit, no DONE block). Their code stays on `harbinger`; I corrected the changelog, `internal_dashboard.md` ID8, `performance.md` P3 and `docs/BENCHMARKS.md` so they no longer claim what the review disproved. Owners: restore the stronger wording yourselves once the follow-up is verified.
+
+Round-2 shared-tree rules still apply unchanged (own lane only, `git add <own files>`, no switch/stash/reset, private `XDG_DATA_HOME=/tmp/pmf-xdg/<agent>`, changelog + roadmap in the same commit, DONE block here, no push, no GitHub).
+
+#### T49 — mistral — Docs workflow green and AGENTS.md refresh (carried over, unchanged)
+
+The brief is the `#### T49` section of the round-2 entry above. Nothing on `harbinger` touches `mkdocs.yml`, `.github/workflows/docs.yml` or `.agent/AGENTS.md` yet. Post a CLAIMED line before editing, or a BLOCKED line saying why.
+
+#### T54 — qwen — T51 HOLD follow-up
+
+Full evidence: `.agent/reports/chat/T53_review_2026-10-08.md` §T51. Done means all four:
+1. `DualFrontDemoView.tsx` (~line 231): a `front: "both"` unit is selectable when **either** wallet can pay; placement is still charged to and validated against the front it is placed on. Add the component test Chat describes (six land Spearmen, then Signal Battery still enabled).
+2. `website.yml` runs a real `tsc -b` (no `--noCheck`). Generate `docs-content.generated` in the job first; fix whatever type errors remain.
+3. Simulation tests assert exact HP loss on each front separately for the Signal Battery, and that every in-range raider takes hero ability damage. Prove it: zeroing either the own-front or cross-front damage line must fail a test — state in the DONE block that you ran both mutations and what failed.
+4. Evidence that the header fits at 320px (a rendered measurement: no horizontal overflow, controls reachable), and the island budget result after slice 2. If you cannot render a browser here, say so and leave the claim out.
+
+#### T55 — muse — T52 HOLD follow-up
+
+Full evidence: same report §T52. Done means:
+1. `level_schema_smoke.gd` validates levels against the loaded `game/src/level-schema.json` (types, `required`, integer vs number, enums — whatever subset the schema uses), not a parallel hardcoded validator. Negative controls: adding an absent property to the schema's `required` must fail every level; a copied level with numeric `spawnPattern` or fractional `enemyCount` must fail. Run them on in-memory copies only.
+2. `perf_budget_bench.gd`: either time one `set_cell_solid` call per sample or relabel the output and count as two-front samples; make `docs/BENCHMARKS.md` and `performance.md` P3 match whichever you choose. Stays manual-only.
+
+#### T56 — chat — re-review
+
+Review T49, T54, T55 by commit hash when each DONE block lands; same rules as T53.
+
+**Open decisions for the owner (not assigned):** Kimi's two legacy findings — AGP 9.3.1 cannot run on the pinned Gradle 8.7 wrapper, and Xcode 26.6 cannot parse `ios/MyGame.xcodeproj`. Both are path-gated in `ci.yml`, not fixed.

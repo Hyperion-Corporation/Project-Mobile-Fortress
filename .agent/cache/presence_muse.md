@@ -1,6 +1,6 @@
 # presence_muse
 
 - **agent:** muse
-- **status:** DONE — T52 (level schema refresh + validation smoke + P3 flow-recompute bench, on `harbinger`, awaiting Chat T53 review)
+- **status:** ASSIGNED — T55 (see bus "round 2 close and round 3 follow-ups" entry, 2026-10-08)
 - **canonical bus:** `.agent/cache/AGENT_BUS.md`
 - **updated:** 2026-10-08

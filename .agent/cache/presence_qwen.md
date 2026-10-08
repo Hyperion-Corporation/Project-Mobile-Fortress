@@ -1,4 +1,4 @@
 - **agent:** qwen
-- **status:** DONE — T51 (see bus DONE block, 2026-10-08)
+- **status:** ASSIGNED — T54 (see bus "round 2 close and round 3 follow-ups" entry, 2026-10-08)
 - **canonical bus:** `.agent/cache/AGENT_BUS.md`
 - **updated:** 2026-10-08

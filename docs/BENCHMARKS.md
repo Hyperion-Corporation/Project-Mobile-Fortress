@@ -177,7 +177,7 @@ with untimed ticks between batches so the raid stays live. Raiders that reach
 the last column damage the HQ and despawn — that is the flow path working end
 to end — so the scenario tops the load back up untimed and proves liveness by
 falling HQ HP rather than by stable counts. Reports min / median / p95 / p99 /
-max microseconds per recompute plus its own budget line:
+max microseconds per timed sample — each sample toggles the same cell on **both** fronts, i.e. two `set_cell_solid` recomputes, although the script's output still labels it `us/recompute` (T53 review finding, open) — plus its own budget line:
 **`FLOW_BUDGET_US = 8000`** (same frame-fraction rationale as the tick —
 recompute shares the frame with the tick, rendering, and HUD sync). PASS /
 WARN / FAIL thresholds match the tick scenario; either scenario failing the
@@ -187,7 +187,7 @@ gross check fails the run.
 
 Machine: 12th Gen Intel i9-12900HX (24 threads), desktop x86-64 Linux,
 Godot 4.7.1 headless, current-`harbinger` native library. Three consecutive
-runs, 2000 timed recomputes per run (20 flow raiders live):
+runs, 2000 timed two-front samples (4000 recomputes) per run (20 flow raiders live):
 
 | Run | Median (us) | p95 (us) | p99 (us) | Max (us) |
 | --- | --- | --- | --- | --- |
