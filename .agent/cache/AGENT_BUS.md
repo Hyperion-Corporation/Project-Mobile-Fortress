@@ -1668,3 +1668,24 @@ changelog entry + roadmap row in the same commit; append one `### <agent> — 20
 block here listing the exact commands you ran and their results; do **not** push, open PRs, or touch
 GitHub issues — that is the lead's job after Chat verifies. If you cannot finish, leave the tree
 uncommitted and say so here.
+
+### grok — 2026-10-08 — T38 DONE
+
+**Shipped:** A4 heuristic DDA inside `SimWorld`, off by default (`699773a`). Intensity is clamped to 0.75–1.25 from four signals: HQ HP fraction, outposts lost, how fast the previous wave left the field empty, and unspent currency versus the purse captured at `reset_run`. It scales only the count (deterministic round, at least 1 if the authored count is positive) and HP of a wave at the moment it spawns. Speed, damage, authored delay, already-spawned raiders, and direct `spawn_raider` / debug spawns are unchanged. No RNG. The hot path adds no heap traffic; the disabled branch does not multiply, so existing outcomes stay the same.
+
+**API:** `SimulationCore.set_dda_enabled` / `dda_enabled` / `get_dda_intensity` (returns 1 while off). `GameSession.dda_enabled` plus `apply_dda(sim)` is the session toggle. The flag survives `reset_run` and `load_state` on that object. It is not in the snapshot.
+
+**Deliberately left out (A4 row is 🚧 Partial):**
+- Modular battle does not call `apply_dda`. `game/scripts/battle/**` is T40's lane. A playtest enables it with `GameSession.set_dda_enabled(true)` then `GameSession.apply_dda(sim)`.
+- DT5 overlay was not edited, so it does not show intensity yet. The getter is there for that.
+- Spawn interval is not scaled. Wave delays are absolute combat-clock timestamps shared with victory and `debug_jump_wave`.
+- FlatBuffers schema was not extended. On load the clear-time sample is dropped and the purse baseline is rebased to the loaded purse. HQ, outposts, and currency still round-trip, so the next unspawned wave is deterministic; it just has no clear-time term until a new wave cycle. That is acceptable for a director that is off by default and whose other three signals are already in the snapshot.
+- The existing 40-raider cap still drops extras if a scaled wave would exceed it. Slice-0 counts stay well under that.
+
+**Verification (this worktree):**
+- `cmake -S game -B game/build -DCMAKE_BUILD_TYPE=Release` with `FETCHCONTENT_SOURCE_DIR_*` pointed at local copies of the main checkout's already-fetched godot-cpp/entt/flatbuffers/doctest trees (a fresh GitHub clone of godot-cpp was stalled). Configure exit 0.
+- `cmake --build game/build -j$(nproc)` exit 0. Copied `game/build/libmobile_fortress_core.so` to `game/bin/libmobile_fortress_core.so` and `game/bin/libmobile_fortress_core.linux.x86_64.so`.
+- `ctest --test-dir game/build --output-on-failure` — 1/1 `sim_world_tests` Passed. The four A4 cases (disabled == baseline, losing eases later waves and clamps to 0.75, dominating clamps to 1.25, two runs match and load drops the clear sample) are in that binary.
+- `godot --path game --headless --import` aborted rc 134 after the filesystem scan (`cannot connect to daemon at tcp:5037`). Smokes still ran.
+- With `XDG_DATA_HOME=/tmp/claude-1000/-home-pkhunter-Repositories-Game-Project-Mobile-Fortress/958b3fca-a5da-42fb-9038-c6c4289a5ec4/scratchpad/xdg/grok`: `dda_smoke.gd` PASS rc 0, `simulation_smoke.gd` PASS rc 0, `modular_battle_smoke.gd` PASS rc 0, `scenario_control_smoke.gd` PASS rc 0, `flatbuffers_smoke.gd` PASS rc 0, `game_session_smoke.gd` PASS rc 0 (session script was touched).
+
