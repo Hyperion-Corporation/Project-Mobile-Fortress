@@ -1722,3 +1722,94 @@ exit 0, ~20s wall.
 - **GitHub Actions cannot be run locally** — workflow verified by YAML parse + step-level parity with the previous job; first real execution is on merge.
 
 **Deliberately left out:** empty SKIP_LIST (nothing qualifies); no Godot export matrix / Android-iOS version matrix work (remainder of Q2); no root `godot-smokes` shorthand recipe (task scoped root justfile to help text — use `just test::godot-smokes`); job id rename (above). Nothing under `game/` modified.
+
+
+### chat — 2026-10-08 — T42 review: VERIFIED WITH FIXES
+
+**Reviewed:** both implementation commits (`29d6863`, `38c623c`), the complete
+`git diff main...HEAD`, `.agent/AGENTS.md` §5/§6 and relevant testing/review rules,
+all smoke failure-signalling conventions, workflow wiring, recipe, changelog,
+Q2 status, and kimi's bus claims. Implementation stayed in its lane. Q2 correctly
+remains 🚧 Partial; export/mobile version matrices remain outside this task.
+Native build/CTest job and Godot 4.7.1 pin are unchanged.
+
+**Findings and fixes (`05c21a7`):**
+
+- **HIGH — fixed:** every non-zero import exit was waived, including timeout or
+  genuine import breakage, and import error text was not checked. Passing smokes
+  using cached resources could therefore falsely green the gate. Import errors
+  now fail the run while smokes continue for diagnostics. Fresh-import exit 134
+  is retried once; the retry must succeed and failure text from either attempt
+  still fails the gate. Both attempts remain in the artifact log.
+- **MEDIUM — fixed:** plain `timeout` can wait indefinitely for a process ignoring
+  SIGTERM. Import and smoke timeouts now use `--kill-after=5s`. A fixture that
+  ignores SIGTERM verifies forced termination and a failing result.
+- **LOW — claim correction:** kimi's assertion that CI runners *will* encounter
+  the fresh-import abort is unverified. I reproduced exit 134 locally and a
+  successful retry, but did not establish its cause or reproduce GitHub's runner
+  environment. The former blanket WARN-and-continue claim is superseded by this
+  review. No claim of green GitHub Actions is made.
+
+Added `scripts/tests/test_run_godot_smokes.py` (reviewer scope addition outside
+kimi's original file list, authorized by T45) and wired it into CI, including its
+path trigger. Twelve tests cover auto-discovery, subset aliases, unknown names,
+non-zero exits, zero-exit error text/ANSI FAIL, word boundaries, import failure,
+checked retry, timeout escalation, and retained log diagnostics. Four import
+assertions were also run against the original HEAD runner and failed as expected
+(exit 0 instead of 1), proving the regression tests catch the original bug.
+Changelog, testing docs and Q2 row were updated with the code commit. No tracked
+`game/` files or other worktrees were changed.
+
+**Independent verification:** every real Godot invocation inherited exactly
+`XDG_DATA_HOME=/tmp/claude-1000/-home-pkhunter-Repositories-Game-Project-Mobile-Fortress/958b3fca-a5da-42fb-9038-c6c4289a5ec4/scratchpad/xdg/kimi`.
+
+- `SMOKE_LOG=/tmp/t42-review-smokes-fixed.log ./scripts/run_godot_smokes.sh`
+  with that XDG prefix: 19/19 PASS, exit 0, cached import exit 0. An earlier run
+  was invalidated by editing the running Bash script; only completed reruns are
+  counted as verification.
+- Fresh-cache verification: temporarily moved `game/.godot` aside with a Python
+  `try/finally` restoring it, then ran the final
+  `SMOKE_LOG=/tmp/t42-review-final-fresh.log ./scripts/run_godot_smokes.sh` with
+  the same XDG prefix. First import exited 134, retry exited 0, all 19 smokes
+  passed, runner exit 0. Final table verbatim (individual smoke logs omitted):
+
+```
+== Godot headless smokes: 19 selected (19 discovered), binary: godot (4.7.1.stable.official.a13da4feb) ==
+SMOKE                      RESULT  DETAIL
+debug_cheats_smoke         PASS    0s
+dev_access_smoke           PASS    0s
+dev_diag_smoke             PASS    1s
+flatbuffers_smoke          PASS    0s
+game_session_smoke         PASS    1s
+gameplay_smoke             PASS    3s
+hero_e_smoke               PASS    1s
+level_catalog_smoke        PASS    0s
+level_picker_smoke         PASS    1s
+main_menu_smoke            PASS    0s
+modular_battle_smoke       PASS    10s
+offline_persistence_smoke  PASS    1s
+playtest_log_smoke         PASS    0s
+progression_smoke          PASS    0s
+scenario_control_smoke     PASS    0s
+settings_smoke             PASS    0s
+simulation_smoke           PASS    1s
+theme_tokens_smoke         PASS    0s
+unit_token_smoke           PASS    1s
+== Summary: 19 passed, 0 failed, 0 skipped (of 19 selected) ==
+```
+
+- `XDG_DATA_HOME=<exact path above> SMOKE_LOG=/tmp/t42-review-just.log just test::godot-smokes simulation gameplay_smoke.gd`
+  — 2/2 PASS, exit 0. `just help` lists the recipe.
+- `python3 -m unittest discover -s scripts/tests -p test_run_godot_smokes.py -v`
+  — 12 tests PASS, including an actual SIGTERM-ignoring subprocess killed after
+  the grace period; fixture tests use a fake binary, not the real project.
+- `bash -n scripts/run_godot_smokes.sh` — PASS.
+- `python3 -c "import yaml,sys; yaml.safe_load(open(sys.argv[1]))" .github/workflows/godot-game.yml`
+  — PASS. `git diff --check` — PASS.
+- `command -v shellcheck` — unavailable; no ShellCheck pass claimed.
+- C++ rebuild/CTest and website checks were not applicable: neither tree changed.
+  GitHub Actions cannot be executed locally and was not run.
+
+**Lead handoff:** ready to merge with `05c21a7` and this review-record commit.
+No unresolved merge-blocking findings. No push, PR, GitHub interaction, branch
+switch, or merge performed.
