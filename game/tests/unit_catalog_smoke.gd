@@ -60,6 +60,30 @@ func _run() -> void:
 	if absf(sig_sea_dmg - 3.3) > 0.001:
 		failures.append("Signal battery own-front sea damage expected 3.3, got %f" % sig_sea_dmg)
 
+	# Placement decides which multiplier applies (SimWorld: same front -> own,
+	# other front -> cross). A battery standing on the land grid is weak on land.
+	var sig_on_land_vs_land := UnitDefs.get_effective_damage("cross_support", UnitDefs.Front.LAND, UnitDefs.Front.LAND)
+	var sig_on_land_vs_sea := UnitDefs.get_effective_damage("cross_support", UnitDefs.Front.SEA, UnitDefs.Front.LAND)
+	if absf(sig_on_land_vs_land - 3.3) > 0.001:
+		failures.append("Signal battery placed on land vs land expected 3.3, got %f" % sig_on_land_vs_land)
+	if absf(sig_on_land_vs_sea - 6.9) > 0.001:
+		failures.append("Signal battery placed on land vs sea expected 6.9, got %f" % sig_on_land_vs_sea)
+
+	# Heroes are Front.BOTH too: Qi (12 dmg, own 1.0, cross 0.5) defaults to his
+	# land home front; Dias (10 dmg, cross 0.65) to sea.
+	if absf(UnitDefs.get_effective_damage("hero_qi", UnitDefs.Front.LAND) - 12.0) > 0.001:
+		failures.append("Qi home-front land damage expected 12.0")
+	if absf(UnitDefs.get_effective_damage("hero_qi", UnitDefs.Front.SEA) - 6.0) > 0.001:
+		failures.append("Qi cross-front sea damage expected 6.0, got %f" % UnitDefs.get_effective_damage("hero_qi", UnitDefs.Front.SEA))
+	if absf(UnitDefs.get_effective_damage("hero_qi", UnitDefs.Front.SEA, UnitDefs.Front.SEA) - 12.0) > 0.001:
+		failures.append("Qi placed on sea vs sea expected 12.0")
+	if absf(UnitDefs.get_effective_damage("hero_dias", UnitDefs.Front.LAND) - 6.5) > 0.001:
+		failures.append("Dias cross-front land damage expected 6.5")
+	if UnitDefs.get_home_front("cross_support") != UnitDefs.Front.SEA or UnitDefs.get_home_front("hero_qi") != UnitDefs.Front.LAND:
+		failures.append("get_home_front should follow the paying currency for BOTH-front units")
+	if UnitDefs.get_effective_damage("raider_land", UnitDefs.Front.LAND) != 0.0:
+		failures.append("Raiders are not defenders: effective damage should be 0.0")
+
 	# Cannon: Base 14 dmg, own 1.0 (14.0), cross 0.35 (4.9)
 	var cannon_land_dmg := UnitDefs.get_effective_damage("cannon", UnitDefs.Front.LAND)
 	var cannon_sea_dmg := UnitDefs.get_effective_damage("cannon", UnitDefs.Front.SEA)

@@ -103,6 +103,12 @@ func _run() -> void:
 	if int(t5.get("rank", -1)) != 5 or t5.get("title", "") != "Imperial Coastal Stronghold":
 		failures.append("tier 5 title/rank mismatch: %s" % str(t5))
 
+	# Just below a threshold stays on the lower rank
+	if int(ProgressionScript.get_prestige_tier(249).get("rank", -1)) != 0:
+		failures.append("249 prestige must still be rank 0")
+	if int(ProgressionScript.get_prestige_tier(4999).get("rank", -1)) != 4:
+		failures.append("4999 prestige must still be rank 4")
+
 	# Next tier calculations
 	var next_p: Dictionary = ProgressionScript.get_next_prestige_tier(100)
 	if int(next_p.get("current_rank", -1)) != 0 or int(next_p.get("remaining_prestige", -1)) != 150:
@@ -133,6 +139,15 @@ func _run() -> void:
 	var all_summaries: Dictionary = ProgressionScript.get_all_level_summaries()
 	if not all_summaries.has("level_alpha") or not all_summaries.has("level_beta") or all_summaries.size() != 2:
 		failures.append("get_all_level_summaries mismatch: %s" % str(all_summaries))
+
+	# A malformed level entry must not break aggregation
+	var raw: Dictionary = ProgressionScript.read()
+	raw["levels"]["level_broken"] = "not a dictionary"
+	OfflinePersistence.write_json(ProgressionScript.PROGRESSION_PATH, raw)
+	if ProgressionScript.total_stars() != 5:
+		failures.append("total_stars must skip malformed entries, got %d" % ProgressionScript.total_stars())
+	if int(ProgressionScript.get_level_summary("level_broken").get("best_stars", -1)) != 0:
+		failures.append("malformed level summary should read as unplayed")
 
 	# Reset progression
 	if not ProgressionScript.reset_progression():

@@ -236,30 +236,34 @@ static func get_hero_units() -> Array[String]:
 	return result
 
 
-static func get_effective_damage(unit_id: String, target_front: Front) -> float:
+## Front whose currency pays for the unit. For `Front.BOTH` units this is the
+## default placement assumed by `get_effective_damage`.
+static func get_home_front(id: String) -> Front:
+	if not has_def(id):
+		return Front.LAND
+	var d := get_def(id)
+	var ufront := int(d.get("front", Front.LAND))
+	if ufront != Front.BOTH:
+		return ufront as Front
+	return Front.SEA if str(d.get("currency", "land")) == "sea" else Front.LAND
+
+
+## Base damage against a raider on `target_front`, before hero auras. Mirrors
+## `SimWorld`: a defender uses `own_env_mult` against raiders on the front it
+## stands on and `cross_env_mult` against the other front. Single-front units
+## always stand on their own front; for `Front.BOTH` units pass `placed_front`
+## (defaults to `get_home_front`).
+static func get_effective_damage(unit_id: String, target_front: Front, placed_front: int = -1) -> float:
 	if not has_def(unit_id):
 		return 0.0
 	var d := get_def(unit_id)
-	if d.is_empty():
+	if d.is_empty() or int(d.get("kind", Kind.DEFENDER)) == Kind.RAIDER:
 		return 0.0
-	var base_dmg := float(d.get("damage", 0))
-	var ufront := int(d.get("front", Front.BOTH))
-	var mult := 1.0
-	if ufront == Front.BOTH:
-		var kind := int(d.get("kind", Kind.DEFENDER))
-		if kind == Kind.CROSS_SUPPORT:
-			# Signal Battery is a sea-funded battery specialized in cross-shelling land raids
-			if target_front == Front.LAND:
-				mult = float(d.get("cross_env_mult", 1.0))
-			else:
-				mult = float(d.get("own_env_mult", 1.0))
-		else:
-			mult = float(d.get("own_env_mult", 1.0))
-	elif ufront != target_front:
-		mult = float(d.get("cross_env_mult", 0.0))
-	else:
-		mult = float(d.get("own_env_mult", 1.0))
-	return base_dmg * mult
+	var stands_on := int(d.get("front", Front.BOTH))
+	if stands_on == Front.BOTH:
+		stands_on = placed_front if placed_front == Front.LAND or placed_front == Front.SEA else int(get_home_front(unit_id))
+	var mult := float(d.get("own_env_mult", 1.0)) if stands_on == target_front else float(d.get("cross_env_mult", 0.0))
+	return float(d.get("damage", 0)) * mult
 
 
 static func validate_catalog() -> Array[String]:

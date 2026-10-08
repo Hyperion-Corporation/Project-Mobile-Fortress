@@ -7,13 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added (2026-10-08, T55 G8 Citadel prestige tiers & campaign progress)
+### Fixed (2026-10-08, lead review of the GGWall branch — T57/T58)
+
+- **G12:** `UnitDefs.get_effective_damage` now follows the simulation rule: a defender uses `own_env_mult` against raiders on the front it stands on and `cross_env_mult` against the other front. The first version hard-coded the Signal Battery as "strong on land, weak on sea" wherever it stood and ignored the heroes' cross-front multiplier. New optional `placed_front` argument for both-front units, defaulting to the new `get_home_front` (the front whose currency pays); raiders return 0. `unit_catalog_smoke.gd` covers both placements and both heroes.
+- **G8:** `Progression.total_stars` and `get_level_summary` skip a malformed (non-dictionary) level entry instead of raising; `progression_smoke.gd` adds that case and just-below-threshold tier checks.
+- GeminiWall's two tasks are renumbered **T57** (G12) and **T58** (G8): T54/T55 were already taken on the team board. Roadmap rows G8/G12 reworded to 🚧 Partial — both are data-layer helpers with smokes; no HUD, menu or battle code calls them yet.
+
+### Added (2026-10-08, T58 G8 Citadel prestige tiers & campaign progress)
 
 - **G8:** Enhanced `Progression` (`game/scripts/data/progression.gd`) with historical coastal fortress defense prestige tiers (Rank 0: Coastal Beacon / 烽火台 up to Rank 5: Imperial Coastal Stronghold / 海防总要塞), dynamic `get_prestige_tier` and `get_next_prestige_tier` (progress ratio & remaining prestige to next citadel rank), campaign-wide `total_stars()` aggregation across multiple levels, level completion status queries (`is_level_completed`, `is_level_perfected`), level summary dictionaries, and `reset_progression()`. Extended `game/tests/progression_smoke.gd` covering tier thresholds, ratio calculations, multi-level star aggregation, and clean reset. Headless smoke verified PASS in Godot 4.7.
 
-### Added (2026-10-08, T54 G12 cross-front support units & catalog smoke)
+### Added (2026-10-08, T57 G12 cross-front support units & catalog smoke)
 
-- **G12:** Enhanced `UnitDefs` (`game/scripts/data/unit_defs.gd`) with structured helpers: `get_currency`, `get_cost`, `can_afford` for environment-locked resources (verifying land vs sea currency locking), `get_units_for_front`, `get_cross_support_units`, `get_defender_units`, `get_hero_units`, and `get_effective_damage` factoring in cross-environment multiplier logic (e.g. Signal Battery's 1.15x amplified cross-shelling vs 0.55x own-front damage). Added complete schema and bounds checking via `UnitDefs.validate_catalog()`. Shipped new headless `game/tests/unit_catalog_smoke.gd` asserting full roster completeness, environment currency gating, effective cross-front calculations, and unknown ID guards (`has_def`). Smoke verified PASS headlessly in Godot 4.7.
+- **G12:** Enhanced `UnitDefs` (`game/scripts/data/unit_defs.gd`) with structured helpers: `get_currency`, `get_cost`, `can_afford` for environment-locked resources (verifying land vs sea currency locking), `get_units_for_front`, `get_cross_support_units`, `get_defender_units`, `get_hero_units`, and `get_effective_damage` factoring in cross-environment multiplier logic (Signal Battery: 0.55x against the front it stands on, 1.15x against the other). Added complete schema and bounds checking via `UnitDefs.validate_catalog()`. Shipped new headless `game/tests/unit_catalog_smoke.gd` asserting full roster completeness, environment currency gating, effective cross-front calculations, and unknown ID guards (`has_def`). Smoke verified PASS headlessly in Godot 4.7.
 
 ### Added (2026-10-08, T44 P7 tick-budget benchmark)
 

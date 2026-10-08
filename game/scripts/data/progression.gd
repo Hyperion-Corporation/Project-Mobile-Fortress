@@ -182,8 +182,9 @@ static func total_stars() -> int:
 	var sum := 0
 	var levels: Dictionary = _load().get("levels", {})
 	for level_id in levels.keys():
-		var entry: Dictionary = levels[level_id]
-		sum += int(entry.get("best_stars", 0))
+		var entry: Variant = levels[level_id]
+		if entry is Dictionary:
+			sum += int(entry.get("best_stars", 0))
 	return sum
 
 
@@ -197,7 +198,8 @@ static func is_level_perfected(level_id: String) -> bool:
 
 static func get_level_summary(level_id: String = DEFAULT_LEVEL_ID) -> Dictionary:
 	var levels: Dictionary = _load().get("levels", {})
-	var entry: Dictionary = levels.get(level_id, {"runs": 0, "best_stars": 0, "best_prestige": 0})
+	var raw: Variant = levels.get(level_id, {})
+	var entry: Dictionary = raw if raw is Dictionary else {}
 	var stars: int = int(entry.get("best_stars", 0))
 	return {
 		"level_id": level_id,

@@ -17,11 +17,11 @@ Scope: the Wōkòu-pirate-era tower-defense core loop and its meta-progression l
 | G5 | Data-driven level/wave definitions (JSON) | M | 🚧 **Slice-0 pair (T35)** — `slice0_dual_front` + `night_tide_dual_front`; menu `LevelSelect` | Slice-0 |
 | G6 | Build vs combat phases | M | 🚧 **Partial** — build timer + combat (day/night UX polish later) | Slice-0 |
 | G7 | Resource / Trading Outpost economy; outpost loss economic only | L | 🚧 **Partial** — income 1–2 / tick scaled by remaining OP HP; 0 after loss | Slice-0 |
-| G8 | Score/progression system (per-level stars, HQ prestige) | M | 🚧 **Slice-0 verified (T55)** — stars, historical coastal citadel prestige ranks (0–5), campaign star aggregation & reset; progression_smoke.gd PASS | Launch path |
+| G8 | Score/progression system (per-level stars, HQ prestige) | M | 🚧 **Partial — Slice-0 wired** — stars + HQ prestige persist via `Progression` / `end_run`; T58 adds citadel prestige ranks (0–5), next-rank progress, campaign star totals and reset as data-layer helpers (`progression_smoke.gd`), not yet shown in any menu or HUD; no 4X meta | Launch path |
 | G9 | Coastal-territory light-4X meta-map; settlement capture later season | XL | 📋 Deferred | Post-launch |
 | G10 | Touch/click placement for dual grids (Godot) | S | ✅ Done — mouse click + touch (press-preview-release) both fronts; GUI-first gesture starts; viewport dispatch verified by `touch_placement_smoke.gd` | Slice-0 |
 | G11 | Sensor input optional | M | 📋 Deferred | Nice-to-have |
-| G12 | Cross-front specialized support units + environment-locked resources | M | 🚧 **Slice-0 verified (T54)** — Signal Battery / cross mults, environment-locked affordance & catalog validation in unit_defs.gd + unit_catalog_smoke.gd | Slice-0 |
+| G12 | Cross-front specialized support units + environment-locked resources | M | 🚧 **Partial** — Signal Battery / cross mults in the sim; T57 adds `UnitDefs` catalog validation and affordability / effective-damage helpers (`unit_catalog_smoke.gd`), not yet called by battle or HUD code | Slice-0 |
 | G13 | Clans as persistent social layer at launch | L | 📋 Deferred | Launch |
 
 Effort key: S = days, M = 1–2 weeks, L = 3–6 weeks, XL = multi-month/cross-cutting.
