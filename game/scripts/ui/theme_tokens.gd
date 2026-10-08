@@ -82,6 +82,32 @@ static func apply_accessible_focus(control: Control, border: Color = SEA_INDIGO)
 	control.add_theme_stylebox_override("focus", make_focus_style(border))
 
 
+static func apply_accessible_button(button: Button, base_bg: Color = PAPER_CARD, text_color: Color = INK) -> void:
+	if button == null:
+		return
+	button.focus_mode = Control.FOCUS_ALL
+	button.add_theme_stylebox_override("normal", make_button_style(base_bg, INK))
+	button.add_theme_stylebox_override("hover", make_button_style(PAPER, SEA_INDIGO))
+	button.add_theme_stylebox_override("pressed", make_button_style(Color("dfd2bd"), INK))
+	button.add_theme_stylebox_override("focus", make_focus_style(SEA_INDIGO))
+	button.add_theme_color_override("font_color", text_color)
+	button.add_theme_color_override("font_hover_color", text_color)
+	button.add_theme_color_override("font_pressed_color", text_color)
+	button.add_theme_color_override("font_focus_color", text_color)
+
+
+static func apply_accessible_checkbox(cb: CheckBox, text_color: Color = INK) -> void:
+	if cb == null:
+		return
+	cb.focus_mode = Control.FOCUS_ALL
+	cb.add_theme_color_override("font_color", text_color)
+	cb.add_theme_color_override("font_hover_color", text_color)
+	cb.add_theme_color_override("font_hover_pressed_color", text_color)
+	cb.add_theme_color_override("font_focus_color", text_color)
+	cb.add_theme_color_override("font_pressed_color", text_color)
+	cb.add_theme_stylebox_override("focus", make_focus_style(SEA_INDIGO))
+
+
 static func set_a11y_metadata(control: Control, a11y_name: String, a11y_desc: String = "") -> void:
 	if control == null:
 		return

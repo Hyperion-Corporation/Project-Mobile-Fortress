@@ -142,6 +142,14 @@ func _apply_ui_scale(enabled: bool) -> void:
 		var s: float = ThemeTokensScript.LARGE_TEXT_SCALE if enabled else 1.0
 		center.pivot_offset = center.size / 2.0
 		center.scale = Vector2(s, s)
+		if not center.resized.is_connected(_on_center_resized):
+			center.resized.connect(_on_center_resized)
+
+
+func _on_center_resized() -> void:
+	var center: CenterContainer = get_node_or_null("Center")
+	if center:
+		center.pivot_offset = center.size / 2.0
 
 
 func _update_telemetry_desc(idx: int) -> void:
@@ -175,7 +183,7 @@ func _build_ui() -> void:
 
 	var panel := PanelContainer.new()
 	panel.name = "SettingsPanel"
-	panel.custom_minimum_size = Vector2(600, 580)
+	panel.custom_minimum_size = Vector2(560, 0)
 
 	var style := StyleBoxFlat.new()
 	style.bg_color = PANEL_BG
@@ -188,26 +196,26 @@ func _build_ui() -> void:
 	style.corner_radius_top_right = 4
 	style.corner_radius_bottom_right = 4
 	style.corner_radius_bottom_left = 4
-	style.content_margin_left = 24
-	style.content_margin_top = 16
-	style.content_margin_right = 24
-	style.content_margin_bottom = 20
+	style.content_margin_left = 20
+	style.content_margin_top = 10
+	style.content_margin_right = 20
+	style.content_margin_bottom = 12
 	panel.add_theme_stylebox_override("panel", style)
 	center.add_child(panel)
-	ThemeTokensScript.animate_slide_fade_in(panel, -20.0, 0.25)
+	ThemeTokensScript.animate_fade_in(panel, 0.25)
 
 	var main_vbox := VBoxContainer.new()
 	main_vbox.name = "MainVBox"
-	main_vbox.add_theme_constant_override("separation", 10)
+	main_vbox.add_theme_constant_override("separation", 5)
 	panel.add_child(main_vbox)
 
 	# Title Header
 	var title_box := VBoxContainer.new()
-	title_box.add_theme_constant_override("separation", 2)
+	title_box.add_theme_constant_override("separation", 1)
 	var title_lbl := Label.new()
 	title_lbl.text = "SETTINGS · 設置"
 	title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title_lbl.add_theme_font_size_override("font_size", 24)
+	title_lbl.add_theme_font_size_override("font_size", 20)
 	title_lbl.add_theme_color_override("font_color", DUSK)
 	title_box.add_child(title_lbl)
 
@@ -222,15 +230,15 @@ func _build_ui() -> void:
 	# Section 1: Audio
 	var audio_sec := Label.new()
 	audio_sec.text = "AUDIO"
-	audio_sec.add_theme_font_size_override("font_size", 14)
+	audio_sec.add_theme_font_size_override("font_size", 12)
 	audio_sec.add_theme_color_override("font_color", INDIGO)
 	main_vbox.add_child(audio_sec)
 
 	var audio_grid := GridContainer.new()
 	audio_grid.name = "GridContainer"
 	audio_grid.columns = 3
-	audio_grid.add_theme_constant_override("h_separation", 12)
-	audio_grid.add_theme_constant_override("v_separation", 4)
+	audio_grid.add_theme_constant_override("h_separation", 8)
+	audio_grid.add_theme_constant_override("v_separation", 2)
 
 	# Master
 	var master_lbl := Label.new()
@@ -239,7 +247,7 @@ func _build_ui() -> void:
 	audio_grid.add_child(master_lbl)
 	_master_slider = HSlider.new()
 	_master_slider.name = "MasterSlider"
-	_master_slider.custom_minimum_size = Vector2(240, ThemeTokensScript.MIN_TOUCH_TARGET_SIZE)
+	_master_slider.custom_minimum_size = Vector2(220, ThemeTokensScript.MIN_TOUCH_TARGET_SIZE)
 	_master_slider.min_value = 0
 	_master_slider.max_value = 100
 	_master_slider.value = 80
@@ -260,7 +268,7 @@ func _build_ui() -> void:
 	audio_grid.add_child(bgm_lbl)
 	_bgm_slider = HSlider.new()
 	_bgm_slider.name = "BgmSlider"
-	_bgm_slider.custom_minimum_size = Vector2(240, ThemeTokensScript.MIN_TOUCH_TARGET_SIZE)
+	_bgm_slider.custom_minimum_size = Vector2(220, ThemeTokensScript.MIN_TOUCH_TARGET_SIZE)
 	_bgm_slider.min_value = 0
 	_bgm_slider.max_value = 100
 	_bgm_slider.value = 70
@@ -281,7 +289,7 @@ func _build_ui() -> void:
 	audio_grid.add_child(sfx_lbl)
 	_sfx_slider = HSlider.new()
 	_sfx_slider.name = "SfxSlider"
-	_sfx_slider.custom_minimum_size = Vector2(240, ThemeTokensScript.MIN_TOUCH_TARGET_SIZE)
+	_sfx_slider.custom_minimum_size = Vector2(220, ThemeTokensScript.MIN_TOUCH_TARGET_SIZE)
 	_sfx_slider.min_value = 0
 	_sfx_slider.max_value = 100
 	_sfx_slider.value = 90
@@ -300,18 +308,17 @@ func _build_ui() -> void:
 	# Section 2: Controls & Feedback
 	var ctrl_sec := Label.new()
 	ctrl_sec.text = "CONTROLS & DISPLAY"
-	ctrl_sec.add_theme_font_size_override("font_size", 14)
+	ctrl_sec.add_theme_font_size_override("font_size", 12)
 	ctrl_sec.add_theme_color_override("font_color", INDIGO)
 	main_vbox.add_child(ctrl_sec)
 
 	var ctrl_hbox := HBoxContainer.new()
-	ctrl_hbox.add_theme_constant_override("separation", 16)
+	ctrl_hbox.add_theme_constant_override("separation", 8)
 
 	_fast_placement_check = CheckBox.new()
 	_fast_placement_check.name = "FastPlacementCheck"
 	_fast_placement_check.text = "Fast Tap Placement"
 	_fast_placement_check.button_pressed = true
-	_fast_placement_check.add_theme_color_override("font_color", DUSK)
 	_fast_placement_check.custom_minimum_size = Vector2(0, ThemeTokensScript.MIN_TOUCH_TARGET_SIZE)
 	ThemeTokensScript.set_a11y_metadata(_fast_placement_check, "Fast Tap Placement", "Tap once to immediately deploy units")
 	ctrl_hbox.add_child(_fast_placement_check)
@@ -320,7 +327,6 @@ func _build_ui() -> void:
 	_screen_shake_check.name = "ScreenShakeCheck"
 	_screen_shake_check.text = "Screen Shake on Impact"
 	_screen_shake_check.button_pressed = true
-	_screen_shake_check.add_theme_color_override("font_color", DUSK)
 	_screen_shake_check.custom_minimum_size = Vector2(0, ThemeTokensScript.MIN_TOUCH_TARGET_SIZE)
 	ThemeTokensScript.set_a11y_metadata(_screen_shake_check, "Screen Shake", "Enable camera shake during combat explosions")
 	ctrl_hbox.add_child(_screen_shake_check)
@@ -329,7 +335,6 @@ func _build_ui() -> void:
 	_notifications_check.name = "NotificationsCheck"
 	_notifications_check.text = "Tactical Raid Alerts"
 	_notifications_check.button_pressed = false
-	_notifications_check.add_theme_color_override("font_color", DUSK)
 	_notifications_check.custom_minimum_size = Vector2(0, ThemeTokensScript.MIN_TOUCH_TARGET_SIZE)
 	ThemeTokensScript.set_a11y_metadata(_notifications_check, "Tactical Alerts", "Receive notifications when Wōkòu fleets approach")
 	ctrl_hbox.add_child(_notifications_check)
@@ -340,7 +345,6 @@ func _build_ui() -> void:
 	_large_text_check.name = "LargeTextCheck"
 	_large_text_check.text = "Large Text (UI Scale)"
 	_large_text_check.button_pressed = false
-	_large_text_check.add_theme_color_override("font_color", DUSK)
 	_large_text_check.custom_minimum_size = Vector2(0, ThemeTokensScript.MIN_TOUCH_TARGET_SIZE)
 	_large_text_check.toggled.connect(func(pressed: bool):
 		_apply_ui_scale(pressed)
@@ -351,13 +355,13 @@ func _build_ui() -> void:
 	# Section 3: Telemetry & Privacy (U3 / AI Research)
 	var priv_sec := Label.new()
 	priv_sec.text = "DATA & TELEMETRY CONSENT"
-	priv_sec.add_theme_font_size_override("font_size", 14)
+	priv_sec.add_theme_font_size_override("font_size", 12)
 	priv_sec.add_theme_color_override("font_color", INDIGO)
 	main_vbox.add_child(priv_sec)
 
 	var priv_vbox := VBoxContainer.new()
 	priv_vbox.name = "VBoxContainer"
-	priv_vbox.add_theme_constant_override("separation", 4)
+	priv_vbox.add_theme_constant_override("separation", 2)
 
 	_telemetry_option = OptionButton.new()
 	_telemetry_option.name = "TelemetryOption"
@@ -372,9 +376,9 @@ func _build_ui() -> void:
 
 	_telemetry_desc = Label.new()
 	_telemetry_desc.name = "TelemetryDesc"
-	_telemetry_desc.custom_minimum_size = Vector2(520, 36)
+	_telemetry_desc.custom_minimum_size = Vector2(480, 28)
 	_telemetry_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_telemetry_desc.add_theme_font_size_override("font_size", 12)
+	_telemetry_desc.add_theme_font_size_override("font_size", 11)
 	_update_telemetry_desc(1)
 	priv_vbox.add_child(_telemetry_desc)
 
@@ -382,13 +386,12 @@ func _build_ui() -> void:
 
 	var dev_sec := Label.new()
 	dev_sec.text = "DEVELOPER MODE"
-	dev_sec.add_theme_font_size_override("font_size", 14)
+	dev_sec.add_theme_font_size_override("font_size", 12)
 	dev_sec.add_theme_color_override("font_color", INDIGO)
 	main_vbox.add_child(dev_sec)
 	_developer_mode_check = CheckBox.new()
 	_developer_mode_check.name = "DeveloperModeCheck"
 	_developer_mode_check.text = "Enable developer tools (not telemetry)"
-	_developer_mode_check.add_theme_color_override("font_color", DUSK)
 	_developer_mode_check.custom_minimum_size = Vector2(0, ThemeTokensScript.MIN_TOUCH_TARGET_SIZE)
 	ThemeTokensScript.set_a11y_metadata(_developer_mode_check, "Developer Tools", "Enable scenario control and developer diagnostics")
 	main_vbox.add_child(_developer_mode_check)
@@ -396,7 +399,7 @@ func _build_ui() -> void:
 	# Action Buttons
 	var btn_hbox := HBoxContainer.new()
 	btn_hbox.alignment = BoxContainer.ALIGNMENT_END
-	btn_hbox.add_theme_constant_override("separation", 12)
+	btn_hbox.add_theme_constant_override("separation", 10)
 
 	_reset_btn = Button.new()
 	_reset_btn.name = "ResetBtn"
@@ -413,7 +416,7 @@ func _build_ui() -> void:
 	_close_btn = Button.new()
 	_close_btn.name = "CancelBtn"
 	_close_btn.text = "Cancel"
-	_close_btn.custom_minimum_size = Vector2(110, ThemeTokensScript.MIN_TOUCH_TARGET_SIZE)
+	_close_btn.custom_minimum_size = Vector2(100, ThemeTokensScript.MIN_TOUCH_TARGET_SIZE)
 	_close_btn.pressed.connect(_close)
 	ThemeTokensScript.set_a11y_metadata(_close_btn, "Cancel", "Discard changes and close settings")
 	btn_hbox.add_child(_close_btn)
@@ -421,7 +424,7 @@ func _build_ui() -> void:
 	_save_btn = Button.new()
 	_save_btn.name = "SaveBtn"
 	_save_btn.text = "Save & Apply"
-	_save_btn.custom_minimum_size = Vector2(140, ThemeTokensScript.MIN_TOUCH_TARGET_SIZE)
+	_save_btn.custom_minimum_size = Vector2(130, ThemeTokensScript.MIN_TOUCH_TARGET_SIZE)
 	_save_btn.pressed.connect(_save_settings)
 	ThemeTokensScript.set_a11y_metadata(_save_btn, "Save and Apply", "Save settings to offline persistence and apply")
 	btn_hbox.add_child(_save_btn)
@@ -444,17 +447,92 @@ func _setup_focus_traversal() -> void:
 		_close_btn,
 		_save_btn
 	]
+
+	# Apply accessible styling (contrast + focus rings) to all interactive controls
+	for ctrl in controls:
+		if ctrl is CheckBox:
+			ThemeTokensScript.apply_accessible_checkbox(ctrl as CheckBox)
+		elif ctrl is Button:
+			ThemeTokensScript.apply_accessible_button(ctrl as Button)
+		else:
+			ThemeTokensScript.apply_accessible_focus(ctrl)
+
+	# Closed-loop next / previous focus chain
 	for i in range(controls.size()):
 		var ctrl := controls[i]
 		if ctrl == null:
 			continue
-		ThemeTokensScript.apply_accessible_focus(ctrl)
 		var next_ctrl := controls[(i + 1) % controls.size()]
 		var prev_ctrl := controls[(i - 1 + controls.size()) % controls.size()]
 		ctrl.focus_next = next_ctrl.get_path()
 		ctrl.focus_previous = prev_ctrl.get_path()
-		ctrl.focus_neighbor_bottom = next_ctrl.get_path()
-		ctrl.focus_neighbor_top = prev_ctrl.get_path()
+
+	# Explicit directional navigation trapped completely inside SettingsDialog in all 4 directions:
+	# Sliders: vertical between sliders; horizontal stays on self (so left/right adjusts value)
+	_master_slider.focus_neighbor_top = _save_btn.get_path()
+	_master_slider.focus_neighbor_bottom = _bgm_slider.get_path()
+	_master_slider.focus_neighbor_left = _master_slider.get_path()
+	_master_slider.focus_neighbor_right = _master_slider.get_path()
+
+	_bgm_slider.focus_neighbor_top = _master_slider.get_path()
+	_bgm_slider.focus_neighbor_bottom = _sfx_slider.get_path()
+	_bgm_slider.focus_neighbor_left = _bgm_slider.get_path()
+	_bgm_slider.focus_neighbor_right = _bgm_slider.get_path()
+
+	_sfx_slider.focus_neighbor_top = _bgm_slider.get_path()
+	_sfx_slider.focus_neighbor_bottom = _fast_placement_check.get_path()
+	_sfx_slider.focus_neighbor_left = _sfx_slider.get_path()
+	_sfx_slider.focus_neighbor_right = _sfx_slider.get_path()
+
+	# Controls row (3 checkboxes in HBox):
+	_fast_placement_check.focus_neighbor_top = _sfx_slider.get_path()
+	_fast_placement_check.focus_neighbor_bottom = _large_text_check.get_path()
+	_fast_placement_check.focus_neighbor_left = _notifications_check.get_path()
+	_fast_placement_check.focus_neighbor_right = _screen_shake_check.get_path()
+
+	_screen_shake_check.focus_neighbor_top = _sfx_slider.get_path()
+	_screen_shake_check.focus_neighbor_bottom = _large_text_check.get_path()
+	_screen_shake_check.focus_neighbor_left = _fast_placement_check.get_path()
+	_screen_shake_check.focus_neighbor_right = _notifications_check.get_path()
+
+	_notifications_check.focus_neighbor_top = _sfx_slider.get_path()
+	_notifications_check.focus_neighbor_bottom = _large_text_check.get_path()
+	_notifications_check.focus_neighbor_left = _screen_shake_check.get_path()
+	_notifications_check.focus_neighbor_right = _fast_placement_check.get_path()
+
+	# Large text toggle:
+	_large_text_check.focus_neighbor_top = _fast_placement_check.get_path()
+	_large_text_check.focus_neighbor_bottom = _telemetry_option.get_path()
+	_large_text_check.focus_neighbor_left = _large_text_check.get_path()
+	_large_text_check.focus_neighbor_right = _large_text_check.get_path()
+
+	# Telemetry tier dropdown:
+	_telemetry_option.focus_neighbor_top = _large_text_check.get_path()
+	_telemetry_option.focus_neighbor_bottom = _developer_mode_check.get_path()
+	_telemetry_option.focus_neighbor_left = _telemetry_option.get_path()
+	_telemetry_option.focus_neighbor_right = _telemetry_option.get_path()
+
+	# Developer mode toggle:
+	_developer_mode_check.focus_neighbor_top = _telemetry_option.get_path()
+	_developer_mode_check.focus_neighbor_bottom = _reset_btn.get_path()
+	_developer_mode_check.focus_neighbor_left = _developer_mode_check.get_path()
+	_developer_mode_check.focus_neighbor_right = _developer_mode_check.get_path()
+
+	# Action buttons (Reset, Cancel, Save):
+	_reset_btn.focus_neighbor_top = _developer_mode_check.get_path()
+	_reset_btn.focus_neighbor_bottom = _master_slider.get_path()
+	_reset_btn.focus_neighbor_left = _save_btn.get_path()
+	_reset_btn.focus_neighbor_right = _close_btn.get_path()
+
+	_close_btn.focus_neighbor_top = _developer_mode_check.get_path()
+	_close_btn.focus_neighbor_bottom = _master_slider.get_path()
+	_close_btn.focus_neighbor_left = _reset_btn.get_path()
+	_close_btn.focus_neighbor_right = _save_btn.get_path()
+
+	_save_btn.focus_neighbor_top = _developer_mode_check.get_path()
+	_save_btn.focus_neighbor_bottom = _master_slider.get_path()
+	_save_btn.focus_neighbor_left = _close_btn.get_path()
+	_save_btn.focus_neighbor_right = _reset_btn.get_path()
 
 
 func _set_initial_focus() -> void:

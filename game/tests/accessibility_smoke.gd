@@ -41,6 +41,38 @@ func _run() -> void:
 				check["fg_name"], check["bg_name"], ratio, min_required
 			])
 
+	# Check contrast on actual Button applied styles (normal background vs focus border and text)
+	var test_btn := Button.new()
+	ThemeTokensScript.apply_accessible_button(test_btn)
+	var btn_normal_sb := test_btn.get_theme_stylebox("normal")
+	var btn_focus_sb := test_btn.get_theme_stylebox("focus")
+	if btn_normal_sb is StyleBoxFlat and btn_focus_sb is StyleBoxFlat:
+		var btn_bg: Color = (btn_normal_sb as StyleBoxFlat).bg_color
+		var focus_border: Color = (btn_focus_sb as StyleBoxFlat).border_color
+		var btn_focus_contrast: float = ThemeTokensScript.get_contrast_ratio(focus_border, btn_bg)
+		if btn_focus_contrast < 3.0:
+			failures.append("Rendered button focus ring contrast failure: border %s on bg %s is %.2f:1 (required >= 3.0:1)" % [
+				focus_border, btn_bg, btn_focus_contrast
+			])
+		var btn_fg: Color = test_btn.get_theme_color("font_color")
+		var btn_text_contrast: float = ThemeTokensScript.get_contrast_ratio(btn_fg, btn_bg)
+		if btn_text_contrast < 4.5:
+			failures.append("Rendered button text contrast failure: fg %s on bg %s is %.2f:1 (required >= 4.5:1)" % [
+				btn_fg, btn_bg, btn_text_contrast
+			])
+	test_btn.free()
+
+	# Check contrast on actual CheckBox applied styles (hover font color vs panel background)
+	var test_cb := CheckBox.new()
+	ThemeTokensScript.apply_accessible_checkbox(test_cb)
+	var cb_hover_fg: Color = test_cb.get_theme_color("font_hover_color")
+	var cb_hover_contrast: float = ThemeTokensScript.get_contrast_ratio(cb_hover_fg, ThemeTokensScript.PAPER_CARD)
+	if cb_hover_contrast < 4.5:
+		failures.append("Rendered checkbox hover text contrast failure: hover fg %s on panel bg %s is %.2f:1 (required >= 4.5:1)" % [
+			cb_hover_fg, ThemeTokensScript.PAPER_CARD, cb_hover_contrast
+		])
+	test_cb.free()
+
 	# =========================================================================
 	# 2. Test Minimum Touch Targets & Screen-Reader Metadata on MainMenu
 	# =========================================================================
@@ -84,6 +116,15 @@ func _run() -> void:
 				])
 			if version_label.accessibility_name.strip_edges().is_empty():
 				failures.append("VersionLabel missing accessibility_name")
+
+			var horizon_rect: ColorRect = menu_instance.get_node_or_null("Horizon")
+			if horizon_rect != null:
+				var v_fg: Color = version_label.get_theme_color("font_color")
+				var v_contrast := ThemeTokensScript.get_contrast_ratio(v_fg, horizon_rect.color)
+				if v_contrast < 4.5:
+					failures.append("Rendered VersionLabel contrast failure: fg %s on horizon %s is %.2f:1 (required >= 4.5:1)" % [
+						v_fg, horizon_rect.color, v_contrast
+					])
 
 	# =========================================================================
 	# 3. Test Focus Traversal on MainMenu (no dead-ends, closed loop)
@@ -223,12 +264,57 @@ func _run() -> void:
 		if not loop_closed:
 			failures.append("SettingsDialog focus traversal did not close its loop")
 
+		# Test that each of the four focus directions stays inside SettingsDialog
+		var directions: Array[Dictionary] = [
+			{"name": "LEFT", "side": SIDE_LEFT},
+			{"name": "TOP", "side": SIDE_TOP},
+			{"name": "RIGHT", "side": SIDE_RIGHT},
+			{"name": "BOTTOM", "side": SIDE_BOTTOM}
+		]
+		for ctrl: Control in expected_controls:
+			if ctrl == null:
+				continue
+			for d: Dictionary in directions:
+				var side: int = int(d["side"])
+				var d_name: String = str(d["name"])
+				var neighbor: Control = ctrl.find_valid_focus_neighbor(side)
+				if neighbor == null:
+					failures.append("SettingsDialog control %s has no focus neighbor for %s" % [ctrl.name, d_name])
+				elif not dlg.is_ancestor_of(neighbor) and neighbor != dlg:
+					failures.append("SettingsDialog focus escaped: %s %s points outside to %s" % [ctrl.name, d_name, neighbor.get_path()])
+
+		# Test Left and Right from SaveBtn specifically stay inside dialog
+		if dlg._save_btn != null:
+			for side: int in [SIDE_LEFT, SIDE_RIGHT]:
+				var neighbor: Control = dlg._save_btn.find_valid_focus_neighbor(side)
+				if neighbor == null or (not dlg.is_ancestor_of(neighbor) and neighbor != dlg):
+					failures.append("SaveBtn side %d escaped SettingsDialog to %s" % [side, neighbor.get_path() if neighbor else "null"])
+
 	# Test Focus Return to opener control on close
 	dlg._close()
 	await process_frame
 	if not opener_btn.has_focus():
 		failures.append("Opener control did not receive focus after SettingsDialog closed")
 	opener_btn.queue_free()
+
+	# Test that host menu controls underneath are not focusable while SettingsDialog is open
+	var host_menu: Control = menu_scene.instantiate()
+	root.add_child(host_menu)
+	await process_frame
+	host_menu._open_settings()
+	await process_frame
+	var open_dlg: SettingsDialog = host_menu.get_node_or_null("SettingsDialog")
+	if open_dlg != null:
+		var host_vbox: VBoxContainer = host_menu.get_node_or_null("Center/VBox")
+		if host_vbox != null:
+			for child in host_vbox.get_children():
+				if child is Control and (child as Control).visible:
+					if (child as Control).focus_mode != Control.FOCUS_NONE:
+						failures.append("Menu control %s remains focusable while SettingsDialog is open" % child.name)
+		open_dlg._close()
+		await process_frame
+	host_menu.queue_free()
+	await process_frame
 
 	# =========================================================================
 	# 5. Test Large-Text Persistence Round-Trip & Scene Scaling
@@ -285,6 +371,98 @@ func _run() -> void:
 	scaled_menu.queue_free()
 
 	# Restore the settings present before the persistence checks.
+	OfflinePersistence.write_settings(initial_settings)
+
+	# =========================================================================
+	# 6. Test Viewport Fit and Non-Overlapping with Large Text on at Multiple Viewports
+	# =========================================================================
+	var large_test_settings: Dictionary = initial_settings.duplicate(true)
+	large_test_settings["large_text"] = true
+	OfflinePersistence.write_settings(large_test_settings)
+
+	var viewport_sizes: Array[Vector2i] = [
+		Vector2i(1280, 720),
+		Vector2i(720, 1280)
+	]
+
+	for vp_size: Vector2i in viewport_sizes:
+		root.size = vp_size
+		var test_menu: Control = menu_scene.instantiate()
+		root.add_child(test_menu)
+		await process_frame
+		await process_frame
+		var vp_rect: Rect2 = test_menu.get_viewport_rect()
+
+		# Collect interactive controls and labels on MainMenu
+		var menu_box: VBoxContainer = test_menu.get_node_or_null("Center/VBox")
+		var menu_version: Control = test_menu.get_node_or_null("VersionLabel")
+		var menu_interactives: Array[Control] = []
+		if menu_box != null:
+			for child: Node in menu_box.get_children():
+				if (child is Button or child is OptionButton) and (child as Control).visible:
+					menu_interactives.append(child as Control)
+		if menu_version != null:
+			menu_interactives.append(menu_version)
+
+		# Assert every interactive control is completely inside the viewport
+		for ctrl: Control in menu_interactives:
+			var r: Rect2 = ctrl.get_global_rect()
+			if not vp_rect.encloses(r):
+				failures.append("MainMenu control %s (%s) clips outside viewport %s at vp %s" % [ctrl.name, r, vp_rect, vp_size])
+
+		# Assert no two controls/labels overlap on MainMenu
+		var all_menu_nodes: Array[Control] = []
+		if menu_box != null:
+			for child: Node in menu_box.get_children():
+				if child is Control and (child as Control).visible:
+					all_menu_nodes.append(child as Control)
+		if menu_version != null:
+			all_menu_nodes.append(menu_version)
+
+		for i in range(all_menu_nodes.size()):
+			for j in range(i + 1, all_menu_nodes.size()):
+				var a: Control = all_menu_nodes[i]
+				var b: Control = all_menu_nodes[j]
+				if a.visible and b.visible and a.get_global_rect().intersects(b.get_global_rect()):
+					failures.append("MainMenu controls overlap: %s and %s at vp %s" % [a.name, b.name, vp_size])
+
+		# Open SettingsDialog and check viewport fit & non-overlapping
+		test_menu._open_settings()
+		await process_frame
+		await process_frame
+		var open_settings: SettingsDialog = test_menu.get_node_or_null("SettingsDialog")
+		if open_settings == null:
+			failures.append("Failed to open SettingsDialog at vp %s" % str(vp_size))
+		else:
+			var panel_node: Control = open_settings.get_node_or_null("Center/SettingsPanel")
+			if panel_node != null and not vp_rect.encloses(panel_node.get_global_rect()):
+				failures.append("SettingsPanel (%s) clips outside viewport %s at vp %s" % [panel_node.get_global_rect(), vp_rect, vp_size])
+
+			var dlg_interactives: Array[Control] = [
+				open_settings._master_slider, open_settings._bgm_slider, open_settings._sfx_slider,
+				open_settings._fast_placement_check, open_settings._screen_shake_check, open_settings._notifications_check,
+				open_settings._large_text_check, open_settings._telemetry_option, open_settings._developer_mode_check,
+				open_settings._reset_btn, open_settings._close_btn, open_settings._save_btn
+			]
+
+			for ctrl: Control in dlg_interactives:
+				if ctrl != null and not vp_rect.encloses(ctrl.get_global_rect()):
+					failures.append("SettingsDialog control %s (%s) clips outside viewport %s at vp %s" % [ctrl.name, ctrl.get_global_rect(), vp_rect, vp_size])
+
+			for i in range(dlg_interactives.size()):
+				for j in range(i + 1, dlg_interactives.size()):
+					var a: Control = dlg_interactives[i]
+					var b: Control = dlg_interactives[j]
+					if a != null and b != null and a.visible and b.visible and a.get_global_rect().intersects(b.get_global_rect()):
+						failures.append("SettingsDialog controls overlap: %s and %s at vp %s" % [a.name, b.name, vp_size])
+
+			open_settings._close()
+			await process_frame
+
+		test_menu.queue_free()
+		await process_frame
+
+	root.size = Vector2i(1280, 720)
 	OfflinePersistence.write_settings(initial_settings)
 
 	_finish(failures)

@@ -23,9 +23,8 @@ func _ready() -> void:
 	_apply_coastal_theme()
 	var has_cpp := ClassDB.class_exists("SimulationCore")
 	blurb.text = (
-		"1540s–1560s · East Asian coast\n"
-		+ "Ming garrison + Portuguese support\n"
-		+ "Defend land outposts and sea lanes against Wōkòu raids.\n\n"
+		"1540s–1560s · East Asian coast · Ming garrison + Portuguese support\n"
+		+ "Defend outposts and sea lanes against Wōkòu raids.\n"
 		+ "Sim: %s · offline · dual-front"
 		% ("C++ SimulationCore" if has_cpp else "GDScript fallback (classic only)")
 	)
@@ -80,7 +79,7 @@ func _apply_coastal_theme() -> void:
 		move_child(band, 2)
 	var title: Label = get_node_or_null("Center/VBox/Title")
 	if title:
-		title.add_theme_font_size_override("font_size", 42)
+		title.add_theme_font_size_override("font_size", 36)
 		title.add_theme_color_override("font_color", DUSK)
 	var subtitle: Label = get_node_or_null("Center/VBox/Subtitle")
 	if subtitle:
@@ -187,11 +186,14 @@ func _ensure_version_label() -> void:
 	version.name = "VersionLabel"
 	version.text = "Slice-0 · DT8"
 	version.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	version.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
-	version.offset_top = -56
-	version.offset_bottom = -8
-	version.custom_minimum_size = Vector2(0, ThemeTokensScript.MIN_TOUCH_TARGET_SIZE)
-	version.add_theme_color_override("font_color", Color(0.35, 0.32, 0.30, 1))
+	version.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	version.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
+	version.offset_left = -220
+	version.offset_top = -52
+	version.offset_right = -16
+	version.offset_bottom = -4
+	version.custom_minimum_size = Vector2(160, ThemeTokensScript.MIN_TOUCH_TARGET_SIZE)
+	version.add_theme_color_override("font_color", ThemeTokensScript.PAPER)
 	version.add_theme_font_size_override("font_size", 12)
 	version.mouse_filter = Control.MOUSE_FILTER_STOP
 	version.gui_input.connect(_on_version_gui_input)
@@ -219,13 +221,26 @@ func _open_settings() -> void:
 	var dlg := SettingsDialogScript.new()
 	dlg.name = "SettingsDialog"
 	dlg.opener_control = settings_btn
+	_set_menu_focus_enabled(false)
 	dlg.closed.connect(func():
+		_set_menu_focus_enabled(true)
 		_apply_large_text()
 		_setup_focus_traversal()
 		if is_instance_valid(settings_btn):
 			settings_btn.call_deferred("grab_focus")
 	)
 	add_child(dlg)
+
+
+func _set_menu_focus_enabled(enabled: bool) -> void:
+	var vbox: VBoxContainer = get_node_or_null("Center/VBox")
+	if vbox:
+		for child in vbox.get_children():
+			if child is Control:
+				child.focus_mode = Control.FOCUS_ALL if enabled else Control.FOCUS_NONE
+	var version: Control = get_node_or_null("VersionLabel")
+	if version:
+		version.focus_mode = Control.FOCUS_ALL if enabled else Control.FOCUS_NONE
 
 
 func _apply_large_text() -> void:
@@ -236,6 +251,14 @@ func _apply_large_text() -> void:
 		var s: float = ThemeTokensScript.LARGE_TEXT_SCALE if is_large else 1.0
 		center.pivot_offset = center.size / 2.0
 		center.scale = Vector2(s, s)
+		if not center.resized.is_connected(_on_center_resized):
+			center.resized.connect(_on_center_resized)
+
+
+func _on_center_resized() -> void:
+	var center: Control = get_node_or_null("Center")
+	if center:
+		center.pivot_offset = center.size / 2.0
 
 
 func _setup_focus_traversal() -> void:
@@ -258,13 +281,18 @@ func _setup_focus_traversal() -> void:
 
 	for i in range(controls.size()):
 		var ctrl := controls[i]
-		ThemeTokensScript.apply_accessible_focus(ctrl)
+		if ctrl is Button:
+			ThemeTokensScript.apply_accessible_button(ctrl)
+		else:
+			ThemeTokensScript.apply_accessible_focus(ctrl)
 		var next_ctrl := controls[(i + 1) % controls.size()]
 		var prev_ctrl := controls[(i - 1 + controls.size()) % controls.size()]
 		ctrl.focus_next = next_ctrl.get_path()
 		ctrl.focus_previous = prev_ctrl.get_path()
 		ctrl.focus_neighbor_bottom = next_ctrl.get_path()
 		ctrl.focus_neighbor_top = prev_ctrl.get_path()
+		ctrl.focus_neighbor_left = ctrl.get_path()
+		ctrl.focus_neighbor_right = ctrl.get_path()
 
 
 func _set_initial_focus() -> void:
