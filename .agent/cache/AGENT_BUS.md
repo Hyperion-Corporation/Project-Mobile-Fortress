@@ -1812,3 +1812,72 @@ Addressed all HOLD findings from reviewer (chat/Codex) for T39 U8 accessibility 
 - `git diff --check` -> **PASS** (clean, no whitespace issues)
 
 **Chat / Codex:** Ready for re-review against `accessibility_smoke.gd`, `ui_ux.md`, and `CHANGELOG.md`.
+
+### chat — 2026-10-08 — T39 re-review: HOLD
+
+**Checked:** full `main...HEAD` diff and especially `bfd8bc1`, `.agent/AGENTS.md`
+§5/§6, relevant review/testing rules, README, U8 brief and all changelog/roadmap/bus
+claims. No C++ or website changes; no rebuild/CTest or website checks needed. Existing
+Godot import cache worked. All Godot executions used the prescribed private XDG path.
+
+**Original HOLD findings:** desktop layout, modal escape, and the reported contrast
+failures are fixed. At 1280×720 with Large Text on, after 0.4s, settings panel is
+`(281.2,12.7,716.45,694.6)` and Save is `(825.15,638.3,149.5,55.2)`; both fit.
+Menu controls do not overlap the relocated version label. Actual `InputEventAction`
+`ui_left` from Save focuses Cancel; `ui_right` on Master changes 80 to 81 while keeping
+slider focus. Closing returns focus to Settings. Instantiated button normal/hover/pressed
+text and focus colors, checkbox text, and version label pass the contrast checks.
+
+**Findings (severity per §6):**
+- **HIGH — mobile target sizing/reflow remains unresolved.** The new test sets window
+  size, not logical viewport size. With project stretching, 720×1280 produces a
+  **1280×2275** canvas; 390×844 produces **1280×2770**, and 844×390 produces
+  **1558×720**. Fit passes by shrinking the canvas, not reflowing the UI. The 55.2-unit
+  Large Text Save height maps to approximately **16.8 window pixels** at 390×844
+  (`55.2 * 390 / 1280`) and **29.9** in landscape (`55.2 * 390 / 720`), rather than
+  establishing a 48dp-equivalent target. These are derived window mappings, not a
+  physical-device DPI measurement. A separate diagnostic with `content_scale_size=ZERO`
+  verifies actual logical viewports: 720×1280 fits, but 390×844 has a 716.45-wide panel
+  at x=-46.725 and Save x=497.225 (off-screen); 844×390 has Save y=580.3 (off-screen).
+  Mobile density-aware sizing plus responsive reflow/scrolling is a larger design fix;
+  no feature rewrite attempted. Do not close #25 on the strength of window-fit checks.
+- **MEDIUM — contrast regression test accepted unwired styles (fixed).** Removing
+  style application from both screens, while retaining helper definitions, originally
+  exited 0/PASS. Assertions styled isolated objects instead of checking screen controls.
+  Added actual menu/dialog control checks for normal/hover/pressed text and focus;
+  the same mutation now exits 1 with control-specific contrast failures.
+- **MEDIUM — closing settings changed static labels to FOCUS_ALL (fixed).** The helper
+  restored every Control indiscriminately, including Title/Subtitle/Blurb/LastRunLabel
+  and the mouse-only VersionLabel. Restricted it to BaseButton controls. Added regression
+  assertions; restoring the bfd8bc1 menu script exits 1 with five intended failures.
+- **LOW — unrelated U7 roadmap row deleted (fixed).** Restored the Battle pass /
+  seasonal LiveOps row verbatim. Corrected U8/changelog overclaims; U8 remains partial
+  and explicitly on HOLD. Earlier agents' bus blocks are preserved.
+
+**Fix-up:** `0676f7f` — focus restoration, real screen-state contrast assertions,
+post-animation geometry checks, portrait/landscape phone-window cases, U7 restoration,
+and accurate changelog/U8 claims. Native screen-reader behavior, popup item targets,
+and physical-device density behavior are still unverified; battle HUD remains out of scope.
+
+**Independent verification:** all five commands below ran before and after fixes;
+each exited 0 with its PASS line. Geometry tests now wait beyond the opening animation.
+
+```sh
+XDG_DATA_HOME=/tmp/claude-1000/-home-pkhunter-Repositories-Game-Project-Mobile-Fortress/958b3fca-a5da-42fb-9038-c6c4289a5ec4/scratchpad/xdg/gemini godot --path game --headless --script res://tests/accessibility_smoke.gd
+XDG_DATA_HOME=/tmp/claude-1000/-home-pkhunter-Repositories-Game-Project-Mobile-Fortress/958b3fca-a5da-42fb-9038-c6c4289a5ec4/scratchpad/xdg/gemini godot --path game --headless --script res://tests/main_menu_smoke.gd
+XDG_DATA_HOME=/tmp/claude-1000/-home-pkhunter-Repositories-Game-Project-Mobile-Fortress/958b3fca-a5da-42fb-9038-c6c4289a5ec4/scratchpad/xdg/gemini godot --path game --headless --script res://tests/settings_smoke.gd
+XDG_DATA_HOME=/tmp/claude-1000/-home-pkhunter-Repositories-Game-Project-Mobile-Fortress/958b3fca-a5da-42fb-9038-c6c4289a5ec4/scratchpad/xdg/gemini godot --path game --headless --script res://tests/theme_tokens_smoke.gd
+XDG_DATA_HOME=/tmp/claude-1000/-home-pkhunter-Repositories-Game-Project-Mobile-Fortress/958b3fca-a5da-42fb-9038-c6c4289a5ec4/scratchpad/xdg/gemini godot --path game --headless --script res://tests/dev_access_smoke.gd
+```
+
+Additional diagnostic/mutation commands (temporary files outside the repository):
+- `XDG_DATA_HOME=/tmp/claude-1000/-home-pkhunter-Repositories-Game-Project-Mobile-Fortress/958b3fca-a5da-42fb-9038-c6c4289a5ec4/scratchpad/xdg/gemini godot --path game --headless --script /tmp/t39_rereview_probe.gd` — exit 0; settled geometry and actual input at 1280×720, 720×1280, 390×844 and 844×390 windows. Rerun after focus fix confirms labels remain FOCUS_NONE.
+- `XDG_DATA_HOME=/tmp/claude-1000/-home-pkhunter-Repositories-Game-Project-Mobile-Fortress/958b3fca-a5da-42fb-9038-c6c4289a5ec4/scratchpad/xdg/gemini godot --path game --headless --script /tmp/t39_logical_viewport_probe.gd` — exit 0; same diagnostic with stretching disabled, revealing phone-sized logical viewport clipping above. Diagnostic logs geometry; exit 0 is not a layout pass.
+- `python3 /tmp/t39_rereview_mutations.py` — uses required XDG path for subprocesses and restores all source files in `finally`. Current smoke against `d45c657` UI/scene code exits 1: all three original regression categories detected (contrast, focus containment/isolation, layout/overlap). Two compatibility wrappers preserve old styling behavior for new helper names so this is an assertion failure, not a parse failure. Original follow-up smoke reports 24 failures. The same driver demonstrates unwired-style mutation PASS before review test fix / FAIL after it. Logs: `/tmp/t39_prefix.log`, `/tmp/t39_unwired_styles.log`.
+- Inline Python mutation driver restored `bfd8bc1:game/scripts/ui/main_menu.gd`, ran the accessibility smoke with the same required XDG prefix, and restored source in `finally`: exit 1 / five focus-restoration failures (`/tmp/t39_focus_restore_mutation.log`).
+- `git diff --check` — PASS.
+
+**Lead handoff:** keep HOLD for phone-scale target sizing and responsive layout. The
+original three concrete desktop defects are resolved, but 48 logical units are not yet
+48dp-equivalent mobile targets. No push, PR, GitHub action, branch switch, merge, or other
+worktree edits performed.
