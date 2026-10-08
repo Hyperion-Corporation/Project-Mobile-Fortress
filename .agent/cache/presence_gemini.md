@@ -1,6 +1,6 @@
 # presence_gemini
 
 - **agent:** gemini (Antigravity)
-- **status:** ONLINE — T14/T15/T19/T20/T22/T24/T27/T29/T31/T33/T36 DONE (U9 + U10 complete; full art polish, 6-tile terrain atlas & UI pass delivered)
+- **status:** ONLINE — T39 DONE (U8 menu & settings accessibility pass delivered, ready for review)
 - **canonical bus:** `.agent/cache/AGENT_BUS.md`
-- **updated:** 2026-08-15
+- **updated:** 2026-10-08

@@ -1668,3 +1668,43 @@ changelog entry + roadmap row in the same commit; append one `### <agent> — 20
 block here listing the exact commands you ran and their results; do **not** push, open PRs, or touch
 GitHub issues — that is the lead's job after Chat verifies. If you cannot finish, leave the tree
 uncommitted and say so here.
+
+### gemini — 2026-10-08 — T39 DONE
+
+Shipped U8 accessibility pass for main menu and settings dialog (GitHub #25):
+
+1. **Touch Targets (>= 48 dp):**
+   - Expressed `ThemeTokens.MIN_TOUCH_TARGET_SIZE := 48.0` and `ThemeTokens.MIN_TOUCH_TARGET := Vector2(48.0, 48.0)`.
+   - Enforced minimum 48dp height on all interactive controls in `main_menu.gd` (OptionButton `LevelSelect`, `StartBtn`, `ResumeBtn`, `ClassicBtn`, `SettingsBtn`, `QuitBtn`, and 5-tap dev trigger `VersionLabel`) and `settings_dialog.gd` (sliders, checkboxes, OptionButton `TelemetryOption`, action buttons `ResetBtn`, `CancelBtn`, `SaveBtn`).
+
+2. **Keyboard / Gamepad Focus Traversal & Styling:**
+   - Full closed-loop focus chain (`focus_next`, `focus_previous`, `focus_neighbor_top`, `focus_neighbor_bottom`) on `MainMenu` and `SettingsDialog` eliminating dead-ends.
+   - Initial focus automatically grabbed on screen open (`StartBtn`/`ResumeBtn` on MainMenu; `MasterSlider` on SettingsDialog).
+   - Dialog remembers opener control (`opener_control`) and restores focus back to it on close.
+   - Visible high-contrast focus rings (`ThemeTokens.apply_accessible_focus` using `SEA_INDIGO` ring stylebox with expand margins).
+
+3. **WCAG AA Contrast Compliance:**
+   - Deepened `ThemeTokens.CINNABAR` from `#c23b22` (4.44:1) to `#b5321a` (5.09:1 on `PAPER`, 4.69:1 on `PAPER_CARD`), passing WCAG AA body text minimum (>= 4.5:1).
+   - Fixed Tier 0 description text color from low-contrast gray (3.64:1) to `ThemeTokens.INK_MUTED` (7.18:1).
+   - Added contrast calculation helpers `get_relative_luminance`, `get_contrast_ratio`, and `is_wcag_aa_compliant` to `ThemeTokens`.
+
+4. **Persisted "Large text" (UI scale) Setting:**
+   - Added persisted `large_text` toggle in `settings_dialog.gd` saved via existing `OfflinePersistence` JSON path.
+   - Dynamically scales both `MainMenu` and `SettingsDialog` by 1.15x (`ThemeTokens.LARGE_TEXT_SCALE`).
+   - Kept backward compatibility with existing settings files.
+
+5. **Screen-Reader Metadata (Native Godot 4.7 AccessKit):**
+   - Configured `accessibility_name` and `accessibility_description` on all interactive controls via `ThemeTokens.set_a11y_metadata`, with `tooltip_text` hover fallback. Note: Godot 4.7.1 natively supports `accessibility_name` and `accessibility_description` on `Control` via AccessKit.
+
+6. **Deliberately left out:**
+   - In-battle HUD (`battle_hud.gd`) and battle entities are out of scope for this slice per task instructions and deferred to a dedicated combat HUD pass (noted in roadmap cell).
+
+**Verification commands & results:**
+- `XDG_DATA_HOME=/tmp/claude-1000/-home-pkhunter-Repositories-Game-Project-Mobile-Fortress/958b3fca-a5da-42fb-9038-c6c4289a5ec4/scratchpad/xdg/gemini godot --path game --headless --script res://tests/accessibility_smoke.gd` -> **PASS**
+- `XDG_DATA_HOME=/tmp/claude-1000/-home-pkhunter-Repositories-Game-Project-Mobile-Fortress/958b3fca-a5da-42fb-9038-c6c4289a5ec4/scratchpad/xdg/gemini godot --path game --headless --script res://tests/main_menu_smoke.gd` -> **PASS**
+- `XDG_DATA_HOME=/tmp/claude-1000/-home-pkhunter-Repositories-Game-Project-Mobile-Fortress/958b3fca-a5da-42fb-9038-c6c4289a5ec4/scratchpad/xdg/gemini godot --path game --headless --script res://tests/settings_smoke.gd` -> **PASS**
+- `XDG_DATA_HOME=/tmp/claude-1000/-home-pkhunter-Repositories-Game-Project-Mobile-Fortress/958b3fca-a5da-42fb-9038-c6c4289a5ec4/scratchpad/xdg/gemini godot --path game --headless --script res://tests/theme_tokens_smoke.gd` -> **PASS**
+- `XDG_DATA_HOME=/tmp/claude-1000/-home-pkhunter-Repositories-Game-Project-Mobile-Fortress/958b3fca-a5da-42fb-9038-c6c4289a5ec4/scratchpad/xdg/gemini godot --path game --headless --script res://tests/dev_access_smoke.gd` -> **PASS**
+- `git diff --check` -> **PASS** (no whitespace errors)
+
+**Chat / Codex:** Ready for T39 review against `ui_ux.md` and `accessibility_smoke.gd`.
