@@ -1668,3 +1668,57 @@ changelog entry + roadmap row in the same commit; append one `### <agent> — 20
 block here listing the exact commands you ran and their results; do **not** push, open PRs, or touch
 GitHub issues — that is the lead's job after Chat verifies. If you cannot finish, leave the tree
 uncommitted and say so here.
+
+### kimi — 2026-10-08 — T42 DONE
+
+**Shipped (branch `agent/kimi/T42-q2-smoke-ci`, commit `29d6863`):**
+
+- **`scripts/run_godot_smokes.sh`** (new, mode 755): auto-discovers `game/tests/*_smoke.gd` (new smokes picked up with zero edits), one-off `--import` pass, per-smoke `timeout` (120s default, `SMOKE_TIMEOUT` override). Fails a smoke on non-zero exit OR on output text `SCRIPT ERROR` / `Parse Error` / a printed word-boundary `FAIL` even at exit 0 (ANSI escapes stripped before scanning). Prints a PASS/FAIL table + per-smoke details, writes a combined log (`SMOKE_LOG`, default a fresh `$TMPDIR` file), exit 1 if any failed, 2 on usage error. Optional subset args (`simulation`, `simulation_smoke`, `simulation_smoke.gd` all accepted); `GODOT` env override. `set -euo pipefail`. Commented `SKIP_LIST` (`name|reason` entries, skip = table row, not a failure) — **currently empty: all 19 smokes run headless, no skips needed**.
+- **`.github/workflows/godot-game.yml`**: smoke job calls the script (`GODOT: /tmp/godot/Godot_v4.7.1-stable_linux.x86_64` — pin unchanged), uploads `godot-smokes.log` via `actions/upload-artifact@v4` on `failure()`, triggers also fire on `scripts/run_godot_smokes.sh` edits. CMake/`ctest` job untouched. **Job id `godot-simulation-smoke` kept unchanged** — a required-check config I can't see may reference it; rename later as a conscious lead step if wanted.
+- **`tools/test/justfile`** new `godot-smokes *smokes` recipe; root `justfile` got the help-text line only (per task scope). **`docs/TESTING.md`** new "Godot headless smokes (game/)" section. CHANGELOG + `qa_testing.md` Q2 row in the same commit (row stays 🚧 Partial — Godot export + Android/iOS version matrices are the remainder of Q2; also corrected the stale `godot-core.yml` filename to `godot-game.yml` in that row).
+
+**Findings (nothing under `game/` touched):**
+
+1. **Fresh `godot --headless --import` exits 134 (SIGABRT) *after* a successful import** in this environment: "cannot connect to daemon at tcp:5037" (no adb running; `adb` not on PATH). Import completes (`.godot/` created, smokes run fine). **CI runners will hit this on every fresh clone**, so the runner treats a non-zero `--import` exit as WARN-and-continue — real import breakage is still caught by the smokes' parse-error scan and exit codes. Verified live (below).
+2. All 19 pre-existing smokes pass on unmodified main — no game-code failures to report.
+
+**Verification (this worktree, Godot 4.7.1, isolated `user://` via the round's XDG_DATA_HOME prefix):**
+
+- `XDG_DATA_HOME=.../xdg/kimi ./scripts/run_godot_smokes.sh` — full suite, table verbatim:
+
+```
+== Godot headless smokes: 19 selected (19 discovered), binary: godot (4.7.1.stable.official.a13da4feb) ==
+SMOKE                      RESULT  DETAIL
+debug_cheats_smoke         PASS    0s
+dev_access_smoke           PASS    0s
+dev_diag_smoke             PASS    1s
+flatbuffers_smoke          PASS    0s
+gameplay_smoke             PASS    3s
+game_session_smoke         PASS    1s
+hero_e_smoke               PASS    0s
+level_catalog_smoke        PASS    1s
+level_picker_smoke         PASS    0s
+main_menu_smoke            PASS    0s
+modular_battle_smoke       PASS    10s
+offline_persistence_smoke  PASS    1s
+playtest_log_smoke         PASS    0s
+progression_smoke          PASS    0s
+scenario_control_smoke     PASS    1s
+settings_smoke             PASS    0s
+simulation_smoke           PASS    1s
+theme_tokens_smoke         PASS    0s
+unit_token_smoke           PASS    0s
+
+== Summary: 19 passed, 0 failed, 0 skipped (of 19 selected) ==
+```
+exit 0, ~20s wall.
+
+- Failure-text path: temp `game/tests/zz_kimi_tmpfail_smoke.gd` (prints `FAIL`, `quit(0)`) → auto-discovered ("20 discovered", no script edits), row `FAIL  exit=0 but matched: FAIL output`, script exit 1; temp file deleted afterwards — `game/` is not in the commit.
+- Subset/usage: `./scripts/run_godot_smokes.sh simulation gameplay_smoke.gd` → 2 passed, exit 0; `./scripts/run_godot_smokes.sh bogus_name` → `ERROR: unknown smoke: bogus_name (available: ...)` exit 2.
+- Fresh-import path: moved `game/.godot` aside, reran → `WARN: --import exited 134 (continuing; smokes still validate the project)`, `unit_token_smoke PASS`, exit 0.
+- Recipe: `just test::godot-smokes simulation` → PASS; `just help` lists the new line.
+- `bash -n scripts/run_godot_smokes.sh` OK; `git diff --check` OK; `python3 -c "import yaml,sys; yaml.safe_load(open(sys.argv[1]))" .github/workflows/godot-game.yml` → parses.
+- **shellcheck: NOT INSTALLED on this machine** (`which shellcheck` empty, no pip) — could not run it; script written/reviewed against shellcheck rules (no unquoted expansions, `rc` capture via `|| rc=$?`, `mapfile`+`nullglob`, etc.). Flag for Chat if review wants a real shellcheck pass.
+- **GitHub Actions cannot be run locally** — workflow verified by YAML parse + step-level parity with the previous job; first real execution is on merge.
+
+**Deliberately left out:** empty SKIP_LIST (nothing qualifies); no Godot export matrix / Android-iOS version matrix work (remainder of Q2); no root `godot-smokes` shorthand recipe (task scoped root justfile to help text — use `just test::godot-smokes`); job id rename (above). Nothing under `game/` modified.
