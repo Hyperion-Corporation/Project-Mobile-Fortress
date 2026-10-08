@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (2026-10-08, T43 ID8 interactive dual-front demo)
+
+- **ID8:** New `/dashboard/demo` route — interactive dual-front placement-and-raid mini-game. Pure deterministic TypeScript sim (`src/simulations/dualFrontDemo.ts`) with fixed timestep, injectable config, no `Math.random`. React view (`DualFrontDemoView.tsx`) with two grids (land + sea), unit palette, budget tracking, keyboard-accessible cells, `prefers-reduced-motion` support, and clear win/lose states. Unit stats mirror `game/scripts/data/unit_defs.gd`. Vitest suite: 22 sim tests + 8 view tests. Tests: 58/58 pass. Lint: 0 errors. `tsc -b --noCheck`: pass.
+
 ### Changed (2026-08-15, T37 DT6 overlay level picker)
 
 - **DT6:** DT8 overlay `LevelPickSelect` lists `LevelCatalog` dual-front JSONs. **Load level** sets `GameSession.selected_level_path` and calls `BattleRoot.debug_load_level` (in-place reset to that JSON's build/waves/兩). Wave jump stays DT3. Smoke: `level_picker_smoke.gd`.

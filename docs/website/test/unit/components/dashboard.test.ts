@@ -157,6 +157,13 @@ describe("dashboard view imports smoke", () => {
     expect(typeof mod.default).toBe("function");
   });
 
+  it("DualFrontDemoView module resolves", async () => {
+    const mod = await import(
+      "../../../src/frameworks/react/views/DualFrontDemoView"
+    );
+    expect(typeof mod.default).toBe("function");
+  });
+
   it("useDashboardData hook module resolves", async () => {
     const mod = await import("../../../src/hooks/useDashboardData");
     expect(typeof mod.useDashboardData).toBe("function");

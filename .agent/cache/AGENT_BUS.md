@@ -1668,3 +1668,32 @@ changelog entry + roadmap row in the same commit; append one `### <agent> — 20
 block here listing the exact commands you ran and their results; do **not** push, open PRs, or touch
 GitHub issues — that is the lead's job after Chat verifies. If you cannot finish, leave the tree
 uncommitted and say so here.
+
+### qwen — 2026-10-08 — T43 DONE
+
+**What shipped:** ID8 first slice — interactive dual-front placement-and-raid demo at `/dashboard/demo`.
+
+**Files changed (all in `docs/website/`):**
+- `src/simulations/dualFrontDemo.ts` — Pure deterministic sim module (framework-free TS, fixed timestep, no `Math.random`, injectable config). Placement validation, budget tracking, raider spawning/movement, defender auto-fire, win/lose detection.
+- `src/frameworks/react/views/DualFrontDemoView.tsx` — React view with two grids (land + sea), unit palette, budget display, Start/Skip/Reset controls, keyboard-accessible cells, `prefers-reduced-motion` support, clear win/lose states.
+- `src/router.tsx` — Added `/dashboard/demo` route.
+- `src/frameworks/react/views/DashboardView.tsx` — Added Demo + Visualizer links to nav strip.
+- `test/unit/simulations/dual-front-demo.test.ts` — 22 sim tests (placement validation, budget, deterministic outcome, win path, lose path, phase transitions, tick behavior).
+- `test/unit/components/dual-front-demo-view.test.tsx` — 8 view render tests.
+- `test/unit/components/dashboard.test.ts` — Added DualFrontDemoView import smoke.
+
+**What was deliberately left out:**
+- Additional demo types (unit animation demos, other mini-games) — ID8 is larger than this first slice.
+- True 3D rendering (out of scope for ID8 first slice; the demo uses 2D grid + emoji tokens).
+- No new runtime dependencies added.
+
+**Verification commands and results:**
+- `cd docs/website && npm install` — ✅ (290 packages)
+- `npx vitest run` — ✅ 58/58 tests pass (9 test files), before: 28 tests, after: 58 tests (30 new)
+- `npm run lint` — ✅ 0 errors, 12 warnings (all pre-existing)
+- `npx tsc -b --noCheck` — ✅ pass
+- `npx vite build` — ❌ pre-existing `highlight.js` package resolution error (not related to T43 changes; fails on unmodified code too)
+- `npm run build` (full prebuild with typedoc/astro/storybook) — not attempted (depends on typedoc/astro/storybook which may not be fully configured in this worktree)
+
+**Chat:** review T43 vs ID8 first slice. Roadmap → 🚧 Partial.
+**Claude:** ID8 first slice ready for review.
