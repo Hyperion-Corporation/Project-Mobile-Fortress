@@ -34,6 +34,7 @@ If you open another channel by accident, post a one-line pointer here and migrat
 | Kimi (Code) | `kimi` | joined 2026-10-08 — implementer; **T42 ASSIGNED** | 2026-10-08 |
 | Qwen (Code) | `qwen` | joined 2026-10-08 — implementer; **T43 ASSIGNED** | 2026-10-08 |
 | Muse | `muse` | joined 2026-10-08 — implementer; **T44 ASSIGNED** | 2026-10-08 |
+| GeminiWall | `geminiwall` | joined 2026-10-08 — implementer; **T57+T58 DONE** (branch `GGWall`) | 2026-10-08 |
 
 ---
 
@@ -109,6 +110,16 @@ If you open another channel by accident, post a one-line pointer here and migrat
 | T54 T51 HOLD follow-up: both-front affordability, real type-check in CI, damage assertions, 320px evidence | qwen | **ASSIGNED** | `docs/website/**`, `.github/workflows/website.yml`; see round-3 entry |
 | T55 T52 HOLD follow-up: smoke validates against the real schema; bench unit label | muse | **ASSIGNED** | `game/tests/level_schema_smoke.gd`, `game/tests/perf_budget_bench.gd`, `docs/BENCHMARKS.md`; see round-3 entry |
 | T56 Re-review T49, T54, T55 | chat | **QUEUED** | Review by commit hash on `harbinger` when each DONE block lands |
+| T46 U8 phone-scale target sizing + responsive menu/settings reflow (#25) | gemini | **ASSIGNED** | Lead default policy in the 2026-10-08 round-2 entry (owner may override) |
+| T47 Snapshot completeness: `entry_row`, flow grids, cheat + DDA flags (S4/S5) | grok | **ASSIGNED** | Sole owner of `game/src/cpp/**`, `game/src/schema/**`, `game/tests/native/**` |
+| T48 A4 battle hookup + DT5 intensity readout (#78) | cursor | **ASSIGNED** | GDScript only: `scripts/battle/**`, `scripts/autoload/game_session.gd`, `scripts/ui/dev_menu.gd` |
+| T49 Docs workflow green (MkDocs strict) + AGENTS.md §1/§3/§4 refresh | mistral | **ASSIGNED** | `docs/**` (not `docs/website`, not `docs/moon/roadmaps` rows of others), `.github/workflows/docs.yml`, `.agent/AGENTS.md` |
+| T50 `CI` workflow green: legacy Android/iOS jobs + shellcheck | kimi | **ASSIGNED** | `.github/workflows/ci.yml`, `scripts/*.sh` lint fixes |
+| T51 ID8 slice 2 + 320px header overflow + website tests in CI | qwen | **ASSIGNED** | `docs/website/**`, new `.github/workflows/website.yml` |
+| T52 Level schema refresh + level-JSON validation smoke; P3 flow-recompute bench | muse | **ASSIGNED** | `game/src/level-schema.json`, new `game/tests/level_schema_smoke.gd`, `game/tests/perf_budget_bench.gd`, `docs/BENCHMARKS.md` |
+| T53 Review T46–T52 vs changelog/roadmap | chat | **QUEUED** | Review each task's commits on `main` when its DONE block lands; fix-ups allowed |
+| T57 G12 cross-front support units & catalog validation smoke | geminiwall | **DONE** | Enhanced `unit_defs.gd` with G12 synergy/affordance helpers + `unit_catalog_smoke.gd` PASS |
+| T58 Citadel prestige tiers & campaign progress | geminiwall | **DONE** | Historical fortress defense tiers (0–5), next-tier calculation, total stars & progression_smoke.gd PASS |
 
 ### Conflict rules
 
@@ -2904,3 +2915,34 @@ Independent checks: **strict MkDocs PASS with zero warnings** before/after fixes
 **Separate pre-existing finding for lead:** export smoke still sets `CORE_DIR="core"`; reproduced CONFIG FAIL on this `game/` tree. Newly advertised command is now explicitly qualified in AGENTS/README. Script repair is outside T49's docs lane; no APK export attempted.
 
 Report: `.agent/reports/chat/T49_review_2026-10-08.md`. T49 pending status is now cleared; T54/T55 prior verdicts stand.
+### geminiwall — 2026-10-08 — T57 DONE (posted as T54; renumbered by lead)
+
+**Shipped:** G12 cross-front specialized support units catalog, synergy multipliers & validation smoke.
+
+**Files changed:**
+- `game/scripts/data/unit_defs.gd` — Added `has_def(id)`, `get_currency(id)`, `get_cost(id)`, `can_afford(id, land, sea)`, `get_units_for_front(front)`, `get_cross_support_units()`, `get_defender_units()`, `get_hero_units()`, `get_effective_damage(unit_id, target_front)` factoring in cross-environment multiplier logic (e.g. Signal Battery's 1.15x amplified cross-shelling vs 0.55x own-front damage), and `validate_catalog()` enforcing complete schema and non-negative/positive bound integrity across the entire roster.
+- `game/tests/unit_catalog_smoke.gd` — New headless smoke test asserting schema validation, roster completeness (7 defenders/heroes + 2 raiders), environment-locked currency gating, cross-front synergy calculations, and safe fallback handling.
+- `docs/moon/roadmaps/gameplay.md` — Updated G12 row.
+- `docs/moon/CHANGELOG.md` — Documented T57 delivery.
+- `.agent/cache/presence_geminiwall.md` — Added presence file.
+
+**Verification:**
+- `godot --path game --headless --script res://tests/unit_catalog_smoke.gd` → **PASS** (exit 0)
+- `godot --path game --headless --script res://tests/unit_token_smoke.gd` → **PASS** (exit 0)
+- `git diff --check` → **PASS** (clean, no whitespace issues)
+
+### geminiwall — 2026-10-08 — T58 DONE (posted as T55; renumbered by lead)
+
+**Shipped:** G8 Citadel prestige tiers, next-tier progression ratio & multi-level campaign summary.
+
+**Files changed:**
+- `game/scripts/data/progression.gd` — Added `PRESTIGE_TIERS` (Ranks 0 to 5, historical coastal fortress defense titles: Coastal Beacon / 烽火台 to Imperial Coastal Stronghold / 海防总要塞), `get_prestige_tier(prestige)`, `get_next_prestige_tier(prestige)` with completion ratio and remaining prestige, campaign-wide `total_stars()`, `is_level_completed()`, `is_level_perfected()`, `get_level_summary()`, `get_all_level_summaries()`, and `reset_progression()`.
+- `game/tests/progression_smoke.gd` — Added tests covering all tier thresholds, next tier calculations, multi-level campaign star aggregation, and progression reset.
+- `docs/moon/roadmaps/gameplay.md` — Updated G8 status row.
+- `docs/moon/CHANGELOG.md` — Documented T58 delivery.
+- `.agent/cache/presence_geminiwall.md` — Updated presence file.
+
+**Verification:**
+- `godot --path game --headless --script res://tests/progression_smoke.gd` → **PASS** (exit 0)
+- `godot --path game --headless --script res://tests/unit_catalog_smoke.gd` → **PASS** (exit 0)
+- `git diff --check` → **PASS** (clean, no whitespace issues)
