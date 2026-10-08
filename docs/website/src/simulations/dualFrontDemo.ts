@@ -7,6 +7,9 @@
  * Two grids (land + sea), player places defenders with a budget, presses start,
  * raiders walk in along a path and are shot by placed defenders. Win if the raid
  * ends with HQ HP remaining; lose if HQ HP reaches 0.
+ *
+ * Slice 2 adds a hero with an active ability (area damage on auto-cooldown)
+ * and a cross-front support unit that fires at both fronts with split damage.
  */
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -17,12 +20,20 @@ export type Phase = "placing" | "running" | "win" | "lose";
 export interface UnitDef {
   id: string;
   name: string;
-  front: Front;
+  front: Front | "both";
   cost: number;
   hp: number;
   damage: number;
   range: number;
   cooldown: number;
+  /** Hero active ability cooldown (ticks). Absent for non-heroes. */
+  activeCooldown?: number;
+  /** Hero active ability damage (area). Absent for non-heroes. */
+  activeDamage?: number;
+  /** Damage multiplier vs raiders on the unit's own front. */
+  ownEnvMult?: number;
+  /** Damage multiplier vs raiders on the opposite front. */
+  crossEnvMult?: number;
 }
 
 export interface PlacedUnit {
@@ -34,6 +45,8 @@ export interface PlacedUnit {
   hp: number;
   maxHp: number;
   cooldownRemaining: number;
+  /** Ticks until the hero's active ability is ready. Absent for non-heroes. */
+  activeCooldownRemaining?: number;
 }
 
 export interface Raider {
@@ -94,14 +107,16 @@ export const UNIT_DEFS: UnitDef[] = [
   { id: "cannon", name: "Fo-lang-ji Cannon Crew", front: "land", cost: 18, hp: 30, damage: 14, range: 3, cooldown: 12 },
   { id: "arquebusier", name: "Portuguese Arquebusier", front: "sea", cost: 12, hp: 32, damage: 10, range: 2, cooldown: 9 },
   { id: "junk", name: "East Asian War Junk", front: "sea", cost: 16, hp: 45, damage: 11, range: 2, cooldown: 9 },
+  { id: "hero_qi", name: "Commander Qi (Hero)", front: "land", cost: 28, hp: 55, damage: 12, range: 2, cooldown: 10, activeCooldown: 80, activeDamage: 28 },
+  { id: "cross_support", name: "Signal Battery", front: "both", cost: 20, hp: 28, damage: 6, range: 3, cooldown: 11, ownEnvMult: 0.55, crossEnvMult: 1.15 },
 ];
 
 export const DEFAULT_CONFIG: DemoConfig = {
   cols: 6,
   rows: 3,
   pathRow: 1,
-  landBudget: 40,
-  seaBudget: 40,
+  landBudget: 60,
+  seaBudget: 60,
   hqHp: 50,
   placementRows: [0, 2],
   waves: buildWaves(),
@@ -155,7 +170,7 @@ export function canPlace(
   if (state.phase !== "placing") return "Not in placement phase";
   const def = getUnitDef(defId, config);
   if (!def) return "Unknown unit";
-  if (def.front !== front) return `Unit is for ${def.front} front, not ${front}`;
+  if (def.front !== "both" && def.front !== front) return `Unit is for ${def.front} front, not ${front}`;
   if (col < 0 || col >= config.cols) return "Column out of bounds";
   if (row < 0 || row >= config.rows) return "Row out of bounds";
   if (!config.placementRows.includes(row)) return "Cannot place on path row";
@@ -190,6 +205,7 @@ export function placeUnit(
     hp: def.hp,
     maxHp: def.hp,
     cooldownRemaining: 0,
+    ...(def.activeCooldown != null ? { activeCooldownRemaining: 0 } : {}),
   };
 
   const next = { ...state, nextUid: state.nextUid + 1 };
@@ -319,19 +335,107 @@ function defendersFire(state: SimState, config: DemoConfig): SimState {
   for (const unit of allUnits) {
     const def = getUnitDef(unit.defId, config)!;
 
+    // Tick down hero ability cooldown
+    const acr = unit.activeCooldownRemaining != null
+      ? Math.max(0, unit.activeCooldownRemaining - 1)
+      : undefined;
+
     if (unit.cooldownRemaining > 0) {
-      updatedUnits.push({ ...unit, cooldownRemaining: unit.cooldownRemaining - 1 });
+      updatedUnits.push({
+        ...unit,
+        cooldownRemaining: unit.cooldownRemaining - 1,
+        ...(acr != null ? { activeCooldownRemaining: acr } : {}),
+      });
       continue;
     }
 
-    // Find target: closest alive raider on same front within range
+    // Hero active ability: area damage to all raiders in range on the unit's front
+    if (def.activeDamage != null && def.activeCooldown != null && (acr ?? 0) === 0) {
+      const abilityTargets = raiders.filter((r) => {
+        if (!r.alive || r.hp <= 0) return false;
+        if (r.front !== unit.front) return false;
+        const dx = Math.abs(r.col - unit.col);
+        const dy = Math.abs(config.pathRow - unit.row);
+        return Math.max(dx, dy) <= def.range;
+      });
+      if (abilityTargets.length > 0) {
+        for (const t of abilityTargets) {
+          t.hp -= def.activeDamage;
+        }
+        log.push(`Tick ${state.tick}: ${def.name} unleashes ability for ${def.activeDamage} on ${abilityTargets.length} raider(s)`);
+        updatedUnits.push({
+          ...unit,
+          cooldownRemaining: def.cooldown,
+          activeCooldownRemaining: def.activeCooldown,
+        });
+        continue;
+      }
+    }
+
+    // Cross-support: fires at both fronts with env multipliers
+    if (def.ownEnvMult != null && def.crossEnvMult != null) {
+      const ownTargets = raiders.filter((r) => {
+        if (!r.alive || r.hp <= 0) return false;
+        if (r.front !== unit.front) return false;
+        const dx = Math.abs(r.col - unit.col);
+        const dy = Math.abs(config.pathRow - unit.row);
+        return Math.max(dx, dy) <= def.range;
+      });
+      const crossTargets = raiders.filter((r) => {
+        if (!r.alive || r.hp <= 0) return false;
+        if (r.front === unit.front) return false;
+        const dx = Math.abs(r.col - unit.col);
+        const dy = Math.abs(config.pathRow - unit.row);
+        return Math.max(dx, dy) <= def.range;
+      });
+      const ownDmg = Math.round(def.damage * def.ownEnvMult);
+      const crossDmg = Math.round(def.damage * def.crossEnvMult);
+      let hit = false;
+      if (ownTargets.length > 0) {
+        const closest = ownTargets.sort((a, b) => a.col - b.col)[0];
+        closest.hp -= ownDmg;
+        log.push(`Tick ${state.tick}: ${def.name} hits ${unit.front} raider for ${ownDmg}`);
+        hit = true;
+      }
+      if (crossTargets.length > 0) {
+        const closest = crossTargets.sort((a, b) => a.col - b.col)[0];
+        closest.hp -= crossDmg;
+        const otherFront = unit.front === "land" ? "sea" : "land";
+        log.push(`Tick ${state.tick}: ${def.name} hits ${otherFront} raider for ${crossDmg}`);
+        hit = true;
+      }
+      if (hit) {
+        updatedUnits.push({
+          ...unit,
+          cooldownRemaining: def.cooldown,
+          ...(acr != null ? { activeCooldownRemaining: acr } : {}),
+        });
+      } else {
+        updatedUnits.push({
+          ...unit,
+          cooldownRemaining: 0,
+          ...(acr != null ? { activeCooldownRemaining: acr } : {}),
+        });
+      }
+      continue;
+    }
+
+    // Normal defender: find closest alive raider on same front within range
     const target = findTarget(unit, def, raiders, config);
     if (target) {
       target.hp -= def.damage;
       log.push(`Tick ${state.tick}: ${def.name} hits raider for ${def.damage}`);
-      updatedUnits.push({ ...unit, cooldownRemaining: def.cooldown });
+      updatedUnits.push({
+        ...unit,
+        cooldownRemaining: def.cooldown,
+        ...(acr != null ? { activeCooldownRemaining: acr } : {}),
+      });
     } else {
-      updatedUnits.push({ ...unit, cooldownRemaining: 0 });
+      updatedUnits.push({
+        ...unit,
+        cooldownRemaining: 0,
+        ...(acr != null ? { activeCooldownRemaining: acr } : {}),
+      });
     }
   }
 
@@ -413,4 +517,20 @@ export function runToEnd(state: SimState, config: DemoConfig = DEFAULT_CONFIG, m
     ticks++;
   }
   return s;
+}
+
+// ── Unit classification helpers ──────────────────────────────────────────────
+
+export function isHero(def: UnitDef): boolean {
+  return def.activeCooldown != null && def.activeDamage != null;
+}
+
+export function isCrossSupport(def: UnitDef): boolean {
+  return def.ownEnvMult != null && def.crossEnvMult != null;
+}
+
+/** Returns 0..1 fraction of hero ability cooldown remaining (0 = ready). */
+export function getAbilityCooldownFraction(unit: PlacedUnit, def: UnitDef): number {
+  if (!isHero(def) || def.activeCooldown == null || def.activeCooldown === 0) return 0;
+  return (unit.activeCooldownRemaining ?? 0) / def.activeCooldown;
 }

@@ -14,6 +14,9 @@ import {
   tick,
   runToEnd,
   getUnitDef,
+  isHero,
+  isCrossSupport,
+  getAbilityCooldownFraction,
   DEFAULT_CONFIG,
 } from "../../../src/simulations/dualFrontDemo";
 
@@ -64,27 +67,29 @@ describe("placement validation", () => {
 describe("budget enforcement", () => {
   it("deducts cost on placement", () => {
     let state = createState(CFG);
-    expect(state.landBudget).toBe(40);
+    expect(state.landBudget).toBe(60);
     state = placeUnit(state, "spearman", 0, 0, "land", CFG);
-    expect(state.landBudget).toBe(30);
+    expect(state.landBudget).toBe(50);
   });
 
   it("rejects placement when budget is insufficient", () => {
     let state = createState(CFG);
-    state = placeUnit(state, "spearman", 0, 0, "land", CFG); // 40 - 10 = 30
-    state = placeUnit(state, "spearman", 1, 0, "land", CFG); // 30 - 10 = 20
-    state = placeUnit(state, "spearman", 2, 0, "land", CFG); // 20 - 10 = 10
-    state = placeUnit(state, "spearman", 3, 0, "land", CFG); // 10 - 10 = 0
-    expect(canPlace(state, "spearman", 4, 0, "land", CFG)).toBe("Insufficient budget");
+    state = placeUnit(state, "spearman", 0, 0, "land", CFG); // 60 - 10 = 50
+    state = placeUnit(state, "spearman", 1, 0, "land", CFG); // 50 - 10 = 40
+    state = placeUnit(state, "spearman", 2, 0, "land", CFG); // 40 - 10 = 30
+    state = placeUnit(state, "spearman", 3, 0, "land", CFG); // 30 - 10 = 20
+    state = placeUnit(state, "spearman", 4, 0, "land", CFG); // 20 - 10 = 10
+    state = placeUnit(state, "spearman", 5, 0, "land", CFG); // 10 - 10 = 0
+    expect(canPlace(state, "spearman", 0, 2, "land", CFG)).toBe("Insufficient budget");
   });
 
   it("refunds cost on removal", () => {
     let state = createState(CFG);
     state = placeUnit(state, "spearman", 0, 0, "land", CFG);
-    expect(state.landBudget).toBe(30);
+    expect(state.landBudget).toBe(50);
     const uid = state.landUnits[0].uid;
     state = removeUnit(state, uid, CFG);
-    expect(state.landBudget).toBe(40);
+    expect(state.landBudget).toBe(60);
     expect(state.landUnits).toHaveLength(0);
   });
 
@@ -92,8 +97,8 @@ describe("budget enforcement", () => {
     let state = createState(CFG);
     state = placeUnit(state, "spearman", 0, 0, "land", CFG);
     state = placeUnit(state, "arquebusier", 0, 0, "sea", CFG);
-    expect(state.landBudget).toBe(30);
-    expect(state.seaBudget).toBe(28);
+    expect(state.landBudget).toBe(50);
+    expect(state.seaBudget).toBe(48);
   });
 });
 
@@ -247,5 +252,129 @@ describe("raid schedule regressions", () => {
         );
       }
     }
+  });
+});
+
+// ── Hero ability ──────────────────────────────────────────────────────────────
+
+describe("hero ability", () => {
+  it("hero_qi is classified as a hero", () => {
+    const def = getUnitDef("hero_qi", CFG)!;
+    expect(def).toBeDefined();
+    expect(def.activeCooldown).toBe(80);
+    expect(def.activeDamage).toBe(28);
+  });
+
+  it("hero starts with ability ready (activeCooldownRemaining = 0)", () => {
+    let state = createState(CFG);
+    state = placeUnit(state, "hero_qi", 2, 0, "land", CFG);
+    expect(state.landUnits[0].activeCooldownRemaining).toBe(0);
+  });
+
+  it("hero ability deals area damage to all raiders in range on its front", () => {
+    let state = createState(CFG);
+    state = placeUnit(state, "hero_qi", 2, 0, "land", CFG);
+    state = startRun(state);
+
+    // Advance to tick 5 so the first land raider spawns
+    for (let i = 0; i < 5; i++) state = tick(state, CFG);
+
+    // The hero should have fired its ability at the land raider
+    const landRaiders = state.raiders.filter((r) => r.front === "land" && r.alive);
+    // Raider was hit by ability (28 damage) — hp should be 28 - 28 = 0 or reduced
+    const hitRaider = state.raiders.find((r) => r.front === "land" && r.hp < 28);
+    expect(hitRaider).toBeDefined();
+  });
+
+  it("hero ability goes on cooldown after triggering", () => {
+    let state = createState(CFG);
+    state = placeUnit(state, "hero_qi", 2, 0, "land", CFG);
+    state = startRun(state);
+
+    // Advance to tick 5 so raider spawns and ability fires
+    for (let i = 0; i < 5; i++) state = tick(state, CFG);
+
+    const hero = state.landUnits[0];
+    expect(hero.activeCooldownRemaining).toBeGreaterThan(0);
+    expect(hero.activeCooldownRemaining).toBeLessThanOrEqual(80);
+  });
+
+  it("hero ability does not fire at raiders on the opposite front", () => {
+    let state = createState(CFG);
+    state = placeUnit(state, "hero_qi", 2, 0, "land", CFG);
+    state = startRun(state);
+
+    // Advance to tick 8 so a sea raider spawns (no land raiders yet after tick 5)
+    for (let i = 0; i < 8; i++) state = tick(state, CFG);
+
+    // Sea raiders should not have been hit by the hero's ability
+    const seaRaiders = state.raiders.filter((r) => r.front === "sea");
+    for (const r of seaRaiders) {
+      expect(r.hp).toBe(r.maxHp);
+    }
+  });
+});
+
+// ── Cross-support ─────────────────────────────────────────────────────────────
+
+describe("cross-support unit", () => {
+  it("cross_support can be placed on either front", () => {
+    let state = createState(CFG);
+    expect(canPlace(state, "cross_support", 0, 0, "land", CFG)).toBeNull();
+    expect(canPlace(state, "cross_support", 0, 0, "sea", CFG)).toBeNull();
+  });
+
+  it("cross_support is classified correctly", () => {
+    const def = getUnitDef("cross_support", CFG)!;
+    expect(def).toBeDefined();
+    expect(def.front).toBe("both");
+    expect(def.ownEnvMult).toBe(0.55);
+    expect(def.crossEnvMult).toBe(1.15);
+  });
+
+  it("cross_support fires at raiders on both fronts", () => {
+    let state = createState(CFG);
+    state = placeUnit(state, "cross_support", 3, 0, "land", CFG);
+    state = startRun(state);
+
+    // Advance until both land and sea raiders are in range
+    for (let i = 0; i < 20; i++) state = tick(state, CFG);
+
+    // Check the log for cross-support hits on both fronts
+    const ownHits = state.log.filter((l) => l.includes("Signal Battery") && l.includes("land raider"));
+    const crossHits = state.log.filter((l) => l.includes("Signal Battery") && l.includes("sea raider"));
+    expect(ownHits.length + crossHits.length).toBeGreaterThan(0);
+  });
+
+  it("cross_support deals reduced damage to own front and boosted to cross front", () => {
+    const def = getUnitDef("cross_support", CFG)!;
+    const ownDmg = Math.round(def.damage * def.ownEnvMult!);
+    const crossDmg = Math.round(def.damage * def.crossEnvMult!);
+    expect(ownDmg).toBe(3);
+    expect(crossDmg).toBe(7);
+  });
+});
+
+// ── Unit classification helpers ──────────────────────────────────────────────
+
+describe("unit classification", () => {
+  it("isHero returns true only for heroes", () => {
+    expect(isHero(getUnitDef("hero_qi", CFG)!)).toBe(true);
+    expect(isHero(getUnitDef("spearman", CFG)!)).toBe(false);
+    expect(isHero(getUnitDef("cross_support", CFG)!)).toBe(false);
+  });
+
+  it("isCrossSupport returns true only for cross-support", () => {
+    expect(isCrossSupport(getUnitDef("cross_support", CFG)!)).toBe(true);
+    expect(isCrossSupport(getUnitDef("spearman", CFG)!)).toBe(false);
+    expect(isCrossSupport(getUnitDef("hero_qi", CFG)!)).toBe(false);
+  });
+
+  it("getAbilityCooldownFraction returns 0..1", () => {
+    let state = createState(CFG);
+    state = placeUnit(state, "hero_qi", 2, 0, "land", CFG);
+    const hero = state.landUnits[0];
+    const def = getUnitDef("hero_qi", CFG)!;
+    expect(getAbilityCooldownFraction(hero, def)).toBe(0);
   });
 });

@@ -101,4 +101,8 @@ kbd {
   .search-trigger kbd {
     display: none;
   }
+  .search-trigger {
+    min-width: 0;
+    padding: 0.4rem;
+  }
 }

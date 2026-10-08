@@ -16,12 +16,15 @@
   background: color-mix(in srgb, var(--bg) 88%, transparent);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--border);
+  min-width: 0;
+  overflow-x: hidden;
 }
 .topbar-left,
 .topbar-right {
   display: flex;
   align-items: center;
   gap: 0.9rem;
+  min-width: 0;
 }
 
 .menu-btn {
@@ -113,5 +116,21 @@
     place-items: center;
     width: 2rem;
     height: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .topbar {
+    padding: 0 0.5rem;
+  }
+  .topbar-left,
+  .topbar-right {
+    gap: 0.4rem;
+  }
+  .brand-name {
+    display: none;
+  }
+  .brand {
+    gap: 0.25rem;
   }
 }

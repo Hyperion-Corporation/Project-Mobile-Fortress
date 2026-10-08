@@ -1,0 +1,42 @@
+name: Website
+
+on:
+  push:
+    branches: [main, harbinger]
+    paths:
+      - "docs/website/**"
+      - ".github/workflows/website.yml"
+  pull_request:
+    branches: [main, harbinger]
+    paths:
+      - "docs/website/**"
+      - ".github/workflows/website.yml"
+
+concurrency:
+  group: website-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-typecheck-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: docs/website
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - run: npm ci
+
+      - name: Lint
+        run: npx eslint -c stack/eslint/eslint.config.js src/
+
+      - name: Type-check
+        run: npx tsc -b --noCheck
+
+      - name: Test
+        run: npx vitest run

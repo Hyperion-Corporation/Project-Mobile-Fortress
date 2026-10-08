@@ -71,6 +71,24 @@ describe("DualFrontDemoView", () => {
     const mod = await import("../../../src/frameworks/react/views/DualFrontDemoView");
     expect(typeof mod.default).toBe("function");
   });
+
+  it("renders hero and cross-support unit buttons", () => {
+    renderView();
+    expect(screen.getByText(/\(Hero\) ⭐/)).toBeDefined();
+    expect(screen.getAllByText(/Battery/).length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("renders hero badge on the hero unit button", () => {
+    renderView();
+    const heroBtn = screen.getByRole("button", { name: /\(Hero\)/ });
+    expect(heroBtn.textContent).toContain("⭐");
+  });
+
+  it("renders cross-support badge on the cross-support button", () => {
+    renderView();
+    const crossBtn = screen.getByRole("button", { name: /Battery/ });
+    expect(crossBtn.textContent).toContain("🔗");
+  });
 });
 
 describe("demo interactions", () => {
@@ -81,26 +99,26 @@ describe("demo interactions", () => {
       name: new RegExp(`^${front} grid, column 3, row ${row}`),
     });
     fireEvent.click(cell("land", 1));
-    expect(screen.getByText(/Land 兩/).querySelector("strong")?.textContent).toBe("30");
+    expect(screen.getByText(/Land 兩/).querySelector("strong")?.textContent).toBe("50");
     expect(cell("land", 1).getAttribute("aria-label")).toContain("Spearman");
     fireEvent.click(cell("land", 1));
-    expect(screen.getByText(/Land 兩/).querySelector("strong")?.textContent).toBe("40");
+    expect(screen.getByText(/Land 兩/).querySelector("strong")?.textContent).toBe("60");
     fireEvent.click(screen.getByRole("button", { name: /Crew/ }));
     fireEvent.click(cell("land", 1));
     fireEvent.click(cell("land", 3));
     fireEvent.click(screen.getByRole("button", { name: /Junk/ }));
     fireEvent.click(cell("sea", 1));
     fireEvent.click(cell("sea", 3));
-    expect(screen.getByText(/Land 兩/).querySelector("strong")?.textContent).toBe("4");
-    expect(screen.getByText(/Sea 兩/).querySelector("strong")?.textContent).toBe("8");
+    expect(screen.getByText(/Land 兩/).querySelector("strong")?.textContent).toBe("24");
+    expect(screen.getByText(/Sea 兩/).querySelector("strong")?.textContent).toBe("28");
     fireEvent.click(screen.getByRole("button", { name: /Start Raid/ }));
     expect(screen.getByText("⚔️ Combat")).toBeDefined();
     fireEvent.click(screen.getByRole("button", { name: /Skip/ }));
     expect(screen.getByRole("status").textContent).toContain("Victory!");
     expect(vi.getTimerCount()).toBe(0);
     fireEvent.click(screen.getByRole("button", { name: /Play Again/ }));
-    expect(screen.getByText(/Land 兩/).querySelector("strong")?.textContent).toBe("40");
-    expect(screen.getByText(/Sea 兩/).querySelector("strong")?.textContent).toBe("40");
+    expect(screen.getByText(/Land 兩/).querySelector("strong")?.textContent).toBe("60");
+    expect(screen.getByText(/Sea 兩/).querySelector("strong")?.textContent).toBe("60");
     expect(cell("land", 1).getAttribute("aria-label")).not.toContain("Crew");
   });
 

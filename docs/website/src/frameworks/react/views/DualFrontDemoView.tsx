@@ -17,6 +17,9 @@ import {
   runToEnd,
   canPlace,
   getUnitDef,
+  isHero,
+  isCrossSupport,
+  getAbilityCooldownFraction,
   DEFAULT_CONFIG,
   type SimState,
   type Front,
@@ -163,7 +166,8 @@ export default function DualFrontDemoView() {
         </div>
         <p style={{ marginTop: "0.6rem", color: "var(--text-muted)", fontSize: "0.88rem" }}>
           Place defenders on the land and sea grids, then start the raid. Defenders auto-fire at
-          raiders in range. Protect the HQ!
+          raiders in range. ⭐ Heroes unleash area abilities on cooldown. 🔗 Signal Batteries
+          strike both fronts. Protect the HQ!
         </p>
         <div style={{ display: "flex", gap: "1rem", marginTop: "0.75rem", borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: "0.75rem", flexWrap: "wrap" }}>
           <Link to="/dashboard" style={{ color: "var(--text-muted)", fontSize: "0.83rem", textDecoration: "none" }}>📊 Overview</Link>
@@ -224,8 +228,11 @@ export default function DualFrontDemoView() {
             <>
               <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>Select unit:</span>
               {CONFIG.unitDefs.map((def) => {
-                const budget = def.front === "land" ? state.landBudget : state.seaBudget;
+                const unitFront = def.front === "both" ? "land" : def.front as Front;
+                const budget = unitFront === "land" ? state.landBudget : state.seaBudget;
                 const affordable = def.cost <= budget;
+                const heroBadge = isHero(def) ? " ⭐" : "";
+                const crossBadge = isCrossSupport(def) ? " 🔗" : "";
                 return (
                   <button
                     key={def.id}
@@ -243,9 +250,9 @@ export default function DualFrontDemoView() {
                     }}
                     disabled={!affordable}
                     aria-pressed={selectedUnit === def.id}
-                    title={`${def.name} — Cost: ${def.cost}, Dmg: ${def.damage}, Range: ${def.range}`}
+                    title={`${def.name} — Cost: ${def.cost}, Dmg: ${def.damage}, Range: ${def.range}${isHero(def) ? `, Ability: ${def.activeDamage} AoE` : ""}${isCrossSupport(def) ? ` — Cross-front (${def.ownEnvMult}× own, ${def.crossEnvMult}× cross)` : ""}`}
                   >
-                    {def.name.split(" ").slice(-1)[0]} ({def.cost}兩)
+                    {def.name.split(" ").slice(-1)[0]}{heroBadge}{crossBadge} ({def.cost}兩)
                   </button>
                 );
               })}
@@ -311,6 +318,8 @@ export default function DualFrontDemoView() {
             <li>Click a placed unit to remove it (refund cost)</li>
             <li>Press <strong>▶ Start Raid</strong> — raiders advance along the middle row</li>
             <li>Defenders auto-fire at raiders within range. Protect the HQ!</li>
+            <li>⭐ <strong>Commander Qi</strong> unleashes area damage on all raiders in range when the ability is ready (gold bar)</li>
+            <li>🔗 <strong>Signal Battery</strong> can be placed on either front and fires at raiders on <em>both</em> fronts</li>
           </ol>
           <p style={{ margin: "0.5rem 0 0", color: "var(--text-muted)", fontSize: "0.8rem" }}>
             Keyboard: Tab to cells, Enter/Space to place or remove. Units mirror the game&apos;s real roster (unit_defs.gd).
@@ -366,14 +375,25 @@ function FrontGrid({ title, front, config, units, raiders, phase, onCellClick, s
       if (unit) {
         const def = getUnitDef(unit.defId, config)!;
         const hpPct = unit.hp / unit.maxHp;
+        const hero = isHero(def);
+        const cross = isCrossSupport(def);
         bg = front === "land" ? "rgba(194,59,34,0.25)" : "rgba(61,90,128,0.3)";
+        if (hero) bg = "rgba(201,162,39,0.25)";
+        if (cross) bg = "rgba(196,132,45,0.2)";
+        const icon = hero ? "⭐" : cross ? "🔗" : front === "land" ? "🛡️" : "⚓";
+        const abilityFrac = hero ? getAbilityCooldownFraction(unit, def) : 0;
         content = (
           <div style={{ textAlign: "center", lineHeight: 1.1 }}>
-            <div style={{ fontSize: "0.9rem" }}>{front === "land" ? "🛡️" : "⚓"}</div>
+            <div style={{ fontSize: "0.9rem" }}>{icon}</div>
             <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "100%" }}>
               {def.name.split(" ").slice(-1)[0]}
             </div>
-            {hpPct < 1 && (
+            {hero && (
+              <div style={{ height: "2px", background: "rgba(255,255,255,0.15)", borderRadius: "1px", marginTop: "1px" }} title={`Ability: ${abilityFrac === 0 ? "READY" : "cooling"}`}>
+                <div style={{ height: "100%", width: `${(1 - abilityFrac) * 100}%`, background: abilityFrac === 0 ? "var(--accent-gold)" : "#c4842d", borderRadius: "1px", transition: "width 0.1s" }} />
+              </div>
+            )}
+            {!hero && hpPct < 1 && (
               <div style={{ height: "2px", background: "rgba(255,255,255,0.15)", borderRadius: "1px", marginTop: "1px" }}>
                 <div style={{ height: "100%", width: `${hpPct * 100}%`, background: hpPct > 0.5 ? "#6b8f71" : "#c23b22", borderRadius: "1px" }} />
               </div>
@@ -381,6 +401,8 @@ function FrontGrid({ title, front, config, units, raiders, phase, onCellClick, s
           </div>
         );
         ariaLabel += `, ${def.name}, HP ${unit.hp}/${unit.maxHp}`;
+        if (hero) ariaLabel += `, ability ${abilityFrac === 0 ? "ready" : "cooling"}`;
+        if (cross) ariaLabel += ", cross-front support";
       }
 
       if (raider) {

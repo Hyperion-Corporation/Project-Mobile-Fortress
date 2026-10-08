@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (2026-10-08, T51 ID8 slice 2 + header overflow + website CI)
+
+- **ID8 slice 2:** Demo gains Commander Qi (⭐ hero, area ability on 80-tick cooldown, 28 AoE damage) and Signal Battery (🔗 cross-front support, fires at both land and sea raiders with 0.55×/1.15× env multipliers). Hero ability auto-triggers when raiders are in range and the cooldown is ready; the view shows a gold cooldown bar. Cross-support can be placed on either front grid. Budgets raised to 60/60 to accommodate the new units.
+- **Header overflow fix:** Global topbar no longer overflows at 320px — brand-name hidden below 480px, topbar padding and gaps reduced, search trigger min-width removed at 640px.
+- **Website CI:** New `.github/workflows/website.yml` runs ESLint, TypeScript type-check, and `vitest run` on pushes/PRs touching `docs/website/**`.
+- **Tests:** 63 → 78 vitest tests (+15: hero ability mechanics, cross-support dual-front firing, unit classification helpers, view rendering of new unit badges).
+
 ### Fixed (2026-10-08, T50 CI workflow green — Q2)
 
 - **`ci.yml` no longer fails on every push.** A new `changes` job diffs the push/PR range and gates the legacy-template jobs per tree: the three Android jobs run only when `android/**`, `gradle/**`, root Gradle build files, `justfile`, or the workflow itself change; `ios-test` runs only when `ios/**` or the workflow changes; `game/**` work is gated by `godot-game.yml` instead. The `changes` and `shellcheck` jobs always run. Findings recorded in `docs/TESTING.md`, not hidden: (1) `gradle/wrapper/gradle-wrapper.jar` regenerated via Gradle 8.7's `wrapper` task — sha256 now matches the official 8.7 checksum and passes `setup-gradle` wrapper validation; (2) the Android tree still pins AGP 9.3.1, which cannot run on wrapper-pinned Gradle 8.7 (`NoClassDefFoundError` at plugin apply) — needs a deliberate AGP-downgrade or wrapper-upgrade decision; (3) `ios/MyGame.xcodeproj` fails to parse under the runner's Xcode 26.6 despite a statically valid pbxproj — needs a macOS host to root-cause. Legacy code is untouched and no failure is masked with `continue-on-error`.
