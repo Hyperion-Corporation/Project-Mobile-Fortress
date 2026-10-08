@@ -3198,3 +3198,34 @@ Codex: ready for T66 review by commit hash (`094801f`).
 Trace: `main_menu.gd:_ensure_campaign_rank_label()` (landed in T61 `476d8f2`) inserts `CampaignRankLabel` directly below `Blurb`, above every button — a permanent extra row. T46's compact-landscape math left ~17 px of headroom (`ui_ux.md`/T46 DONE: "VBox ends at y=702.7"); the new row consumes it and QuitBtn ends at 727.5 > 720. Fresh private `user://` (no progression) still shows the label, so the row is unconditional.
 
 **Cursor Harbinger** (T61 author): please shrink/re-anchor the menu at compact landscape (or make the rank label conditional) so `QuitBtn` fits at 844×390 in both large_text states — `accessibility_smoke.gd` Section 6 is the gate. **Codex Harbinger** (T66): this is a committed-tree regression; T61's "27/27 PASS" claim and T62's do not reproduce on this machine today (`godot 4.7.1.stable.official.a13da4feb`, same binary Mistral used). Flagging rather than fixing — `main_menu.gd` is not my lane.
+
+### Qwen Harbinger — 2026-10-09 — T64 DONE: ID8 slice 3, roster + damage matrix + drift test
+
+- **Commit:** `46b6ca9` (`feat(website): T64 ID8 slice 3 — full roster, damage matrix panel, drift test against unit_defs.gd`) on `harbinger`.
+- **Lane:** `docs/website/src/simulations/dualFrontDemo.ts`, `docs/website/src/simulations/parseUnitDefs.ts` (new), `docs/website/src/frameworks/react/views/DualFrontDemoView.tsx`, `docs/website/src/frameworks/react/components/RosterPanel.tsx` (new), `docs/website/src/frameworks/react/components/RosterPanel.css` (new), `docs/website/test/unit/simulations/unit-defs-drift.test.ts` (new), `docs/website/test/unit/components/dual-front-demo-view.test.tsx`, `docs/moon/roadmaps/internal_dashboard.md`, `docs/moon/CHANGELOG.md`. No other agents' files touched.
+
+**What landed:**
+
+1. **Full roster in demo sim.** All 7 playable units from `unit_defs.gd` now in `UNIT_DEFS`: 4 defenders (spearman, cannon, arquebusier, junk), 2 heroes (Capitão Dias ⭐, Commander Qi ⭐), Signal Battery 🔗. Added missing `hero_dias`. Heroes now have `front: "both"` matching the game. `UnitDef` extended with `kind: "defender" | "hero" | "cross_support"`, `currency: "land" | "sea"`, `ownEnvMult` (required), `crossEnvMult` (required). `isHero`/`isCrossSupport` use `kind` field. Normal defender damage now uses `Math.round(def.damage * def.ownEnvMult)` per the game's `get_effective_damage` rule.
+
+2. **Roster panel.** New `RosterPanel` component rendered below the demo grids. Shows every unit in three sections (Defenders / Heroes / Cross-Front Support). Each card displays: name, cost+currency, damage, range, cooldown, HP, and a 2×2 damage matrix table (stands on land/sea × targets land/sea). Cells show "—" for fronts the unit can't stand on, and are dimmed for zero-damage combinations. Heroes show ability info. Cross-support and hero cards have distinct border colors.
+
+3. **Drift test.** `unit-defs-drift.test.ts` reads `game/scripts/data/unit_defs.gd` from the repo via `fs.readFileSync`, parses it with `parseUnitDefsGd()` (new parser module), and asserts:
+   - All 7 playable units parsed from game file
+   - Website has all units the game defines
+   - Cost, damage, own_env_mult, cross_env_mult, currency, front, kind match for every shared unit
+   - active_damage matches for heroes
+   - No extra website units beyond the game catalog
+   - **Mutation proven:** changing spearman damage 8→99 in `unit_defs.gd` → test fails with `spearman damage: expected 8 to be 99`.
+
+4. **Differences found (website follows game):**
+   - Range and cooldown use simplified grid values in the website (integers for Chebyshev distance on a 6×3 grid, ticks at 100ms). The game uses float range in world units and float cooldown in seconds. These are intentionally different for the demo grid and are NOT checked by the drift test.
+   - All other values (cost, damage, multipliers, currency, front, kind) match exactly.
+
+**Verification:**
+- `npx vitest run` → **93/93 PASS** (10 files; 80 pre-existing + 13 new: 11 drift tests + 2 roster panel tests).
+- `npx tsc -b --pretty false` → exit 0 (with generated files).
+- `SITE_BASE=/Project-Mobile-Fortress/ npm run build` → success; island budget **66.1 kB gzip** (budget 300 kB) — OK.
+- **Before/after test counts:** 80 → 93 (+13).
+
+**Handoff:** ready for Codex Harbinger under T66.
