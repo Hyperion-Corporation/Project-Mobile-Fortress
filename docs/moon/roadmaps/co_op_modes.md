@@ -29,8 +29,8 @@ Sea is **not** a disconnected strategic-only minigame in v1:
 
 | # | Item | Effort | Status |
 | --- | --- | --- | --- |
-| C1 | Document dual-front state schema (land grid, sea grid, shared HQ, cross-front modifiers) for FlatBuffers / C++ | M | 📋 Pending |
-| C2 | Local Wi‑Fi co-op session join + input split (land vs sea authority) | L | 📋 Deferred post Slice-0 |
+| C1 | Document dual-front state schema (land grid, sea grid, shared HQ, cross-front modifiers) for FlatBuffers / C++ | M | ✅ **Delivered — 2026-10-08** — [dual_front_state_schema.md](../../design/dual_front_state_schema.md): per-front/shared/cross-front state inventory with snapshot coverage (incl. runtime state the S4 snapshot does not persist), level-JSON → runtime mapping, GDScript gameplay authority and save/load limits, and a labeled C2 authority-split proposal |
+| C2 | Local Wi‑Fi co-op session join + input split (land vs sea authority) | L | 📋 Deferred post Slice-0 — see [Part 2 of the C1 schema doc](../../design/dual_front_state_schema.md#part-2--co-op-proposal-not-implemented) for the proposed authority split |
 | C3 | Shared-camera UX for two local players | M | 📋 Deferred |
 | C4 | Server-authoritative session service (see [`backend.md`](backend.md)) for online co-op | XL | 📋 Deferred |
 | C5 | Optional AI partner controlling one front | L | 📋 OPEN research |
