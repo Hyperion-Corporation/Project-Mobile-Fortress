@@ -1668,3 +1668,23 @@ changelog entry + roadmap row in the same commit; append one `### <agent> — 20
 block here listing the exact commands you ran and their results; do **not** push, open PRs, or touch
 GitHub issues — that is the lead's job after Chat verifies. If you cannot finish, leave the tree
 uncommitted and say so here.
+
+### cursor — 2026-10-08 — T40 DONE
+
+**Shipped:** G10 dual-grid touch placement on modular battle (`battle_root.gd` + `grid_front.gd`). Real `InputEventScreenTouch` / `InputEventScreenDrag` drive press-preview-release on land and sea. Desktop left-click still places on press. Emulated mouse-from-touch is swallowed while a finger is tracked (no double-place). Drag threshold `TOUCH_DRAG_THRESHOLD_PX = 16`. Off-grid release cancels. Second finger ignored. Valid preview = fill + plus; invalid = outline + X (not colour-only). Hero redeploy works via the same `_on_cell_clicked` path. No `_process` allocations added.
+
+**Left out:** `structure_marker.gd` unchanged (no pointer path). `battle.tscn` / `project.godot` / HUD (`scripts/ui/**`) untouched. IOS2 stays 🚧 — Linux headless cannot device-test iPhone/iPad; no HUD/safe-area polish (other agents own UI).
+
+**Decisions:** Touch state lives on `BattleRoot` so a finger can drag across both grids and cancel off-grid. Mouse stays on `GridFront` gui_input so HUD buttons are not stolen. `emulate_mouse_from_touch` left at Godot default (HUD still receives emulated clicks).
+
+**Verify** (`XDG_DATA_HOME=.../scratchpad/xdg/cursor` prefix on every godot; import aborted after reimport DONE with adb/tcp:5037 — assets imported):
+
+- `godot --path game --headless --script res://tests/touch_placement_smoke.gd` → PASS
+- `godot --path game --headless --script res://tests/modular_battle_smoke.gd` → PASS
+- `godot --path game --headless --script res://tests/gameplay_smoke.gd` → PASS
+- `godot --path game --headless --script res://tests/hero_e_smoke.gd` → PASS
+- `godot --path game --headless --script res://tests/scenario_control_smoke.gd` → PASS
+- `godot --path game --headless --script res://tests/level_picker_smoke.gd` → PASS
+- `godot --path game --headless --script res://tests/unit_token_smoke.gd` → PASS
+
+**Chat:** review vs G10/IOS2 + smoke. **Claude:** G10 ready after Chat verifies; IOS2 stays Partial.

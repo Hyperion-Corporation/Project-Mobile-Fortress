@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed (2026-10-08, T40 G10/IOS2 touch placement)
+
+- **G10:** Modular dual-grid placement follows real `InputEventScreenTouch` / `InputEventScreenDrag` (hold preview, drag threshold, commit on release, off-grid cancel, second finger ignored). Emulated mouse-from-touch is swallowed so a finger cannot double-place; desktop left-click still places on press. Valid vs invalid preview uses fill+plus vs outline+X, not colour alone. Smoke: `touch_placement_smoke.gd`.
+- **IOS2:** Shared Godot touch path is the iPhone/iPad control layer, but this was not device-tested on iOS — row stays Partial.
+
 ### Changed (2026-08-15, T37 DT6 overlay level picker)
 
 - **DT6:** DT8 overlay `LevelPickSelect` lists `LevelCatalog` dual-front JSONs. **Load level** sets `GameSession.selected_level_path` and calls `BattleRoot.debug_load_level` (in-place reset to that JSON's build/waves/兩). Wave jump stays DT3. Smoke: `level_picker_smoke.gd`.

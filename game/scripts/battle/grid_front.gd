@@ -1,10 +1,17 @@
 class_name GridFront
 extends Node2D
-## One environment grid (land or sea): tiles, lane path, placement clicks.
+## One environment grid (land or sea): tiles, lane path, placement clicks/touches.
 
 signal cell_clicked(front_id: String, cell: Vector2i)
 
 const ThemeTokensScript := preload("res://scripts/ui/theme_tokens.gd")
+
+const PREVIEW_NONE := 0
+const PREVIEW_VALID := 1
+const PREVIEW_INVALID := 2
+const PREVIEW_GLYPH_PX := 10.0
+const PREVIEW_VALID_WIDTH := 3.0
+const PREVIEW_INVALID_WIDTH := 1.5
 
 @export var front_id: String = "land" ## "land" | "sea"
 @export var cols: int = 8
@@ -14,9 +21,12 @@ var origin: Vector2 = Vector2.ZERO
 var blocked: Dictionary = {} ## Vector2i -> true
 var occupants: Dictionary = {} ## Vector2i -> defender_id (int)
 var path_cells: Array[Vector2i] = []
+var touch_preview_cell: Vector2i = Vector2i(-1, -1)
+var touch_preview_kind: int = PREVIEW_NONE
 var _tilemap: TileMap = null
 var _label: Label
 var _click_area: Control
+var _preview_diamond: PackedVector2Array = PackedVector2Array()
 
 
 func setup(p_origin: Vector2, p_front: String, p_cols: int = 8, p_rows: int = 5) -> void:
@@ -130,6 +140,55 @@ func _draw() -> void:
 			draw_line(c1 + Vector2(-6, 3), c1 + Vector2(0, -5), grass_col, 1.5)
 			draw_line(c1 + Vector2(0, -5), c1 + Vector2(6, 3), grass_col, 1.5)
 
+	_draw_touch_preview(half_w, half_h)
+
+
+func _draw_touch_preview(half_w: float, half_h: float) -> void:
+	if touch_preview_kind == PREVIEW_NONE or not in_bounds(touch_preview_cell):
+		return
+	var center := cell_to_local_center(touch_preview_cell)
+	if _preview_diamond.size() != 5:
+		_preview_diamond.resize(5)
+	_preview_diamond[0] = center + Vector2(0, -half_h)
+	_preview_diamond[1] = center + Vector2(half_w, 0)
+	_preview_diamond[2] = center + Vector2(0, half_h)
+	_preview_diamond[3] = center + Vector2(-half_w, 0)
+	_preview_diamond[4] = center + Vector2(0, -half_h)
+	var valid := touch_preview_kind == PREVIEW_VALID
+	var accent: Color = ThemeTokensScript.GOLD if valid else ThemeTokensScript.CINNABAR
+	if valid:
+		var fill := Color(accent.r, accent.g, accent.b, 0.32)
+		draw_colored_polygon(_preview_diamond, fill)
+		draw_polyline(_preview_diamond, accent, PREVIEW_VALID_WIDTH)
+		draw_line(center + Vector2(-PREVIEW_GLYPH_PX, 0), center + Vector2(PREVIEW_GLYPH_PX, 0), accent, 2.5)
+		draw_line(center + Vector2(0, -PREVIEW_GLYPH_PX), center + Vector2(0, PREVIEW_GLYPH_PX), accent, 2.5)
+	else:
+		draw_polyline(_preview_diamond, accent, PREVIEW_INVALID_WIDTH)
+		# Dashed diamond: skip mid-edge so invalid is not colour-only.
+		var dash := PREVIEW_GLYPH_PX * 0.45
+		draw_line(_preview_diamond[0] + Vector2(0, dash), _preview_diamond[2] + Vector2(0, -dash), accent, 1.0)
+		draw_line(center + Vector2(-PREVIEW_GLYPH_PX, -PREVIEW_GLYPH_PX), center + Vector2(PREVIEW_GLYPH_PX, PREVIEW_GLYPH_PX), accent, 2.5)
+		draw_line(center + Vector2(-PREVIEW_GLYPH_PX, PREVIEW_GLYPH_PX), center + Vector2(PREVIEW_GLYPH_PX, -PREVIEW_GLYPH_PX), accent, 2.5)
+
+
+func set_touch_preview(cell: Vector2i, valid: bool) -> void:
+	if not in_bounds(cell):
+		clear_touch_preview()
+		return
+	var kind := PREVIEW_VALID if valid else PREVIEW_INVALID
+	if touch_preview_cell == cell and touch_preview_kind == kind:
+		return
+	touch_preview_cell = cell
+	touch_preview_kind = kind
+	queue_redraw()
+
+
+func clear_touch_preview() -> void:
+	if touch_preview_kind == PREVIEW_NONE:
+		return
+	touch_preview_cell = Vector2i(-1, -1)
+	touch_preview_kind = PREVIEW_NONE
+	queue_redraw()
 
 
 func _ensure_click_layer() -> void:
@@ -151,12 +210,29 @@ func _ensure_click_layer() -> void:
 
 
 func _on_click_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton:
-		var mb := event as InputEventMouseButton
-		if mb.pressed and mb.button_index == MOUSE_BUTTON_LEFT:
-			var cell := world_to_cell(get_global_mouse_position())
-			if in_bounds(cell):
-				cell_clicked.emit(front_id, cell)
+	if not (event is InputEventMouseButton):
+		return
+	var mb := event as InputEventMouseButton
+	if not mb.pressed or mb.button_index != MOUSE_BUTTON_LEFT:
+		return
+	var battle := _owning_battle()
+	if battle != null and battle.is_touch_gesture_active():
+		return
+	var world: Vector2 = get_global_mouse_position()
+	if _click_area:
+		world = _click_area.get_global_transform() * mb.position
+	var cell := world_to_cell(world)
+	if in_bounds(cell):
+		cell_clicked.emit(front_id, cell)
+
+
+func _owning_battle() -> Node:
+	var n: Node = get_parent()
+	while n != null:
+		if n.has_method("is_touch_gesture_active"):
+			return n
+		n = n.get_parent()
+	return null
 
 
 func world_to_cell(global_pos: Vector2) -> Vector2i:
