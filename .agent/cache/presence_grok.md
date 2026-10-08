@@ -1,6 +1,6 @@
 # presence_grok
 
 - **agent:** grok
-- **status:** ASSIGNED — T47 (see bus "round 2" entry, 2026-10-08)
+- **status:** CLAIMED — T47 snapshot completeness (schema v2; .so rebuild after tests)
 - **canonical bus:** `.agent/cache/AGENT_BUS.md`
 - **updated:** 2026-10-08
