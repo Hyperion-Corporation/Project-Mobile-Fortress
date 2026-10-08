@@ -1668,3 +1668,41 @@ changelog entry + roadmap row in the same commit; append one `### <agent> — 20
 block here listing the exact commands you ran and their results; do **not** push, open PRs, or touch
 GitHub issues — that is the lead's job after Chat verifies. If you cannot finish, leave the tree
 uncommitted and say so here.
+
+### mistral — 2026-10-08 — T41 DONE
+
+**Shipped (docs only, no code/schema/JSON changed):**
+- New `docs/design/dual_front_state_schema.md`. Part 1 "As implemented": every `SimWorld` field
+  grouped land-only / sea-only / shared (HQ, phase, clock, wave schedule, income, ids) /
+  cross-front modifiers, each with C++ type, `file:line`, FlatBuffers-snapshot field (`.fbs` line),
+  units/range, and mutators; plus Raider/Defender/Wave member tables, the level-JSON → runtime
+  mapping (`load_level_json`), and the S4 save/load flow. Real findings listed explicitly:
+  (1) `land_flow_`/`sea_flow_`/`grid_size_` are NOT in the snapshot — flow is rebuilt by
+  `BattleRoot._setup_grids` (fixed 8×5 + outpost solids) and best-effort re-solidified from
+  defender positions, skipping mid-travel heroes; (2) `Raider.entry_row` is NOT serialized
+  (schema gap, minor behavioral change after load for off-grid flow raiders); (3) DT1/DT2 cheat
+  flags (`infinite_land_/sea_`, `invincible_`, `waves_disabled_`) are NOT serialized;
+  (4) `game/src/level-schema.json` is stale — dual-front level JSONs do not validate against it
+  (real gate is `LevelCatalog`'s `landCount`+`seaCount` check); (5) Defender `hp`/`alive` are
+  nominal — nothing damages defenders in Slice-0. Part 2 is unmistakably labeled "NOT
+  implemented": land/sea authority split per state field, host-authoritative shared state,
+  cross-front interactions needing adjudication (Dias salvo, cross-front hero redeploy, aura),
+  minimal per-tick delta contents, and 6 open questions.
+- Links: `co_op_modes.md` C1 row → ✅ Delivered with doc link; C2 row points at Part 2;
+  `docs/mkdocs.yml` Design nav gained the doc. `docs/index.md` does not list design docs
+  individually, so no edit there.
+- `CHANGELOG.md` [Unreleased] entry + `presence_mistral.md` updated in the same commit.
+
+**Verification (actually run):**
+- `godot --path game --headless --import` (fresh worktree) — OK.
+- `godot --path game --headless --script res://tests/flatbuffers_smoke.gd` — PASS (snapshot
+  round-trip: 664 bytes, defenders=2 raiders=1, combat=true; validates Part 1 §8).
+- `godot --path game --headless --script res://tests/modular_battle_smoke.gd` — PASS
+  (8×5 flow init + level JSON load, validates §2/§4/§7 claims).
+- All cited `file:line` refs re-checked against source with `sed -n Np`/`grep -n` (3 initially
+  mis-cited lines fixed before commit). Every relative markdown link target `ls`-checked from the
+  linking file's directory — all resolve.
+
+**Deliberately left out:** no C++/`.fbs`/level-JSON changes (lane is docs only); the stale
+`level-schema.json` mismatch is reported, not fixed; no CI/docs-site build run (no website files
+touched beyond one mkdocs.yml nav line).

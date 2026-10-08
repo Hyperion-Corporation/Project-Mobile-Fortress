@@ -74,6 +74,7 @@ nav:
       - Repository Automation: moon/roadmaps/repo_automation.md
   - Design:
       - Game Design Document: design/game_design_document.md
+      - Dual-Front State Schema: design/dual_front_state_schema.md
       - Art Bible: design/art_bible.md
       - Audio Design: design/audio_design_document.md
       - Pitch Deck: design/pitch_deck.md
