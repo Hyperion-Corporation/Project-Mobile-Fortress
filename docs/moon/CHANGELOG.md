@@ -13,6 +13,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added (2026-10-08, T41 C1 dual-front state schema document)
 
 - **C1:** New reference doc [`docs/design/dual_front_state_schema.md`](../design/dual_front_state_schema.md). Part 1 inventories every `SimWorld` field by land-only / sea-only / shared / cross-front with C++ type, `file:line`, FlatBuffers-snapshot coverage, units, and mutators, plus the level-JSON → runtime mapping and save/load flow. Real findings called out: the S4 snapshot does not persist the flow-field grids (`land_flow_`/`sea_flow_`/`grid_size_`), `Raider.entry_row`, or the DT1/DT2 cheat flags, and `game/src/level-schema.json` is stale relative to the dual-front level JSONs (the catalog only checks the first wave for `landCount`/`seaCount`). Part 2 is a clearly labeled, not-implemented proposal for the C2 land/sea authority split and minimal per-tick delta. Review corrections clarify GDScript gameplay authority, incomplete placement/flow restoration, numeric guards and snapshot version handling. Documentation only — no code, schema, or JSON changed.
+### Fixed (2026-10-08, T45 re-review of T40)
+
+- Touch smoke now routes desktop and emulated mouse press/release through the viewport, covering GUI dispatch rather than invoking grid handlers directly. Guard absent optional unit-selection InputMap actions during unhandled input; the existing physical-key 5 fallback remains available. G10 GUI routing verified headlessly; IOS2 remains Partial pending device testing.
+
+### Fixed (2026-10-08, T40 HOLD follow-up)
+
+- Touch placement no longer starts in `_input` ahead of the GUI: a press that hits any interactive Control (HUD, pause/modal overlay, dev overlay) goes to that Control only. Grid click layers use `MOUSE_FILTER_PASS` so ScreenTouch can reach `_unhandled_input` after GUI miss; in-progress drags stay on BattleRoot so a finger can still cross both grids. Smoke covers an injected STOP button over a cell and a tap while paused. IOS2 remains Partial; no device verification.
+
+### Fixed (2026-10-08, T45 review of T40)
+
+- Touch releases outside both grids now cancel even below the drag threshold; the preview follows the cell a sub-threshold tap will commit. Preview validity accounts for unit front, resources, hero uniqueness, and redeploy travel state. Touch smoke now dispatches touch/drag through the viewport and covers these boundary/affordability/front cases and OS cancellation; regressions fail against the original implementation.
+- **G10 HOLD (touch before GUI) resolved in the follow-up above.** IOS2 remains Partial; no device verification.
+
+### Changed (2026-10-08, T40 G10/IOS2 touch placement)
+
+- **G10:** Modular dual-grid placement follows real `InputEventScreenTouch` / `InputEventScreenDrag` (hold preview, drag threshold, commit on release, off-grid cancel, second finger ignored). New presses wait until after GUI hit-testing so overlapping HUD/modal Controls consume the finger; emulated mouse-from-touch is swallowed during an active gesture so a finger cannot double-place; desktop left-click still places on press. Valid vs invalid preview uses fill+plus vs outline+X, not colour alone. Smoke: `touch_placement_smoke.gd`.
+- **IOS2:** Shared Godot touch path is the iPhone/iPad control layer, but this was not device-tested on iOS — row stays Partial.
 
 ### Changed (2026-08-15, T37 DT6 overlay level picker)
 

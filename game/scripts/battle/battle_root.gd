@@ -14,6 +14,8 @@ const SELECT_KEYS := {
 	"select_unit_4": "cross_support",
 	"select_unit_5": "hero_dias",
 }
+const TOUCH_NONE := -1
+const TOUCH_DRAG_THRESHOLD_PX := 16.0
 
 @onready var land_host: Node2D = $LandHost
 @onready var sea_host: Node2D = $SeaHost
@@ -42,6 +44,13 @@ var start_sea := 40
 var start_hq := 100
 var victory_time := 55.0
 var debug_click_spawn: String = "" ## DT3: if set, next grid click spawns this type for free
+var _touch_index: int = TOUCH_NONE
+var _touch_start_vp: Vector2 = Vector2.ZERO
+var _touch_press_front: String = ""
+var _touch_press_cell: Vector2i = Vector2i(-1, -1)
+var _touch_dragged: bool = false
+var _hit_front_id: String = ""
+var _hit_cell: Vector2i = Vector2i(-1, -1)
 
 
 func _ready() -> void:
@@ -589,7 +598,165 @@ func _rebuild_placement_from_sim() -> void:
 				sim.set_cell_solid(front, cell, true)
 
 
+func is_touch_gesture_active() -> bool:
+	return _touch_index != TOUCH_NONE
+
+
+func _input(event: InputEvent) -> void:
+	# In-progress gestures stay here so a drag can cross both grids (and over HUD)
+	# without being stolen. New presses wait for _unhandled_input so GUI Controls
+	# (HUD buttons, pause/modal overlays) consume the finger first.
+	if event is InputEventScreenTouch:
+		if is_touch_gesture_active():
+			_on_screen_touch(event as InputEventScreenTouch)
+	elif event is InputEventScreenDrag:
+		if is_touch_gesture_active():
+			_on_screen_drag(event as InputEventScreenDrag)
+	elif event is InputEventMouseButton and is_touch_gesture_active():
+		get_viewport().set_input_as_handled()
+
+
+func _on_screen_touch(st: InputEventScreenTouch) -> void:
+	if st.canceled:
+		if st.index == _touch_index:
+			_cancel_touch_gesture()
+			get_viewport().set_input_as_handled()
+		return
+	if st.pressed:
+		if _touch_index != TOUCH_NONE:
+			# Second finger: ignore so it cannot place or move the preview.
+			get_viewport().set_input_as_handled()
+			return
+		if run_over or GameSession.is_paused or phase == Phase.RESULT:
+			return
+		if not _probe_grids(st.position):
+			return
+		_touch_index = st.index
+		_touch_start_vp = st.position
+		_touch_press_front = _hit_front_id
+		_touch_press_cell = _hit_cell
+		_touch_dragged = false
+		_refresh_touch_preview(st.position)
+		get_viewport().set_input_as_handled()
+		return
+	if st.index != _touch_index:
+		return
+	_commit_or_cancel_touch(st.position)
+	get_viewport().set_input_as_handled()
+
+
+func _on_screen_drag(sd: InputEventScreenDrag) -> void:
+	if sd.index != _touch_index:
+		return
+	if not _touch_dragged and _touch_start_vp.distance_to(sd.position) >= TOUCH_DRAG_THRESHOLD_PX:
+		_touch_dragged = true
+	_refresh_touch_preview(sd.position)
+	get_viewport().set_input_as_handled()
+
+
+func _commit_or_cancel_touch(vp_pos: Vector2) -> void:
+	# Cancellation takes priority over tap jitter tolerance.
+	if not _probe_grids(vp_pos):
+		_cancel_touch_gesture()
+		return
+	if not _touch_dragged and _touch_start_vp.distance_to(vp_pos) >= TOUCH_DRAG_THRESHOLD_PX:
+		_touch_dragged = true
+	var front := _touch_press_front
+	var cell := _touch_press_cell
+	if _touch_dragged:
+		front = _hit_front_id
+		cell = _hit_cell
+	_end_touch_gesture()
+	_on_cell_clicked(front, cell)
+
+
+func _cancel_touch_gesture() -> void:
+	_end_touch_gesture()
+
+
+func _end_touch_gesture() -> void:
+	_touch_index = TOUCH_NONE
+	_touch_dragged = false
+	_touch_press_front = ""
+	_touch_press_cell = Vector2i(-1, -1)
+	_clear_touch_previews()
+
+
+func _refresh_touch_preview(vp_pos: Vector2) -> void:
+	_clear_touch_previews()
+	if not _probe_grids(vp_pos):
+		return
+	var front := _hit_front_id if _touch_dragged else _touch_press_front
+	var cell := _hit_cell if _touch_dragged else _touch_press_cell
+	var grid: GridFront = land_grid if front == "land" else sea_grid
+	if grid == null:
+		return
+	grid.set_touch_preview(cell, _preview_valid_for(grid, cell))
+
+
+func _clear_touch_previews() -> void:
+	if land_grid:
+		land_grid.clear_touch_preview()
+	if sea_grid:
+		sea_grid.clear_touch_preview()
+
+
+func _preview_valid_for(grid: GridFront, cell: Vector2i) -> bool:
+	if grid.occupants.has(cell):
+		return true
+	if not grid.is_placeable(cell):
+		return false
+	if pending_hero_id >= 0:
+		for defender in sim.get_defenders():
+			if int(defender.id) == pending_hero_id:
+				return not bool(defender.get("traveling", false))
+		return false
+	if debug_click_spawn != "":
+		return true
+	var def := UnitDefs.get_def(selected_unit_id)
+	if def.is_empty():
+		return false
+	var allowed := int(def.get("front", UnitDefs.Front.LAND))
+	if allowed == UnitDefs.Front.LAND and grid.front_id != "land":
+		return false
+	if allowed == UnitDefs.Front.SEA and grid.front_id != "sea":
+		return false
+	if UnitDefs.is_hero(selected_unit_id):
+		for defender in sim.get_defenders():
+			if str(defender.type) == selected_unit_id:
+				return false
+	var cost := int(def.get("cost", 10))
+	var currency := str(def.get("currency", "land"))
+	var funds: int = sim.get_land_resources() if currency == "land" else sim.get_sea_resources()
+	var fallback: int = sim.get_land_resources() if grid.front_id == "land" else sim.get_sea_resources()
+	return funds >= cost or fallback >= cost
+
+
+func _probe_grids(vp_pos: Vector2) -> bool:
+	_hit_front_id = ""
+	_hit_cell = Vector2i(-1, -1)
+	var world: Vector2 = get_canvas_transform().affine_inverse() * vp_pos
+	if land_grid:
+		var land_cell: Vector2i = land_grid.world_to_cell(world)
+		if land_grid.in_bounds(land_cell):
+			_hit_front_id = "land"
+			_hit_cell = land_cell
+			return true
+	if sea_grid:
+		var sea_cell: Vector2i = sea_grid.world_to_cell(world)
+		if sea_grid.in_bounds(sea_cell):
+			_hit_front_id = "sea"
+			_hit_cell = sea_cell
+			return true
+	return false
+
+
 func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventScreenTouch:
+		_on_screen_touch(event as InputEventScreenTouch)
+		return
+	if event is InputEventScreenDrag:
+		return
 	if event.is_action_pressed("pause_game"):
 		if not run_over:
 			GameSession.toggle_paused()
@@ -607,7 +774,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_pressed("upgrade_unit"):
 		_upgrade_selected()
 	for action in SELECT_KEYS.keys():
-		if event.is_action_pressed(action):
+		if InputMap.has_action(action) and event.is_action_pressed(action):
 			_on_unit_selected(SELECT_KEYS[action])
 			return
 	if event is InputEventKey and event.pressed and not event.echo:
@@ -709,6 +876,7 @@ func debug_load_level(path: String = "") -> bool:
 	pending_hero_id = -1
 	selected_defender_id = -1
 	debug_click_spawn = ""
+	_end_touch_gesture()
 	for id in visual_nodes.keys():
 		_free_visual(id)
 	_clear_grid_occupants()
