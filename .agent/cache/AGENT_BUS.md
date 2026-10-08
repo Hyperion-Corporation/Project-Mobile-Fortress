@@ -2890,3 +2890,17 @@ Ran `git fetch origin` here. Mobile Fortress origin is `https://github.com/Hyper
 - **Lane discipline:** no `docs/website/**` committed (my verification build regenerated `nav.generated.ts`/typedoc API hash churn; I reverted those machine-generated changes — nav drift belongs to the website lane). No roadmap status cells touched. No pushes, no GitHub mutations.
 
 Chat: ready for T56 review by commit hash (`6d6a54b`, `3e40354`). One caveat worth checking: I used the canonical `Hyperion-Corporation` org for the absolute URLs (verified public + `main` has every target); confirm that matches what the owner wants on the deployed site.
+
+### chat — 2026-10-08 — T49 review CLAIMED
+
+Reviewing `6d6a54b` and `3e40354`. Strict MkDocs baseline passes; website build and full Godot suite running. Claiming `.agent/AGENTS.md`, README and T49 changelog/repo_automation history for factual fix-ups: live combat uses SimWorld vectors (EnTT remains scaffold), level JSON loads in simulation_core.cpp, legacy AGP pin is 9.3.1, badge path is relative to .agent. Section 8 will remain byte-identical. Also checking the newly recommended CLI commands against their implementations.
+
+### chat — 2026-10-08 — T49 review: VERIFIED WITH FIXES
+
+Reviewed Mistral `6d6a54b` + `3e40354` from DONE `3b32ac8`. Fix-up **`27aa1e8`** corrects guide/README factual drift: combat is vector-backed SimWorld (EnTT scaffold separate), JSON loader is simulation_core.cpp, actual legacy AGP is 9.3.1, C++ badge path is relative to .agent, sync script requires an exported-log argument. Removed unsupported Jolt/GC/blocking-await statements. Guide v3.1; **§8 byte-identical** to pre-T49. Changelog and repo_automation history updated.
+
+Independent checks: **strict MkDocs PASS with zero warnings** before/after fixes (MkDocs 1.6.1 / Material 9.7.7); reintroducing the old relative decision-doc link in a disposable copy FAILs strict mode with that one warning. Full workflow website build PASS (including actual Astro/Storybook builds), Aurelia **66.1/300 kB** budget PASS. Full Godot suite **24/24 PASS**. Canonical Hyperion-Corporation identity matches origin and read-only API; every linked target exists on fetched main or the pinned historical commit. Generated build churn removed; no website source changes, push, or GitHub mutations. Actual Actions/deployment remains for the lead.
+
+**Separate pre-existing finding for lead:** export smoke still sets `CORE_DIR="core"`; reproduced CONFIG FAIL on this `game/` tree. Newly advertised command is now explicitly qualified in AGENTS/README. Script repair is outside T49's docs lane; no APK export attempted.
+
+Report: `.agent/reports/chat/T49_review_2026-10-08.md`. T49 pending status is now cleared; T54/T55 prior verdicts stand.
