@@ -7,10 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed (2026-10-08, T49 review — guide accuracy)
+
+- Agent guide v3.1 and README distinguish vector-backed `SimWorld` combat from the separate EnTT scaffold. Corrected the level-loader location to `simulation_core.cpp`, the legacy AGP pin to 9.3.1, the relative C++ badge link, and the required playtest-sync input argument. Removed unsupported Jolt configuration and GC/blocking-await claims; section 8 stays unchanged.
+- Documented a pre-existing export-smoke limitation: `scripts/export_mobile_smoke.sh` still uses `CORE_DIR="core"` and fails against the current `game/` tree. Export-script repair remains separate from T49's documentation work.
+
 ### Fixed (2026-10-08, T49 docs workflow strict-green + agent-guide refresh)
 
 - `mkdocs build --config-file docs/mkdocs.yml --strict` is green locally again, reproduced with the same install and command the `Docs` workflow uses (`pip install mkdocs-material` on Python 3.12+/mkdocs-material 9.7.7, mkdocs 1.6.1). The five out-of-tree references strict mode rejected are now absolute GitHub URLs — `moon/ROADMAP.md` → the two `.agent/reports/*` decision documents, `moon/roadmaps/repo_automation.md` → `git/README.md`, `moon/roadmaps/shared_core.md` → `game/BUILD_CPP.md`, and `design/dual_front_state_schema.md` → `game/src/schema/simulation_state.fbs` + `game/src/cpp/` — rather than disabling strict mode. The `moon/CHANGELOG.md` link to the deleted `multi_framework_platform.md` is pinned to its last-existing commit with a pointer to the renamed `internal_dashboard.md` Part B. `docs/mkdocs.yml` site identity updated to the canonical `Hyperion-Corporation` org (the former `ACFHarbinger` org URL redirects there).
-- `.agent/AGENTS.md` v3.0 and `README.md` now describe the live product — the Godot 4.7 game under `game/` with the C++ `SimulationCore` GDExtension (EnTT, FlatBuffers snapshots) — with current module boundaries, CLI entry points (`scripts/run_godot_smokes.sh`, `ctest` per `game/BUILD_CPP.md`, `scripts/run_perf_bench.sh`, the strict docs build), Godot/C++ review-severity examples, and the `android/`/`ios/` trees explicitly marked legacy. AGENTS.md §8 (multi-agent session workflow) is unchanged.
+- `.agent/AGENTS.md` v3.0 and `README.md` now describe the live product — the Godot 4.7 game under `game/` with the C++ `SimulationCore` GDExtension (vector-backed combat, EnTT scaffold, FlatBuffers snapshots) — with current module boundaries, CLI entry points (`scripts/run_godot_smokes.sh`, `ctest` per `game/BUILD_CPP.md`, `scripts/run_perf_bench.sh`, the strict docs build), Godot/C++ review-severity examples, and the `android/`/`ios/` trees explicitly marked legacy. AGENTS.md §8 (multi-agent session workflow) is unchanged.
 
 ### Fixed (2026-10-08, T54/T56 website review follow-up)
 

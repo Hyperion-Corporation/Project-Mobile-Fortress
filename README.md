@@ -33,7 +33,7 @@
 
 **Mobile Fortress** is a cooperative tower-defense mobile game: players defend a Wōkòu-pirate-era coastal fortress network — a Main HQ plus Resource Outposts (fund land units) and Trading Outposts (fund naval units) — against raids from land and sea, then extend that fight into a light 4X-style coastal-territory meta-game. The design targets an underserved market gap identified in [`docs/moon/reports/Tower Defense Market Research.md`](docs/moon/reports/Tower%20Defense%20Market%20Research.md) — a AAA-quality, historically grounded 16th-century East Asian setting is largely absent from the current top-grossing tower-defense/4X-hybrid charts.
 
-The live product is the **Godot 4.7 game under [`game/`](game/)**: a dual-front (land + sea) offline tower-defense prototype where GDScript handles presentation, input, and run orchestration while a C++ `SimulationCore` GDExtension (EnTT ECS, FlatBuffers snapshots) owns the combat/economy simulation — see [`game/README.md`](game/README.md) to run it and [`docs/moon/roadmaps/shared_core.md`](docs/moon/roadmaps/shared_core.md) for the C++ core build-out. The Kotlin [`android/`](android/) and Swift [`ios/`](ios/) clients are **legacy inherited template trees** kept for reference — their CI jobs run only when their own paths change. Around all of that, the repository carries a cross-cutting agentic/DevOps/docs framework (`.agent/`, `docs/`, `docs/moon/`, `.github/`, `infra/`) shared with this org's other project templates, and a React dashboard/docs portal under [`docs/website/`](docs/website/).
+The live product is the **Godot 4.7 game under [`game/`](game/)**: a dual-front (land + sea) offline tower-defense prototype where GDScript handles presentation, input, and run orchestration while a C++ `SimulationCore` GDExtension (vector-backed `SimWorld`, FlatBuffers snapshots; EnTT scaffolding remains separate) owns the combat/economy simulation — see [`game/README.md`](game/README.md) to run it and [`docs/moon/roadmaps/shared_core.md`](docs/moon/roadmaps/shared_core.md) for the C++ core build-out. The Kotlin [`android/`](android/) and Swift [`ios/`](ios/) clients are **legacy inherited template trees** kept for reference — their CI jobs run only when their own paths change. Around all of that, the repository carries a cross-cutting agentic/DevOps/docs framework (`.agent/`, `docs/`, `docs/moon/`, `.github/`, `infra/`) shared with this org's other project templates, and a React dashboard/docs portal under [`docs/website/`](docs/website/).
 
 See [`docs/moon/ROADMAP.md`](docs/moon/ROADMAP.md) for the full game concept, architecture decisions, and phased delivery plan.
 
@@ -45,7 +45,7 @@ Project-Mobile-Fortress/
 │   ├── project.godot           # entry: scenes/main_menu.tscn
 │   ├── scenes/                 # main menu, battle scenes
 │   ├── scripts/                 # battle/, autoload/, ui/, data/ (GDScript)
-│   ├── src/cpp/                 # SimulationCore GDExtension (C++/EnTT)
+│   ├── src/cpp/                 # SimulationCore GDExtension (C++; EnTT scaffold)
 │   ├── src/schema/              # simulation_state.fbs snapshot schema
 │   ├── src/level-schema.json    # level-JSON contract
 │   ├── assets/levels/           # level/wave JSON
@@ -158,7 +158,7 @@ See [`git/CONTRIBUTING.md`](git/CONTRIBUTING.md) for the contribution workflow, 
 
 ## Releasing
 
-- **Godot → stores**: export presets live in `game/` — see [`game/EXPORT_MOBILE.md`](game/EXPORT_MOBILE.md) and `scripts/export_mobile_smoke.sh` for the current export path. Store automation is not wired yet for the Godot build.
+- **Godot → stores**: export presets live in `game/` — see [`game/EXPORT_MOBILE.md`](game/EXPORT_MOBILE.md) for the export setup. `scripts/export_mobile_smoke.sh` still references the old `core/` directory and needs that path corrected before use. Store automation is not wired yet for the Godot build.
 - **Legacy Android → Play Store**: [`.github/workflows/release.yml`](.github/workflows/release.yml) still targets the legacy `android/` tree — tagging `vX.Y.Z` builds a signed AAB/APK from it; see [`docs/moon/roadmaps/ios.md`](docs/moon/roadmaps/ios.md) for the legacy iOS path.
 
 ## License
