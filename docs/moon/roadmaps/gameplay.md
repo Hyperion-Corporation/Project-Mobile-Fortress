@@ -21,7 +21,7 @@ Scope: the Wōkòu-pirate-era tower-defense core loop and its meta-progression l
 | G9 | Coastal-territory light-4X meta-map; settlement capture later season | XL | 📋 Deferred | Post-launch |
 | G10 | Touch/click placement for dual grids (Godot) | S | ✅ Done — mouse click + touch (press-preview-release) both fronts; GUI-first gesture starts; viewport dispatch verified by `touch_placement_smoke.gd` | Slice-0 |
 | G11 | Sensor input optional | M | 📋 Deferred | Nice-to-have |
-| G12 | Cross-front specialized support units + environment-locked resources | M | 🚧 **Partial** — Signal Battery / cross mults | Slice-0 |
+| G12 | Cross-front specialized support units + environment-locked resources | M | 🚧 **Slice-0 verified (T54)** — Signal Battery / cross mults, environment-locked affordance & catalog validation in unit_defs.gd + unit_catalog_smoke.gd | Slice-0 |
 | G13 | Clans as persistent social layer at launch | L | 📋 Deferred | Launch |
 
 Effort key: S = days, M = 1–2 weeks, L = 3–6 weeks, XL = multi-month/cross-cutting.

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (2026-10-08, T54 G12 cross-front support units & catalog smoke)
+
+- **G12:** Enhanced `UnitDefs` (`game/scripts/data/unit_defs.gd`) with structured helpers: `get_currency`, `get_cost`, `can_afford` for environment-locked resources (verifying land vs sea currency locking), `get_units_for_front`, `get_cross_support_units`, `get_defender_units`, `get_hero_units`, and `get_effective_damage` factoring in cross-environment multiplier logic (e.g. Signal Battery's 1.15x amplified cross-shelling vs 0.55x own-front damage). Added complete schema and bounds checking via `UnitDefs.validate_catalog()`. Shipped new headless `game/tests/unit_catalog_smoke.gd` asserting full roster completeness, environment currency gating, effective cross-front calculations, and unknown ID guards (`has_def`). Smoke verified PASS headlessly in Godot 4.7.
+
 ### Added (2026-10-08, T44 P7 tick-budget benchmark)
 
 - **P7:** new headless `game/tests/perf_budget_bench.gd` (deliberately not `*_smoke.gd`, so CI never gates on timing) plus `scripts/run_perf_bench.sh`: loads `slice0_dual_front.json` through the public `SimulationCore` API, sustains 10/20/40/60-entity dual-front combat loads, and reports min/median/p95/p99/max tick us with entity counts. Budget: p95@40 ≤ 8000 us (~1/4 of a 30 FPS frame); PASS/WARN exit 0, FAIL only past 3x budget; hard FAIL if the native extension is absent. Desktop baseline (i9-12900HX, x86-64): p95@40 = 1 us, PASS ×3 reviewer runs after the sustained-combat fix. Untimed per-front damage/movement checks and a tail probe reject no-op ticks and targets leaving range. Numbers and caveats in `docs/BENCHMARKS.md`. P7 → 🚧 Partial (on-device runs still open).

@@ -34,6 +34,7 @@ If you open another channel by accident, post a one-line pointer here and migrat
 | Kimi (Code) | `kimi` | joined 2026-10-08 — implementer; **T42 ASSIGNED** | 2026-10-08 |
 | Qwen (Code) | `qwen` | joined 2026-10-08 — implementer; **T43 ASSIGNED** | 2026-10-08 |
 | Muse | `muse` | joined 2026-10-08 — implementer; **T44 ASSIGNED** | 2026-10-08 |
+| GeminiWall | `geminiwall` | joined 2026-10-08 — implementer; **T54 DONE** | 2026-10-08 |
 
 ---
 
@@ -106,6 +107,7 @@ If you open another channel by accident, post a one-line pointer here and migrat
 | T51 ID8 slice 2 + 320px header overflow + website tests in CI | qwen | **ASSIGNED** | `docs/website/**`, new `.github/workflows/website.yml` |
 | T52 Level schema refresh + level-JSON validation smoke; P3 flow-recompute bench | muse | **ASSIGNED** | `game/src/level-schema.json`, new `game/tests/level_schema_smoke.gd`, `game/tests/perf_budget_bench.gd`, `docs/BENCHMARKS.md` |
 | T53 Review T46–T52 vs changelog/roadmap | chat | **QUEUED** | Review each task's commits on `main` when its DONE block lands; fix-ups allowed |
+| T54 G12 cross-front support units & catalog validation smoke | geminiwall | **DONE** | Enhanced `unit_defs.gd` with G12 synergy/affordance helpers + `unit_catalog_smoke.gd` PASS |
 
 ### Conflict rules
 
@@ -2593,3 +2595,19 @@ on `main` with both in place and say so.
 
 **Not assigned, on purpose:** VS10 (owner's playtest), backend/co-op implementation, A5+,
 anything rejected or superseded.
+
+### geminiwall — 2026-10-08 — T54 DONE
+
+**Shipped:** G12 cross-front specialized support units catalog, synergy multipliers & validation smoke.
+
+**Files changed:**
+- `game/scripts/data/unit_defs.gd` — Added `has_def(id)`, `get_currency(id)`, `get_cost(id)`, `can_afford(id, land, sea)`, `get_units_for_front(front)`, `get_cross_support_units()`, `get_defender_units()`, `get_hero_units()`, `get_effective_damage(unit_id, target_front)` factoring in cross-environment multiplier logic (e.g. Signal Battery's 1.15x amplified cross-shelling vs 0.55x own-front damage), and `validate_catalog()` enforcing complete schema and non-negative/positive bound integrity across the entire roster.
+- `game/tests/unit_catalog_smoke.gd` — New headless smoke test asserting schema validation, roster completeness (7 defenders/heroes + 2 raiders), environment-locked currency gating, cross-front synergy calculations, and safe fallback handling.
+- `docs/moon/roadmaps/gameplay.md` — Updated G12 row to Slice-0 verified (T54).
+- `docs/moon/CHANGELOG.md` — Documented T54 delivery.
+- `.agent/cache/presence_geminiwall.md` — Added presence file.
+
+**Verification:**
+- `godot --path game --headless --script res://tests/unit_catalog_smoke.gd` → **PASS** (exit 0)
+- `godot --path game --headless --script res://tests/unit_token_smoke.gd` → **PASS** (exit 0)
+- `git diff --check` → **PASS** (clean, no whitespace issues)

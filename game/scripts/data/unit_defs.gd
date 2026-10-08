@@ -151,6 +151,10 @@ static func catalog() -> Dictionary:
 	}
 
 
+static func has_def(id: String) -> bool:
+	return catalog().has(id)
+
+
 static func get_def(id: String) -> Dictionary:
 	var c := catalog()
 	if not c.has(id):
@@ -160,5 +164,160 @@ static func get_def(id: String) -> Dictionary:
 
 
 static func is_hero(id: String) -> bool:
+	if not has_def(id):
+		return false
 	var d := get_def(id)
 	return not d.is_empty() and int(d.get("kind", Kind.DEFENDER)) == Kind.HERO
+
+
+static func get_currency(id: String) -> String:
+	if not has_def(id):
+		return ""
+	var d := get_def(id)
+	return str(d.get("currency", ""))
+
+
+static func get_cost(id: String) -> int:
+	if not has_def(id):
+		return 0
+	var d := get_def(id)
+	return int(d.get("cost", 0))
+
+
+static func can_afford(id: String, land_res: int, sea_res: int) -> bool:
+	if not has_def(id):
+		return false
+	var d := get_def(id)
+	if d.is_empty():
+		return false
+	var cost := int(d.get("cost", 0))
+	var cur := str(d.get("currency", ""))
+	if cur == "land":
+		return land_res >= cost
+	elif cur == "sea":
+		return sea_res >= cost
+	return false
+
+
+static func get_units_for_front(front: Front) -> Array[String]:
+	var result: Array[String] = []
+	var cat := catalog()
+	for id in cat.keys():
+		var ufront: int = int(cat[id].get("front", Front.BOTH))
+		if ufront == front or ufront == Front.BOTH:
+			result.append(id)
+	return result
+
+
+static func get_cross_support_units() -> Array[String]:
+	var result: Array[String] = []
+	var cat := catalog()
+	for id in cat.keys():
+		if int(cat[id].get("kind", Kind.DEFENDER)) == Kind.CROSS_SUPPORT:
+			result.append(id)
+	return result
+
+
+static func get_defender_units() -> Array[String]:
+	var result: Array[String] = []
+	var cat := catalog()
+	for id in cat.keys():
+		if int(cat[id].get("kind", Kind.DEFENDER)) == Kind.DEFENDER:
+			result.append(id)
+	return result
+
+
+static func get_hero_units() -> Array[String]:
+	var result: Array[String] = []
+	var cat := catalog()
+	for id in cat.keys():
+		if int(cat[id].get("kind", Kind.DEFENDER)) == Kind.HERO:
+			result.append(id)
+	return result
+
+
+static func get_effective_damage(unit_id: String, target_front: Front) -> float:
+	if not has_def(unit_id):
+		return 0.0
+	var d := get_def(unit_id)
+	if d.is_empty():
+		return 0.0
+	var base_dmg := float(d.get("damage", 0))
+	var ufront := int(d.get("front", Front.BOTH))
+	var mult := 1.0
+	if ufront == Front.BOTH:
+		var kind := int(d.get("kind", Kind.DEFENDER))
+		if kind == Kind.CROSS_SUPPORT:
+			# Signal Battery is a sea-funded battery specialized in cross-shelling land raids
+			if target_front == Front.LAND:
+				mult = float(d.get("cross_env_mult", 1.0))
+			else:
+				mult = float(d.get("own_env_mult", 1.0))
+		else:
+			mult = float(d.get("own_env_mult", 1.0))
+	elif ufront != target_front:
+		mult = float(d.get("cross_env_mult", 0.0))
+	else:
+		mult = float(d.get("own_env_mult", 1.0))
+	return base_dmg * mult
+
+
+static func validate_catalog() -> Array[String]:
+	var errors: Array[String] = []
+	var cat := catalog()
+	if cat.is_empty():
+		errors.append("Catalog is empty")
+		return errors
+	for id in cat.keys():
+		var u: Dictionary = cat[id]
+		if not (u.get("name") is String) or str(u.get("name", "")).strip_edges().is_empty():
+			errors.append("Unit '%s' missing valid name" % id)
+		var hp := float(u.get("hp", 0))
+		if hp <= 0.0:
+			errors.append("Unit '%s' non-positive hp: %f" % [id, hp])
+		var dmg := float(u.get("damage", 0))
+		if dmg < 0.0:
+			errors.append("Unit '%s' negative damage: %f" % [id, dmg])
+		var front: int = int(u.get("front", -1))
+		if front != Front.LAND and front != Front.SEA and front != Front.BOTH:
+			errors.append("Unit '%s' invalid front enum: %d" % [id, front])
+		var kind: int = int(u.get("kind", -1))
+		if kind != Kind.DEFENDER and kind != Kind.HERO and kind != Kind.CROSS_SUPPORT and kind != Kind.RAIDER:
+			errors.append("Unit '%s' invalid kind enum: %d" % [id, kind])
+		if kind != Kind.RAIDER:
+			var cost := int(u.get("cost", 0))
+			if cost <= 0:
+				errors.append("Playable unit '%s' non-positive cost: %d" % [id, cost])
+			var cur := str(u.get("currency", ""))
+			if cur != "land" and cur != "sea":
+				errors.append("Playable unit '%s' invalid currency: %s" % [id, cur])
+			var range_val := float(u.get("range", 0.0))
+			if range_val <= 0.0:
+				errors.append("Playable unit '%s' non-positive range: %f" % [id, range_val])
+			var cd := float(u.get("cooldown", 0.0))
+			if cd <= 0.0:
+				errors.append("Playable unit '%s' non-positive cooldown: %f" % [id, cd])
+			var own_m := float(u.get("own_env_mult", -1.0))
+			if own_m < 0.0:
+				errors.append("Playable unit '%s' negative own_env_mult: %f" % [id, own_m])
+			var cross_m := float(u.get("cross_env_mult", -1.0))
+			if cross_m < 0.0:
+				errors.append("Playable unit '%s' negative cross_env_mult: %f" % [id, cross_m])
+		if kind == Kind.HERO:
+			var act_cd := float(u.get("active_cooldown", 0.0))
+			if act_cd <= 0.0:
+				errors.append("Hero '%s' non-positive active_cooldown: %f" % [id, act_cd])
+			var act_dmg := float(u.get("active_damage", 0.0))
+			if act_dmg <= 0.0:
+				errors.append("Hero '%s' non-positive active_damage: %f" % [id, act_dmg])
+			var aura_r := float(u.get("aura_radius", 0.0))
+			if aura_r <= 0.0:
+				errors.append("Hero '%s' non-positive aura_radius: %f" % [id, aura_r])
+			var aura_b := float(u.get("aura_damage_bonus", 0.0))
+			if aura_b <= 0.0:
+				errors.append("Hero '%s' non-positive aura_damage_bonus: %f" % [id, aura_b])
+		if kind == Kind.RAIDER:
+			var spd := float(u.get("speed", 0.0))
+			if spd <= 0.0:
+				errors.append("Raider '%s' non-positive speed: %f" % [id, spd])
+	return errors
