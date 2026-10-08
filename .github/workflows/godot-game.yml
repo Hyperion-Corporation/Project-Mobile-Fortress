@@ -6,11 +6,15 @@ on:
     branches: [main]
     paths:
       - "game/**"
+      - "scripts/run_godot_smokes.sh"
+      - "scripts/tests/test_run_godot_smokes.py"
       - ".github/workflows/godot-game.yml"
   pull_request:
     branches: [main]
     paths:
       - "game/**"
+      - "scripts/run_godot_smokes.sh"
+      - "scripts/tests/test_run_godot_smokes.py"
       - ".github/workflows/godot-game.yml"
 
 concurrency:
@@ -73,6 +77,21 @@ jobs:
           chmod +x /tmp/godot/Godot_v4.7.1-stable_linux.x86_64
           echo "/tmp/godot" >> "$GITHUB_PATH"
 
-      - name: SimulationCore headless smoke
-        run: |
-          /tmp/godot/Godot_v4.7.1-stable_linux.x86_64 --path game --headless --script res://tests/simulation_smoke.gd
+      - name: Test smoke runner failure detection
+        run: python3 -m unittest discover -s scripts/tests -p test_run_godot_smokes.py -v
+
+      # Run every headless smoke under game/tests/ (auto-discovered), not just
+      # one hard-coded smoke. Keep Godot pinned to 4.7.1 (matches local dev).
+      - name: Run all headless Godot smokes
+        env:
+          GODOT: /tmp/godot/Godot_v4.7.1-stable_linux.x86_64
+          SMOKE_LOG: godot-smokes.log
+        run: scripts/run_godot_smokes.sh
+
+      - name: Upload smoke log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: godot-smoke-logs
+          path: godot-smokes.log
+          if-no-files-found: ignore

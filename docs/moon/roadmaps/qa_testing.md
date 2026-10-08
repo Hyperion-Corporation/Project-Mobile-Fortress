@@ -7,7 +7,7 @@ Scope: correctness of dual-front gameplay, C++/Godot integration, later netcode,
 | # | Item | Effort | Status |
 | --- | --- | --- | --- |
 | Q1 | Template unit/instrumented skeletons (historical) | S | ✅ Done |
-| Q2 | CI matrices (update for Godot export + Android 13+ / iOS 17+) | M | 🚧 **Partial** — `.github/workflows/godot-core.yml` CMake/`ctest` + headless `simulation_smoke.gd`; Android jobs unchanged |
+| Q2 | CI matrices (update for Godot export + Android 13+ / iOS 17+) | M | 🚧 **Partial** — `godot-game.yml` runs every `game/tests/*_smoke.gd` headless via `scripts/run_godot_smokes.sh` (plus the existing CMake/`ctest` job; smoke log artifact on failure; runner regression tests cover failure detection); Godot export + Android/iOS version matrices unchanged |
 | Q3 | C++ core unit + property tests (pathing, ECS ordering) | L | 🚧 **Partial** — doctest `sim_world_tests` (reset/spend/raiders/save-load/wave-on-flow) |
 | Q4 | Regression harness: fixed seed → consistent outcomes (soft determinism; not lockstep-hard) | L | 🚧 **Partial** — S7 fixed-dt replay in `sim_world_tests` |
 | Q5 | Netcode tests under latency/jitter (post online) | L | 📋 Deferred |
