@@ -39,6 +39,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added (2026-10-08, T38 A4 heuristic DDA baseline)
 
 - **A4:** Rule-based difficulty director inside `SimWorld`, off by default. Intensity is clamped to 0.75–1.25 from HQ fraction, outposts lost, previous-wave clear time, and unspent currency versus the run's starting purse. It scales only the count and HP of waves that have not spawned (authored delays, speed, and damage stay put). `SimulationCore.set_dda_enabled` / `dda_enabled` / `get_dda_intensity`. `GameSession.dda_enabled` plus `apply_dda(sim)` is the session toggle; modular battle does not call it yet, and the DT5 overlay does not show intensity yet. On load, the clear-time sample resets and the purse baseline rebases to loaded currency; the enable flag stays on the receiving object (schema unchanged). Resumed DDA decisions can differ from uninterrupted play. No RNG. Tests: `sim_world_test.cpp` A4 cases, `dda_smoke.gd`. T45 review hardens combined-purse arithmetic for large valid balances and smoke failure reporting for missing spawns.
+### Added (2026-10-08, T39 U8 accessibility primitives — re-review HOLD)
+
+- Main menu and settings controls use a named 48-unit logical-canvas minimum and native AccessKit metadata. **48dp-equivalent mobile targets remain unresolved:** canvas stretching shrinks controls in phone-sized windows; fixed-width content clips at direct phone-sized logical viewports. Popup item targets and platform screen readers remain unverified.
+- Persisted `large_text` (1.15x) through the backward-compatible `OfflinePersistence` settings path. The compacted settings panel and container-safe fade fix the original 1280×720 clipping; the relocated version label no longer overlaps Quit at that size. This is not responsive reflow.
+- Four-way modal focus containment, host button isolation, slider lateral adjustment, and opener focus restoration verified. Re-review limits focus restoration to buttons so static labels remain unfocusable.
+- Button normal/hover/pressed text and focus styles, checkbox text, and version-label contrast corrected. Re-review smoke checks instantiated screen controls, rather than only styling isolated helper objects.
+- Regression checks cover persistence, focus membership, post-animation geometry in 1280×720, 720×1280, 390×844, and 844×390 **windows with project stretching enabled**. A 720×1280 window actually has a 1280×2275 logical canvas; window-fit checks do not establish mobile touch-target compliance.
+- Re-review restored unrelated U7 roadmap row accidentally removed in the follow-up. U8 stays partial/on HOLD for mobile layout and target sizing; in-battle HUD remains out of scope.
 
 ### Changed (2026-08-15, T37 DT6 overlay level picker)
 

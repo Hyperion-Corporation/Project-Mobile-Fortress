@@ -23,9 +23,8 @@ func _ready() -> void:
 	_apply_coastal_theme()
 	var has_cpp := ClassDB.class_exists("SimulationCore")
 	blurb.text = (
-		"1540s–1560s · East Asian coast\n"
-		+ "Ming garrison + Portuguese support\n"
-		+ "Defend land outposts and sea lanes against Wōkòu raids.\n\n"
+		"1540s–1560s · East Asian coast · Ming garrison + Portuguese support\n"
+		+ "Defend outposts and sea lanes against Wōkòu raids.\n"
 		+ "Sim: %s · offline · dual-front"
 		% ("C++ SimulationCore" if has_cpp else "GDScript fallback (classic only)")
 	)
@@ -41,10 +40,16 @@ func _ready() -> void:
 	else:
 		start_btn.text = "Defend the Coast"
 	classic_btn.text = "Classic prototype"
+	start_btn.custom_minimum_size = Vector2(280, ThemeTokensScript.MIN_TOUCH_TARGET_SIZE)
+	classic_btn.custom_minimum_size = Vector2(280, ThemeTokensScript.MIN_TOUCH_TARGET_SIZE)
+	quit_btn.custom_minimum_size = Vector2(280, ThemeTokensScript.MIN_TOUCH_TARGET_SIZE)
 	_ensure_level_select()
 	_ensure_resume_and_history_ui(has_cpp)
 	_ensure_version_label()
 	_refresh_last_run()
+	_apply_large_text()
+	_setup_focus_traversal()
+	call_deferred("_set_initial_focus")
 	var center: Control = get_node_or_null("Center")
 	if center:
 		ThemeTokensScript.animate_fade_in(center, 0.25)
@@ -74,7 +79,7 @@ func _apply_coastal_theme() -> void:
 		move_child(band, 2)
 	var title: Label = get_node_or_null("Center/VBox/Title")
 	if title:
-		title.add_theme_font_size_override("font_size", 42)
+		title.add_theme_font_size_override("font_size", 36)
 		title.add_theme_color_override("font_color", DUSK)
 	var subtitle: Label = get_node_or_null("Center/VBox/Subtitle")
 	if subtitle:
@@ -88,9 +93,11 @@ func _ensure_level_select() -> void:
 	if select == null:
 		select = OptionButton.new()
 		select.name = "LevelSelect"
-		select.custom_minimum_size = Vector2(280, 36)
+		select.custom_minimum_size = Vector2(280, ThemeTokensScript.MIN_TOUCH_TARGET_SIZE)
 		vbox.add_child(select)
 		vbox.move_child(select, start_btn.get_index())
+	else:
+		select.custom_minimum_size = Vector2(280, ThemeTokensScript.MIN_TOUCH_TARGET_SIZE)
 	select.clear()
 	var levels: Array = LevelCatalogScript.list_levels()
 	var current := str(GameSession.selected_level_path)
@@ -105,6 +112,7 @@ func _ensure_level_select() -> void:
 		return
 	select.select(picked)
 	_apply_level_entry(levels[picked])
+	ThemeTokensScript.set_a11y_metadata(select, "Scenario Selection", "Select tactical scenario or map")
 	if not select.item_selected.is_connected(_on_level_selected):
 		select.item_selected.connect(_on_level_selected)
 
@@ -125,11 +133,12 @@ func _ensure_resume_and_history_ui(has_cpp: bool) -> void:
 	if vbox.get_node_or_null("ResumeBtn") == null:
 		_resume_btn = Button.new()
 		_resume_btn.name = "ResumeBtn"
-		_resume_btn.custom_minimum_size = Vector2(280, 36)
+		_resume_btn.custom_minimum_size = Vector2(280, ThemeTokensScript.MIN_TOUCH_TARGET_SIZE)
 		vbox.add_child(_resume_btn)
 		vbox.move_child(_resume_btn, start_btn.get_index() + 1)
 	else:
 		_resume_btn = vbox.get_node("ResumeBtn")
+		_resume_btn.custom_minimum_size = Vector2(280, ThemeTokensScript.MIN_TOUCH_TARGET_SIZE)
 	_resume_btn.text = "Resume last snapshot"
 	_resume_btn.visible = has_cpp and OfflinePersistence.has_snapshot()
 	_resume_btn.disabled = not _resume_btn.visible
@@ -138,14 +147,23 @@ func _ensure_resume_and_history_ui(has_cpp: bool) -> void:
 		get_tree().change_scene_to_file("res://scenes/battle/battle.tscn")
 	)
 
-	if vbox.get_node_or_null("SettingsBtn") == null:
-		var settings_btn := Button.new()
+	var settings_btn: Button = vbox.get_node_or_null("SettingsBtn")
+	if settings_btn == null:
+		settings_btn = Button.new()
 		settings_btn.name = "SettingsBtn"
-		settings_btn.custom_minimum_size = Vector2(280, 36)
+		settings_btn.custom_minimum_size = Vector2(280, ThemeTokensScript.MIN_TOUCH_TARGET_SIZE)
 		settings_btn.text = "Settings · 設置"
 		settings_btn.pressed.connect(_open_settings)
 		vbox.add_child(settings_btn)
 		vbox.move_child(settings_btn, quit_btn.get_index())
+	else:
+		settings_btn.custom_minimum_size = Vector2(280, ThemeTokensScript.MIN_TOUCH_TARGET_SIZE)
+
+	ThemeTokensScript.set_a11y_metadata(start_btn, "Defend the Coast", "Start dual-front battle in modular view")
+	ThemeTokensScript.set_a11y_metadata(_resume_btn, "Resume Last Snapshot", "Resume previous combat save from disk")
+	ThemeTokensScript.set_a11y_metadata(classic_btn, "Classic Prototype", "Launch single-file canvas prototype")
+	ThemeTokensScript.set_a11y_metadata(settings_btn, "Settings", "Configure audio, controls, accessibility, and privacy")
+	ThemeTokensScript.set_a11y_metadata(quit_btn, "Quit", "Exit Mobile Fortress")
 
 	if vbox.get_node_or_null("LastRunLabel") == null:
 		_last_run_label = Label.new()
@@ -153,7 +171,7 @@ func _ensure_resume_and_history_ui(has_cpp: bool) -> void:
 		_last_run_label.custom_minimum_size = Vector2(480, 0)
 		_last_run_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		_last_run_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		_last_run_label.add_theme_color_override("font_color", Color(0.2, 0.25, 0.3, 1))
+		_last_run_label.add_theme_color_override("font_color", ThemeTokensScript.INK_MUTED)
 		_last_run_label.add_theme_font_size_override("font_size", 13)
 		vbox.add_child(_last_run_label)
 		vbox.move_child(_last_run_label, classic_btn.get_index())
@@ -168,13 +186,18 @@ func _ensure_version_label() -> void:
 	version.name = "VersionLabel"
 	version.text = "Slice-0 · DT8"
 	version.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	version.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
-	version.offset_top = -28
-	version.offset_bottom = -8
-	version.add_theme_color_override("font_color", Color(0.35, 0.32, 0.30, 1))
+	version.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	version.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
+	version.offset_left = -220
+	version.offset_top = -52
+	version.offset_right = -16
+	version.offset_bottom = -4
+	version.custom_minimum_size = Vector2(160, ThemeTokensScript.MIN_TOUCH_TARGET_SIZE)
+	version.add_theme_color_override("font_color", ThemeTokensScript.PAPER)
 	version.add_theme_font_size_override("font_size", 12)
 	version.mouse_filter = Control.MOUSE_FILTER_STOP
 	version.gui_input.connect(_on_version_gui_input)
+	ThemeTokensScript.set_a11y_metadata(version, "Build Version", "Shows game slice and dev version")
 	add_child(version)
 
 
@@ -194,9 +217,88 @@ func _on_version_gui_input(event: InputEvent) -> void:
 func _open_settings() -> void:
 	if get_node_or_null("SettingsDialog") != null:
 		return
+	var settings_btn: Button = $Center/VBox.get_node_or_null("SettingsBtn")
 	var dlg := SettingsDialogScript.new()
 	dlg.name = "SettingsDialog"
+	dlg.opener_control = settings_btn
+	_set_menu_focus_enabled(false)
+	dlg.closed.connect(func():
+		_set_menu_focus_enabled(true)
+		_apply_large_text()
+		_setup_focus_traversal()
+		if is_instance_valid(settings_btn):
+			settings_btn.call_deferred("grab_focus")
+	)
 	add_child(dlg)
+
+
+func _set_menu_focus_enabled(enabled: bool) -> void:
+	var vbox: VBoxContainer = get_node_or_null("Center/VBox")
+	if vbox:
+		for child in vbox.get_children():
+			if child is BaseButton:
+				child.focus_mode = Control.FOCUS_ALL if enabled else Control.FOCUS_NONE
+
+
+func _apply_large_text() -> void:
+	var settings: Dictionary = OfflinePersistence.read_settings()
+	var is_large: bool = bool(settings.get("large_text", false))
+	var center: Control = get_node_or_null("Center")
+	if center:
+		var s: float = ThemeTokensScript.LARGE_TEXT_SCALE if is_large else 1.0
+		center.pivot_offset = center.size / 2.0
+		center.scale = Vector2(s, s)
+		if not center.resized.is_connected(_on_center_resized):
+			center.resized.connect(_on_center_resized)
+
+
+func _on_center_resized() -> void:
+	var center: Control = get_node_or_null("Center")
+	if center:
+		center.pivot_offset = center.size / 2.0
+
+
+func _setup_focus_traversal() -> void:
+	var vbox: VBoxContainer = $Center/VBox
+	var controls: Array[Control] = []
+	var select: OptionButton = vbox.get_node_or_null("LevelSelect")
+	if select and select.visible and not select.disabled:
+		controls.append(select)
+	if start_btn and start_btn.visible and not start_btn.disabled:
+		controls.append(start_btn)
+	if _resume_btn and _resume_btn.visible and not _resume_btn.disabled:
+		controls.append(_resume_btn)
+	if classic_btn and classic_btn.visible and not classic_btn.disabled:
+		controls.append(classic_btn)
+	var settings_btn: Button = vbox.get_node_or_null("SettingsBtn")
+	if settings_btn and settings_btn.visible and not settings_btn.disabled:
+		controls.append(settings_btn)
+	if quit_btn and quit_btn.visible and not quit_btn.disabled:
+		controls.append(quit_btn)
+
+	for i in range(controls.size()):
+		var ctrl := controls[i]
+		if ctrl is Button:
+			ThemeTokensScript.apply_accessible_button(ctrl)
+		else:
+			ThemeTokensScript.apply_accessible_focus(ctrl)
+		var next_ctrl := controls[(i + 1) % controls.size()]
+		var prev_ctrl := controls[(i - 1 + controls.size()) % controls.size()]
+		ctrl.focus_next = next_ctrl.get_path()
+		ctrl.focus_previous = prev_ctrl.get_path()
+		ctrl.focus_neighbor_bottom = next_ctrl.get_path()
+		ctrl.focus_neighbor_top = prev_ctrl.get_path()
+		ctrl.focus_neighbor_left = ctrl.get_path()
+		ctrl.focus_neighbor_right = ctrl.get_path()
+
+
+func _set_initial_focus() -> void:
+	if _resume_btn and _resume_btn.visible and not _resume_btn.disabled:
+		_resume_btn.grab_focus()
+	elif start_btn and not start_btn.disabled:
+		start_btn.grab_focus()
+	elif classic_btn:
+		classic_btn.grab_focus()
 
 
 func _refresh_last_run() -> void:
