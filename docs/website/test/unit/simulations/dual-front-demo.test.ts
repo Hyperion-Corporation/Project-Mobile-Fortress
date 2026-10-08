@@ -271,28 +271,17 @@ describe("hero ability", () => {
     expect(state.landUnits[0].activeCooldownRemaining).toBe(0);
   });
 
-  it("hero ability deals area damage to all raiders in range on its front", () => {
-    let state = createState(CFG);
-    state = placeUnit(state, "hero_qi", 2, 0, "land", CFG);
-    state = startRun(state);
-
-    // Advance to tick 5 so the first land raider spawns at col 0
-    for (let i = 0; i < 5; i++) state = tick(state, CFG);
-
-    // The hero at col 2, row 0 with range 2 can reach raider at col 0 (distance = max(2,1) = 2)
-    const landRaiders = state.raiders.filter((r) => r.front === "land");
-    expect(landRaiders.length).toBeGreaterThanOrEqual(1);
-    // Every spawned land raider in range took exactly activeDamage (28)
-    const hitRaiders = landRaiders.filter((r) => r.hp < r.maxHp);
-    expect(hitRaiders.length).toBe(landRaiders.length);
-    for (const r of hitRaiders) {
-      expect(r.maxHp - r.hp).toBe(28);
-    }
-    // Sea raiders were NOT hit (none spawned yet at tick 5, but verify)
-    const seaRaiders = state.raiders.filter((r) => r.front === "sea");
-    for (const r of seaRaiders) {
-      expect(r.hp).toBe(r.maxHp);
-    }
+  it("hero ability damages every in-range land raider and leaves sea raiders untouched", () => {
+    const config = { ...CFG, waves: [
+      { front: "land" as const, spawnTick: 1, hp: 100, damage: 1, speed: 0 },
+      { front: "land" as const, spawnTick: 1, hp: 100, damage: 1, speed: 0 },
+      { front: "sea" as const, spawnTick: 1, hp: 100, damage: 1, speed: 0 },
+    ] };
+    let state = placeUnit(createState(config), "hero_qi", 2, 0, "land", config);
+    state = tick(startRun(state), config);
+    expect(state.raiders.filter(r => r.front === "land").map(r => r.hp)).toEqual([72, 72]);
+    expect(state.raiders.filter(r => r.front === "sea").map(r => r.hp)).toEqual([100]);
+    expect(state.landUnits[0].activeCooldownRemaining).toBe(80);
   });
 
   it("hero ability goes on cooldown after triggering", () => {
@@ -341,31 +330,15 @@ describe("cross-support unit", () => {
     expect(def.crossEnvMult).toBe(1.15);
   });
 
-  it("cross_support fires at raiders on both fronts with exact HP loss", () => {
-    let state = createState(CFG);
-    state = placeUnit(state, "cross_support", 3, 0, "land", CFG);
-    state = startRun(state);
-
-    // Advance until both land and sea raiders have spawned and been hit
-    for (let i = 0; i < 25; i++) state = tick(state, CFG);
-
-    // Land raiders (own front): damage = round(6 * 0.55) = 3 per hit
-    const landRaiders = state.raiders.filter((r) => r.front === "land" && r.hp < r.maxHp);
-    expect(landRaiders.length).toBeGreaterThanOrEqual(1);
-    for (const r of landRaiders) {
-      const dmg = r.maxHp - r.hp;
-      expect(dmg % 3).toBe(0);
-      expect(dmg).toBeGreaterThan(0);
-    }
-
-    // Sea raiders (cross front): damage = round(6 * 1.15) = 7 per hit
-    const seaRaiders = state.raiders.filter((r) => r.front === "sea" && r.hp < r.maxHp);
-    expect(seaRaiders.length).toBeGreaterThanOrEqual(1);
-    for (const r of seaRaiders) {
-      const dmg = r.maxHp - r.hp;
-      expect(dmg % 7).toBe(0);
-      expect(dmg).toBeGreaterThan(0);
-    }
+  it.each(["land", "sea"] as const)("cross_support on %s deals exact single-hit damage to each front", (front) => {
+    const config = { ...CFG, waves: [
+      { front: "land" as const, spawnTick: 1, hp: 100, damage: 1, speed: 0 },
+      { front: "sea" as const, spawnTick: 1, hp: 100, damage: 1, speed: 0 },
+    ] };
+    let state = placeUnit(createState(config), "cross_support", 3, 0, front, config);
+    state = tick(startRun(state), config);
+    expect(state.raiders.filter(r => r.front === front).map(r => r.hp)).toEqual([97]);
+    expect(state.raiders.filter(r => r.front !== front).map(r => r.hp)).toEqual([93]);
   });
 
   it("cross_support deals reduced damage to own front and boosted to cross front", () => {

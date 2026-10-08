@@ -102,6 +102,15 @@ describe("DualFrontDemoView", () => {
     expect(screen.getByText(/Land 兩/).querySelector("strong")?.textContent).toBe("0");
     const batteryBtn = screen.getByRole("button", { name: /Battery/ });
     expect(batteryBtn.getAttribute("disabled")).toBeNull();
+    fireEvent.click(batteryBtn);
+    // An empty land cell remains unaffordable; the sea wallet must not fund it.
+    fireEvent.click(cell("land", 2, 0));
+    expect(cell("land", 2, 0).getAttribute("aria-label")).not.toContain("Signal Battery");
+    expect(screen.getByText(/Sea 兩/).querySelector("strong")?.textContent).toBe("60");
+    fireEvent.click(cell("sea", 0, 0));
+    expect(cell("sea", 0, 0).getAttribute("aria-label")).toContain("Signal Battery");
+    expect(screen.getByText(/Sea 兩/).querySelector("strong")?.textContent).toBe("40");
+    expect(screen.getByText(/Land 兩/).querySelector("strong")?.textContent).toBe("0");
   });
 });
 

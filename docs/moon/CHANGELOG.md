@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed (2026-10-08, T54/T56 website review follow-up)
+
+- Signal Battery remains selectable when either wallet can pay; the component regression now also verifies sea placement charges only sea funds and an unaffordable land placement is rejected.
+- Website CI generates doc content before a real `tsc -b` check. Review strengthens combat tests to assert exact 3/7 damage for support placed on either front and simultaneous 28-damage hits on two hero targets while a sea target stays unharmed. Zeroing either attack, doubling cross damage, and limiting the hero to one target each fail regression tests. Full suite: 80/80 PASS.
+- Independent Chromium measurement at 320×844 confirms the demo header and document have 320px scroll widths; all five visible header controls fit and pass center-point hit testing. Vite production build and Aurelia island budget pass (66.1 kB gzip / 300 kB).
+
 ### Fixed (2026-10-08, T53 review — phone target widths)
 
 - Settings Reset/Cancel/Save now apply the density minimum to width as well as height. At 390×844 the original widths were 40.2/30.5/39.6 window pixels; the accessibility smoke now checks both dimensions at all four reference-density windows with Large Text on/off. The width regression probe failed six assertions before the fix; the full combined Godot suite passes 24/24 afterward.
@@ -24,8 +30,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added (2026-10-08, T51 ID8 slice 2 + header overflow + website CI)
 
 - **ID8 slice 2:** Demo gains Commander Qi (⭐ hero, area ability on 80-tick cooldown, 28 AoE damage) and Signal Battery (🔗 cross-front support, fires at both land and sea raiders with 0.55×/1.15× env multipliers). Hero ability auto-triggers when raiders are in range and the cooldown is ready; the view shows a gold cooldown bar. Cross-support can be placed on either front grid. Budgets raised to 60/60 to accommodate the new units. Known bug (T53 review HOLD): the Signal Battery button is disabled whenever land funds are short, even if sea funds could pay for a sea placement.
-- **Header overflow fix (unverified):** CSS change intended to stop the global topbar overflowing at 320px — no rendered 320px measurement exists yet (T53 review HOLD) — brand-name hidden below 480px, topbar padding and gaps reduced, search trigger min-width removed at 640px.
-- **Website CI:** New `.github/workflows/website.yml` runs ESLint, `tsc -b --noCheck` (a build without type checking — a real `tsc -b` currently fails TS2307 on the generated docs-content import; T53 review HOLD), and `vitest run` on pushes/PRs touching `docs/website/**`.
+- **Header overflow fix:** T56 independently verified the rendered demo header at 320px (no overflow; visible controls reachable) — brand-name hidden below 480px, topbar padding and gaps reduced, search trigger min-width removed at 640px.
+- **Website CI:** New `.github/workflows/website.yml` runs ESLint, a real `tsc -b` after generating doc content (T54, independently verified in T56), and `vitest run` on pushes/PRs touching `docs/website/**`.
 - **Tests:** 63 → 78 vitest tests (+15: hero ability mechanics, cross-support dual-front firing, unit classification helpers, view rendering of new unit badges).
 
 ### Fixed (2026-10-08, T50 CI workflow green — Q2)
