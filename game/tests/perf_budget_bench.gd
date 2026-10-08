@@ -11,6 +11,10 @@ extends SceneTree
 ## MEASURED_TICKS fixed-dt ticks per load level and reports min / median /
 ## p95 / p99 / max tick time in microseconds plus the entity counts actually
 ## reached (so a reader can verify the load was real, not an empty world).
+## A second scenario times flow-field recompute directly: on live 8x5 grids
+## during combat, solid cells are placed/removed defender-style while flow
+## raiders advance, and each set_cell_solid call (which runs the full BFS
+## recompute synchronously) is timed with its own percentiles and budget.
 ##
 ## Budget: VS-A8 requires 30+ FPS with 10-40 units. One 30 FPS frame is
 ## 33_333 us; the sim tick is only part of a frame (rendering, HUD sync,
@@ -31,6 +35,20 @@ const LOAD_LEVELS: Array[int] = [10, 20, 40, 60]
 const CEILING_LOAD := 40
 const SIM_BUDGET_US := 8000
 const GROSS_MULT := 3
+
+# Flow-recompute scenario (P3): placing/removing solid defenders on live
+# grids during combat. set_cell_solid runs the whole-front BFS synchronously,
+# so the timed call IS the recompute. Same frame-fraction budget as the tick:
+# recompute shares the frame with the tick, rendering, and HUD sync.
+const FLOW_TOGGLES := 2000
+const FLOW_BUDGET_US := 8000
+const GRID_SIZE := Vector2i(8, 5)
+const OUTPOST_CELL := Vector2i(4, 2)
+const FLOW_RAIDERS_PER_FRONT := 10
+const FLOW_RAIDER_HP := 20000.0
+const FLOW_RAIDER_SPEED := 26.0
+
+var _flow_spawn_idx := 0
 
 # Near-immortal raiders so the load survives the whole timed window
 # (no deaths mid-run shrinking the world we claim to measure).
@@ -67,8 +85,10 @@ func _init() -> void:
 		if not stats.is_empty() and int(stats.get("load", 0)) == CEILING_LOAD:
 			ceiling_p95 = int(stats.get("p95", 0))
 
+	var flow_p95 := _measure_flow(sim, failures)
+
 	sim.queue_free()
-	_finish(failures, ceiling_p95)
+	_finish(failures, ceiling_p95, flow_p95)
 
 
 ## Builds a `load`-entity dual-front world, warms up, times the tick call
@@ -144,6 +164,114 @@ func _measure_load(sim: Node, load: int, failures: Array[String]) -> Dictionary:
 	return {"load": load, "p95": _quantile(samples, 0.95)}
 
 
+## Flow-recompute scenario (P3): live 8x5 grids during combat with flow
+## raiders advancing, timing each defender-style solid place/remove (each
+## call runs the full one-front BFS recompute synchronously). Ticks run
+## untimed between timed recomputes so the world stays live. Returns the
+## recompute p95, or -1 on setup failure.
+func _measure_flow(sim: Node, failures: Array[String]) -> int:
+	sim.reset_run(40, 40, 100)
+	if not sim.load_level_json(LEVEL):
+		failures.append("flow scenario: load_level_json failed")
+		return -1
+	if not sim.has_method("init_grids") or not sim.has_method("set_cell_solid"):
+		failures.append("flow scenario: native grid API missing")
+		return -1
+	sim.init_grids(GRID_SIZE)
+	# Outpost solids mirror BattleRoot._setup_grids.
+	sim.set_cell_solid(0, OUTPOST_CELL, true)
+	sim.set_cell_solid(1, OUTPOST_CELL, true)
+	if not sim.flow_active():
+		failures.append("flow scenario: grids not live after init_grids")
+		return -1
+	# Combat without scheduled waves: only the flow raiders below exist.
+	sim.debug_set_waves_disabled(true)
+	sim.start_combat()
+	for front in [0, 1]:
+		for i in FLOW_RAIDERS_PER_FRONT:
+			var cell := Vector2i(i % GRID_SIZE.x, (i * 2 + front) % GRID_SIZE.y)
+			if cell == OUTPOST_CELL:
+				cell = Vector2i((cell.x + 1) % GRID_SIZE.x, cell.y)
+			var rid: int = sim.debug_spawn_raider_at(
+				front, cell, FLOW_RAIDER_HP, FLOW_RAIDER_SPEED, RAIDER_DAMAGE)
+			if rid <= 0:
+				failures.append("flow scenario: debug_spawn_raider_at failed front=%d" % front)
+				return -1
+	if sim.get_raider_count() != 2 * FLOW_RAIDERS_PER_FRONT:
+		failures.append("flow scenario: reached %d raiders, not a real %d-raider flow world"
+			% [sim.get_raider_count(), 2 * FLOW_RAIDERS_PER_FRONT])
+		return -1
+	var flow_raiders := 0
+	for raider in sim.get_raiders():
+		if bool(raider.uses_flow):
+			flow_raiders += 1
+	if flow_raiders != 2 * FLOW_RAIDERS_PER_FRONT:
+		failures.append("flow scenario: %d/%d raiders on flow paths (not measuring recompute)"
+			% [flow_raiders, 2 * FLOW_RAIDERS_PER_FRONT])
+		return -1
+
+	# Toggle cells defender-style: one full place pass then one full remove
+	# pass over the grid (minus the outpost cell), repeated. Varied BFS work,
+	# never a permanently walled grid.
+	var cells: Array[Vector2i] = []
+	for y in GRID_SIZE.y:
+		for x in GRID_SIZE.x:
+			var cell := Vector2i(x, y)
+			if cell != OUTPOST_CELL:
+				cells.append(cell)
+	# Raiders that reach the last column damage the HQ and despawn (that IS
+	# the flow path working end to end), so top up untimed to keep the load
+	# exact. HQ damage is monotonic and top-up-proof, so it is the liveness
+	# signal: a falling HQ proves raiders kept flowing into the target.
+	var hq_before: int = sim.get_hq_hp()
+	var samples := PackedInt32Array()
+	samples.resize(FLOW_TOGGLES)
+	for i in FLOW_TOGGLES:
+		var pass_index := i / cells.size()
+		var cell: Vector2i = cells[i % cells.size()]
+		var solid := (pass_index % 2 == 0)
+		var t0 := Time.get_ticks_usec()
+		for front in [0, 1]:
+			sim.set_cell_solid(front, cell, solid)
+		samples[i] = int(Time.get_ticks_usec() - t0)
+		if i % 10 == 9:
+			sim.tick(FIXED_DT, false)
+			_top_up_flow_raiders(sim, failures)
+			if not failures.is_empty():
+				return -1
+	samples.sort()
+	_top_up_flow_raiders(sim, failures)
+	if sim.get_raider_count() != 2 * FLOW_RAIDERS_PER_FRONT:
+		failures.append("flow scenario: ended with %d raiders, not the full %d-raider load"
+			% [sim.get_raider_count(), 2 * FLOW_RAIDERS_PER_FRONT])
+	if sim.get_hq_hp() >= hq_before:
+		failures.append("flow scenario: HQ took no damage (hq=%d, no raider completed the flow path)"
+			% sim.get_hq_hp())
+	var p95 := _quantile(samples, 0.95)
+	print("perf_budget_bench: flow toggles=%d raiders=%d | min=%5d med=%5d p95=%5d p99=%5d max=%5d us/recompute"
+		% [FLOW_TOGGLES, 2 * FLOW_RAIDERS_PER_FRONT,
+			samples[0], _quantile(samples, 0.50), p95,
+			_quantile(samples, 0.99), samples[samples.size() - 1]])
+	return p95
+
+
+## Restores the flow scenario to its full raider load (untimed). Spawn
+## cells cycle across both grids so replacements keep flowing.
+func _top_up_flow_raiders(sim: Node, failures: Array[String]) -> void:
+	var want: int = 2 * FLOW_RAIDERS_PER_FRONT - int(sim.get_raider_count())
+	for _k in want:
+		var front := _flow_spawn_idx % 2
+		var cell := Vector2i(
+			(_flow_spawn_idx / 2) % GRID_SIZE.x,
+			(_flow_spawn_idx * 3 + front) % GRID_SIZE.y)
+		_flow_spawn_idx += 1
+		if cell == OUTPOST_CELL:
+			cell = Vector2i((cell.x + 1) % GRID_SIZE.x, cell.y)
+		if sim.debug_spawn_raider_at(front, cell, FLOW_RAIDER_HP, FLOW_RAIDER_SPEED, RAIDER_DAMAGE) <= 0:
+			failures.append("flow scenario: top-up spawn failed")
+			return
+
+
 ## Snapshot counts, total HP and total x per front outside the timed loop.
 func _front_totals(sim: Node) -> Array[Vector3]:
 	var totals: Array[Vector3] = [Vector3.ZERO, Vector3.ZERO]
@@ -168,7 +296,9 @@ func _quantile(sorted_samples: PackedInt32Array, p: float) -> int:
 	return sorted_samples[idx]
 
 
-func _finish(failures: Array[String], ceiling_p95: int) -> void:
+func _finish(failures: Array[String], ceiling_p95: int, flow_p95: int) -> void:
+	if flow_p95 < 0:
+		failures.append("flow scenario did not produce a measurement")
 	if not failures.is_empty():
 		for failure in failures:
 			push_error(failure)
@@ -177,13 +307,17 @@ func _finish(failures: Array[String], ceiling_p95: int) -> void:
 		return
 	var verdict := "PASS"
 	var code := 0
-	if ceiling_p95 > SIM_BUDGET_US * GROSS_MULT:
+	if ceiling_p95 > SIM_BUDGET_US * GROSS_MULT or flow_p95 > FLOW_BUDGET_US * GROSS_MULT:
 		verdict = "FAIL"
 		code = 1
-	elif ceiling_p95 > SIM_BUDGET_US:
+	elif ceiling_p95 > SIM_BUDGET_US or flow_p95 > FLOW_BUDGET_US:
 		verdict = "WARN"
 	print(
 		"perf_budget_bench: budget p95@%d <= %d us (30 FPS frame/4): p95=%d us -> %s"
 		% [CEILING_LOAD, SIM_BUDGET_US, ceiling_p95, verdict]
+	)
+	print(
+		"perf_budget_bench: flow budget p95 <= %d us/recompute: p95=%d us -> %s"
+		% [FLOW_BUDGET_US, flow_p95, verdict]
 	)
 	quit(code)

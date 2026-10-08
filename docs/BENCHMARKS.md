@@ -13,6 +13,7 @@
 - [Why These Targets](#why-these-targets)
 - [Profiling Tools (Available Today)](#profiling-tools-available-today)
 - [Simulation Tick Budget](#simulation-tick-budget-p7-desktop-baseline)
+- [Flow-Field Recompute](#flow-field-recompute-p3-desktop-baseline)
 - [Reporting a Regression](#reporting-a-regression)
 
 ---
@@ -140,13 +141,72 @@ matched the target load exactly in every run (no mid-run deaths).
   representative hardware before the collaborator playtest.
 - **Sim tick only.** Rendering, TileMap/HUD sync, GDScript presentation
   (`battle_root.gd`), and audio are not measured.
-- **Synthetic lane-path movement + defender targeting only.** The load uses explicit
-  lane paths; flow-field recompute cost (P3) and the C++-owned wave-spawn
-  path are not exercised here. Combat-phase wave scheduling is deliberately
-  not started; defender attacks and movement run independently of that flag.
+- **Synthetic lane-path movement + defender targeting only.** The tick load
+  uses explicit lane paths; the C++-owned wave-spawn path is not exercised
+  here. Combat-phase wave scheduling is deliberately not started; defender
+  attacks and movement run independently of that flag. Flow-field recompute
+  is covered separately below (P3 baseline).
 - Medians of 0 us mean elapsed times fall below the timer resolution;
   they do not mean zero simulation work. Damage/movement assertions detect
   a no-op tick independently of the timer.
+
+---
+
+## Flow-Field Recompute (P3 Desktop Baseline)
+
+First measured recompute numbers for the project (T52). `SimWorld::set_cell_solid`
+runs the whole-front BFS recompute synchronously, so timing that call *is*
+timing the P3 cost — the same call `BattleRoot` makes on every defender
+placement, redeploy, outpost loss, and DT6 level load.
+
+### How to run it
+
+Same script as the tick baseline (never CI — timing is machine-dependent):
+
+```bash
+scripts/run_perf_bench.sh
+```
+
+After the per-load tick lines, the script builds a live combat world on 8×5
+grids (outpost solids as in `BattleRoot._setup_grids`, scheduled waves
+disabled so only the scenario's own raiders exist), spawns 20 flow-mode
+raiders (10 per front, `uses_flow` asserted — a lane-path world would not
+measure recompute), then times 2000 defender-style solid place/remove
+toggles (full place pass + full remove pass over both grids, cycling cells)
+with untimed ticks between batches so the raid stays live. Raiders that reach
+the last column damage the HQ and despawn — that is the flow path working end
+to end — so the scenario tops the load back up untimed and proves liveness by
+falling HQ HP rather than by stable counts. Reports min / median / p95 / p99 /
+max microseconds per recompute plus its own budget line:
+**`FLOW_BUDGET_US = 8000`** (same frame-fraction rationale as the tick —
+recompute shares the frame with the tick, rendering, and HUD sync). PASS /
+WARN / FAIL thresholds match the tick scenario; either scenario failing the
+gross check fails the run.
+
+### Measured numbers (2026-10-08)
+
+Machine: 12th Gen Intel i9-12900HX (24 threads), desktop x86-64 Linux,
+Godot 4.7.1 headless, current-`harbinger` native library. Three consecutive
+runs, 2000 timed recomputes per run (20 flow raiders live):
+
+| Run | Median (us) | p95 (us) | p99 (us) | Max (us) |
+| --- | --- | --- | --- | --- |
+| 1 | 1 | 1 | 2 | 4 |
+| 2 | 1 | 2 | 2 | 7 |
+| 3 | 1 | 1 | 2 | 3 |
+
+Verdict: **PASS** in all three runs — p95 ≤ 2 us against the 8000 us budget.
+Expected: an 8×5 (40-cell) single-front BFS is tens of cell visits; single-digit
+microseconds are the honest order of magnitude on desktop. The outliers were
+not profiled; timer resolution is 1 us.
+
+### Explicit caveats (why P3 stays Partial, not Done)
+
+- **Desktop only, NOT a target phone** — same caveat as the tick baseline.
+- **Small live grids.** 8×5 with ~20 raiders is the Slice-0 shape; larger
+  grids, heavier solid churn (many simultaneous placements), and combined
+  tick+recompute frame cost on device are still open.
+- **C++-owned wave spawn still unmeasured**; rendering/HUD sync excluded.
 
 ---
 

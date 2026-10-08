@@ -1,22 +1,90 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Level",
-  "description": "Shape of files under game/assets/levels/. Implemented natively by ios/MyGame/Resources/Levels/LevelLoader.swift today; a future Kotlin loader on the Android side should implement against this same schema rather than inventing a parallel shape.",
+  "title": "DualFrontLevel",
+  "description": "Shape of the dual-front level JSONs under game/assets/levels/ (slice0_dual_front.json, night_tide_dual_front.json). Refreshed 2026-10-08 (T52): describes what SimulationCore.load_level_json (game/src/cpp/simulation_core.cpp) and LevelCatalog (game/scripts/data/level_catalog.gd) actually read. game/assets/levels/level_01.json is a legacy single-front leftover that the catalog skips and that does NOT conform to this schema (no landCount/seaCount). Keys marked informational are carried in the JSONs but consumed by no loader as of T52.",
   "type": "object",
-  "required": ["id", "displayName", "enemySpawnIntervalSeconds", "waves"],
+  "required": ["id", "displayName", "waves"],
   "properties": {
-    "id": { "type": "string" },
-    "displayName": { "type": "string" },
-    "enemySpawnIntervalSeconds": { "type": "number", "minimum": 0 },
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Level id. Used as GameSession.selected_level_id and the end_run level_id tag."
+    },
+    "displayName": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Shown in the main-menu LevelSelect and the dev-overlay level picker (read by LevelCatalog)."
+    },
+    "civPrimary": {
+      "type": "string",
+      "description": "Informational as of T52: carried in the JSONs (e.g. Ming), consumed by no loader."
+    },
+    "civSupport": {
+      "type": "string",
+      "description": "Informational as of T52: carried in the JSONs (e.g. Portuguese), consumed by no loader."
+    },
+    "buildPhaseSeconds": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Read by SimulationCore.load_level_json via SimWorld.set_build_phase_seconds. If absent, the previous value is kept (SimWorld default 40.0)."
+    },
+    "victoryTimeSeconds": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Read by SimulationCore.load_level_json via SimWorld.set_victory_time. If absent, the previous value is kept (SimWorld default 55.0)."
+    },
+    "enemySpawnIntervalSeconds": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Informational as of T52: carried in the JSONs, consumed by no loader (wave timing comes from waves[].delaySeconds)."
+    },
+    "hqMaxHp": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Read by SimulationCore.load_level_json and passed to SimWorld.reset_run. If absent, the run's current HQ max is kept (SimWorld default 100)."
+    },
+    "startingLandCurrency": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Read by SimulationCore.load_level_json and passed to SimWorld.reset_run. If absent, the run's current land balance is kept (SimWorld default 14)."
+    },
+    "startingSeaCurrency": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Read by SimulationCore.load_level_json and passed to SimWorld.reset_run. If absent, the run's current sea balance is kept (SimWorld default 14)."
+    },
     "waves": {
       "type": "array",
+      "minItems": 1,
+      "description": "Wave schedule. The loader falls back to a built-in 4-wave schedule only when the array is absent or yields zero waves; an empty array is therefore invalid here.",
       "items": {
         "type": "object",
-        "required": ["delaySeconds", "enemyCount", "spawnPattern"],
+        "required": ["delaySeconds", "landCount", "seaCount"],
         "properties": {
-          "delaySeconds": { "type": "number", "minimum": 0 },
-          "enemyCount": { "type": "integer", "minimum": 1 },
-          "spawnPattern": { "type": "string", "enum": ["row", "scattered"] }
+          "delaySeconds": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Absolute combat-clock time at which the wave fires. Read by the loader via SimWorld.add_wave."
+          },
+          "landCount": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Raiders spawned on the land front. Required by LevelCatalog (first wave must carry landCount AND seaCount or the file is skipped as a legacy single-front template)."
+          },
+          "seaCount": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Raiders spawned on the sea front. Required by LevelCatalog, same rule as landCount."
+          },
+          "enemyCount": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Deprecated legacy fallback: the loader uses it for landCount only when landCount is absent (level_01.json shape). New levels must use landCount/seaCount."
+          },
+          "spawnPattern": {
+            "type": "string",
+            "description": "Informational as of T52: carried in the JSONs (value lane), consumed by no loader (wave spawn is flow-driven when grids are live, lane fallback otherwise)."
+          }
         }
       }
     }

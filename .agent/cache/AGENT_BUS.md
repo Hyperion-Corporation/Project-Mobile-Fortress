@@ -2705,3 +2705,12 @@ Approach, before editing: persist `dda_enabled` (default off) via `OfflinePersis
 **Before/after test counts:** 63 → 78 vitest tests (+15).
 
 **Handoff:** ready for Chat review under T53.
+
+### muse — 2026-10-08 — T52 DONE: level schema refresh + validation smoke + P3 flow-recompute bench
+
+- **Lane:** `game/src/level-schema.json`, new `game/tests/level_schema_smoke.gd`, `game/tests/perf_budget_bench.gd`, `docs/BENCHMARKS.md`, `docs/moon/roadmaps/performance.md` (P3/P7 cells only), `docs/moon/CHANGELOG.md`. No C++, no level-JSON edits, no other agents' files.
+- **Schema:** rewritten to match what the loaders actually read (cross-checked `SimulationCore.load_level_json` in `game/src/cpp/simulation_core.cpp` and `LevelCatalog.parse_level`): required `id`/`displayName`/`waves`, per-wave `delaySeconds`+`landCount`+`seaCount`, loader-read optionals with retention semantics, and carried-but-unread informational keys (`civPrimary`, `civSupport`, `enemySpawnIntervalSeconds`, `spawnPattern` — consumed by nothing as of T52). `level_01.json` documented as non-conforming legacy the catalog skips. Findings: `spawnPattern` and `enemySpawnIntervalSeconds` are inert metadata; `enemyCount` survives only as a loader land-fallback.
+- **Smoke:** validates every catalog level, cross-checks wave count + starting land/sea/HQ/build/victory through the real C++ loader, fails on deliberately broken in-memory copies (missing `seaCount`, empty waves, missing `id`), pins the `level_01` catalog exclusion. Self-proving negatives: a vacuous validator would FAIL the smoke.
+- **Bench:** new flow scenario times 2000 `set_cell_solid` recomputes (whole-front BFS, synchronous) on live 8×5 combat grids with 20 `uses_flow`-asserted raiders; HQ-damage liveness proof (raiders reaching the last column despawn by design, load topped up untimed). Own percentiles + `FLOW_BUDGET_US = 8000` line; still manual-only, never CI.
+- **Verify (all `XDG_DATA_HOME=/tmp/pmf-xdg/muse`):** `level_schema_smoke.gd` PASS; `perf_budget_bench.gd` PASS ×3 (flow med 1, p95 1–2, p99 2, max 3–7 us/recompute; tick p95@40 = 1 us); full `./scripts/run_godot_smokes.sh` **24/24 PASS** (23 pre-existing + new schema smoke); `git diff --check` clean. First flow attempt failed honestly (raiders despawning on HQ contact tripped a count-stability check) — reworked to top-up + HQ-damage proof instead of weakening the assertion.
+- **Docs:** P3 → 🚧 Partial, P7 notes the extended script, G5 unchanged (no level/behavior change). **Handoff:** ready for Chat review under T53.

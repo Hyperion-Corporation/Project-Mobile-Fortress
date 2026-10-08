@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (2026-10-08, T52 level schema refresh + validation smoke + P3 flow-recompute bench)
+
+- **Level schema refresh:** `game/src/level-schema.json` now describes the dual-front level JSONs as the loaders actually read them (cross-checked against `SimulationCore.load_level_json` and `LevelCatalog`): required `id`/`displayName`/`waves`, per-wave `delaySeconds` + `landCount`/`seaCount`, loader-read optionals (`startingLandCurrency`, `startingSeaCurrency`, `hqMaxHp`, `buildPhaseSeconds`, `victoryTimeSeconds`), and carried-but-unread informational keys (`civPrimary`, `civSupport`, `enemySpawnIntervalSeconds`, `spawnPattern`). The legacy `level_01.json` single-front leftover is documented as non-conforming and catalog-skipped. No level JSON was changed.
+- **Level validation smoke:** new `game/tests/level_schema_smoke.gd` (runs in `scripts/run_godot_smokes.sh`) validates every catalog level against the schema, cross-checks wave count and starting values through the real C++ loader, fails on deliberately broken copies, and pins the `level_01` catalog exclusion.
+- **P3 flow-recompute bench:** `perf_budget_bench.gd` gains a second scenario timing 2000 defender-style solid place/remove recomputes on live 8×5 combat grids (20 flow-mode raiders, `uses_flow` asserted, HQ-damage liveness proof) with its own percentiles and `FLOW_BUDGET_US = 8000` line — still a manual gate, never CI. Desktop numbers in `docs/BENCHMARKS.md`: p95 ≤ 2 us, PASS. Roadmap: P3 → 🚧 Partial; P7 notes the extended script; G5 unchanged.
+
 ### Added (2026-10-08, T51 ID8 slice 2 + header overflow + website CI)
 
 - **ID8 slice 2:** Demo gains Commander Qi (⭐ hero, area ability on 80-tick cooldown, 28 AoE damage) and Signal Battery (🔗 cross-front support, fires at both land and sea raiders with 0.55×/1.15× env multipliers). Hero ability auto-triggers when raiders are in range and the cooldown is ready; the view shows a gold cooldown bar. Cross-support can be placed on either front grid. Budgets raised to 60/60 to accommodate the new units.
