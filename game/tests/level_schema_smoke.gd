@@ -1,14 +1,16 @@
 extends SceneTree
 ## T52 (G5): level-JSON validation smoke.
 ##
-## Validates every LevelCatalog level against game/src/level-schema.json
-## (required keys, value types/ranges, per-wave landCount/seaCount), then
-## cross-checks that SimulationCore.load_level_json actually loads what the
-## JSON says (wave count, starting currencies, HQ, build/victory times).
-## A deliberately broken in-memory copy must fail validation, proving the
-## checks are real. level_01.json is a legacy single-front leftover: it must
-## exist on disk and stay out of the dual-front catalog (it is not validated
-## against the schema). Deterministic and fast: safe as a CI gate.
+## Validates every LevelCatalog level against the loaded
+## game/src/level-schema.json itself (required keys, types, integer vs
+## number, minimums, lengths — a bounded draft-07 subset), then cross-checks
+## that SimulationCore.load_level_json actually loads what the JSON says
+## (wave count, starting currencies, HQ, build/victory times). Deliberately
+## broken in-memory copies (bad level data AND a tampered schema) must fail
+## validation, proving the checks are real. level_01.json is a legacy
+## single-front leftover: it must exist on disk and stay out of the
+## dual-front catalog (it is not validated against the schema).
+## Deterministic and fast: safe as a CI gate.
 
 const LevelCatalogScript := preload("res://scripts/data/level_catalog.gd")
 const SCHEMA_PATH := "res://src/level-schema.json"
@@ -37,14 +39,16 @@ func _init() -> void:
 		var data: Dictionary = _load_json(path, failures)
 		if data.is_empty():
 			continue
-		var errors: Array[String] = _validate_level(path, data)
+		var errors: Array[String] = []
+		_validate_against_schema(data, schema, path, errors)
 		for error in errors:
 			failures.append(error)
 		if errors.is_empty():
 			_cross_check_loader(sim, path, data, failures)
 	sim.queue_free()
 
-	# Deliberately broken copies must fail validation (negative control).
+	# Deliberately broken copies must fail validation (negative controls).
+	# A vacuous validator would let these through and FAIL this smoke.
 	if not schema.is_empty():
 		var good: Dictionary = _load_json(
 			str(levels[0].get("path")) if not levels.is_empty()
@@ -52,16 +56,24 @@ func _init() -> void:
 		if not good.is_empty():
 			var broken_waves: Dictionary = good.duplicate(true)
 			(broken_waves["waves"] as Array)[0].erase("seaCount")
-			if _validate_level("broken-no-seaCount", broken_waves).is_empty():
-				failures.append("negative control: wave without seaCount passed validation")
+			_expect_invalid(schema, "broken-no-seaCount", broken_waves, failures)
 			var broken_nowaves: Dictionary = good.duplicate(true)
 			broken_nowaves["waves"] = []
-			if _validate_level("broken-empty-waves", broken_nowaves).is_empty():
-				failures.append("negative control: empty waves array passed validation")
+			_expect_invalid(schema, "broken-empty-waves", broken_nowaves, failures)
 			var broken_noid: Dictionary = good.duplicate(true)
 			broken_noid.erase("id")
-			if _validate_level("broken-no-id", broken_noid).is_empty():
-				failures.append("negative control: level without id passed validation")
+			_expect_invalid(schema, "broken-no-id", broken_noid, failures)
+			var broken_pattern: Dictionary = good.duplicate(true)
+			(broken_pattern["waves"] as Array)[0]["spawnPattern"] = 42
+			_expect_invalid(schema, "broken-numeric-spawnPattern", broken_pattern, failures)
+			var broken_count: Dictionary = good.duplicate(true)
+			(broken_count["waves"] as Array)[0]["enemyCount"] = 1.5
+			_expect_invalid(schema, "broken-fractional-enemyCount", broken_count, failures)
+			# The schema itself is the authority: a stricter schema must fail
+			# levels that were valid before.
+			var strict_schema: Dictionary = schema.duplicate(true)
+			(strict_schema["required"] as Array).append("t55MissingRequired")
+			_expect_invalid(strict_schema, "strict-schema-missing-key", good, failures)
 
 	# Legacy leftover: present on disk, excluded from the dual-front catalog.
 	if not FileAccess.file_exists(LEGACY_PATH):
@@ -73,50 +85,67 @@ func _init() -> void:
 	_finish(failures)
 
 
-## Mirrors game/src/level-schema.json: required keys, numeric types/ranges,
-## and per-wave landCount/seaCount. Returns a list of error strings.
-func _validate_level(path: String, data: Dictionary) -> Array[String]:
+## Fails the smoke unless `data` violates `schema`. In-memory only.
+func _expect_invalid(schema: Dictionary, label: String, data: Dictionary, failures: Array[String]) -> void:
 	var errors: Array[String] = []
-	for key in ["id", "displayName", "waves"]:
-		if not data.has(key):
-			errors.append("%s: missing required key '%s'" % [path, key])
-	if data.has("id") and not (data["id"] is String and not str(data["id"]).is_empty()):
-		errors.append("%s: 'id' must be a non-empty string" % path)
-	if data.has("displayName") and not (data["displayName"] is String and not str(data["displayName"]).is_empty()):
-		errors.append("%s: 'displayName' must be a non-empty string" % path)
-	for key in ["civPrimary", "civSupport"]:
-		if data.has(key) and not data[key] is String:
-			errors.append("%s: '%s' must be a string" % [path, key])
-	_check_number(path, data, errors, "buildPhaseSeconds", 0.0, false)
-	_check_number(path, data, errors, "victoryTimeSeconds", 0.0, false)
-	_check_number(path, data, errors, "enemySpawnIntervalSeconds", 0.0, false)
-	_check_number(path, data, errors, "hqMaxHp", 1.0, true)
-	_check_number(path, data, errors, "startingLandCurrency", 0.0, true)
-	_check_number(path, data, errors, "startingSeaCurrency", 0.0, true)
-	if data.has("waves"):
-		if not data["waves"] is Array:
-			errors.append("%s: 'waves' must be an array" % path)
-		elif (data["waves"] as Array).is_empty():
-			errors.append("%s: 'waves' must not be empty (loader falls back to built-in waves)" % path)
-		else:
-			for i in (data["waves"] as Array).size():
-				var wave: Variant = (data["waves"] as Array)[i]
-				var where := "%s waves[%d]" % [path, i]
-				if not wave is Dictionary:
-					errors.append("%s: must be an object" % where)
-					continue
-				if not wave.has("delaySeconds") or not _is_number(wave["delaySeconds"]):
-					errors.append("%s: missing/nonnumeric 'delaySeconds'" % where)
-				elif float(wave["delaySeconds"]) < 0.0:
-					errors.append("%s: 'delaySeconds' must be >= 0" % where)
-				for count_key in ["landCount", "seaCount"]:
-					if not wave.has(count_key) or not _is_number(wave[count_key]):
-						errors.append("%s: missing/nonnumeric '%s' (dual-front levels require both)" % [where, count_key])
-					elif float(wave[count_key]) < 0.0 or float(wave[count_key]) != floor(float(wave[count_key])):
-						errors.append("%s: '%s' must be an integer >= 0" % [where, count_key])
-				if wave.has("enemyCount") and (not _is_number(wave["enemyCount"]) or float(wave["enemyCount"]) < 0.0):
-					errors.append("%s: deprecated 'enemyCount' must be a number >= 0" % where)
-	return errors
+	_validate_against_schema(data, schema, label, errors)
+	if errors.is_empty():
+		failures.append("negative control: %s passed validation" % label)
+
+
+## Bounded JSON-Schema draft-07 subset, driven entirely by the loaded
+## schema document: object/array/string/number/integer types, required,
+## properties, items, minimum, minLength, minItems, enum. Unknown keywords
+## (title, description, $schema) are ignored. Absent optional keys are never
+## an error. JSON numbers arrive as float, so integer means whole-valued.
+func _validate_against_schema(value: Variant, schema: Dictionary, path: String, errors: Array[String]) -> void:
+	if schema.has("enum") and schema["enum"] is Array:
+		if not (schema["enum"] as Array).has(value):
+			errors.append("%s: value not in schema enum" % path)
+			return
+	if not schema.has("type"):
+		return
+	var type_name := str(schema["type"])
+	if type_name == "object":
+		if not value is Dictionary:
+			errors.append("%s: expected object" % path)
+			return
+		var data: Dictionary = value
+		if schema.has("required") and schema["required"] is Array:
+			for key in (schema["required"] as Array):
+				if not data.has(str(key)):
+					errors.append("%s: missing required key '%s'" % [path, str(key)])
+		if schema.has("properties") and schema["properties"] is Dictionary:
+			var properties: Dictionary = schema["properties"]
+			for key in data.keys():
+				if properties.has(str(key)) and properties[str(key)] is Dictionary:
+					_validate_against_schema(data[key], properties[str(key)], "%s.%s" % [path, str(key)], errors)
+	elif type_name == "array":
+		if not value is Array:
+			errors.append("%s: expected array" % path)
+			return
+		var items: Array = value
+		if schema.has("minItems") and items.size() < int(schema["minItems"]):
+			errors.append("%s: expected at least %d items (got %d)" % [path, int(schema["minItems"]), items.size()])
+		if schema.has("items") and schema["items"] is Dictionary:
+			for i in items.size():
+				_validate_against_schema(items[i], schema["items"], "%s[%d]" % [path, i], errors)
+	elif type_name == "string":
+		if not value is String:
+			errors.append("%s: expected string" % path)
+			return
+		if schema.has("minLength") and (value as String).length() < int(schema["minLength"]):
+			errors.append("%s: string shorter than minLength %d" % [path, int(schema["minLength"])])
+	elif type_name == "number" or type_name == "integer":
+		if not (value is float or value is int):
+			errors.append("%s: expected %s" % [path, type_name])
+			return
+		var number_value := float(value)
+		if type_name == "integer" and number_value != floor(number_value):
+			errors.append("%s: expected integer (got %s)" % [path, str(value)])
+			return
+		if schema.has("minimum") and number_value < float(schema["minimum"]):
+			errors.append("%s: below schema minimum %s" % [path, str(schema["minimum"])])
 
 
 ## Proves the C++ loader honors the JSON: wave count and every
@@ -150,21 +179,6 @@ func _load_json(path: String, failures: Array[String]) -> Dictionary:
 		failures.append("%s: not a JSON object" % path)
 		return {}
 	return parsed
-
-
-func _is_number(value: Variant) -> bool:
-	return value is float or value is int
-
-
-func _check_number(path: String, data: Dictionary, errors: Array[String], key: String, minimum: float, integer: bool) -> void:
-	if not data.has(key):
-		return
-	if not _is_number(data[key]):
-		errors.append("%s: '%s' must be a number" % [path, key])
-		return
-	var value := float(data[key])
-	if value < minimum or (integer and value != floor(value)):
-		errors.append("%s: '%s' must be %s >= %s" % [path, key, "an integer" if integer else "a number", str(minimum)])
 
 
 func _finish(failures: Array[String]) -> void:

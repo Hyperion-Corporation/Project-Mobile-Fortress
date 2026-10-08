@@ -212,7 +212,7 @@ func _measure_flow(sim: Node, failures: Array[String]) -> int:
 
 	# Toggle cells defender-style: one full place pass then one full remove
 	# pass over the grid (minus the outpost cell), repeated. Varied BFS work,
-	# never a permanently walled grid.
+	# never a permanently walled grid. Each sample below times one call.
 	var cells: Array[Vector2i] = []
 	for y in GRID_SIZE.y:
 		for x in GRID_SIZE.x:
@@ -227,12 +227,14 @@ func _measure_flow(sim: Node, failures: Array[String]) -> int:
 	var samples := PackedInt32Array()
 	samples.resize(FLOW_TOGGLES)
 	for i in FLOW_TOGGLES:
-		var pass_index := i / cells.size()
-		var cell: Vector2i = cells[i % cells.size()]
-		var solid := (pass_index % 2 == 0)
+		# One timed sample is exactly one set_cell_solid call (one
+		# single-front recompute); fronts alternate sample to sample.
+		var front := i % 2
+		var step := i / 2
+		var cell: Vector2i = cells[step % cells.size()]
+		var solid := ((step / cells.size()) % 2 == 0)
 		var t0 := Time.get_ticks_usec()
-		for front in [0, 1]:
-			sim.set_cell_solid(front, cell, solid)
+		sim.set_cell_solid(front, cell, solid)
 		samples[i] = int(Time.get_ticks_usec() - t0)
 		if i % 10 == 9:
 			sim.tick(FIXED_DT, false)
@@ -248,7 +250,7 @@ func _measure_flow(sim: Node, failures: Array[String]) -> int:
 		failures.append("flow scenario: HQ took no damage (hq=%d, no raider completed the flow path)"
 			% sim.get_hq_hp())
 	var p95 := _quantile(samples, 0.95)
-	print("perf_budget_bench: flow toggles=%d raiders=%d | min=%5d med=%5d p95=%5d p99=%5d max=%5d us/recompute"
+	print("perf_budget_bench: flow recomputes=%d raiders=%d | min=%5d med=%5d p95=%5d p99=%5d max=%5d us/recompute"
 		% [FLOW_TOGGLES, 2 * FLOW_RAIDERS_PER_FRONT,
 			samples[0], _quantile(samples, 0.50), p95,
 			_quantile(samples, 0.99), samples[samples.size() - 1]])

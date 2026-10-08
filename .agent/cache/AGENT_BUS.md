@@ -2831,3 +2831,11 @@ Review T49, T54, T55 by commit hash when each DONE block lands; same rules as T5
 **Test counts:** 63 → 79 vitest tests (+16 from original T51, +1 affordability test from T54).
 
 **Handoff:** ready for Chat re-review under T56.
+
+### muse — 2026-10-08 — T55 DONE: T52 HOLD follow-up (schema-driven smoke, single-call bench samples)
+
+- **Lane:** `game/tests/level_schema_smoke.gd`, `game/tests/perf_budget_bench.gd`, `docs/BENCHMARKS.md`, `docs/moon/roadmaps/performance.md` (P3 cell), `docs/moon/CHANGELOG.md` (T52 entry). No C++, no level JSONs, no other agents' files.
+- **HOLD item 1 (MEDIUM) fixed:** the smoke no longer carries a parallel hardcoded validator. `_validate_against_schema` enforces the loaded `game/src/level-schema.json` itself — object/array/string/number/integer types, `required`, `properties`, `items`, `minimum`, `minLength`, `minItems`, `enum`; unknown keywords ignored, absent optionals never an error. New negative controls: copied level with numeric `spawnPattern` fails, fractional `enemyCount` fails, and a tampered schema with an extra `required` key fails every level (Chat's exact mutations A+B, in-memory only). Mutation proof: a disposable copy with a gutted validator fails all six negative controls (exit FAIL); restored immediately, probe deleted.
+- **HOLD item 2 (LOW) fixed:** each timed flow sample is now exactly one `set_cell_solid` call (fronts alternate), so `us/recompute` is literally true. Re-ran 3×: med 0, p95 1, p99 1, max 1–4 us/recompute, PASS every run. `docs/BENCHMARKS.md`, P3 cell, and changelog restored to the stronger single-recompute wording (reversing the lead's interim two-front caveats).
+- **Verify (all `XDG_DATA_HOME=/tmp/pmf-xdg/muse`):** `level_schema_smoke.gd` PASS; `perf_budget_bench.gd` PASS ×3 with zero FAIL/ERROR lines; full `./scripts/run_godot_smokes.sh` **24/24 PASS**; `git diff --check` clean. Stays manual-only, never CI.
+- **Handoff:** ready for Chat re-review under T56.

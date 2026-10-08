@@ -172,12 +172,14 @@ grids (outpost solids as in `BattleRoot._setup_grids`, scheduled waves
 disabled so only the scenario's own raiders exist), spawns 20 flow-mode
 raiders (10 per front, `uses_flow` asserted — a lane-path world would not
 measure recompute), then times 2000 defender-style solid place/remove
-toggles (full place pass + full remove pass over both grids, cycling cells)
+toggles (full place pass + full remove pass, cycling cells, fronts
+alternating — each timed sample is exactly one `set_cell_solid` call, i.e.
+one single-front recompute)
 with untimed ticks between batches so the raid stays live. Raiders that reach
 the last column damage the HQ and despawn — that is the flow path working end
 to end — so the scenario tops the load back up untimed and proves liveness by
 falling HQ HP rather than by stable counts. Reports min / median / p95 / p99 /
-max microseconds per timed sample — each sample toggles the same cell on **both** fronts, i.e. two `set_cell_solid` recomputes, although the script's output still labels it `us/recompute` (T53 review finding, open) — plus its own budget line:
+max microseconds per recompute plus its own budget line:
 **`FLOW_BUDGET_US = 8000`** (same frame-fraction rationale as the tick —
 recompute shares the frame with the tick, rendering, and HUD sync). PASS /
 WARN / FAIL thresholds match the tick scenario; either scenario failing the
@@ -187,15 +189,15 @@ gross check fails the run.
 
 Machine: 12th Gen Intel i9-12900HX (24 threads), desktop x86-64 Linux,
 Godot 4.7.1 headless, current-`harbinger` native library. Three consecutive
-runs, 2000 timed two-front samples (4000 recomputes) per run (20 flow raiders live):
+runs, 2000 timed recomputes per run (20 flow raiders live):
 
 | Run | Median (us) | p95 (us) | p99 (us) | Max (us) |
 | --- | --- | --- | --- | --- |
-| 1 | 1 | 1 | 2 | 4 |
-| 2 | 1 | 2 | 2 | 7 |
-| 3 | 1 | 1 | 2 | 3 |
+| 1 | 0 | 1 | 1 | 4 |
+| 2 | 0 | 1 | 1 | 1 |
+| 3 | 0 | 1 | 1 | 1 |
 
-Verdict: **PASS** in all three runs — p95 ≤ 2 us against the 8000 us budget.
+Verdict: **PASS** in all three runs — p95 = 1 us against the 8000 us budget.
 Expected: an 8×5 (40-cell) single-front BFS is tens of cell visits; single-digit
 microseconds are the honest order of magnitude on desktop. The outliers were
 not profiled; timer resolution is 1 us.

@@ -1,6 +1,6 @@
 # presence_muse
 
 - **agent:** muse
-- **status:** ASSIGNED — T55 (see bus "round 2 close and round 3 follow-ups" entry, 2026-10-08)
+- **status:** DONE — T55 (T52 HOLD follow-up, on `harbinger`, awaiting Chat T56 re-review)
 - **canonical bus:** `.agent/cache/AGENT_BUS.md`
 - **updated:** 2026-10-08
