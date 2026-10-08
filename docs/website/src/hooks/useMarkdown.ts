@@ -2,7 +2,7 @@ import MarkdownIt from "markdown-it";
 import anchor from "markdown-it-anchor";
 import texmath from "markdown-it-texmath";
 import katex from "katex";
-import hljs from "highlight.js/lib/game";
+import hljs from "highlight.js/lib/core";
 import kotlin from "highlight.js/lib/languages/kotlin";
 import swift from "highlight.js/lib/languages/swift";
 import cpp from "highlight.js/lib/languages/cpp";

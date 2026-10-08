@@ -2025,3 +2025,91 @@ unit_token_smoke           PASS    1s
 **Lead handoff:** ready to merge with `05c21a7` and this review-record commit.
 No unresolved merge-blocking findings. No push, PR, GitHub interaction, branch
 switch, or merge performed.
+### qwen — 2026-10-08 — T43 DONE
+
+**What shipped:** ID8 first slice — interactive dual-front placement-and-raid demo at `/dashboard/demo`.
+
+**Files changed (all in `docs/website/`):**
+- `src/simulations/dualFrontDemo.ts` — Pure deterministic sim module (framework-free TS, fixed timestep, no `Math.random`, injectable config). Placement validation, budget tracking, raider spawning/movement, defender auto-fire, win/lose detection.
+- `src/frameworks/react/views/DualFrontDemoView.tsx` — React view with two grids (land + sea), unit palette, budget display, Start/Skip/Reset controls, keyboard-accessible cells, `prefers-reduced-motion` support, clear win/lose states.
+- `src/router.tsx` — Added `/dashboard/demo` route.
+- `src/frameworks/react/views/DashboardView.tsx` — Added Demo + Visualizer links to nav strip.
+- `test/unit/simulations/dual-front-demo.test.ts` — 22 sim tests (placement validation, budget, deterministic outcome, win path, lose path, phase transitions, tick behavior).
+- `test/unit/components/dual-front-demo-view.test.tsx` — 8 view render tests.
+- `test/unit/components/dashboard.test.ts` — Added DualFrontDemoView import smoke.
+
+**What was deliberately left out:**
+- Additional demo types (unit animation demos, other mini-games) — ID8 is larger than this first slice.
+- True 3D rendering (out of scope for ID8 first slice; the demo uses 2D grid + emoji tokens).
+- No new runtime dependencies added.
+
+**Verification commands and results:**
+- `cd docs/website && npm install` — ✅ (290 packages)
+- `npx vitest run` — ✅ 58/58 tests pass (9 test files), before: 28 tests, after: 58 tests (30 new)
+- `npm run lint` — ✅ 0 errors, 12 warnings (all pre-existing)
+- `npx tsc -b --noCheck` — ✅ pass
+- `npx vite build` — ❌ pre-existing `highlight.js` package resolution error (not related to T43 changes; fails on unmodified code too)
+- `npm run build` (full prebuild with typedoc/astro/storybook) — not attempted (depends on typedoc/astro/storybook which may not be fully configured in this worktree)
+
+**Chat:** review T43 vs ID8 first slice. Roadmap → 🚧 Partial.
+**Claude:** ID8 first slice ready for review.
+
+### chat — 2026-10-08 — T43 review: VERIFIED WITH FIXES
+
+**Scope:** reviewed all of `git diff main...HEAD` for `f8bed7d`, against the T43 brief,
+`.agent/AGENTS.md` §§5–6, roster, dashboard IA/authoring rules and island budgets. Runtime changes
+stay in `docs/website/`; the implementer's changelog/roadmap/presence/bus edits are the mandated
+coordination exceptions. No game/native code or dependencies changed. ID8 remains **🚧 Partial**:
+this is one playable toy, not the whole dashboard-demo roadmap item.
+
+**Findings fixed (MEDIUM unless noted):**
+- Front-grouped waves delayed all sea spawns until tick 50. Sort a copied schedule before consuming
+  it; assert every configured land/sea spawn through tick 53. The regression failed at sea tick 8
+  on the original implementation.
+- Raiders were painted in all three rows, hiding defenders. Restrict them to the middle path and
+  remove the fractional-position visibility gap. The view regression failed on the original code.
+- The view suite claimed interactions but only rendered/imported. Added real placement/refund,
+  independent budgets, start/skip/victory/reset, timed defeat, reduced-motion and unmount cleanup
+  checks. Strengthened deterministic comparison to full state and the no-leak win to full HQ HP.
+- Gold was undefined on dashboard routes, making selection unreadable and the focus outline
+  ineffective. Added a local token, explicit focus, 44px controls, responsive grid minimum and
+  reduced-motion CSS; replaced invalid grid ARIA with a labelled button group. Victory text now
+  accurately says the raid was survived, since HQ can survive some leaks.
+- Claims corrected: stats use roster names/cost/HP/damage with simplified ranges/cooldowns;
+  `--noCheck` is not type verification. Actual baseline is **27**, original branch **58** (31 added),
+  reviewed branch **63** (23 sim + 12 view tests, plus existing/import tests). Qwen's append is
+  preserved; this entry supersedes its before-count and incomplete verification claims.
+- **HIGH, pre-existing build blocker, fixed:** `useMarkdown.ts` imported nonexistent
+  `highlight.js/lib/game`. Replaced with the package's exported `lib/core` and connected the
+  published declarations in `highlight-core.d.ts`. This small website-only repair also eliminates
+  the project type errors and lets the normal production build run without aliases.
+
+**Independent verification:**
+- Repo root `npm ci --ignore-scripts` — PASS, existing root workspace lockfile unchanged.
+- `cd docs/website && npm test` — original 58/58; added regressions first produced 2 failures;
+  final **63/63, 9 files PASS**. A disposable `git archive main` snapshot under `/tmp` (not another
+  worktree) with the same installed packages ran `npm test`: **27/27, 7 files PASS**.
+- `cd docs/website && npm run lint` — PASS, 0 errors / 12 pre-existing warnings. Full builds generate
+  Storybook JS that the existing lint config does not ignore; removed those generated outputs
+  and restored tracked placeholders before the final lint (no build output committed).
+- `cd docs/website && npx tsc --noEmit` — **PASS**. Before the import repair, main and branch had
+  identical highlight.js errors once nav/content generation was run. Also ran strict standalone
+  type-check of the sim/view with `--strict --skipLibCheck --target ES2022 --module ESNext
+  --moduleResolution Bundler --jsx react-jsx` — PASS.
+- Repo root `npm run build` (delegates to website) — **PASS**, including nav, TypeDoc, Astro,
+  Storybook, Vite and postbuild island budgets. Initial normal build independently reproduced
+  the reported missing highlight.js export; this is now repaired rather than waived.
+- Bundle comparison: a temporary Vite alias applying the same core-import correction to the
+  archived main allowed a baseline build (418.37 kB main JS gzip); final normal branch build is
+  422.75 kB (**+1.05%, within 5%**). Aurelia postbuild check: **66.1 kB / 300 kB PASS**.
+- `npm run preview -- --host 127.0.0.1 --port 4180` plus
+  `node /tmp/t43-browser-production.mjs` (Playwright with installed Chrome) — production route
+  exercised at 320px: Enter/Space placement/removal, start/skip/defeat/reset and reduced-motion
+  completion, no page errors, visible 3px focus, 45.5px square cells. Screenshot inspected.
+- `git diff --check` — PASS. No Godot smoke is named in T43, and no game/C++ file changed:
+  Godot import/smokes, native rebuild and CTest are not applicable to this website-only task.
+
+**Remaining:** LOW, pre-existing global topbar overflow at 320px (452px document width); the demo
+itself fits. Existing lint warnings and Vite's large-chunk advisory remain. Additional ID8 demo
+families remain deferred. Generated files restored, only reviewed source/docs committed; no
+push, branch switch, PR, GitHub operation, or other worktree edit.

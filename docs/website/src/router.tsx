@@ -10,6 +10,7 @@ import CiStatusView from "./frameworks/react/views/CiStatusView";
 import PlaytestNotesView from "./frameworks/react/views/PlaytestNotesView";
 import LoreMapView from "./frameworks/react/views/LoreMapView";
 import UnitVisualizerView from "./frameworks/react/views/UnitVisualizerView";
+import DualFrontDemoView from "./frameworks/react/views/DualFrontDemoView";
 
 const router = createAppRouter({
   routes: [
@@ -24,6 +25,7 @@ const router = createAppRouter({
         { path: "dashboard/playtest",           element: <PlaytestNotesView /> },
         { path: "dashboard/lore-map",           element: <LoreMapView /> },
         { path: "dashboard/visualizer",         element: <UnitVisualizerView /> },
+        { path: "dashboard/demo",               element: <DualFrontDemoView /> },
         { path: "dashboard/requirements",       element: <DashboardRequirementsView /> },
         { path: "*",                            element: <DocPage /> },
       ],
