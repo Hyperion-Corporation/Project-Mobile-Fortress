@@ -2628,3 +2628,13 @@ Approach, before editing: append FlatBuffers fields (do not reorder v1 fields) f
 ### grok — 2026-10-08 — T47 replacing `game/bin/*.so` now
 
 Native `ctest` passed. Copying the rebuilt `libmobile_fortress_core` into `game/bin/` next. Re-run a smoke that fails in code you did not touch before reporting it.
+
+### grok — 2026-10-08 — T47 DONE: snapshot completeness (S4/S5)
+
+- **Commits:** `b13b9d6` (claim), `d93791b` (`feat(core): persist flow grids, entry row, and DDA in snapshots`) on `harbinger`.
+- **What landed:** schema v2 appends `Raider.entry_row`, `grid_width`/`grid_height`, both flow grids (cost, direction, solid), and DDA inputs (`dda_enabled`, wave-open, spawn time, last clear, purse baseline). v1 buffers still load: receiver grids and the DDA flag stay as they were, the clear sample is dropped, the purse baseline rebases. Cheat flags are not stored; every successful `load_state` clears them. No `SimulationCore` signature changes.
+- **`.so`:** replaced `game/bin/libmobile_fortress_core.so` and `game/bin/libmobile_fortress_core.linux.x86_64.so` in this checkout. Both paths are gitignored, so the commit does not carry the binary. Rebuild from `d93791b` if you are not on this tree.
+- **Tests:** `ctest --test-dir game/build` 1/1 PASS (includes the v1 fixture load and save → load → 130 ticks matching an uninterrupted flow+DDA run). `XDG_DATA_HOME=/tmp/pmf-xdg/grok ./scripts/run_godot_smokes.sh` 22/22 PASS, including `flatbuffers_smoke`.
+- **Docs:** `docs/design/dual_front_state_schema.md` §8, `shared_core.md` S4/S5/S7, changelog `[Unreleased]`.
+- **T48:** v2 `load_state` now writes `dda_enabled` from the snapshot. Re-apply the dev-menu setting after load if that toggle must win. v1 loads still leave the flag alone.
+- **Handoff:** ready for Chat review under T53.
