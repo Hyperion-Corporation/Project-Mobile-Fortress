@@ -3,10 +3,11 @@
  *
  * Two grids (land + sea). Player places defenders with a budget, presses Start,
  * raiders walk in along a path and are shot by placed defenders.
- * Win if all raiders die; lose if HQ HP reaches 0.
+ * Win if the raid ends with HQ HP remaining; lose if HQ HP reaches 0.
  */
 import { useState, useCallback, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
+import "./DualFrontDemoView.css";
 import {
   createState,
   placeUnit,
@@ -92,8 +93,7 @@ export default function DualFrontDemoView() {
     }
 
     if (reducedMotion) {
-      const final = runToEnd(state, CONFIG, 500);
-      setState(final);
+      setState((prev) => runToEnd(prev, CONFIG, 500));
       stopTimer();
       return;
     }
@@ -149,7 +149,7 @@ export default function DualFrontDemoView() {
         : "var(--text-muted)";
 
   return (
-    <div className="dashboard-req-view" style={{ padding: "2rem 0" }}>
+    <div className="dashboard-req-view dual-front-demo" style={{ padding: "2rem 0" }}>
       {/* Header */}
       <div className="panel glass" style={{ marginBottom: "1.5rem" }}>
         <div style={{ display: "flex", alignItems: "baseline", gap: "0.75rem", flexWrap: "wrap" }}>
@@ -192,7 +192,7 @@ export default function DualFrontDemoView() {
       </div>
 
       {/* Grids */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1rem", marginBottom: "1rem" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 320px), 1fr))", gap: "1rem", marginBottom: "1rem" }}>
         <FrontGrid
           title="🟫 Land Front"
           front="land"
@@ -295,7 +295,7 @@ export default function DualFrontDemoView() {
           </h2>
           <p style={{ margin: 0, color: "var(--text-muted)", fontSize: "0.9rem" }}>
             {state.phase === "win"
-              ? `All raiders defeated in ${state.tick} ticks. HQ HP: ${state.hqHp}/${state.maxHqHp}`
+              ? `Raid survived in ${state.tick} ticks. HQ HP: ${state.hqHp}/${state.maxHqHp}`
               : `HQ destroyed at tick ${state.tick}. Some raiders got through.`}
           </p>
         </div>
@@ -342,8 +342,8 @@ function FrontGrid({ title, front, config, units, raiders, phase, onCellClick, s
     for (let col = 0; col < config.cols; col++) {
       const isPath = row === config.pathRow;
       const unit = units.find((u) => u.col === col && u.row === row);
-      const raider = raiders.find(
-        (r) => r.front === front && Math.floor(r.col) === col && Math.abs(r.col - col) < 0.99,
+      const raider = isPath && raiders.find(
+        (r) => r.front === front && Math.floor(r.col) === col,
       );
       const isHq = col === config.cols - 1 && isPath;
       const canPlaceHere = phase === "placing" && !isPath && !unit;
@@ -422,7 +422,6 @@ function FrontGrid({ title, front, config, units, raiders, phase, onCellClick, s
             padding: "2px",
             minHeight: "44px",
             position: "relative",
-            transition: "background 0.15s",
           }}
           className="demo-grid-cell"
         >
@@ -441,7 +440,7 @@ function FrontGrid({ title, front, config, units, raiders, phase, onCellClick, s
           gridTemplateColumns: `repeat(${config.cols}, 1fr)`,
           gap: "3px",
         }}
-        role="grid"
+        role="group"
         aria-label={`${title} grid`}
       >
         {cells}

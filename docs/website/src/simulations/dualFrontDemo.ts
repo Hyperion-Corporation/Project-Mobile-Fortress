@@ -5,8 +5,8 @@
  * Fixed timestep. Unit-testable.
  *
  * Two grids (land + sea), player places defenders with a budget, presses start,
- * raiders walk in along a path and are shot by placed defenders. Win if all
- * raiders die; lose if HQ HP reaches 0.
+ * raiders walk in along a path and are shot by placed defenders. Win if the raid
+ * ends with HQ HP remaining; lose if HQ HP reaches 0.
  */
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -86,7 +86,8 @@ export interface SimState {
   log: string[];
 }
 
-// ── Default config (mirrors game/scripts/data/unit_defs.gd) ─────────────────
+// Roster names, costs, HP and damage follow game/scripts/data/unit_defs.gd.
+// Range is simplified for this grid; cooldowns are rounded to 100 ms ticks.
 
 export const UNIT_DEFS: UnitDef[] = [
   { id: "spearman", name: "Ming Garrison Spearman", front: "land", cost: 10, hp: 40, damage: 8, range: 2, cooldown: 7 },
@@ -273,8 +274,10 @@ function spawnDue(state: SimState, config: DemoConfig): SimState {
   const newRaiders: Raider[] = [];
   let spawned = state.spawnedCount;
 
-  for (let i = state.spawnedCount; i < config.waves.length; i++) {
-    const w = config.waves[i];
+  // Accept waves grouped by front as well as chronologically ordered input.
+  const waves = [...config.waves].sort((a, b) => a.spawnTick - b.spawnTick);
+  for (let i = state.spawnedCount; i < waves.length; i++) {
+    const w = waves[i];
     if (w.spawnTick > state.tick) break;
     newRaiders.push({
       uid: state.nextUid + newRaiders.length,
@@ -390,7 +393,7 @@ function checkEndConditions(state: SimState, config: DemoConfig): SimState {
   const allDead = state.raiders.every((r) => !r.alive || r.hp <= 0);
 
   if (allSpawned && allDead) {
-    return { ...state, phase: "win", log: [...state.log, "— All raiders defeated! VICTORY —"] };
+    return { ...state, phase: "win", log: [...state.log, "— Raid survived! VICTORY —"] };
   }
 
   return state;

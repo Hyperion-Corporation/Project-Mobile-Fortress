@@ -100,7 +100,7 @@ describe("budget enforcement", () => {
 // ── Deterministic outcome ────────────────────────────────────────────────────
 
 describe("deterministic outcome", () => {
-  it("produces the same result for the same setup (fixed seed)", () => {
+  it("produces the same result for the same setup (no randomness)", () => {
     let state1 = createState(CFG);
     state1 = placeUnit(state1, "spearman", 1, 0, "land", CFG);
     state1 = placeUnit(state1, "spearman", 1, 2, "land", CFG);
@@ -121,10 +121,8 @@ describe("deterministic outcome", () => {
     state2 = startRun(state2);
     const result2 = runToEnd(state2, CFG);
 
-    expect(result1.phase).toBe(result2.phase);
-    expect(result1.tick).toBe(result2.tick);
-    expect(result1.hqHp).toBe(result2.hqHp);
-    expect(result1.raiders.length).toBe(result2.raiders.length);
+    expect(result1).toEqual(result2);
+    expect(result1.phase).toBe("win");
   });
 });
 
@@ -144,7 +142,7 @@ describe("win path", () => {
 
     const result = runToEnd(state, CFG, 500);
     expect(result.phase).toBe("win");
-    expect(result.hqHp).toBeGreaterThan(0);
+    expect(result.hqHp).toBe(CFG.hqHp);
   });
 });
 
@@ -235,5 +233,19 @@ describe("tick behavior", () => {
     }
     const landRaiders = state.raiders.filter((r) => r.front === "land");
     expect(landRaiders.length).toBeGreaterThanOrEqual(1);
+  });
+});
+
+describe("raid schedule regressions", () => {
+  it("spawns each front at its configured tick, even with interleaved wave entries", () => {
+    let state = startRun(createState(CFG));
+    for (let t = 1; t <= 53; t++) {
+      state = tick(state, CFG);
+      for (const front of ["land", "sea"] as const) {
+        expect(state.raiders.filter((r) => r.front === front)).toHaveLength(
+          CFG.waves.filter((w) => w.front === front && w.spawnTick <= t).length,
+        );
+      }
+    }
   });
 });

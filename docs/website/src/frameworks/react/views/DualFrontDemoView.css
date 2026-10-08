@@ -1,0 +1,26 @@
+.dual-front-demo {
+  --accent-gold: #c9a227;
+}
+
+.dual-front-demo button:focus-visible {
+  outline: 3px solid var(--accent-gold);
+  outline-offset: 2px;
+}
+
+.dual-front-demo button {
+  min-height: 44px;
+}
+
+.demo-grid-cell {
+  min-width: 0;
+  transition: background 0.15s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dual-front-demo *,
+  .dual-front-demo *::before,
+  .dual-front-demo *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
