@@ -32,13 +32,14 @@ const CEILING_LOAD := 40
 const SIM_BUDGET_US := 8000
 const GROSS_MULT := 3
 
-# Near-immortal combatants so the load survives the whole timed window
+# Near-immortal raiders so the load survives the whole timed window
 # (no deaths mid-run shrinking the world we claim to measure).
 const RAIDER_HP := 20000.0
 const RAIDER_SPEED := 5.0
 const RAIDER_DAMAGE := 6.0
-const DEFENDER_HP := 20000.0
-const DEFENDER_RANGE := 120.0
+# Synthetic long reach keeps both fronts firing throughout the moving raid.
+const DEFENDER_RANGE := 500.0
+const COMBAT_PROBE_TICKS := 60
 const DEFENDER_DAMAGE := 6.0
 const DEFENDER_COOLDOWN := 1.0
 const LANE_END_X := 750.0
@@ -111,7 +112,9 @@ func _measure_load(sim: Node, load: int, failures: Array[String]) -> Dictionary:
 	for _w in WARMUP_TICKS:
 		sim.tick(FIXED_DT, false)
 
-	# Pre-sized sample buffer: no allocation inside the timed loop.
+	var before := _front_totals(sim)
+	# Pre-sized sample buffer: no benchmark-side allocation inside the timed loop.
+	# The public native tick itself returns an Array of events.
 	var samples := PackedInt32Array()
 	samples.resize(MEASURED_TICKS)
 	for i in MEASURED_TICKS:
@@ -119,6 +122,8 @@ func _measure_load(sim: Node, load: int, failures: Array[String]) -> Dictionary:
 		sim.tick(FIXED_DT, false)
 		samples[i] = int(Time.get_ticks_usec() - t0)
 
+	var after := _front_totals(sim)
+	_check_activity(before, after, load, "measurement", failures)
 	samples.sort()
 	var end_total: int = sim.get_raider_count() + sim.get_defender_count()
 	var line := (
@@ -132,7 +137,29 @@ func _measure_load(sim: Node, load: int, failures: Array[String]) -> Dictionary:
 	print("perf_budget_bench: " + line)
 	if end_total != load:
 		failures.append("load=%d world decayed to %d entities during measurement" % [load, end_total])
+	# Untimed tail probe catches a raid that has moved out of defender range.
+	for _probe in COMBAT_PROBE_TICKS:
+		sim.tick(FIXED_DT, false)
+	_check_activity(after, _front_totals(sim), load, "tail probe", failures)
 	return {"load": load, "p95": _quantile(samples, 0.95)}
+
+
+## Snapshot counts, total HP and total x per front outside the timed loop.
+func _front_totals(sim: Node) -> Array[Vector3]:
+	var totals: Array[Vector3] = [Vector3.ZERO, Vector3.ZERO]
+	for raider in sim.get_raiders():
+		var front := int(raider.front)
+		totals[front] += Vector3(1.0, float(raider.hp), float(raider.position.x))
+	return totals
+
+
+func _check_activity(before: Array[Vector3], after: Array[Vector3], load: int,
+		phase: String, failures: Array[String]) -> void:
+	for front in [0, 1]:
+		if before[front].x <= 0 or after[front].x != before[front].x:
+			failures.append("load=%d front=%d %s: raider count changed or empty" % [load, front, phase])
+		if after[front].y >= before[front].y or after[front].z <= before[front].z:
+			failures.append("load=%d front=%d %s: no combat damage or movement" % [load, front, phase])
 
 
 func _quantile(sorted_samples: PackedInt32Array, p: float) -> int:

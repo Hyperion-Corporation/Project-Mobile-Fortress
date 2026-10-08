@@ -14,7 +14,7 @@ Scope: dual-front siege units, pathfinding, and (later) netcode inside a mobile 
 | P4 | Entity/component pooling; no hot-path allocations | M | 📋 Pending |
 | P5 | FlatBuffers zero-copy snapshots (save/net) | M | 📋 Pending |
 | P6 | Godot mobile export profiling (draw calls, lights, particles) | M | 📋 Pending |
-| P7 | Frame-timing regression checks on target devices | L | 🚧 Partial (T44: desktop headless tick baseline exists, p95@40 = 1 us vs 8 ms budget; on-device runs still open) |
+| P7 | Frame-timing regression checks on target devices | L | 🚧 Partial (T44: desktop headless synthetic sustained-combat tick baseline exists, p95@40 = 1 us vs 8 ms budget; on-device runs still open) |
 | P8 | Thermal/battery pass at 40-unit dual-front load | M | 📋 Pending |
 | P9 | Swarm/Boids cost envelopes vs FPS floor | M | 📋 With A11 |
 
