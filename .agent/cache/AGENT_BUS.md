@@ -98,14 +98,14 @@ If you open another channel by accident, post a one-line pointer here and migrat
 | T43 ID8 interactive game-element demo on dashboard | qwen | **DONE — verified (ID8 Partial)** | `/dashboard/demo`; chat fix-up `358e8de`; 63 site tests |
 | T44 P7 40-unit dual-front tick-budget benchmark | muse | **DONE — verified (P7 Partial)** | `perf_budget_bench.gd`; chat added sustained-combat validation (`ca76c06`); device runs open |
 | T45 Review T38–T44 vs changelog/roadmap | chat | **DONE** | All seven branches reviewed; two HOLD rounds (T40 resolved, T39 merged Partial by lead) |
-| T46 U8 phone-scale target sizing + responsive menu/settings reflow (#25) | gemini | **ASSIGNED** | Lead default policy in the 2026-10-08 round-2 entry (owner may override); branch `agent/gemini/T46-u8-phone-scale` |
-| T47 Snapshot completeness: `entry_row`, flow grids, cheat + DDA flags (S4/S5) | grok | **ASSIGNED** | Sole owner of `game/src/cpp/**`, `game/src/schema/**`, `game/tests/native/**`; branch `agent/grok/T47-snapshot-gaps` |
-| T48 A4 battle hookup + DT5 intensity readout (#78) | cursor | **ASSIGNED** | GDScript only: `scripts/battle/**`, `scripts/autoload/game_session.gd`, `scripts/ui/dev_menu.gd`; branch `agent/cursor/T48-a4-battle-hookup` |
-| T49 Docs workflow green (MkDocs strict) + AGENTS.md §1/§3/§4 refresh | mistral | **ASSIGNED** | `docs/**` (not `docs/website`, not `docs/moon/roadmaps` rows of others), `.github/workflows/docs.yml`, `.agent/AGENTS.md`; branch `agent/mistral/T49-docs-green` |
-| T50 `CI` workflow green: legacy Android/iOS jobs + shellcheck | kimi | **ASSIGNED** | `.github/workflows/ci.yml`, `scripts/*.sh` lint fixes; branch `agent/kimi/T50-ci-green` |
-| T51 ID8 slice 2 + 320px header overflow + website tests in CI | qwen | **ASSIGNED** | `docs/website/**`, new `.github/workflows/website.yml`; branch `agent/qwen/T51-id8-slice2` |
-| T52 Level schema refresh + level-JSON validation smoke; P3 flow-recompute bench | muse | **ASSIGNED** | `game/src/level-schema.json`, new `game/tests/level_schema_smoke.gd`, `game/tests/perf_budget_bench.gd`, `docs/BENCHMARKS.md`; branch `agent/muse/T52-level-schema-p3` |
-| T53 Review T46–T52 vs changelog/roadmap | chat | **QUEUED** | Review each branch when its DONE block lands; fix-ups allowed |
+| T46 U8 phone-scale target sizing + responsive menu/settings reflow (#25) | gemini | **ASSIGNED** | Lead default policy in the 2026-10-08 round-2 entry (owner may override) |
+| T47 Snapshot completeness: `entry_row`, flow grids, cheat + DDA flags (S4/S5) | grok | **ASSIGNED** | Sole owner of `game/src/cpp/**`, `game/src/schema/**`, `game/tests/native/**` |
+| T48 A4 battle hookup + DT5 intensity readout (#78) | cursor | **ASSIGNED** | GDScript only: `scripts/battle/**`, `scripts/autoload/game_session.gd`, `scripts/ui/dev_menu.gd` |
+| T49 Docs workflow green (MkDocs strict) + AGENTS.md §1/§3/§4 refresh | mistral | **ASSIGNED** | `docs/**` (not `docs/website`, not `docs/moon/roadmaps` rows of others), `.github/workflows/docs.yml`, `.agent/AGENTS.md` |
+| T50 `CI` workflow green: legacy Android/iOS jobs + shellcheck | kimi | **ASSIGNED** | `.github/workflows/ci.yml`, `scripts/*.sh` lint fixes |
+| T51 ID8 slice 2 + 320px header overflow + website tests in CI | qwen | **ASSIGNED** | `docs/website/**`, new `.github/workflows/website.yml` |
+| T52 Level schema refresh + level-JSON validation smoke; P3 flow-recompute bench | muse | **ASSIGNED** | `game/src/level-schema.json`, new `game/tests/level_schema_smoke.gd`, `game/tests/perf_budget_bench.gd`, `docs/BENCHMARKS.md` |
+| T53 Review T46–T52 vs changelog/roadmap | chat | **QUEUED** | Review each task's commits on `main` when its DONE block lands; fix-ups allowed |
 
 ### Conflict rules
 
@@ -2439,12 +2439,25 @@ first real GitHub Actions run of the new smoke job; `shellcheck` was unavailable
 the owner asks each of you, in your own persistent session, to read this entry and do your task.
 Nothing else will be sent to you, so everything you need is below.
 
-**Where to work.** Your worktree from round 1 still exists at `../pmf-worktrees/<agent>` (relative
-to the main checkout). Work only there. Start with:
-`git switch -c <your branch from the task board> main` (local `main` already contains round 1 and
-this entry). If the worktree is missing, `git worktree add ../pmf-worktrees/<agent> -b <branch> main`.
-After switching, copy `game/bin/*.so` from the main checkout if `game/bin/` is empty, and rebuild
-it yourself only if you change C++ (`game/BUILD_CPP.md`).
+**Where to work (owner decision, 2026-10-08 — supersedes round 1's worktrees):** everyone works
+in the **main checkout, directly on `main`**. No worktrees, no per-agent branches, no branch
+switching — the checkout is shared, so `git switch`/`git checkout <branch>`/`git stash`/`git reset`/
+`git restore` on files that are not yours would disrupt seven other agents. Because the tree is shared:
+
+- Edit only files in your lane. You will see other agents' uncommitted changes in `git status`;
+  leave them alone, and never "clean up" or revert a file you did not change.
+- Commit only your own paths: `git add <your files>` then `git commit` — never `git add -A`,
+  `git add .` or `git commit -a`. If git reports an index lock, wait a few seconds and retry.
+- Shared append-only files (`AGENT_BUS.md`, `docs/moon/CHANGELOG.md`): re-read immediately before
+  you write, add only your own block/entry, and commit promptly so your lines do not sit unstaged
+  next to someone else's. If your commit of one of these files carries another agent's
+  already-written lines along, that is acceptable; rewriting or dropping them is not.
+- Roadmap files: change only your own row's cell.
+- `game/bin/*.so` is shared too. Only Grok (T47) rebuilds it; Grok posts a one-line bus note before
+  and after replacing it, and if a smoke fails for you in code you did not touch while Grok is
+  mid-rebuild, re-run before reporting it.
+- A failing smoke that is caused by another agent's in-progress work is a bus note to that agent,
+  not something to fix in their files.
 
 **Verification is one command now:** `./scripts/run_godot_smokes.sh` (all `*_smoke.gd`; pass names
 to run a subset). Several of you run Godot at once and `user://` is shared per machine, so always
@@ -2455,10 +2468,12 @@ Report the commands you actually ran and their real results; say plainly what yo
 **Rules (unchanged, `.agent/AGENTS.md` §8):** stay in your lane; changelog entry + your roadmap
 row in the same commit as the code (🚧 Partial unless it is really finished); conventional commits
 ending with the trailer in `git/messages/<agent>_coauthor.msg`; append one
-`### <agent> — <date> — T<n> DONE` (or `BLOCKED`) block at the end of this file on your branch and
-update `presence_<agent>.md`; leave the tree clean. Do not push, open PRs, merge, or touch GitHub.
-Chat reviews your branch in your worktree after your DONE block; if Chat posts HOLD, fix what it
-names on the same branch and post a follow-up block. The lead merges only after Chat verifies.
+`### <agent> — <date> — T<n> DONE` (or `BLOCKED`) block at the end of this file, listing your commit
+hashes, and update `presence_<agent>.md`; leave none of YOUR files uncommitted. Do not push, open
+PRs, or touch GitHub. Chat reviews your commits on `main` after your DONE block; if Chat posts HOLD,
+fix what it names with follow-up commits and post a follow-up block. The lead verifies on `main`,
+pushes, and syncs GitHub only after Chat verifies; a task Chat leaves on HOLD is reverted or
+downgraded to Partial by the lead before the push.
 
 #### T46 — gemini — U8 phone-scale target sizing and responsive reflow (#25)
 **Why:** `project.godot` stretches a 1280×720 canvas (`canvas_items`/`expand`), so the 48-unit
@@ -2569,12 +2584,12 @@ defenders on live grids during combat) with its own reported percentiles and bud
 a CI gate. Roadmap: `performance.md` P3 and P7, `gameplay.md` G5 if its text changes.
 
 #### T53 — chat — review
-Review each branch in its worktree once its DONE block exists, exactly as in T45: read the full
-`main...HEAD` diff against the task text above, re-run the verification yourself, check new tests
-fail when the feature is broken, fix small things with fix-up commits, and post
-`### chat — <date> — T<n> review: VERIFIED | VERIFIED WITH FIXES | HOLD` on that branch.
-T47 and T48 both touch the DDA surface from different sides: after reviewing each, check they still
-work together (merge one into a scratch branch of the other and run the suite) and say so.
+Review each task on `main` once its DONE block exists, as in T45: read the commits the DONE block
+lists (`git show <hash>`) against the task text above, re-run the verification yourself, check new tests
+fail when the feature is broken, fix small things with fix-up commits (your own paths only, same shared-tree rules as everyone), and post
+`### chat — <date> — T<n> review: VERIFIED | VERIFIED WITH FIXES | HOLD` here.
+T47 and T48 both touch the DDA surface from different sides: once both are DONE, run the full suite
+on `main` with both in place and say so.
 
 **Not assigned, on purpose:** VS10 (owner's playtest), backend/co-op implementation, A5+,
 anything rejected or superseded.
