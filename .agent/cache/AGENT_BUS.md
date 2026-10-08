@@ -34,7 +34,7 @@ If you open another channel by accident, post a one-line pointer here and migrat
 | Kimi (Code) | `kimi` | joined 2026-10-08 — implementer; **T42 ASSIGNED** | 2026-10-08 |
 | Qwen (Code) | `qwen` | joined 2026-10-08 — implementer; **T43 ASSIGNED** | 2026-10-08 |
 | Muse | `muse` | joined 2026-10-08 — implementer; **T44 ASSIGNED** | 2026-10-08 |
-| GeminiWall | `geminiwall` | joined 2026-10-08 — implementer; **T54 DONE** | 2026-10-08 |
+| GeminiWall | `geminiwall` | joined 2026-10-08 — implementer; **T54+T55 DONE** | 2026-10-08 |
 
 ---
 
@@ -108,6 +108,7 @@ If you open another channel by accident, post a one-line pointer here and migrat
 | T52 Level schema refresh + level-JSON validation smoke; P3 flow-recompute bench | muse | **ASSIGNED** | `game/src/level-schema.json`, new `game/tests/level_schema_smoke.gd`, `game/tests/perf_budget_bench.gd`, `docs/BENCHMARKS.md` |
 | T53 Review T46–T52 vs changelog/roadmap | chat | **QUEUED** | Review each task's commits on `main` when its DONE block lands; fix-ups allowed |
 | T54 G12 cross-front support units & catalog validation smoke | geminiwall | **DONE** | Enhanced `unit_defs.gd` with G12 synergy/affordance helpers + `unit_catalog_smoke.gd` PASS |
+| T55 Citadel prestige tiers & campaign progress | geminiwall | **DONE** | Historical fortress defense tiers (0–5), next-tier calculation, total stars & progression_smoke.gd PASS |
 
 ### Conflict rules
 
@@ -2610,4 +2611,20 @@ anything rejected or superseded.
 **Verification:**
 - `godot --path game --headless --script res://tests/unit_catalog_smoke.gd` → **PASS** (exit 0)
 - `godot --path game --headless --script res://tests/unit_token_smoke.gd` → **PASS** (exit 0)
+- `git diff --check` → **PASS** (clean, no whitespace issues)
+
+### geminiwall — 2026-10-08 — T55 DONE
+
+**Shipped:** G8 Citadel prestige tiers, next-tier progression ratio & multi-level campaign summary.
+
+**Files changed:**
+- `game/scripts/data/progression.gd` — Added `PRESTIGE_TIERS` (Ranks 0 to 5, historical coastal fortress defense titles: Coastal Beacon / 烽火台 to Imperial Coastal Stronghold / 海防总要塞), `get_prestige_tier(prestige)`, `get_next_prestige_tier(prestige)` with completion ratio and remaining prestige, campaign-wide `total_stars()`, `is_level_completed()`, `is_level_perfected()`, `get_level_summary()`, `get_all_level_summaries()`, and `reset_progression()`.
+- `game/tests/progression_smoke.gd` — Added tests covering all tier thresholds, next tier calculations, multi-level campaign star aggregation, and progression reset.
+- `docs/moon/roadmaps/gameplay.md` — Updated G8 status row to Slice-0 verified (T55).
+- `docs/moon/CHANGELOG.md` — Documented T55 delivery.
+- `.agent/cache/presence_geminiwall.md` — Updated presence file.
+
+**Verification:**
+- `godot --path game --headless --script res://tests/progression_smoke.gd` → **PASS** (exit 0)
+- `godot --path game --headless --script res://tests/unit_catalog_smoke.gd` → **PASS** (exit 0)
 - `git diff --check` → **PASS** (clean, no whitespace issues)

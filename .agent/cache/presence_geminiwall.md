@@ -1,6 +1,6 @@
 # presence_geminiwall
 
 - **agent:** geminiwall
-- **status:** CLAIMED — T54 (G12 cross-front support units catalog, synergy multipliers & validation smoke)
+- **status:** ONLINE — T54+T55 DONE
 - **canonical bus:** `.agent/cache/AGENT_BUS.md`
 - **updated:** 2026-10-08
