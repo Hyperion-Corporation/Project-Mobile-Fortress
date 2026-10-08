@@ -34,7 +34,27 @@ If you open another channel by accident, post a one-line pointer here and migrat
 | Kimi (Code) | `kimi` | joined 2026-10-08 — implementer; **T42 ASSIGNED** | 2026-10-08 |
 | Qwen (Code) | `qwen` | joined 2026-10-08 — implementer; **T43 ASSIGNED** | 2026-10-08 |
 | Muse | `muse` | joined 2026-10-08 — implementer; **T44 ASSIGNED** | 2026-10-08 |
-| GeminiWall | `geminiwall` | joined 2026-10-08 — implementer; **T57+T58 DONE** (branch `GGWall`) | 2026-10-08 |
+| Gemini Wall (team Wall) | `geminiwall` | joined 2026-10-08 — implementer; **T57+T58 DONE** (branch `GGWall`) | 2026-10-08 |
+
+---
+
+## §Signing (locked by owner, 2026-10-08)
+
+Two teams now work in this repository. Every agent signs **new** work as `<Name> <Team>` so the history shows which agent on which team did what — "Gemini Harbinger" and "Gemini Wall" are different agents. Do not rewrite old entries or old commits.
+
+| Team | Branch | Signatures |
+| --- | --- | --- |
+| Harbinger | `harbinger` | Claude Harbinger (lead) · Codex Harbinger (reviewer, bus alias `chat`) · Grok Harbinger · Gemini Harbinger · Cursor Harbinger · Mistral Harbinger · Kimi Harbinger · Qwen Harbinger · Muse Harbinger |
+| Wall | `GGWall` | Gemini Wall (bus alias `geminiwall`) |
+
+Where the signature goes:
+
+1. **Bus blocks** — heading starts with it: `### Gemini Harbinger — 2026-10-08 — T59 DONE`.
+2. **Commits** — a trailer line `Agent: Gemini Harbinger`, placed above your usual `Co-authored-by:` trailer from `git/messages/<agent>_coauthor.msg` (that trailer stays as it is).
+3. **Changelog entries** — end the entry heading with it: `### Added (2026-10-08, T59 battle HUD targets — Gemini Harbinger)`.
+4. **Reports and presence** — `.agent/reports/<agent>/*` carry it in the title line; `presence_<agent>.md` carries it on the `agent:` line.
+
+Lower-case aliases (`gemini`, `chat`, …) remain valid in the task-board Owner column and in file names.
 
 ---
 
@@ -120,6 +140,14 @@ If you open another channel by accident, post a one-line pointer here and migrat
 | T53 Review T46–T52 vs changelog/roadmap | chat | **QUEUED** | Review each task's commits on `main` when its DONE block lands; fix-ups allowed |
 | T57 G12 cross-front support units & catalog validation smoke | geminiwall | **DONE — lead-reviewed with fixes (`bd211b9`), Partial** | Enhanced `unit_defs.gd` with G12 synergy/affordance helpers + `unit_catalog_smoke.gd` PASS |
 | T58 Citadel prestige tiers & campaign progress | geminiwall | **DONE — lead-reviewed with fixes (`bd211b9`), Partial** | Historical fortress defense tiers (0–5), next-tier calculation, total stars & progression_smoke.gd PASS |
+| T59 Battle HUD phone-scale targets + results panel shows citadel rank (#25, #14) | gemini | **ASSIGNED** | `game/scripts/ui/battle_hud.gd`, new `game/tests/battle_hud_layout_smoke.gd`; round-4 entry |
+| T60 Property tests for flow field + tick allocation audit (Q3, P4) | grok | **ASSIGNED** | Sole owner of `game/src/cpp/**`, `game/tests/native/**`; round-4 entry |
+| T61 One affordability rule: battle uses `UnitDefs` helpers; menu shows rank + campaign stars (G12, G8) | cursor | **ASSIGNED** | `game/scripts/battle/**`, `game/scripts/data/unit_defs.gd`, `game/scripts/ui/main_menu.gd`; round-4 entry |
+| T62 Player-facing docs truth pass: `game/README.md`, `docs/TESTING.md`, VS10 protocol, cache README | mistral | **ASSIGNED** | Docs only; round-4 entry |
+| T63 Legacy Android build configures again; export smoke script points at `game/` | kimi | **ASSIGNED** | `gradle/**`, `android/**` build files, `scripts/export_mobile_smoke.sh`; round-4 entry |
+| T64 ID8 slice 3: unit roster + damage matrix on the demo, drift test against `unit_defs.gd` | qwen | **ASSIGNED** | `docs/website/**`; round-4 entry |
+| T65 Godot-boundary determinism smoke for every catalog level (Q4, S7) | muse | **ASSIGNED** | new `game/tests/determinism_smoke.gd`; round-4 entry |
+| T66 Review T59–T65 | chat | **QUEUED** | By commit hash on `harbinger` as DONE blocks land |
 
 ### Conflict rules
 
@@ -2954,3 +2982,78 @@ Report: `.agent/reports/chat/T49_review_2026-10-08.md`. T49 pending status is no
 - **Verification on merged `main`:** `ctest` 1/1, Godot smokes 25/25, perf bench PASS, website `tsc -b` clean and vitest 80/80.
 - **Branches:** `main`, `harbinger` and `GGWall` all point at the same commit after this entry. The team keeps working on `harbinger`. **GeminiWall: before taking a task, read the task board for the next free T-number, and work on `harbinger` with the round-2 shared-tree rules.**
 - **Open, unassigned:** `scripts/export_mobile_smoke.sh` still sets `CORE_DIR="core"` (Chat, T49 review) and fails on the `game/` tree; AGP 9.3.1 vs Gradle 8.7 and the unparseable `ios/MyGame.xcodeproj` (Kimi, T50); wiring the T57/T58 helpers into HUD/menu.
+
+### Claude Harbinger — 2026-10-08 — round 4: T59–T66, and how to sign your work (read this entry; it is your whole brief)
+
+**New standing rule from the owner — sign everything as `<Name> Harbinger`.** Full rule: `§Signing` near the top of this file. In short, starting with this round:
+- bus block headings start with your signature (`### Kimi Harbinger — 2026-10-08 — T63 CLAIMED`);
+- every commit has the trailer `Agent: <Name> Harbinger` above your `Co-authored-by:` line;
+- your changelog entry heading ends with `— <Name> Harbinger`;
+- reports and your presence file carry it too.
+
+Signatures: Grok Harbinger, Gemini Harbinger, Cursor Harbinger, Mistral Harbinger, Kimi Harbinger, Qwen Harbinger, Muse Harbinger, Codex Harbinger (alias `chat`), Claude Harbinger. Gemini Wall is a different agent on the other team.
+
+**Where you work.** Main checkout, branch `harbinger` (now equal to `main` at `e30922f` plus this entry). Check `git branch --show-current` before your first commit.
+
+**Shared-tree rules (unchanged).** Edit only your lane. `git add <your files>` only — never `git add -A` or `commit -a`. No switch, stash, reset, restore or rebase. Re-read the bus, changelog and your roadmap file immediately before writing them. Run Godot with a private `XDG_DATA_HOME=/tmp/pmf-xdg/<agent>`. Only Grok rebuilds `game/bin/*.so`, with a one-line bus note before replacing it. Changelog + roadmap row in the same commit as the work. Post CLAIMED (with your approach) before editing and DONE (commit hash, what you ran, what you could not run) after. No pushes, no GitHub. If a brief is wrong or unworkable, post BLOCKED with the reason instead of improvising outside your lane.
+
+**Baseline to keep green:** `./scripts/run_godot_smokes.sh` 25/25, `ctest --test-dir game/build` 1/1, website `npx tsc -b` + `npx vitest run` 80/80, `mkdocs build --config-file docs/mkdocs.yml --strict` 0 warnings.
+
+#### T59 — Gemini Harbinger — battle HUD phone-scale targets; results panel shows citadel rank (#25, #14)
+
+T46 sized Main Menu and Settings; the battle HUD is the part of U8/IOS2 still open.
+- Lane: `game/scripts/ui/battle_hud.gd`, new `game/tests/battle_hud_layout_smoke.gd`, `ui_ux.md` U4/U8, `ios.md` IOS2, changelog. Read-only use of `ThemeTokens` (if you need a new token, add it and say so in DONE). Do not touch `battle_root.gd` (T61) or `main_menu.gd` (T61).
+- Done means: every interactive HUD control (unit buttons, pause, speed, save/load, pause-overlay and results buttons) is at least 48 px in rendered window pixels in **both** dimensions at 1280×720, 720×1280, 390×844 and 844×390, with Large Text off and on, with no control overlapping another and none outside the viewport. The smoke measures rendered size, not `custom_minimum_size`. The HUD must not cover the two grids more than it does today at 1280×720 — state the before/after covered area.
+- Also: the results panel shows the citadel rank and progress to the next rank using `Progression.get_prestige_tier` / `get_next_prestige_tier` (T58), next to the existing stars and prestige lines.
+- If 390×844 cannot fit the HUD and both grids at all, say so with measurements and post BLOCKED for that size rather than shrinking targets.
+
+#### T60 — Grok Harbinger — flow-field property tests and tick allocation audit (Q3, P4)
+
+- Lane: `game/src/cpp/**`, `game/tests/native/**`, `shared_core.md`, `qa_testing.md` Q3, `performance.md` P4, changelog. No GDScript-facing signature changes.
+- Property tests (doctest, generated grids from a fixed-seed generator inside the test file — `SimWorld` itself stays RNG-free): for random solid layouts on several grid sizes, (1) every cell with a finite cost has a direction whose neighbour has strictly lower cost, (2) no direction points into a solid or off-grid, (3) cells cut off from the goal are marked unreachable and a raider there does not move through solids, (4) toggling a cell solid then clear restores the original field exactly. State how many layouts run and the seed.
+- Allocation audit: find heap allocations inside `SimWorld::tick` and the flow recompute (vectors created per call, `push_back` growth, temporary containers). Remove the ones you can with reserved/member buffers; list the ones you leave and why. Prove no behaviour change with the existing v1/v2 fixtures and the tick-match test, and report `perf_budget_bench.gd` before/after.
+- P4 stays Partial unless pooling is actually done; do not overclaim.
+
+#### T61 — Cursor Harbinger — one affordability rule; main menu shows rank and campaign stars (G12, G8)
+
+Finding from the lead's GGWall review: `battle_root.gd` (~line 746) lets a placement go ahead when **either** the unit's own-currency wallet **or** the placed front's wallet can pay (`funds >= cost or fallback >= cost`), and ~line 355 derives the sim front from the currency; `UnitDefs.can_afford` (T57) only checks the unit's own currency. Two rules for one question.
+- Lane: `game/scripts/battle/**`, `game/scripts/data/unit_defs.gd`, `game/scripts/ui/main_menu.gd`, `game/tests/unit_catalog_smoke.gd`, a new or existing battle smoke of your choice, `gameplay.md` G8/G12, changelog. Not `battle_hud.gd` (T59), not C++.
+- First, post in CLAIMED what the battle actually does today: which wallet is charged, and which front the defender is spawned on, for a land unit, a sea unit, each hero and the Signal Battery, on each grid. Then make `UnitDefs` the single place that answers "can this be placed here, and which wallet pays" (extend the helper with the placed front), and have `battle_root.gd` call it. **Do not change gameplay behaviour** — if you believe today's behaviour is a bug, describe it in DONE and leave it for an owner decision.
+- Main menu: show the current citadel rank title, progress to the next rank and campaign star total from `Progression` (T58). Must keep `accessibility_smoke.gd` green at all four window sizes — add the new label to its containment checks if it is not picked up automatically.
+- Smokes prove the battle path uses the helper (a mutation of the helper must fail a battle smoke; say which).
+
+#### T62 — Mistral Harbinger — docs truth pass
+
+- Lane: `game/README.md`, `docs/TESTING.md`, `docs/moon/VS10_PLAYTEST_PROTOCOL.md`, `.agent/cache/README.md`, `repo_automation.md` history row, changelog. No roadmap status cells, no `docs/website/**`, no code.
+- `game/README.md` and `docs/TESTING.md`: the smoke list is partly hand-enumerated and stale. Replace per-file lists with the runner (`./scripts/run_godot_smokes.sh`, 25 smokes today) plus a short table of what each smoke covers, generated by reading the files, not from memory. Document the manual perf bench and `ctest`.
+- VS10 protocol: add the DDA overlay toggle (default off; state whether each session ran with it on), the DT7 `wave_start` fields `dda_enabled` / `dda_intensity`, and the phone-size windows from T46. Do not invent results — sessions have not been run.
+- `.agent/cache/README.md`: agent table lists four agents; bring it to the current roster and add the `§Signing` rule by pointing at the bus section (do not duplicate it).
+- Every command you document must be one you ran in this checkout; say which you could not run. Strict MkDocs stays at 0 warnings.
+
+#### T63 — Kimi Harbinger — legacy Android configures again; export smoke points at `game/`
+
+`CI` on `main` is red: `android-lint-and-unit-test` and `ios-test` fail whenever their paths change (run 37830995010).
+- Lane: `gradle/libs.versions.toml`, `gradle/wrapper/**`, root and `android/**` Gradle build files, `scripts/export_mobile_smoke.sh`, `.github/workflows/ci.yml`, `docs/TESTING.md` "Legacy-tree findings" section only (Mistral owns the rest of that file — re-read before writing, edit only that section), `qa_testing.md` Q2, changelog.
+- Android: lead default is the smallest change that makes `./gradlew ktlintCheck testDebugUnitTest` configure and run — pin AGP to a version that runs on the Gradle 8.7 wrapper (your own finding suggested 8.5.2). If that cascades (Kotlin, Compose, compileSdk), report the cascade and choose the least invasive consistent set; do not upgrade the wrapper to 9.x without saying why the pin failed. Show the actual Gradle output.
+- `scripts/export_mobile_smoke.sh` sets `CORE_DIR="core"`; the tree is `game/`. Fix it and any other stale path in that script, keep ShellCheck clean, and show the script's config checks passing (an APK export is not required).
+- iOS: you cannot run Xcode here. Do only what the evidence supports (compare `project.pbxproj` `objectVersion` / format against what Xcode 26 accepts, check for the known parse triggers). If you cannot fix it with confidence, leave it gated and say so. No `continue-on-error`.
+
+#### T64 — Qwen Harbinger — ID8 slice 3: roster and damage matrix, with a drift test
+
+- Lane: `docs/website/**`, `internal_dashboard.md` ID8, changelog. `website.yml` only if a step is needed.
+- Add a roster panel to `/dashboard/demo`: every defender, hero and the Signal Battery with cost, currency, range, cooldown and a small damage matrix (stands on land/sea × target land/sea) following the simulation rule — own multiplier against the front the unit stands on, cross multiplier against the other.
+- Drift test: a vitest that reads `game/scripts/data/unit_defs.gd` from the repo and fails when the website's unit numbers (cost, damage, range, cooldown, both multipliers) differ from the game's for the units both define. If they already differ, list the differences in DONE and ask before changing game-side numbers — the website follows the game, not the reverse.
+- Keep the 320px header and the island budget; real `tsc -b` stays clean. Report test counts before/after and one mutation that the drift test catches.
+
+#### T65 — Muse Harbinger — Godot-boundary determinism smoke (Q4, S7)
+
+- Lane: new `game/tests/determinism_smoke.gd`, `qa_testing.md` Q4, `shared_core.md` S7 note (re-read first — Grok edits that file this round; touch only the S7 cell), changelog. No C++, no level JSON edits.
+- For every catalog level: run a scripted session through `SimulationCore` at fixed dt (same placements at the same ticks, long enough to include combat and at least two waves) twice in fresh cores and require identical end state — compare a full `save_state` buffer or, if buffers legitimately differ, an explicit field-by-field digest, and say which and why. Then a third run that saves mid-wave, loads into a fresh core, and must reach the same end state.
+- Negative control: perturbing one placement by one tick must change the digest (otherwise the digest is not looking at anything).
+- Runs in the normal smoke runner, so keep it under a few seconds; report the runtime.
+
+#### T66 — Codex Harbinger — review
+
+Review T59–T65 by commit hash as DONE blocks land; same rules as T53/T56 (mutations on disposable copies, small fix-ups allowed with a bus claim, report under `.agent/reports/chat/`). T59 and T61 both touch the T58 progression helpers and T61/T64 both encode the damage/affordability rule — check they agree with each other and with `SimWorld`.
+
+**After Codex's review:** the lead verifies on `harbinger`, pushes, and syncs GitHub. Not assigned this round: VS10 playtest sessions (owner), device runs, anything needing macOS.
