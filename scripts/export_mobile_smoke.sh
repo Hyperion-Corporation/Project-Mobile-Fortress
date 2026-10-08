@@ -35,11 +35,10 @@ fi
 ANDROID_HOME="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-$HOME/Android/Sdk}}"
 TEMPLATE_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/godot/export_templates/4.7.1.stable"
 FAIL=0
-WARN=0
 
 pass() { echo "  PASS  $*"; }
 fail() { echo "  FAIL  $*"; FAIL=1; }
-warn() { echo "  WARN  $*"; WARN=1; }
+warn() { echo "  WARN  $*"; }
 
 echo "=== Mobile export smoke ==="
 echo "core:     $CORE_DIR"
@@ -48,12 +47,20 @@ echo "android:  $ANDROID_HOME"
 echo "templates:$TEMPLATE_DIR"
 echo
 
+check_file() {
+  if [[ -f "$CORE_DIR/$1" ]]; then
+    pass "$2"
+  else
+    fail "$2 missing"
+  fi
+}
+
 echo "-- Project files --"
-[[ -f "$CORE_DIR/project.godot" ]] && pass "project.godot" || fail "project.godot missing"
-[[ -f "$CORE_DIR/export_presets.cfg" ]] && pass "export_presets.cfg" || fail "export_presets.cfg missing"
-[[ -f "$CORE_DIR/EXPORT_MOBILE.md" ]] && pass "EXPORT_MOBILE.md" || fail "EXPORT_MOBILE.md missing"
-[[ -f "$CORE_DIR/main.tscn" ]] && pass "classic main.tscn (GDScript fallback path)" || fail "main.tscn missing"
-[[ -f "$CORE_DIR/scenes/main_menu.tscn" ]] && pass "main_menu.tscn" || fail "main_menu.tscn missing"
+check_file "project.godot" "project.godot"
+check_file "export_presets.cfg" "export_presets.cfg"
+check_file "EXPORT_MOBILE.md" "EXPORT_MOBILE.md"
+check_file "main.tscn" "classic main.tscn (GDScript fallback path)"
+check_file "scenes/main_menu.tscn" "main_menu.tscn"
 
 echo
 echo "-- Export preset content --"

@@ -2655,3 +2655,30 @@ Approach, before editing: persist `dda_enabled` (default off) via `OfflinePersis
 - **Smokes:** `XDG_DATA_HOME=/tmp/pmf-xdg/cursor ./scripts/run_godot_smokes.sh` **23/23 PASS** (22 pre-existing + `dda_battle`). Related subset also PASS: `dda`, `modular_battle`, `dev_diag`, `playtest_log`, `game_session`, `level_picker`, `debug_cheats`.
 - **Docs:** A4 stays 🚧 Partial (hookup shipped; still needs VS10 playtest tuning). DT5/DT7 notes mention the intensity readout and wave-start fields. Changelog `[Unreleased]`.
 - **Handoff:** ready for Chat review under T53. Once T47 is also in place, the combined DDA surface is overlay setting (GDScript) + snapshot restore (C++) with the overlay winning after `load_state`.
+
+### kimi — 2026-10-08 — T50 DONE: `CI` workflow green
+
+- **Commit:** single commit on `harbinger` (see `git log -1 --format=%H` after push; message `ci(ci): green CI workflow — path-gate legacy jobs, official wrapper jar, shellcheck gate`).
+- **Lane:** `.github/workflows/ci.yml`, `gradle/wrapper/gradle-wrapper.jar`, `scripts/export_mobile_smoke.sh`, `scripts/install_godot_export_templates.sh`, `docs/TESTING.md`, `docs/moon/roadmaps/qa_testing.md` (Q2 row), `docs/moon/CHANGELOG.md`. Nothing under `game/` touched; `godot-game.yml` behaviour untouched.
+
+**Root causes found (from run 37797420404 logs via read-only `gh run view --log`):**
+1. `android-lint-and-unit-test`: `gradle/actions/setup-gradle@v4` wrapper validation rejected `gradle/wrapper/gradle-wrapper.jar` — sha256 `3119c0dd…` not among the 67 official checksums (jar was a working but non-official build).
+2. `ios-test`: Xcode 26.6 on `macos-latest` reports `MyGame.xcodeproj` "damaged … parse error" (exit 74). pbxproj passes static checks: no conflict markers/BOM/CRLF, 103 unique objects, no dangling UUID refs, valid OpenStep plist. Cannot root-cause without a macOS host.
+3. Second Android blocker found while regenerating: `gradle/libs.versions.toml` pins **AGP 9.3.1**, which cannot run on wrapper-pinned Gradle 8.7 (`NoClassDefFoundError: org/gradle/features/binding/ProjectTypeBinding` at `AppPlugin.apply` — a Gradle 9 API). Reproduced locally with clean `GRADLE_USER_HOME` under Java 21. Deliberate product fix needed (AGP→8.5.2 per `.agent/AGENTS.md`, or wrapper→9.x); both are outside T50's lane, so recorded as a finding per the brief.
+
+**Fixes shipped:**
+- `gradle-wrapper.jar` regenerated via Gradle 8.7's own `wrapper` task (from an empty scratch project, since the repo's build cannot configure with the broken AGP combo): sha256 `cb0da6751c2b753a16ac168bb354870ebb1e162e9083f116729cec9c781156b8` — matches the official 8.7 checksum in gradle/actions' `wrapper-checksums.json`. `./gradlew --version` works through the new jar.
+- `ci.yml`: new `changes` job diffs the push/PR range (`workflow_dispatch` → all true) and gates legacy jobs per tree — Android jobs run only on `android/**|gradle/**|build.gradle.kts|settings.gradle.kts|justfile|ci.yml` changes; `ios-test` only on `ios/**|ci.yml`. No `continue-on-error`, no deleted code; jobs re-fire (and re-surface the findings) when their trees really change. `scripts/**` added to workflow triggers.
+- New always-run `shellcheck` job: digest-pinned `koalaman/shellcheck@sha256:61862eba…` (0.11.0, the image used locally). Fixed the only two scripts with findings: `export_mobile_smoke.sh` (SC2034 unused `WARN`, SC2015 ×5 → `check_file` helper) and `install_godot_export_templates.sh` (SC2012 ×2 → `find -mindepth 1 -maxdepth 1 -exec basename`). All 10 repo shell scripts lint clean.
+
+**Verification actually run:**
+- `docker run … koalaman/shellcheck:v0.11.0 scripts/*.sh` → rc 0 before and after fixes; pinned-digest image pulled and verified rc 0.
+- `bash -n` both edited scripts; `check_file` equivalence exercised on a fixture (same PASS/`X missing` output as the old `&& ||` chains); templates script already-present path lists correctly.
+- Gate logic simulated for 7 change sets (game-only → both false; ios-only → ios; android/gradle/justfile/ci.yml → android; workflow → both).
+- `python3 -c "yaml.safe_load(ci.yml)"` OK; `git diff --check` OK.
+- `XDG_DATA_HOME=/tmp/pmf-xdg/kimi ./scripts/run_godot_smokes.sh` → **23/23 PASS** (~30s) on the shared tree.
+- **Not runnable locally:** GitHub Actions itself (first real run proves the gate on merge); `mkdocs`/website untouched. `shellcheck` is not installed natively — all passes above used the pinned container per the brief.
+
+**Docs:** findings recorded in `docs/TESTING.md` (new "Legacy-tree findings" section); Q2 row updated (stays 🚧 Partial — export/version matrices unchanged); changelog `[Unreleased]` Fixed entry.
+
+**Handoff:** ready for Chat review under T53. Note for the lead/owner: the two recorded legacy findings (AGP-vs-Gradle, xcodeproj-under-Xcode-26.6) need deliberate decisions; the Android one is a one-line catalog change (`agp = "8.5.2"`) or a wrapper upgrade once chosen.

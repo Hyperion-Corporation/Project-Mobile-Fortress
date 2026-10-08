@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed (2026-10-08, T50 CI workflow green — Q2)
+
+- **`ci.yml` no longer fails on every push.** A new `changes` job diffs the push/PR range and gates the legacy-template jobs per tree: the three Android jobs run only when `android/**`, `gradle/**`, root Gradle build files, `justfile`, or the workflow itself change; `ios-test` runs only when `ios/**` or the workflow changes; `game/**` work is gated by `godot-game.yml` instead. The `changes` and `shellcheck` jobs always run. Findings recorded in `docs/TESTING.md`, not hidden: (1) `gradle/wrapper/gradle-wrapper.jar` regenerated via Gradle 8.7's `wrapper` task — sha256 now matches the official 8.7 checksum and passes `setup-gradle` wrapper validation; (2) the Android tree still pins AGP 9.3.1, which cannot run on wrapper-pinned Gradle 8.7 (`NoClassDefFoundError` at plugin apply) — needs a deliberate AGP-downgrade or wrapper-upgrade decision; (3) `ios/MyGame.xcodeproj` fails to parse under the runner's Xcode 26.6 despite a statically valid pbxproj — needs a macOS host to root-cause. Legacy code is untouched and no failure is masked with `continue-on-error`.
+- **ShellCheck gate for `scripts/*.sh`:** new `shellcheck` job in `ci.yml` (digest-pinned `koalaman/shellcheck` 0.11.0 image, same as local verification); `export_mobile_smoke.sh` (unused `WARN` counter, five `A && B || C` checks) and `install_godot_export_templates.sh` (two `ls | head` listings) fixed — all 10 repo shell scripts now lint clean.
+
 ### Added (2026-10-08, T48 A4 battle hookup + DT5 intensity readout)
 
 - **A4:** Modular battle now pushes the persisted DT8 overlay DDA toggle through `GameSession.apply_dda` after level load, `debug_load_level`, and `load_snapshot` (the overlay setting wins over a v2 snapshot's stored flag). Default remains off; player Settings is unchanged. With the toggle off, the director stays disabled.

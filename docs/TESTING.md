@@ -25,7 +25,16 @@ Runner regression tests use a temporary fixture and fake Godot binary: `python3 
 
 ## CI
 
-`.github/workflows/ci.yml` has four jobs: `android-lint-and-unit-test`, `android-build-debug`, and `android-instrumented-tests` (Ubuntu runners, unit tests + `ktlintCheck` + Android Lint on every push/PR, instrumented tests via `reactivecircus/android-emulator-runner` on a headless emulator — the slowest Android job, kept intentionally small), plus `ios-test` (a `macos-latest` runner running the full XCTest suite via `xcodebuild`).
+`.github/workflows/ci.yml` covers the legacy template trees and `scripts/*.sh`:
+
+- A `changes` job diffs the push/PR range and gates the legacy jobs per tree: the three Android jobs run only when `android/**`, `gradle/**`, the root Gradle build files, `justfile`, or the workflow itself change; `ios-test` (`macos-latest`, full XCTest suite via `xcodebuild`) runs only when `ios/**` or the workflow changes. The live product under `game/**` is covered by `.github/workflows/godot-game.yml` instead, so game pushes are no longer gated on the legacy trees.
+- A `shellcheck` job lints every `scripts/*.sh` with the digest-pinned `koalaman/shellcheck` 0.11.0 image. Run the same check locally with `docker run --rm -v "$PWD:/mnt" -w /mnt koalaman/shellcheck:v0.11.0 scripts/*.sh`; keep new/edited scripts clean.
+
+### Legacy-tree findings (recorded 2026-10-08, T50)
+
+- `gradle/wrapper/gradle-wrapper.jar` was a non-official build and failed `gradle/actions/setup-gradle` wrapper validation on every run. It was regenerated with Gradle 8.7's own `wrapper` task and now matches the official 8.7 checksum (`cb0da675…156b8`).
+- The Android tree still has a toolchain mismatch: `gradle/libs.versions.toml` pins **AGP 9.3.1**, which cannot run on the wrapper-pinned **Gradle 8.7** (`NoClassDefFoundError: org/gradle/features/binding/ProjectTypeBinding` at plugin apply — a Gradle 9 API). Deliberate product fix needed: AGP back to 8.5.2 (per `.agent/AGENTS.md`) or a wrapper upgrade to Gradle 9.x.
+- `ios/MyGame.xcodeproj` fails to parse on the `macos-latest` runner under Xcode 26.6 ("project is damaged … parse error"), although the pbxproj passes static structure checks (no conflict markers, no dangling UUID refs, valid OpenStep plist, no BOM/CRLF). Needs a macOS host to root-cause. The Android/iOS jobs remain wired to their trees and will re-run (and re-surface these findings) on real changes there.
 
 ## Coverage
 

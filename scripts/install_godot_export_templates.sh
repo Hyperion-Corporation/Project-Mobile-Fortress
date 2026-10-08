@@ -9,7 +9,7 @@ CACHE="${TMPDIR:-/tmp}/godot_export_templates_${VERSION}.tpz"
 
 if [[ -d "$DEST" ]] && [[ -f "$DEST/version.txt" || -f "$DEST/android_debug.apk" || -f "$DEST/android_source.zip" ]]; then
   echo "Templates already present: $DEST"
-  ls "$DEST" | head -20
+  find "$DEST" -mindepth 1 -maxdepth 1 -exec basename {} \; | head -20
   exit 0
 fi
 
@@ -33,5 +33,5 @@ else
   rmdir "${DEST}.extract" 2>/dev/null || true
 fi
 echo "Installed templates:"
-ls "$DEST" | head -30
+find "$DEST" -mindepth 1 -maxdepth 1 -exec basename {} \; | head -30
 echo "Done. Godot expects: $DEST"
