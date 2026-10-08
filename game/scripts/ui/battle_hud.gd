@@ -1,5 +1,5 @@
 extends CanvasLayer
-## Slice-0 HUD: phase, outposts, dual currency, pause overlay, save/load (U2/U4).
+## Slice-0 HUD: phase, outposts, dual currency, pause overlay, save/load, phone-scale targets (U2/U4/U8/IOS2).
 
 const ProgressionScript := preload("res://scripts/data/progression.gd")
 const ThemeTokensScript := preload("res://scripts/ui/theme_tokens.gd")
@@ -13,6 +13,8 @@ signal save_pressed
 signal load_pressed
 signal resume_pressed
 signal menu_pressed
+signal pause_pressed
+signal speed_pressed
 
 const INK := Color(0.10, 0.09, 0.12, 1)
 const CINNABAR := Color(0.72, 0.20, 0.14, 1)
@@ -35,6 +37,8 @@ const MOSS := Color(0.24, 0.38, 0.28, 1)
 var _save_btn: Button
 var _load_btn: Button
 var _menu_btn: Button
+var _pause_btn: Button
+var _speed_btn: Button
 var _pause_overlay: ColorRect
 var _pause_title: Label
 var _resume_btn: Button
@@ -56,30 +60,79 @@ func _ready() -> void:
 	start_btn.pressed.connect(func(): start_combat_pressed.emit())
 	restart_btn.pressed.connect(func(): restart_pressed.emit())
 	hero_btn.pressed.connect(func(): hero_ability_pressed.emit())
+	ThemeTokensScript.apply_accessible_button(start_btn)
+	ThemeTokensScript.set_a11y_metadata(start_btn, "Start Combat", "Commence raid combat (Space)")
+	ThemeTokensScript.apply_accessible_button(hero_btn)
+	ThemeTokensScript.set_a11y_metadata(hero_btn, "Hero Ability", "Activate hero commander active ability (E)")
+	ThemeTokensScript.apply_accessible_button(restart_btn)
+	ThemeTokensScript.set_a11y_metadata(restart_btn, "Play Again", "Restart the coastal defense mission")
+
+	_restructure_sidebar()
 	_wire_unit_buttons()
 	_ensure_persistence_buttons()
 	_ensure_status_strip()
 	_ensure_pause_overlay()
+	_ensure_sidebar_controls()
 	_ensure_cooldown_ring()
 	_on_res(GameSession.land_currency, GameSession.sea_currency)
 	_on_hq(GameSession.hq_hp, GameSession.hq_max_hp)
 	set_outposts(40, 40, true, 40, 40, true)
 	set_wave(0)
-	help_label.text = (
-		"1–5 units · click land/sea · Space combat · E hero actives · U upgrade\n"
-		+ "S snapshot · L load · Esc pause"
-	)
+	if help_label != null:
+		help_label.text = (
+			"1–5 units · click land/sea · Space combat\n"
+			+ "E hero actives · S save · L load · Esc pause"
+		)
+
+	var vp := get_viewport()
+	if vp and not vp.size_changed.is_connected(_on_viewport_size_changed):
+		vp.size_changed.connect(_on_viewport_size_changed)
+
+	_apply_density_sizes()
 	_on_pause_changed(GameSession.is_paused)
 
 
+func _restructure_sidebar() -> void:
+	var root_ctrl: Control = $Root
+	var old_sb: Control = root_ctrl.get_node_or_null("SideBar")
+	if old_sb == null or old_sb is GridContainer:
+		return
+
+	var grid := GridContainer.new()
+	grid.name = "SideBar"
+	grid.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	grid.columns = 2
+	grid.add_theme_constant_override("h_separation", 6)
+	grid.add_theme_constant_override("v_separation", 4)
+
+	# Extract SelectedLabel and HelpLabel so they aren't grid cells
+	if selected_label != null and selected_label.get_parent() == old_sb:
+		old_sb.remove_child(selected_label)
+		root_ctrl.add_child(selected_label)
+		selected_label.add_theme_color_override("font_color", ThemeTokensScript.INK)
+
+	if help_label != null and help_label.get_parent() == old_sb:
+		old_sb.remove_child(help_label)
+		root_ctrl.add_child(help_label)
+		help_label.add_theme_color_override("font_color", ThemeTokensScript.INK_MUTED)
+
+	var children := old_sb.get_children()
+	for child in children:
+		old_sb.remove_child(child)
+		grid.add_child(child)
+
+	old_sb.name = "OldSideBar"
+	old_sb.queue_free()
+	root_ctrl.add_child(grid)
+
+
 func _ensure_persistence_buttons() -> void:
-	var sidebar: VBoxContainer = $Root/SideBar
+	var sidebar: Control = $Root/SideBar
 	if sidebar.get_node_or_null("SaveBtn") == null:
 		_save_btn = Button.new()
 		_save_btn.name = "SaveBtn"
 		_save_btn.text = "Save snapshot (S)"
 		sidebar.add_child(_save_btn)
-		sidebar.move_child(_save_btn, hero_btn.get_index() + 1)
 	else:
 		_save_btn = sidebar.get_node("SaveBtn")
 	if sidebar.get_node_or_null("LoadBtn") == null:
@@ -87,11 +140,17 @@ func _ensure_persistence_buttons() -> void:
 		_load_btn.name = "LoadBtn"
 		_load_btn.text = "Load snapshot (L)"
 		sidebar.add_child(_load_btn)
-		sidebar.move_child(_load_btn, _save_btn.get_index() + 1)
 	else:
 		_load_btn = sidebar.get_node("LoadBtn")
+
+	ThemeTokensScript.apply_accessible_button(_save_btn)
+	ThemeTokensScript.set_a11y_metadata(_save_btn, "Save Snapshot", "Persist current battle state to disk")
+	ThemeTokensScript.apply_accessible_button(_load_btn)
+	ThemeTokensScript.set_a11y_metadata(_load_btn, "Load Snapshot", "Restore saved battle state from disk")
+
 	_save_btn.pressed.connect(func(): save_pressed.emit())
 	_load_btn.pressed.connect(func(): load_pressed.emit())
+
 	# Result panel: back to menu
 	var vbox: VBoxContainer = $Root/ResultPanel/VBox
 	if vbox.get_node_or_null("MenuBtn") == null:
@@ -101,7 +160,55 @@ func _ensure_persistence_buttons() -> void:
 		vbox.add_child(_menu_btn)
 	else:
 		_menu_btn = vbox.get_node("MenuBtn")
+	ThemeTokensScript.apply_accessible_button(_menu_btn)
+	ThemeTokensScript.set_a11y_metadata(_menu_btn, "Main Menu", "Return to main menu")
 	_menu_btn.pressed.connect(func(): menu_pressed.emit())
+
+
+func _ensure_sidebar_controls() -> void:
+	var sidebar: Control = $Root/SideBar
+	if sidebar == null:
+		return
+	if sidebar.get_node_or_null("PauseBtn") == null:
+		_pause_btn = Button.new()
+		_pause_btn.name = "PauseBtn"
+		_pause_btn.text = "⏸ Pause"
+		ThemeTokensScript.apply_accessible_button(_pause_btn)
+		ThemeTokensScript.set_a11y_metadata(_pause_btn, "Pause Game", "Pause or resume the battle simulation")
+		_pause_btn.pressed.connect(_on_pause_btn_pressed)
+		sidebar.add_child(_pause_btn)
+	else:
+		_pause_btn = sidebar.get_node("PauseBtn")
+
+	if sidebar.get_node_or_null("SpeedBtn") == null:
+		_speed_btn = Button.new()
+		_speed_btn.name = "SpeedBtn"
+		_speed_btn.text = "⏩ 1x"
+		ThemeTokensScript.apply_accessible_button(_speed_btn)
+		ThemeTokensScript.set_a11y_metadata(_speed_btn, "Sim Speed", "Toggle simulation speed between 1x, 2x, and 3x")
+		_speed_btn.pressed.connect(_on_speed_btn_pressed)
+		sidebar.add_child(_speed_btn)
+	else:
+		_speed_btn = sidebar.get_node("SpeedBtn")
+
+
+func _on_pause_btn_pressed() -> void:
+	pause_pressed.emit()
+	GameSession.toggle_paused()
+
+
+func _on_speed_btn_pressed() -> void:
+	var s: float = GameSession.time_scale
+	var next_s: float = 1.0
+	if s <= 1.05:
+		next_s = 2.0
+	elif s <= 2.05:
+		next_s = 3.0
+	else:
+		next_s = 1.0
+	GameSession.set_time_scale(next_s)
+	_speed_btn.text = "⏩ %.0fx" % next_s
+	speed_pressed.emit()
 
 
 func _ensure_status_strip() -> void:
@@ -177,14 +284,20 @@ func _ensure_pause_overlay() -> void:
 		_resume_btn = Button.new()
 		_resume_btn.name = "ResumeBtn"
 		_resume_btn.text = "Resume"
+		ThemeTokensScript.apply_accessible_button(_resume_btn)
+		ThemeTokensScript.set_a11y_metadata(_resume_btn, "Resume Battle", "Resume coastal defense simulation")
 		vbox.add_child(_resume_btn)
 		_pause_save_btn = Button.new()
 		_pause_save_btn.name = "PauseSaveBtn"
 		_pause_save_btn.text = "Save snapshot"
+		ThemeTokensScript.apply_accessible_button(_pause_save_btn)
+		ThemeTokensScript.set_a11y_metadata(_pause_save_btn, "Save Snapshot", "Persist current battle snapshot to disk")
 		vbox.add_child(_pause_save_btn)
 		_pause_menu_btn = Button.new()
 		_pause_menu_btn.name = "PauseMenuBtn"
 		_pause_menu_btn.text = "Main Menu"
+		ThemeTokensScript.apply_accessible_button(_pause_menu_btn)
+		ThemeTokensScript.set_a11y_metadata(_pause_menu_btn, "Main Menu", "Exit to main menu")
 		vbox.add_child(_pause_menu_btn)
 	else:
 		_pause_title = _pause_overlay.get_node("PausePanel/VBox/PauseTitle")
@@ -232,6 +345,7 @@ func _on_pause_changed(paused: bool) -> void:
 		return
 	var should_show := paused and not result_panel.visible
 	if should_show and not _pause_overlay.visible:
+		_apply_density_sizes()
 		ThemeTokensScript.animate_fade_in(_pause_overlay, 0.2)
 	elif not should_show:
 		_pause_overlay.visible = false
@@ -239,15 +353,15 @@ func _on_pause_changed(paused: bool) -> void:
 
 func _wire_unit_buttons() -> void:
 	var map := {
-		"BtnSpear": "spearman",
-		"BtnCannon": "cannon",
-		"BtnArq": "arquebusier",
-		"BtnJunk": "junk",
-		"BtnHero": "hero_qi",
-		"BtnHeroDias": "hero_dias",
-		"BtnCross": "cross_support",
+		"BtnSpear": {"id": "spearman", "desc": "Ming Spearmen (Land front)"},
+		"BtnCannon": {"id": "cannon", "desc": "Fo-lang-ji Swivel Cannon (Land, cross support)"},
+		"BtnArq": {"id": "arquebusier", "desc": "Portuguese Arquebusiers (Sea front)"},
+		"BtnJunk": {"id": "junk", "desc": "War Junk (Sea naval defense)"},
+		"BtnHero": {"id": "hero_qi", "desc": "General Qi Jiguang (Either front)"},
+		"BtnHeroDias": {"id": "hero_dias", "desc": "Capitão Dias (Either front, cross-salvo)"},
+		"BtnCross": {"id": "cross_support", "desc": "Signal Battery (Cross-front artillery)"},
 	}
-	var sidebar: VBoxContainer = $Root/SideBar
+	var sidebar: Control = $Root/SideBar
 	if sidebar.get_node_or_null("BtnHeroDias") == null and sidebar.get_node_or_null("BtnHero") != null:
 		var dias_btn := Button.new()
 		dias_btn.name = "BtnHeroDias"
@@ -258,7 +372,10 @@ func _wire_unit_buttons() -> void:
 		var path := "Root/SideBar/%s" % btn_name
 		if has_node(path):
 			var b: Button = get_node(path)
-			var id: String = map[btn_name]
+			var data: Dictionary = map[btn_name]
+			var id: String = str(data["id"])
+			ThemeTokensScript.apply_accessible_button(b)
+			ThemeTokensScript.set_a11y_metadata(b, b.text, str(data["desc"]))
 			b.pressed.connect(func(): unit_selected.emit(id))
 
 
@@ -331,15 +448,14 @@ func set_hero_cooldown(cooldown_left: float, max_cooldown: float = 10.0) -> void
 		hero_btn.add_theme_color_override("font_color", ThemeTokensScript.INK_MUTED)
 
 
-
-
 func set_selected(id: String) -> void:
 	var def := UnitDefs.get_def(id)
 	var n: String = str(def.get("name", id))
 	var cost: int = int(def.get("cost", 0))
 	var cur: String = str(def.get("currency", "?"))
 	var glyph := ThemeTokensScript.GLYPH_LAND_CURRENCY if cur == "land" else ThemeTokensScript.GLYPH_SEA_CURRENCY
-	selected_label.text = "Selected: %s\nCost: %d %s" % [n, cost, glyph]
+	if selected_label != null:
+		selected_label.text = "Selected: %s\nCost: %d %s" % [n, cost, glyph]
 
 
 func _on_res(land: int, sea: int) -> void:
@@ -359,13 +475,36 @@ func show_result(victory: bool, reason: String, stats: Dictionary) -> void:
 	if _pause_overlay != null:
 		_pause_overlay.visible = false
 	var title := "VICTORY" if victory else "DEFEAT"
+
+	var total_p := int(stats.get("total_prestige", ProgressionScript.total_prestige()))
+	var tier_info := ProgressionScript.get_prestige_tier(total_p)
+	var next_info := ProgressionScript.get_next_prestige_tier(total_p)
+	var rank_title: String = str(tier_info.get("title", "Citadel"))
+	var rank_hist: String = str(tier_info.get("historical_title", ""))
+	var rank_display := "%s (%s)" % [rank_title, rank_hist] if not rank_hist.is_empty() else rank_title
+
+	var progress_line := ""
+	if bool(next_info.get("max_rank_reached", false)):
+		progress_line = "Rank: %s · Max Rank" % rank_display
+	else:
+		var pct := int(roundf(float(next_info.get("progress_ratio", 0.0)) * 100.0))
+		var rem := int(next_info.get("remaining_prestige", 0))
+		var next_title := str(next_info.get("next_title", ""))
+		progress_line = "Rank: %s · %d%% to %s (%d needed)" % [
+			rank_display, pct, next_title, rem
+		]
+
 	var stars_line := ""
 	if stats.has("stars"):
-		stars_line = "Stars: %s  Prestige: +%s (HQ %s)\n" % [
+		stars_line = "Stars: %s  Prestige: +%s (HQ %s)\n%s\n" % [
 			ProgressionScript.format_stars(int(stats.get("stars", 0))),
 			str(stats.get("prestige_earned", 0)),
-			str(stats.get("total_prestige", 0)),
+			str(total_p),
+			progress_line,
 		]
+	else:
+		stars_line = "%s\n" % progress_line
+
 	result_label.text = (
 		"%s\n%s\n\n%sKills: %s  Placed: %s  Outposts lost: %s\n"
 		+ "Combat: %.0fs  Wave: %s\n\nExported: %s\nHistory: %s"
@@ -381,4 +520,111 @@ func show_result(victory: bool, reason: String, stats: Dictionary) -> void:
 		str(stats.get("results_path", OfflinePersistence.RESULTS_PATH)),
 		OfflinePersistence.HISTORY_PATH,
 	]
+	_apply_density_sizes()
 	ThemeTokensScript.animate_slide_fade_in(result_panel, -24.0, 0.35)
+
+
+## Returns the logical-unit minimum height required for ≥48dp window pixels at current window.
+func _density_min_h() -> float:
+	var tree := get_tree()
+	var ws := ThemeTokensScript.CANVAS_DESIGN_SIZE
+	if tree and tree.root and tree.root.size.x >= 200 and tree.root.size.y >= 200:
+		ws = Vector2(tree.root.size)
+	else:
+		var ds_size := DisplayServer.window_get_size()
+		if ds_size.x >= 200 and ds_size.y >= 200:
+			ws = Vector2(ds_size)
+	return ThemeTokensScript.compute_density_min_size(ws)
+
+
+func _on_viewport_size_changed() -> void:
+	_apply_density_sizes()
+
+
+func _apply_density_sizes() -> void:
+	var settings: Dictionary = OfflinePersistence.read_settings()
+	var is_large_text: bool = bool(settings.get("large_text", false))
+	var min_d: float = _density_min_h()
+	if is_large_text:
+		min_d = ceilf(min_d * ThemeTokensScript.LARGE_TEXT_SCALE)
+
+	var tree := get_tree()
+	var ws := ThemeTokensScript.CANVAS_DESIGN_SIZE
+	if tree and tree.root and tree.root.size.x >= 200 and tree.root.size.y >= 200:
+		ws = Vector2(tree.root.size)
+
+	var vp := get_viewport()
+	var vp_w: float = vp.get_visible_rect().size.x if vp else ws.x
+	var vp_h: float = vp.get_visible_rect().size.y if vp else ws.y
+	var is_compact_landscape: bool = vp_h <= 720.0 and vp_w > 1300.0
+
+	# 1. SideBar buttons (unit buttons + action/control buttons)
+	var sidebar: Control = get_node_or_null("Root/SideBar")
+	var topbar: HBoxContainer = get_node_or_null("Root/TopBar")
+	if sidebar != null:
+		var btn_w: float = maxf(min_d, 140.0)
+		for child in sidebar.get_children():
+			if child is Button:
+				var b := child as Button
+				b.clip_text = true
+				b.custom_minimum_size = Vector2(btn_w, min_d)
+
+		if sidebar is GridContainer:
+			var grid := sidebar as GridContainer
+			grid.columns = 3 if is_compact_landscape else 2
+			var g_min := grid.get_combined_minimum_size()
+
+			grid.offset_left = -g_min.x - 12.0
+			grid.offset_right = -12.0
+			grid.offset_top = 36.0
+			grid.offset_bottom = 36.0 + g_min.y
+
+			if selected_label != null:
+				selected_label.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+				selected_label.offset_left = -g_min.x - 12.0
+				selected_label.offset_top = 8.0
+				selected_label.offset_right = -12.0
+				selected_label.offset_bottom = 32.0
+
+			if help_label != null:
+				help_label.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+				help_label.offset_left = -g_min.x - 12.0
+				help_label.offset_top = grid.offset_bottom + 6.0
+				help_label.offset_right = -12.0
+				help_label.offset_bottom = grid.offset_bottom + 42.0
+
+			if topbar != null:
+				topbar.offset_left = 12.0
+				topbar.offset_right = -g_min.x - 24.0
+				topbar.offset_top = 8.0
+				topbar.offset_bottom = 40.0
+
+	# 3. PauseOverlay & PausePanel
+	if _pause_overlay != null:
+		var pause_panel: PanelContainer = _pause_overlay.get_node_or_null("PausePanel")
+		if pause_panel != null:
+			var p_w: float = maxf(320.0, min_d * 2.2)
+			var p_h: float = maxf(240.0, min_d * 3.5 + 80.0)
+			pause_panel.offset_left = -p_w * 0.5
+			pause_panel.offset_right = p_w * 0.5
+			pause_panel.offset_top = -p_h * 0.5
+			pause_panel.offset_bottom = p_h * 0.5
+
+		for b in [_resume_btn, _pause_save_btn, _pause_menu_btn]:
+			if b != null:
+				b.clip_text = true
+				b.custom_minimum_size = Vector2(maxf(min_d, 160.0), min_d)
+
+	# 4. ResultPanel
+	if result_panel != null:
+		var r_w: float = maxf(360.0, min_d * 2.2)
+		var r_h: float = maxf(280.0, min_d * 2.5 + 180.0)
+		result_panel.offset_left = -r_w * 0.5
+		result_panel.offset_right = r_w * 0.5
+		result_panel.offset_top = -r_h * 0.5
+		result_panel.offset_bottom = r_h * 0.5
+
+		for b in [restart_btn, _menu_btn]:
+			if b != null:
+				b.clip_text = true
+				b.custom_minimum_size = Vector2(maxf(min_d, 160.0), min_d)

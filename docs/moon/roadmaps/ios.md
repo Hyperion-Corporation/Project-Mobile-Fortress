@@ -18,7 +18,7 @@
 | # | Item | Effort | Status |
 | --- | --- | --- | --- |
 | IOS1 | Godot iOS export project + signing notes | M | 🚧 **Partial** — iOS preset in `game/export_presets.cfg` (min 17); Android APK path verified on Linux; iOS export needs macOS |
-| IOS2 | Touch/UI polish for dual-front isometric controls on iPhone/iPad | M | 🚧 **Partial** — Godot dual-grid touch placement (G10) landed; not device-tested on iPhone/iPad. Phone-scale touch targets and responsive reflow shipped for Main Menu and Settings Dialog (T46 / U8: ≥48dp rendered window pixels verified across phone viewports); in-battle HUD touch targets and on-device iOS validation remain open. |
+| IOS2 | Touch/UI polish for dual-front isometric controls on iPhone/iPad | M | 🚧 **Partial** — Godot dual-grid touch placement (G10) landed; not device-tested on iPhone/iPad. Phone-scale touch targets (≥48dp rendered window pixels in width and height) and responsive reflow shipped across Main Menu, Settings Dialog, and Battle HUD (T46/T59 / U8: verified across 1280×720, 720×1280, 390×844, 844×390 viewports with/without large text, non-overlapping, zero excess grid occlusion); on-device iOS validation remains open. |
 | IOS3 | Consume shared C++ sim via godot-cpp/module (not UniFFI) | M | 🚧 **Partial** — gdextension declares ios.arm64 path; dylib build on macOS |
 | IOS4 | Haptics / platform services as needed | S | 📋 Deferred |
 | IOS5 | App Store Connect / export automation on macOS CI | M | 📋 When collaborator joins |
