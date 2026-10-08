@@ -696,3 +696,213 @@ TEST_CASE("schema v1 snapshot still loads and does not invent flow or DDA") {
 	// v1 rebases the purse to the loaded wallets and drops the clear sample.
 	CHECK(primed.dda_intensity() == doctest::Approx(1.0f));
 }
+
+namespace {
+
+/// Test-only generator. SimWorld itself has no RNG.
+struct XorShift32 {
+	uint32_t state;
+	explicit XorShift32(uint32_t seed) : state(seed) {}
+	uint32_t next() {
+		uint32_t x = state;
+		x ^= x << 13;
+		x ^= x >> 17;
+		x ^= x << 5;
+		state = x;
+		return x;
+	}
+};
+
+constexpr int kFlowUnreachable = 9999;
+
+void check_flow_field(const SimWorld &world, int front, int width, int height) {
+	const Vec2i goal(width - 1, height / 2);
+	CHECK(world.flow_cost_at(front, goal) == 0);
+	CHECK(world.flow_dir_at(front, goal) == Vec2i(0, 0));
+	for (int y = 0; y < height; ++y) {
+		for (int x = 0; x < width; ++x) {
+			const Vec2i cell(x, y);
+			const int cost = world.flow_cost_at(front, cell);
+			const Vec2i dir = world.flow_dir_at(front, cell);
+			const bool solid = world.is_cell_solid(front, cell);
+			if (dir != Vec2i(0, 0)) {
+				const Vec2i next = cell + dir;
+				CHECK(next.x >= 0);
+				CHECK(next.y >= 0);
+				CHECK(next.x < width);
+				CHECK(next.y < height);
+				CHECK_FALSE(world.is_cell_solid(front, next));
+				CHECK(world.flow_cost_at(front, next) < cost);
+			}
+			if (solid && cell != goal) {
+				CHECK(cost == kFlowUnreachable);
+				CHECK(dir == Vec2i(0, 0));
+			}
+			if (!solid && cell != goal && cost < kFlowUnreachable) {
+				CHECK(dir != Vec2i(0, 0));
+			}
+			if (!solid && cost >= kFlowUnreachable) {
+				CHECK(dir == Vec2i(0, 0));
+			}
+		}
+	}
+}
+
+bool restore_one_cell(SimWorld &world, int front, int width, int height) {
+	const Vec2i goal(width - 1, height / 2);
+	Vec2i toggle(-1, -1);
+	for (int y = 0; y < height && toggle.x < 0; ++y) {
+		for (int x = 0; x < width; ++x) {
+			const Vec2i cell(x, y);
+			if (cell == goal || world.is_cell_solid(front, cell)) {
+				continue;
+			}
+			toggle = cell;
+			break;
+		}
+	}
+	if (toggle.x < 0) {
+		return false;
+	}
+	std::vector<int> costs;
+	std::vector<Vec2i> dirs;
+	std::vector<int> solids;
+	costs.reserve(static_cast<size_t>(width * height));
+	for (int y = 0; y < height; ++y) {
+		for (int x = 0; x < width; ++x) {
+			const Vec2i cell(x, y);
+			costs.push_back(world.flow_cost_at(front, cell));
+			dirs.push_back(world.flow_dir_at(front, cell));
+			solids.push_back(world.is_cell_solid(front, cell) ? 1 : 0);
+		}
+	}
+	world.set_cell_solid(front, toggle, true);
+	CHECK(world.is_cell_solid(front, toggle));
+	CHECK(world.flow_cost_at(front, toggle) == kFlowUnreachable);
+	world.set_cell_solid(front, toggle, false);
+	size_t i = 0;
+	for (int y = 0; y < height; ++y) {
+		for (int x = 0; x < width; ++x) {
+			const Vec2i cell(x, y);
+			CHECK(world.flow_cost_at(front, cell) == costs[i]);
+			CHECK(world.flow_dir_at(front, cell) == dirs[i]);
+			CHECK((world.is_cell_solid(front, cell) ? 1 : 0) == solids[i]);
+			i += 1;
+		}
+	}
+	return true;
+}
+
+Vec2i first_cutoff(const SimWorld &world, int front, int width, int height) {
+	const Vec2i goal(width - 1, height / 2);
+	for (int y = 0; y < height; ++y) {
+		for (int x = 0; x < width; ++x) {
+			const Vec2i cell(x, y);
+			if (cell == goal || world.is_cell_solid(front, cell)) {
+				continue;
+			}
+			if (world.flow_cost_at(front, cell) >= kFlowUnreachable) {
+				return cell;
+			}
+		}
+	}
+	return Vec2i(-1, -1);
+}
+
+void raider_avoids_solids(SimWorld &world, int front, Vec2i start) {
+	const int id = world.debug_spawn_raider_at(front, start, 80.0f, 30.0f, 6.0f);
+	REQUIRE(id > 0);
+	REQUIRE_FALSE(world.raiders().empty());
+	CHECK(world.map_cell(front, world.raiders().back().position) == start);
+	for (int step = 0; step < 25; ++step) {
+		world.tick(1.0 / 30.0, false);
+		for (const auto &raider : world.raiders()) {
+			if (raider.id != id || !raider.alive) {
+				continue;
+			}
+			const Vec2i cell = world.map_cell(front, raider.position);
+			if (cell.x < 0 || cell.y < 0) {
+				continue;
+			}
+			CHECK_FALSE(world.is_cell_solid(front, cell));
+		}
+	}
+}
+
+} // namespace
+
+TEST_CASE("flow field properties on fixed-seed solid layouts") {
+	// 6 sizes × 24 layouts × 2 fronts = 288 fields. Seed is part of the contract.
+	constexpr uint32_t kSeed = 0x54464C57u;
+	constexpr int kPerSize = 24;
+	const Vec2i sizes[] = {Vec2i(8, 5), Vec2i(6, 4), Vec2i(5, 5), Vec2i(12, 7), Vec2i(16, 9), Vec2i(7, 3)};
+	XorShift32 rng(kSeed);
+	int layouts = 0;
+	int restored = 0;
+	int cutoff_raids = 0;
+	INFO("seed 0x54464C57; 6 sizes x 24 layouts x 2 fronts = 288 fields");
+	for (const Vec2i size : sizes) {
+		for (int n = 0; n < kPerSize; ++n) {
+			SimWorld world;
+			world.init_grids(size.x, size.y);
+			const Vec2i goal(size.x - 1, size.y / 2);
+			for (int y = 0; y < size.y; ++y) {
+				for (int x = 0; x < size.x; ++x) {
+					const Vec2i cell(x, y);
+					if (cell == goal) {
+						continue;
+					}
+					if ((rng.next() % 100u) < 35u) {
+						world.set_cell_solid(0, cell, true);
+						world.set_cell_solid(1, cell, true);
+					}
+				}
+			}
+			for (int front = 0; front < 2; ++front) {
+				check_flow_field(world, front, size.x, size.y);
+				if (restore_one_cell(world, front, size.x, size.y)) {
+					restored += 1;
+				}
+			}
+			const Vec2i cutoff = first_cutoff(world, 0, size.x, size.y);
+			if (cutoff.x >= 0) {
+				raider_avoids_solids(world, 0, cutoff);
+				cutoff_raids += 1;
+			}
+			layouts += 1;
+		}
+	}
+	CHECK(layouts == 6 * kPerSize);
+	CHECK(restored > 0);
+	CHECK(cutoff_raids > 0);
+}
+
+TEST_CASE("a raider boxed in by solids does not step onto one") {
+	for (int front = 0; front < 2; ++front) {
+		SimWorld world;
+		world.init_grids(5, 5);
+		const Vec2i goal(4, 2);
+		const Vec2i pocket(0, 0);
+		for (int y = 0; y < 5; ++y) {
+			for (int x = 0; x < 5; ++x) {
+				const Vec2i cell(x, y);
+				if (cell == goal || cell == pocket) {
+					continue;
+				}
+				world.set_cell_solid(front, cell, true);
+			}
+		}
+		CHECK(world.flow_cost_at(front, pocket) == kFlowUnreachable);
+		CHECK(world.flow_dir_at(front, pocket) == Vec2i(0, 0));
+		const int id = world.debug_spawn_raider_at(front, pocket, 40.0f, 40.0f, 6.0f);
+		REQUIRE(id > 0);
+		for (int step = 0; step < 30; ++step) {
+			world.tick(1.0 / 30.0, false);
+		}
+		REQUIRE_FALSE(world.raiders().empty());
+		const auto &raider = world.raiders().back();
+		CHECK(raider.alive);
+		CHECK(world.map_cell(front, raider.position) == pocket);
+		CHECK_FALSE(world.is_cell_solid(front, pocket));
+	}
+}

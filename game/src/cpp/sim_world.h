@@ -154,10 +154,12 @@ public:
 	void set_cell_solid(int front, Vec2i cell, bool solid);
 	bool is_cell_solid(int front, Vec2i cell) const;
 	Vec2i flow_dir_at(int front, Vec2i cell) const;
+	/// BFS cost of `cell` on `front`. Unreachable and out-of-range cells are 9999.
+	int flow_cost_at(int front, Vec2i cell) const;
 	Vec2i map_cell(int front, Vec2 pos) const { return local_to_map(front, pos); }
 	void set_lane_path(int front, const std::vector<Vec2> &path);
 
-	int spawn_raider(int front, const std::vector<Vec2> &path, float hp, float speed, float damage, int outpost_path_i = -1,
+	int spawn_raider(int front, std::vector<Vec2> path, float hp, float speed, float damage, int outpost_path_i = -1,
 			int entry_row = -1);
 	void damage_raider(int id, float amount);
 	int spawn_defender(int front, const std::string &type, Vec2 position, float range_px, float damage, float cooldown,
@@ -267,6 +269,8 @@ private:
 	void run_defender_combat(double delta, std::vector<SimEvent> &events);
 	void run_travel(double delta);
 	void check_and_spawn_waves(std::vector<SimEvent> &events);
+	/// First event of a tick reserves a small buffer so later pushes do not grow 1, 2, 4…
+	void push_event(std::vector<SimEvent> &events, SimEvent ev);
 	void reset_dda_observation();
 	void apply_dda_to_pending_wave(int &land_count, int &sea_count, float &hp_scale);
 	void observe_dda_clear();
@@ -297,6 +301,8 @@ private:
 	std::vector<Wave> waves_;
 	std::vector<FlowCell> land_flow_;
 	std::vector<FlowCell> sea_flow_;
+	/// Reused by `update_flow_field`. Not raid state; not part of the snapshot.
+	std::vector<Vec2i> flow_queue_;
 	Vec2i grid_size_;
 	std::vector<Vec2> land_path_;
 	std::vector<Vec2> sea_path_;

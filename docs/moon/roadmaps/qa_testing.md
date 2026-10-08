@@ -8,7 +8,7 @@ Scope: correctness of dual-front gameplay, C++/Godot integration, later netcode,
 | --- | --- | --- | --- |
 | Q1 | Template unit/instrumented skeletons (historical) | S | ✅ Done |
 | Q2 | CI matrices (update for Godot export + Android 13+ / iOS 17+) | M | 🚧 **Partial** — `godot-game.yml` runs every `game/tests/*_smoke.gd` headless via `scripts/run_godot_smokes.sh` (plus the existing CMake/`ctest` job; smoke log artifact on failure; runner regression tests cover failure detection); legacy `ci.yml` Android/iOS jobs are now path-gated to their own trees with wrapper-jar validation fixed (AGP 9.3.1 vs Gradle 8.7 and an Xcode 26.6 parse failure recorded as findings, see `docs/TESTING.md`), and a shellcheck job lints `scripts/*.sh`; T53 fixes downstream gate dependencies and runs both trees when the diff base is unavailable; Godot export + Android/iOS version matrices unchanged |
-| Q3 | C++ core unit + property tests (pathing, ECS ordering) | L | 🚧 **Partial** — doctest `sim_world_tests` (reset/spend/raiders/save-load/wave-on-flow) |
+| Q3 | C++ core unit + property tests (pathing, ECS ordering) | L | 🚧 **Partial** — doctest `sim_world_tests` adds fixed-seed flow-field properties (seed `0x54464C57`, 288 fields) beside reset/spend/raiders/save-load/wave-on-flow. ECS ordering still open |
 | Q4 | Regression harness: fixed seed → consistent outcomes (soft determinism; not lockstep-hard) | L | 🚧 **Partial** — S7 fixed-dt replay in `sim_world_tests` |
 | Q5 | Netcode tests under latency/jitter (post online) | L | 📋 Deferred |
 | Q6 | Device farm coverage for Godot Android/iOS exports | M | 📋 Deferred |

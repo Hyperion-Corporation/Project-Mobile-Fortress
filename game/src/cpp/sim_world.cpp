@@ -3,6 +3,7 @@
 #include "simulation_state_generated.h"
 
 #include <cstring>
+#include <utility>
 
 namespace mf {
 
@@ -134,7 +135,7 @@ std::vector<Vec2> SimWorld::default_lane_path(int front) const {
 	return {Vec2(-20.0f, y), Vec2(200.0f, y), Vec2(400.0f, y)};
 }
 
-int SimWorld::spawn_raider(int front, const std::vector<Vec2> &path, float hp, float speed, float damage, int outpost_path_i,
+int SimWorld::spawn_raider(int front, std::vector<Vec2> path, float hp, float speed, float damage, int outpost_path_i,
 		int entry_row) {
 	if (static_cast<int>(raiders_.size()) >= 40) {
 		return -1;
@@ -149,11 +150,11 @@ int SimWorld::spawn_raider(int front, const std::vector<Vec2> &path, float hp, f
 	r.max_hp = hp;
 	r.speed = speed;
 	r.damage = damage;
-	r.path = path;
+	r.path = std::move(path);
 	r.path_i = 0;
 	r.entry_row = entry_row;
-	if (!path.empty()) {
-		r.position = path[0];
+	if (!r.path.empty()) {
+		r.position = r.path[0];
 	} else {
 		const int row = pick_entry_row(front, entry_row);
 		r.entry_row = row;
@@ -163,16 +164,20 @@ int SimWorld::spawn_raider(int front, const std::vector<Vec2> &path, float hp, f
 	r.alive = true;
 	r.struck_outpost = false;
 	if (outpost_path_i < 0) {
-		if (!path.empty()) {
-			r.outpost_path_i = std::max(1, static_cast<int>(path.size()) / 2);
+		if (!r.path.empty()) {
+			r.outpost_path_i = std::max(1, static_cast<int>(r.path.size()) / 2);
 		} else {
 			r.outpost_path_i = -1;
 		}
 	} else {
 		r.outpost_path_i = outpost_path_i;
 	}
-	raiders_.push_back(r);
-	return r.id;
+	// Spawn cap is 40. One reserve covers a wave instead of growing 1, 2, 4…
+	if (raiders_.capacity() < 40) {
+		raiders_.reserve(40);
+	}
+	raiders_.push_back(std::move(r));
+	return raiders_.back().id;
 }
 
 void SimWorld::damage_raider(int id, float amount) {
@@ -384,7 +389,7 @@ void SimWorld::run_defender_combat(double delta, std::vector<SimEvent> &events) 
 			kill.type = "raider_killed";
 			kill.id = best->id;
 			kill.front = best->front;
-			events.push_back(kill);
+			push_event(events, kill);
 		}
 	}
 }
@@ -414,7 +419,7 @@ void SimWorld::spawn_wave_raiders(int front, int count, int wave_index, float hp
 		} else {
 			entry_row = pick_entry_row(front, i);
 		}
-		spawn_raider(front, path, hp, speed, 6.0f, -1, entry_row);
+		spawn_raider(front, std::move(path), hp, speed, 6.0f, -1, entry_row);
 	}
 }
 
@@ -434,7 +439,7 @@ void SimWorld::check_and_spawn_waves(std::vector<SimEvent> &events) {
 		SimEvent ev;
 		ev.type = "wave_spawned";
 		ev.index = current_wave_ + 1;
-		events.push_back(ev);
+		push_event(events, ev);
 		current_wave_++;
 	}
 }
@@ -469,6 +474,15 @@ void SimWorld::set_victory_time(float seconds) {
 	}
 }
 
+void SimWorld::push_event(std::vector<SimEvent> &events, SimEvent ev) {
+	// Quiet ticks never call this, so they stay allocation-free. A busy tick
+	// pays for one 8-slot buffer instead of growing on every push.
+	if (events.capacity() < 8) {
+		events.reserve(8);
+	}
+	events.push_back(std::move(ev));
+}
+
 std::vector<SimEvent> SimWorld::tick(double delta, bool income_enabled) {
 	std::vector<SimEvent> events;
 	if (in_combat_) {
@@ -489,7 +503,7 @@ std::vector<SimEvent> SimWorld::tick(double delta, bool income_enabled) {
 			inc.sea = sea_resources_;
 			inc.land_income = land_pay;
 			inc.sea_income = sea_pay;
-			events.push_back(inc);
+			push_event(events, inc);
 		}
 	}
 	run_travel(delta);
@@ -525,7 +539,7 @@ std::vector<SimEvent> SimWorld::tick(double delta, bool income_enabled) {
 			SimEvent win;
 			win.type = "victory";
 			win.reason = "Raid weathered — fortress holds";
-			events.push_back(win);
+			push_event(events, win);
 		}
 	}
 	return events;
@@ -564,11 +578,11 @@ void SimWorld::advance_raider_along_path(Raider &r, double delta, std::vector<Si
 		ev.front = r.front;
 		ev.damage = r.damage;
 		ev.hq_hp = hq_hp_;
-		events.push_back(ev);
+		push_event(events, ev);
 		if (hq_hp_ <= 0) {
 			SimEvent dead;
 			dead.type = "hq_destroyed";
-			events.push_back(dead);
+			push_event(events, dead);
 		}
 		return;
 	}
@@ -599,11 +613,11 @@ void SimWorld::advance_raider_along_flow(Raider &r, double delta, std::vector<Si
 		ev.front = r.front;
 		ev.damage = r.damage;
 		ev.hq_hp = hq_hp_;
-		events.push_back(ev);
+		push_event(events, ev);
 		if (hq_hp_ <= 0) {
 			SimEvent dead;
 			dead.type = "hq_destroyed";
-			events.push_back(dead);
+			push_event(events, dead);
 		}
 		return;
 	}
@@ -655,14 +669,14 @@ void SimWorld::damage_outpost(int front, int amount, std::vector<SimEvent> &even
 	dmg.hp = (front == 0) ? land_outpost_hp_ : sea_outpost_hp_;
 	dmg.max_hp = (front == 0) ? land_outpost_max_ : sea_outpost_max_;
 	dmg.alive = (front == 0) ? land_outpost_alive_ : sea_outpost_alive_;
-	events.push_back(dmg);
+	push_event(events, dmg);
 	const bool now_alive = (front == 0) ? land_outpost_alive_ : sea_outpost_alive_;
 	if (was_alive && !now_alive) {
 		SimEvent lost;
 		lost.type = "outpost_lost";
 		lost.front = front;
 		lost.economic_only = true;
-		events.push_back(lost);
+		push_event(events, lost);
 	}
 }
 
@@ -699,6 +713,17 @@ Vec2i SimWorld::flow_dir_at(int front, Vec2i cell) const {
 	return grid[static_cast<size_t>(cell.y * grid_size_.x + cell.x)].dir;
 }
 
+int SimWorld::flow_cost_at(int front, Vec2i cell) const {
+	if (!flow_active()) {
+		return 9999;
+	}
+	if (cell.x < 0 || cell.y < 0 || cell.x >= grid_size_.x || cell.y >= grid_size_.y) {
+		return 9999;
+	}
+	const auto &grid = (front == 0) ? land_flow_ : sea_flow_;
+	return grid[static_cast<size_t>(cell.y * grid_size_.x + cell.x)].cost;
+}
+
 int SimWorld::pick_entry_row(int front, int preferred) const {
 	if (!flow_active() || grid_size_.y <= 0) {
 		return 0;
@@ -722,31 +747,40 @@ Vec2i SimWorld::pick_flow_step(int front, Vec2i cell) const {
 		return fallback;
 	}
 	const auto &grid = (front == 0) ? land_flow_ : sea_flow_;
+	const auto legal = [&](Vec2i step) {
+		const Vec2i cand = cell + step;
+		if (cand.x < 0 || cand.y < 0 || cand.x >= grid_size_.x || cand.y >= grid_size_.y) {
+			return false;
+		}
+		return !grid[static_cast<size_t>(cand.y * grid_size_.x + cand.x)].solid;
+	};
 	Vec2i fdir = grid[static_cast<size_t>(cell.y * grid_size_.x + cell.x)].dir;
+	// A zero direction on an open grid still steps east. That is the old
+	// fallback, and ordinary fields only store zero on the goal column,
+	// which raiders leave before this runs.
 	if (fdir == Vec2i(0, 0)) {
 		fdir = fallback;
 	}
-	const Vec2i next = cell + fdir;
-	if (!is_cell_solid(front, next)) {
+	if (legal(fdir)) {
 		return fdir;
 	}
 	const Vec2i dirs[4] = {Vec2i(1, 0), Vec2i(0, 1), Vec2i(0, -1), Vec2i(-1, 0)};
 	int best_cost = 9999;
-	Vec2i best = fallback;
+	Vec2i best{0, 0};
+	bool found = false;
 	for (const auto d : dirs) {
+		if (!legal(d)) {
+			continue;
+		}
 		const Vec2i cand = cell + d;
-		if (cand.x < 0 || cand.y < 0 || cand.x >= grid_size_.x || cand.y >= grid_size_.y) {
-			continue;
-		}
-		if (is_cell_solid(front, cand)) {
-			continue;
-		}
 		const int cost = grid[static_cast<size_t>(cand.y * grid_size_.x + cand.x)].cost;
-		if (cost < best_cost) {
+		if (!found || cost < best_cost) {
+			found = true;
 			best_cost = cost;
 			best = d;
 		}
 	}
+	// Boxed in: stay put. Returning east here would walk into a solid.
 	return best;
 }
 
@@ -771,16 +805,20 @@ void SimWorld::update_flow_field(int front, Vec2i target) {
 		c.cost = 9999;
 		c.dir = Vec2i(0, 0);
 	}
-	std::vector<Vec2i> queue;
+	const size_t cell_count = static_cast<size_t>(grid_size_.x) * static_cast<size_t>(grid_size_.y);
+	flow_queue_.clear();
+	if (flow_queue_.capacity() < cell_count) {
+		flow_queue_.reserve(cell_count);
+	}
 	const int ty = std::clamp(target.y, 0, grid_size_.y - 1);
 	const int tx = std::clamp(target.x, 0, grid_size_.x - 1);
 	const Vec2i t(tx, ty);
 	grid[static_cast<size_t>(t.y * grid_size_.x + t.x)].cost = 0;
-	queue.push_back(t);
+	flow_queue_.push_back(t);
 	const Vec2i dirs[4] = {Vec2i(1, 0), Vec2i(-1, 0), Vec2i(0, 1), Vec2i(0, -1)};
 	size_t head = 0;
-	while (head < queue.size()) {
-		const Vec2i curr = queue[head++];
+	while (head < flow_queue_.size()) {
+		const Vec2i curr = flow_queue_[head++];
 		const int curr_cost = grid[static_cast<size_t>(curr.y * grid_size_.x + curr.x)].cost;
 		for (const auto d : dirs) {
 			const Vec2i next = curr + d;
@@ -794,7 +832,7 @@ void SimWorld::update_flow_field(int front, Vec2i target) {
 			if (curr_cost + 1 < grid[static_cast<size_t>(idx)].cost) {
 				grid[static_cast<size_t>(idx)].cost = curr_cost + 1;
 				grid[static_cast<size_t>(idx)].dir = Vec2i(-d.x, -d.y);
-				queue.push_back(next);
+				flow_queue_.push_back(next);
 			}
 		}
 	}
@@ -1295,7 +1333,7 @@ int SimWorld::debug_spawn_raider_at(int front, Vec2i cell, float hp, float speed
 		}
 		entry_row = -1;
 	}
-	const int id = spawn_raider(front, path, hp, speed, damage, -1, entry_row);
+	const int id = spawn_raider(front, std::move(path), hp, speed, damage, -1, entry_row);
 	if (id < 0) {
 		return -1;
 	}

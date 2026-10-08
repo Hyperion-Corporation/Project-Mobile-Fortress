@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (2026-10-08, T59 U4/U8/IOS2 battle HUD phone-scale targets & citadel rank)
+
+- **U4 / U8 / IOS2 (Battle HUD):** Density-aware touch target sizing and responsive layout in `battle_hud.gd` (`game/scripts/ui/battle_hud.gd`). Sized all interactive buttons to $\ge 48\text{ dp}$ in both width and height across all four target viewports (`1280×720`, `720×1280`, `390×844`, `844×390`) with and without 1.15× Large Text (`ThemeTokens.large_text`).
+- **Sidebar & TopBar Reflow:** `SideBar` restructured into a multi-column responsive `GridContainer` (3 columns in compact landscape phone viewports, 2 columns otherwise) holding all unit and action buttons with zero clipping, non-overlapping with `TopBar`, and zero extra grid occlusion at 1280×720 baseline (exactly matching the 16,640 px² StatusLabel footprint).
+- **Dedicated Pause & Speed Controls:** Added accessible HUD `PauseBtn` (toggling `GameSession.is_paused`) and `SpeedBtn` (cycling `GameSession.time_scale` 1× / 2× / 3×) with focus rings, hover styling, and a11y metadata.
+- **Citadel Rank Progression:** Results panel (`show_result`) now surfaces Citadel Rank prestige tier (`Progression.get_prestige_tier`) and progression towards the next rank (`Progression.get_next_prestige_tier`) alongside star ratings and prestige rewards.
+- **Verification:** Added `game/tests/battle_hud_layout_smoke.gd` headless smoke asserting rendered window pixels $\ge 47.9\text{ px}$ in both dimensions, viewport containment, non-overlap, and grid coverage constraints across all 4 reference viewports and large-text states. 26/26 Godot smokes pass. — Gemini Harbinger
+
+### Changed (2026-10-08, T60 flow-field property tests and tick allocation audit — Grok Harbinger)
+
+- **Q3:** Doctest now checks flow fields from a fixed-seed xorshift32 inside the test (`0x54464C57`). Six grid sizes, 24 solid layouts each, both fronts: 288 fields. A finite-cost cell steps to a strictly cheaper neighbour that is on the grid and not solid. Cutoff cells stay at cost 9999 with a zero direction. Toggling one open cell solid and back restores cost, direction, and the solid bit. `SimWorld` itself stays RNG-free. ECS ordering is still untested, so Q3 stays Partial.
+- A raider walled into a single cell stays there. `pick_flow_step` used to fall back to east even when that step entered a solid and no open neighbour existed; that one case now returns `{0,0}`. East is still used when it is open. The v1 snapshot fixture and the v2 save/load tick-match test still pass.
+- **P4 (Partial):** `update_flow_field` reuses one member BFS queue sized to the grid. The first event of a tick reserves 8 slots; a quiet tick still allocates nothing. A lane path is moved into the raider once, and the raider vector is reserved to the spawn cap of 40. Left in place on purpose: the vector `tick` returns (the signature returns it by value), each raider's own waypoint storage, and the long victory-reason string. There is no entity pool.
+- `perf_budget_bench.gd` on this machine, before and after, both PASS: tick p95 at 40 entities = 1 us, flow-recompute p95 = 1 us, budget 8000 us. New C++ getter `flow_cost_at` is not bound to GDScript. Existing GDScript method signatures are unchanged.
+
 ### Fixed (2026-10-08, T49 review — guide accuracy)
 
 - Agent guide v3.1 and README distinguish vector-backed `SimWorld` combat from the separate EnTT scaffold. Corrected the level-loader location to `simulation_core.cpp`, the legacy AGP pin to 9.3.1, the relative C++ badge link, and the required playtest-sync input argument. Removed unsupported Jolt configuration and GC/blocking-await claims; section 8 stays unchanged.

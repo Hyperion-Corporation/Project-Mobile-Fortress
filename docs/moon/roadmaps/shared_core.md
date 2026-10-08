@@ -22,7 +22,7 @@
 | --- | --- | --- | --- |
 | S0 | **Spike:** Godot↔C++ boundary (GDExtension) | M | ✅ **Done** — `SimulationCore` loads in Godot 4.7 |
 | S1 | C++ workspace (CMake) with EnTT skeleton | L | ✅ **Done** — `game/CMakeLists.txt` + EnTT components |
-| S2 | Pathfinding in C++ (Flow Field later; lane paths now) | L | 🚧 **Partial** — staggered-row flow entries; steps refuse solid cells; lane fallback if grids off |
+| S2 | Pathfinding in C++ (Flow Field later; lane paths now) | L | 🚧 **Partial** — staggered-row flow; T60 fixed-seed property tests (288 fields, seed `0x54464C57`); a boxed-in raider stays put instead of stepping into a solid; lane fallback if grids are off |
 | S3 | Wire godot-cpp so Godot scenes call into the sim | M | ✅ **Done** — modular `battle_root` + classic `main.gd` |
 | S4 | FlatBuffers state snapshot for save/load and later replication | M | ✅ **Done** — schema v2 also stores flow grids, `entry_row`, and DDA inputs; v1 snapshots still load; cheat flags reset on load |
 | S5 | Move dual-front game logic into C++; Godot presentation | XL | 🚧 **In progress** — combat + wave-on-flow in C++ `SimWorld`; a v2 snapshot resumes that flow and the DDA director; UX still Godot |
