@@ -2602,3 +2602,21 @@ worktrees under `../pmf-worktrees/` are deleted, and a new branch **`harbinger`*
 `main` for the team's implementation work. The main checkout is on `harbinger` now. The round 2
 entry above is updated in place to say so: commit to `harbinger`, never switch branches, and
 check `git branch --show-current` prints `harbinger` before your first commit.
+
+### gemini — 2026-10-08 — T46 DONE: U8 phone-scale target sizing and responsive menu reflow (#25)
+
+- **Commit:** `f2a4b9e` (`feat(ui): phone-scale target sizing and responsive menu reflow (#25, T46)`) on `harbinger`.
+- **Lane:** `game/scripts/ui/{main_menu,settings_dialog,theme_tokens}.gd`, `game/tests/accessibility_smoke.gd`, `docs/moon/roadmaps/ui_ux.md`, `docs/moon/roadmaps/ios.md`, `docs/moon/CHANGELOG.md`. No changes made to `project.godot` or battle scenes.
+- **Implementation:**
+  1. `ThemeTokens`: Added `CANVAS_DESIGN_SIZE` (1280×720), `MIN_DP_TARGET` (48.0dp reference at 160 DPI), `get_window_canvas_scale()`, `compute_density_min_size()`, and `apply_density_min_height()`. Headless dummy window sizes (< 200px) are gracefully handled by defaulting to 1.0 canvas scale. At 1280×720 (desktop) targets are 48 units; at 720×1280 (portrait) 86 units; at 390×844 (phone portrait) 158 units; at 844×390 (compact landscape) 89 units. In all cases, actual rendered window pixels under Godot 4 `canvas_items`/`expand` stretch are guaranteed to be ≥48.0 px (48dp-equivalent).
+  2. `MainMenu`: Applied density min height across all menu buttons and `VersionLabel`. Added responsive layout: in compact landscape (`vp_h <= 720.0 and vp_w > 1280.0`), `VBox` expands horizontally to 55% width (up to 720px) and separation drops to 2px; Title, Subtitle, and Blurb typography dynamically scale so total panel height stays well within 720px even when `ResumeBtn` is visible. `_apply_large_text` clamps scale `maxf(1.0, minf(1.15, avail_h / vbox_h))` ensuring targets never shrink below 1.0 while remaining inside viewport. Window resize / rotation dynamically calls `_apply_density_sizes()` and `_apply_large_text()`.
+  3. `SettingsDialog`: Density sizing applied to all 12 interactive controls (3 audio sliders, 5 checkboxes, telemetry dropdown, 3 action buttons). Responsive reflow in compact landscape uses a 9-column grid for `GridContainer` (putting Master, BGM, and SFX sliders on a single row) and combines all 4 regular checkboxes into `ctrl_hbox`, reducing panel height from ~870px to <600px so it fits within 720 canvas height even with Large Text (1.15x) active. 4-way focus navigation and closed-loop focus chain across all 12 controls are completely preserved.
+  4. `accessibility_smoke.gd`: Updated Section 6 to test both `large_text = false` and `large_text = true` across all 4 viewports (`1280×720`, `720×1280`, `390×844`, `844×390`), asserting physical rendered window target size `wr.size.y >= 47.9` on every interactive control alongside viewport containment and zero control overlap.
+- **Smokes verified:**
+  - `XDG_DATA_HOME=/tmp/pmf-xdg/gemini ./scripts/run_godot_smokes.sh` -> 22/22 PASS (0 failed, 0 skipped).
+  - Specific smokes: `accessibility_smoke` (PASS), `settings_smoke` (PASS), `main_menu_smoke` (PASS), `theme_tokens_smoke` (PASS), `dev_access_smoke` (PASS).
+- **Docs updated:**
+  - `docs/moon/roadmaps/ui_ux.md` row U8 marked ✅ Delivered (Menu & Settings).
+  - `docs/moon/roadmaps/ios.md` row IOS2 updated to note menu/settings phone targets resolved (battle HUD remains open).
+  - `docs/moon/CHANGELOG.md` entry added under `[Unreleased]`.
+- **Handoff:** Ready for Chat review under T53.
