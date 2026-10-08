@@ -1706,3 +1706,44 @@ uncommitted and say so here.
 **Deliberately left out:** no C++/`.fbs`/level-JSON changes (lane is docs only); the stale
 `level-schema.json` mismatch is reported, not fixed; no CI/docs-site build run (no website files
 touched beyond one mkdocs.yml nav line).
+
+### chat — 2026-10-08 — T41 review: VERIFIED WITH FIXES
+
+**Scope:** independently read `git log --oneline main..HEAD`, the full `git diff main...HEAD`,
+`.agent/AGENTS.md` §§5–6, documentation rules, the brief's source files, and the battle/catalog/unit
+call sites. The implementer stayed in the documentation lane plus required tracking files.
+All 32 SimWorld members and the complete FlatBuffers schema are covered after corrections;
+C1 remains ✅ Delivered as a reference document, C2 remains deferred/unimplemented.
+
+**Findings fixed (MEDIUM):** the original reference incorrectly classified build/terminal phase,
+pause/time scaling, placement locks and outpost-loss accounting as presentation-only or snapshot
+mirrors. It also overstated flow restoration (no lane fallback for loaded empty-path raiders;
+in-session loads retain old solids; hero destination reservations are not rebuilt), claimed the
+catalog validates every wave rather than the first, and misstated unit multipliers and some field
+semantics. Corrected those descriptions, numeric-validation caveats, next-wave index/ranges,
+reset/load mutators, schema-version handling, and cross-wallet placement/shared spawn-cap effects.
+The co-op proposal now acknowledges GDScript authority and delta/apply API work without claiming
+it is already sufficient. LOW: corrected field references/explicit sea names. Changelog and C1
+row reflect these corrections; prior agents' bus blocks were not edited.
+
+**Verification actually run:** every Godot invocation below used
+`XDG_DATA_HOME=/tmp/claude-1000/-home-pkhunter-Repositories-Game-Project-Mobile-Fortress/958b3fca-a5da-42fb-9038-c6c4289a5ec4/scratchpad/xdg/mistral`:
+- `godot --path game --headless --import` — exit 0, Godot 4.7.1; Android build-tools/ADB warnings only.
+- `godot --path game --headless --script res://tests/flatbuffers_smoke.gd` — PASS, exit 0;
+  664-byte round-trip, two defenders, one raider, combat true.
+- `godot --path game --headless --script res://tests/modular_battle_smoke.gd` — PASS, exit 0.
+- Inline `python3` assertions resolving Markdown file links in the new doc/changed tracking lines
+  — PASS, seven links plus the mkdocs nav target. A mistaken reviewer link edit was caught and
+  reverted; the implementer's original changelog link was valid.
+- Inline `python3` member-name audit against `sim_world.h` — PASS, all 32 names present after
+  expanding compressed sea-outpost names. Semantic coverage checked manually against header,
+  save/load, tick, mutation methods and GDScript call sites; name presence alone is not proof.
+- `git diff --check` — PASS.
+
+**Test limits / remaining work:** no new tests or code/schema/JSON changes. Existing smokes have
+real failure paths for round-trip mutations, placement, phase, waves, redeploy and pause, but do
+not assert every snapshot field or exact flow restoration. The modular smoke's final kill-count
+check only tests monotonicity, not that combat actually kills; its PASS is not evidence for full
+combat coverage. Snapshot/placement gaps and stale level schema are existing behavior now documented,
+not repaired by T41. No C++ rebuild/CTest or website tests/lint required: neither C++ nor
+`docs/website` changed. Ready for lead merge; no push, branch switch, or GitHub actions taken.
