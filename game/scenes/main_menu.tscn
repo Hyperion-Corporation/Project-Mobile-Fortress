@@ -55,16 +55,16 @@ horizontal_alignment = 1
 autowrap_mode = 3
 
 [node name="StartBtn" type="Button" parent="Center/VBox"]
-custom_minimum_size = Vector2(280, 40)
+custom_minimum_size = Vector2(280, 48)
 layout_mode = 2
 text = "Modular Battle (C++ view)"
 
 [node name="ClassicBtn" type="Button" parent="Center/VBox"]
-custom_minimum_size = Vector2(280, 36)
+custom_minimum_size = Vector2(280, 48)
 layout_mode = 2
 text = "Classic main.gd prototype"
 
 [node name="QuitBtn" type="Button" parent="Center/VBox"]
-custom_minimum_size = Vector2(280, 36)
+custom_minimum_size = Vector2(280, 48)
 layout_mode = 2
 text = "Quit"

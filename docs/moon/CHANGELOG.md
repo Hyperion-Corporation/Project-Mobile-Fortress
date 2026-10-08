@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (2026-10-08, T39 U8 accessibility pass for menus and settings)
+
+- **U8:** Main menu and settings dialog accessibility pass (GitHub #25):
+  - Every interactive control across `main_menu.gd` and `settings_dialog.gd` satisfies minimum 48dp touch targets (`ThemeTokens.MIN_TOUCH_TARGET_SIZE := 48.0`, `MIN_TOUCH_TARGET := Vector2(48.0, 48.0)`).
+  - Full keyboard and gamepad focus traversal with visible focus indicators (`ThemeTokens.apply_accessible_focus` with high-contrast `SEA_INDIGO` ring) and circular focus loops preventing dead-ends; dialog returns focus to opening control upon closing.
+  - Deepened `ThemeTokens.CINNABAR` from `#c23b22` (4.44:1) to `#b5321a` (5.09:1 on parchment `PAPER`, 4.69:1 on `PAPER_CARD`) and fixed Tier 0 description color to `INK_MUTED` (7.18:1) to guarantee WCAG AA compliance (>= 4.5:1 for body text). Added `get_relative_luminance`, `get_contrast_ratio`, and `is_wcag_aa_compliant` helpers.
+  - Added persisted "Large text" (1.15x UI scale) setting in `settings_dialog.gd` through `OfflinePersistence`, dynamically scaling both `MainMenu` and `SettingsDialog`.
+  - Configured native Godot 4.7 AccessKit screen-reader metadata (`accessibility_name` and `accessibility_description`) on all interactive controls with tooltip fallbacks.
+  - In-battle HUD (`battle_hud.gd`) remains out of scope for this slice and is deferred to a future combat HUD pass.
+  - Automated smoke test: `accessibility_smoke.gd` asserts contrast ratios, touch targets, focus loop traversal, opener focus return, and large-text persistence round-trip.
+
 ### Changed (2026-08-15, T37 DT6 overlay level picker)
 
 - **DT6:** DT8 overlay `LevelPickSelect` lists `LevelCatalog` dual-front JSONs. **Load level** sets `GameSession.selected_level_path` and calls `BattleRoot.debug_load_level` (in-place reset to that JSON's build/waves/兩). Wave jump stays DT3. Smoke: `level_picker_smoke.gd`.
