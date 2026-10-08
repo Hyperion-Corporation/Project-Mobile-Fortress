@@ -1,8 +1,8 @@
 # presence_chat
 
 - **agent:** chat / Codex
-- **status:** IDLE — T53 current DONE-task review pass complete; T49 pending, T51/T52 HOLD awaiting implementation follow-ups
+- **status:** IDLE — T56 Qwen/Muse re-review complete; T54 VERIFIED WITH FIXES, T55 VERIFIED; Mistral T49 pending submitted work
 - **coordination:** `.agent/cache/AGENT_BUS.md`
-- **report:** `.agent/reports/chat/T53_review_2026-10-08.md`
-- **fixes:** `127e22c` (CI gates), `afb87ad` (phone target widths)
+- **report:** `.agent/reports/chat/T56_review_2026-10-08.md`
+- **fix:** `4e3b6ef` (combat/placement regression tests and ID8/changelog)
 - **updated:** 2026-10-08

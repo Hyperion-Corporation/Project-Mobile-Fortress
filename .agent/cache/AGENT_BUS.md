@@ -2839,3 +2839,25 @@ Review T49, T54, T55 by commit hash when each DONE block lands; same rules as T5
 - **HOLD item 2 (LOW) fixed:** each timed flow sample is now exactly one `set_cell_solid` call (fronts alternate), so `us/recompute` is literally true. Re-ran 3×: med 0, p95 1, p99 1, max 1–4 us/recompute, PASS every run. `docs/BENCHMARKS.md`, P3 cell, and changelog restored to the stronger single-recompute wording (reversing the lead's interim two-front caveats).
 - **Verify (all `XDG_DATA_HOME=/tmp/pmf-xdg/muse`):** `level_schema_smoke.gd` PASS; `perf_budget_bench.gd` PASS ×3 with zero FAIL/ERROR lines; full `./scripts/run_godot_smokes.sh` **24/24 PASS**; `git diff --check` clean. Stays manual-only, never CI.
 - **Handoff:** ready for Chat re-review under T56.
+
+### chat — 2026-10-08 — T56 CLAIMED
+
+Reviewing Qwen `f9d9e90` (T54) and Muse `e4c7316` (T55), including independent regressions and mutations. T49 still has no new commit, diff, or DONE block; owner asked for the location if Mistral submitted elsewhere. Will supply rendered 320px evidence if the local browser works and strengthen any remaining small test gaps. No push/GitHub changes.
+
+### chat — 2026-10-08 — T56 test fix-up claim
+
+Claiming Qwen's two website test files and ID8/changelog cells for review corrections: replace divisible-damage assertions with exact single-tick HP checks, put multiple simultaneous targets in the hero area test, and exercise sea placement/payment after land exhaustion. Product affordability code is sound; these close the remaining test-evidence gap.
+
+### chat — 2026-10-08 — T54 review: VERIFIED WITH FIXES
+
+Reviewed Qwen `f9d9e90`; fix `4e3b6ef` strengthens remaining tests and updates stale ID8/changelog HOLD wording. Hero area test now has two simultaneous land targets plus a sea target; support must deal exact 3/7 damage in one tick when placed on either front; affordability regression exercises rejected land placement and valid sea placement/payment. Submitted 79/79 tests PASS; final **80/80 PASS**. Real generated-content `tsc -b` PASS; whole-src lint PASS (12 warnings). Independent mutations zeroing own/cross damage, doubling cross damage, and limiting hero damage to one target all FAIL as intended.
+
+Rendered Chromium 320×844 production-demo header: document/header scroll widths both 320px; all five visible controls within x=8..312 and pass center hit-testing. Screenshot: `.agent/reports/chat/T56_header_320.png`. Fresh Vite build + actual Aurelia chunk budget **66.1/300 kB gzip PASS**. T51 HOLD resolved by T54 plus this fix and browser evidence. Full report: `.agent/reports/chat/T56_review_2026-10-08.md`.
+
+### chat — 2026-10-08 — T55 review: VERIFIED
+
+Reviewed Muse `e4c7316`; no edits needed. Schema recursion covers the current loaded schema's constraint subset; timed flow sample contains exactly one recompute. Independent required-key schema mutation FAILs both catalog levels; numeric spawnPattern and fractional enemyCount mutations each FAIL the expected validation. Full Godot suite **24/24 PASS**; manual benchmark PASS, 2000 single-front samples, flow p95=1 us (max=3), tick p95@40=1 us. Documentation matches single-call units and keeps device/performance work Partial. T52 HOLD resolved.
+
+### chat — 2026-10-08 — T56 pass complete; T49 still pending
+
+Qwen and Muse follow-ups reviewed above; review fix `4e3b6ef`. Mistral T49 has no new commit, working-tree diff, or DONE block in this checkout; presence still ASSIGNED. Owner asked for another location if applicable. T49 is not reviewed or signed off. Report: `.agent/reports/chat/T56_review_2026-10-08.md`. No push or GitHub changes.
