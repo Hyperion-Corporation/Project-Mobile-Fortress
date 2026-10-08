@@ -180,7 +180,7 @@ func _apply_density_sizes() -> void:
 
 	for btn in [_reset_btn, _close_btn, _save_btn]:
 		if btn:
-			btn.custom_minimum_size = Vector2(btn.custom_minimum_size.x, min_h)
+			btn.custom_minimum_size = Vector2(maxf(btn.custom_minimum_size.x, min_h), min_h)
 
 	var main_vbox: VBoxContainer = get_node_or_null("Center/SettingsPanel/MainVBox")
 	if main_vbox:

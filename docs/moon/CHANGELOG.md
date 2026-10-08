@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed (2026-10-08, T53 review — phone target widths)
+
+- Settings Reset/Cancel/Save now apply the density minimum to width as well as height. At 390×844 the original widths were 40.2/30.5/39.6 window pixels; the accessibility smoke now checks both dimensions at all four reference-density windows with Large Text on/off. The width regression probe failed six assertions before the fix; the full combined Godot suite passes 24/24 afterward.
+
 ### Fixed (2026-10-08, T53 review — legacy CI gates)
 
 - Android build and instrumented jobs now directly depend on `changes`, making their path-gate outputs available. An unavailable Git diff range runs both legacy trees conservatively instead of considering only the last commit. Verified the actual gate shell for six path sets, an unavailable base, and manual dispatch; real Actions execution remains for the lead after push.

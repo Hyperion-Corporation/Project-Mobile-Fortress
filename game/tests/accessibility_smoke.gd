@@ -424,7 +424,10 @@ func _run() -> void:
 				var r: Rect2 = ctrl.get_global_rect()
 				if not vp_rect.encloses(r):
 					failures.append("MainMenu control %s (%s) clips outside viewport %s at vp %s (large_text=%s)" % [ctrl.name, r, vp_rect, vp_size, large_text_enabled])
-				var rendered_h: float = abs(vp_final_xform.basis_xform(r.size).y)
+				var rendered_size: Vector2 = vp_final_xform.basis_xform(r.size).abs()
+				if rendered_size.x < 47.9:
+					failures.append("MainMenu control %s rendered width %.1f px < 48dp target at vp %s (large_text=%s)" % [ctrl.name, rendered_size.x, vp_size, large_text_enabled])
+				var rendered_h: float = rendered_size.y
 				if rendered_h < 47.9:
 					failures.append("MainMenu control %s rendered height %.1f px < 48dp target at vp %s (large_text=%s)" % [ctrl.name, rendered_h, vp_size, large_text_enabled])
 
@@ -469,7 +472,10 @@ func _run() -> void:
 						var cr: Rect2 = ctrl.get_global_rect()
 						if not vp_rect.encloses(cr):
 							failures.append("SettingsDialog control %s (%s) clips outside viewport %s at vp %s (large_text=%s)" % [ctrl.name, cr, vp_rect, vp_size, large_text_enabled])
-						var dlg_rendered_h: float = abs(vp_final_xform.basis_xform(cr.size).y)
+						var dlg_rendered_size: Vector2 = vp_final_xform.basis_xform(cr.size).abs()
+						if dlg_rendered_size.x < 47.9:
+							failures.append("SettingsDialog control %s rendered width %.1f px < 48dp target at vp %s (large_text=%s)" % [ctrl.name, dlg_rendered_size.x, vp_size, large_text_enabled])
+						var dlg_rendered_h: float = dlg_rendered_size.y
 						if dlg_rendered_h < 47.9:
 							failures.append("SettingsDialog control %s rendered height %.1f px < 48dp target at vp %s (large_text=%s)" % [ctrl.name, dlg_rendered_h, vp_size, large_text_enabled])
 
