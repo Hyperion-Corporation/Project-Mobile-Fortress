@@ -1,7 +1,8 @@
 class_name ThemeTokens
 extends RefCounted
-## Shared UI & HUD Design Tokens for Mobile Fortress (U10)
+## Shared UI & HUD Design Tokens for Mobile Fortress (U10/U8)
 ## Centralizes Wōkòu-era cartographic colors, styleboxes, font sizes, and transition helpers.
+## Also provides density-aware sizing helpers (T46) for phone-scale responsive layouts.
 
 # --- Color Palette (Ukiyo-e Cartography & Ming Historical) ---
 const INK := Color("1a1a2e")             # Deep ink-wash charcoal
@@ -24,6 +25,48 @@ const SEA_INDIGO_BRIGHT := Color("3d5a80")
 const MIN_TOUCH_TARGET_SIZE := 48.0
 const MIN_TOUCH_TARGET := Vector2(48.0, 48.0)
 const LARGE_TEXT_SCALE := 1.15
+
+# --- Density-Aware Sizing (T46 — phone-scale responsive targets) ---
+## The design canvas dimensions (matches project.godot window/size/viewport_*)
+const CANVAS_DESIGN_SIZE := Vector2(1280.0, 720.0)
+## Physical density target in dp (density-independent pixels, 1dp = 1px at 160 DPI / mdpi).
+## Interactive controls must be at least 48dp in actual rendered window pixels.
+const MIN_DP_TARGET := 48.0
+
+## Returns the scale factor mapping canvas logical units to physical window pixels
+## under canvas_items/expand stretch mode with 1280x720 design size.
+static func get_window_canvas_scale(window_size: Vector2) -> float:
+	if window_size.x < 200.0 or window_size.y < 200.0:
+		return 1.0
+	var scale_x: float = window_size.x / CANVAS_DESIGN_SIZE.x
+	var scale_y: float = window_size.y / CANVAS_DESIGN_SIZE.y
+	return minf(scale_x, scale_y)
+
+
+## Returns the logical-unit minimum height a control must declare so that, after
+## canvas_items stretching maps the design canvas to the given physical window size,
+## the rendered height in window pixels is at least MIN_DP_TARGET.
+##
+## Example: at a 390×844 phone window the X-scale is 390/1280 ≈ 0.305, so a 48 logical-unit
+## control renders as 48 * 0.305 ≈ 14.6 window pixels.  This function returns
+## ceil(48 / 0.305) ≈ 158 logical units so the rendered size reaches 48 window pixels.
+##
+## At the 1280×720 landscape design size the scale is 1.0, so the result is 48 (unchanged).
+static func compute_density_min_size(window_size: Vector2) -> float:
+	var canvas_scale: float = get_window_canvas_scale(window_size)
+	if canvas_scale <= 0.0:
+		return MIN_TOUCH_TARGET_SIZE
+	return ceilf(MIN_DP_TARGET / canvas_scale)
+
+
+## Convenience: sets custom_minimum_size.y on `control` to at least compute_density_min_size,
+## and preserves any existing minimum width already set.
+static func apply_density_min_height(control: Control, window_size: Vector2) -> void:
+	if control == null:
+		return
+	var min_h: float = maxf(compute_density_min_size(window_size), MIN_TOUCH_TARGET_SIZE)
+	control.custom_minimum_size = Vector2(control.custom_minimum_size.x, min_h)
+
 
 # --- Currency & Glyphs ---
 const GLYPH_LAND_CURRENCY := "兩"

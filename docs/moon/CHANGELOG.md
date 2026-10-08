@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (2026-10-08, T46 U8 mobile touch-target sizing & responsive menu reflow)
+
+- **U8 (Menu & Settings):** Density-aware touch target sizing (`ThemeTokens.compute_density_min_size`, `ThemeTokens.apply_density_min_height`) scales interactive controls to ≥48dp in actual rendered window pixels under Godot 4 `canvas_items`/`expand` stretch across desktop, portrait, and phone viewports (`1280×720`, `720×1280`, `390×844`, `844×390`).
+- Responsive reflow: MainMenu adjusts `VBox` width and separation with dynamically pinned version label; SettingsDialog adopts a 9-column landscape audio slider grid and combined 4-checkbox control row in compact viewports to prevent vertical clipping within the 720 canvas height. Runtime `size_changed` listeners re-apply density sizes on window resize/orientation change.
+- `game/tests/accessibility_smoke.gd` Section 6 updated to verify rendered window-pixel dimensions (`wr.size.y >= 47.9`), screen containment (`vp_rect.encloses`), and non-overlapping layouts across all 4 viewports for both `large_text = false` and `large_text = true`. All T39 accessibility assertions (WCAG AA contrast, closed-loop focus, 4-way modal containment, opener restoration) continue to pass. In-battle HUD touch targets remain deferred.
+
 ### Added (2026-10-08, T44 P7 tick-budget benchmark)
 
 - **P7:** new headless `game/tests/perf_budget_bench.gd` (deliberately not `*_smoke.gd`, so CI never gates on timing) plus `scripts/run_perf_bench.sh`: loads `slice0_dual_front.json` through the public `SimulationCore` API, sustains 10/20/40/60-entity dual-front combat loads, and reports min/median/p95/p99/max tick us with entity counts. Budget: p95@40 ≤ 8000 us (~1/4 of a 30 FPS frame); PASS/WARN exit 0, FAIL only past 3x budget; hard FAIL if the native extension is absent. Desktop baseline (i9-12900HX, x86-64): p95@40 = 1 us, PASS ×3 reviewer runs after the sustained-combat fix. Untimed per-front damage/movement checks and a tail probe reject no-op ticks and targets leaving range. Numbers and caveats in `docs/BENCHMARKS.md`. P7 → 🚧 Partial (on-device runs still open).

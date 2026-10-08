@@ -44,9 +44,11 @@ func _init() -> void:
 
 func _ready() -> void:
 	_build_ui()
+	_apply_density_sizes()
 	load_and_apply_settings()
 	_setup_focus_traversal()
 	call_deferred("_set_initial_focus")
+	get_viewport().size_changed.connect(_on_viewport_size_changed)
 
 
 func load_and_apply_settings() -> void:
@@ -136,10 +138,78 @@ func _close() -> void:
 	queue_free()
 
 
+## Returns the logical-unit minimum height required for ≥48dp window pixels at current window.
+func _density_min_h() -> float:
+	var tree := get_tree()
+	var ws := ThemeTokensScript.CANVAS_DESIGN_SIZE
+	if tree and tree.root and tree.root.size.x >= 200 and tree.root.size.y >= 200:
+		ws = Vector2(tree.root.size)
+	else:
+		var ds_size := DisplayServer.window_get_size()
+		if ds_size.x >= 200 and ds_size.y >= 200:
+			ws = Vector2(ds_size)
+	return ThemeTokensScript.compute_density_min_size(ws)
+
+
+func _apply_density_sizes() -> void:
+	var min_h: float = _density_min_h()
+	var vp: Viewport = get_viewport()
+	var vp_h: float = vp.get_visible_rect().size.y if vp else ThemeTokensScript.CANVAS_DESIGN_SIZE.y
+	var vp_w: float = vp.get_visible_rect().size.x if vp else ThemeTokensScript.CANVAS_DESIGN_SIZE.x
+	var is_compact_landscape: bool = vp_h <= 720.0 and vp_w > 1280.0
+
+	var panel: PanelContainer = get_node_or_null("Center/SettingsPanel")
+	if panel:
+		panel.custom_minimum_size = Vector2(clampf(vp_w * 0.70, 720.0, 1080.0) if is_compact_landscape else 680.0, 0)
+
+	var audio_grid: GridContainer = get_node_or_null("Center/SettingsPanel/MainVBox/GridContainer")
+	if audio_grid:
+		audio_grid.columns = 9 if is_compact_landscape else 3
+
+	var slider_w: float = 120.0 if is_compact_landscape else 160.0
+	for sl in [_master_slider, _bgm_slider, _sfx_slider]:
+		if sl:
+			sl.custom_minimum_size = Vector2(slider_w, min_h)
+
+	for cb in [_fast_placement_check, _screen_shake_check, _notifications_check, _large_text_check, _developer_mode_check]:
+		if cb:
+			cb.custom_minimum_size = Vector2(0, min_h)
+
+	if _telemetry_option:
+		_telemetry_option.custom_minimum_size = Vector2(0, min_h)
+
+	for btn in [_reset_btn, _close_btn, _save_btn]:
+		if btn:
+			btn.custom_minimum_size = Vector2(btn.custom_minimum_size.x, min_h)
+
+	var main_vbox: VBoxContainer = get_node_or_null("Center/SettingsPanel/MainVBox")
+	if main_vbox:
+		main_vbox.add_theme_constant_override("separation", 2 if is_compact_landscape else 4)
+
+
+func _on_viewport_size_changed() -> void:
+	_apply_density_sizes()
+	if _large_text_check:
+		_apply_ui_scale(_large_text_check.button_pressed)
+	var center: CenterContainer = get_node_or_null("Center")
+	if center:
+		center.pivot_offset = center.size / 2.0
+
+
 func _apply_ui_scale(enabled: bool) -> void:
 	var center: CenterContainer = get_node_or_null("Center")
 	if center:
-		var s: float = ThemeTokensScript.LARGE_TEXT_SCALE if enabled else 1.0
+		var s: float = 1.0
+		if enabled:
+			s = ThemeTokensScript.LARGE_TEXT_SCALE
+			var vp: Viewport = get_viewport()
+			var panel: Control = center.get_node_or_null("SettingsPanel")
+			if vp and panel:
+				var panel_h: float = maxf(panel.size.y, panel.get_combined_minimum_size().y)
+				if panel_h > 0.0:
+					var avail_h: float = vp.get_visible_rect().size.y - 16.0
+					var max_s: float = avail_h / panel_h
+					s = minf(s, max_s)
 		center.pivot_offset = center.size / 2.0
 		center.scale = Vector2(s, s)
 		if not center.resized.is_connected(_on_center_resized):
@@ -339,8 +409,6 @@ func _build_ui() -> void:
 	ThemeTokensScript.set_a11y_metadata(_notifications_check, "Tactical Alerts", "Receive notifications when Wōkòu fleets approach")
 	ctrl_hbox.add_child(_notifications_check)
 
-	main_vbox.add_child(ctrl_hbox)
-
 	_large_text_check = CheckBox.new()
 	_large_text_check.name = "LargeTextCheck"
 	_large_text_check.text = "Large Text (UI Scale)"
@@ -350,7 +418,9 @@ func _build_ui() -> void:
 		_apply_ui_scale(pressed)
 	)
 	ThemeTokensScript.set_a11y_metadata(_large_text_check, "Large Text", "Enable large text and scaled user interface")
-	main_vbox.add_child(_large_text_check)
+	ctrl_hbox.add_child(_large_text_check)
+
+	main_vbox.add_child(ctrl_hbox)
 
 	# Section 3: Telemetry & Privacy (U3 / AI Research)
 	var priv_sec := Label.new()
@@ -484,30 +554,29 @@ func _setup_focus_traversal() -> void:
 	_sfx_slider.focus_neighbor_left = _sfx_slider.get_path()
 	_sfx_slider.focus_neighbor_right = _sfx_slider.get_path()
 
-	# Controls row (3 checkboxes in HBox):
+	# Controls row (4 checkboxes in HBox):
 	_fast_placement_check.focus_neighbor_top = _sfx_slider.get_path()
-	_fast_placement_check.focus_neighbor_bottom = _large_text_check.get_path()
-	_fast_placement_check.focus_neighbor_left = _notifications_check.get_path()
+	_fast_placement_check.focus_neighbor_bottom = _telemetry_option.get_path()
+	_fast_placement_check.focus_neighbor_left = _large_text_check.get_path()
 	_fast_placement_check.focus_neighbor_right = _screen_shake_check.get_path()
 
 	_screen_shake_check.focus_neighbor_top = _sfx_slider.get_path()
-	_screen_shake_check.focus_neighbor_bottom = _large_text_check.get_path()
+	_screen_shake_check.focus_neighbor_bottom = _telemetry_option.get_path()
 	_screen_shake_check.focus_neighbor_left = _fast_placement_check.get_path()
 	_screen_shake_check.focus_neighbor_right = _notifications_check.get_path()
 
 	_notifications_check.focus_neighbor_top = _sfx_slider.get_path()
-	_notifications_check.focus_neighbor_bottom = _large_text_check.get_path()
+	_notifications_check.focus_neighbor_bottom = _telemetry_option.get_path()
 	_notifications_check.focus_neighbor_left = _screen_shake_check.get_path()
-	_notifications_check.focus_neighbor_right = _fast_placement_check.get_path()
+	_notifications_check.focus_neighbor_right = _large_text_check.get_path()
 
-	# Large text toggle:
-	_large_text_check.focus_neighbor_top = _fast_placement_check.get_path()
+	_large_text_check.focus_neighbor_top = _sfx_slider.get_path()
 	_large_text_check.focus_neighbor_bottom = _telemetry_option.get_path()
-	_large_text_check.focus_neighbor_left = _large_text_check.get_path()
-	_large_text_check.focus_neighbor_right = _large_text_check.get_path()
+	_large_text_check.focus_neighbor_left = _notifications_check.get_path()
+	_large_text_check.focus_neighbor_right = _fast_placement_check.get_path()
 
 	# Telemetry tier dropdown:
-	_telemetry_option.focus_neighbor_top = _large_text_check.get_path()
+	_telemetry_option.focus_neighbor_top = _fast_placement_check.get_path()
 	_telemetry_option.focus_neighbor_bottom = _developer_mode_check.get_path()
 	_telemetry_option.focus_neighbor_left = _telemetry_option.get_path()
 	_telemetry_option.focus_neighbor_right = _telemetry_option.get_path()

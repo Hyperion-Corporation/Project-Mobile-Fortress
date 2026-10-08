@@ -383,12 +383,8 @@ func _run() -> void:
 	OfflinePersistence.write_settings(initial_settings)
 
 	# =========================================================================
-	# 6. Test fit in stretched windows (not device-independent touch-target sizing)
+	# 6. Test fit and >=48dp touch targets across viewports & large_text states
 	# =========================================================================
-	var large_test_settings: Dictionary = initial_settings.duplicate(true)
-	large_test_settings["large_text"] = true
-	OfflinePersistence.write_settings(large_test_settings)
-
 	var viewport_sizes: Array[Vector2i] = [
 		Vector2i(1280, 720),
 		Vector2i(720, 1280),
@@ -396,85 +392,99 @@ func _run() -> void:
 		Vector2i(844, 390)
 	]
 
-	for vp_size: Vector2i in viewport_sizes:
-		root.size = vp_size
-		var test_menu: Control = menu_scene.instantiate()
-		root.add_child(test_menu)
-		await process_frame
-		await process_frame
-		await create_timer(0.3).timeout
-		# Window dimensions differ from the logical canvas under canvas_items stretch.
-		var vp_rect: Rect2 = test_menu.get_viewport_rect()
+	for large_text_enabled: bool in [false, true]:
+		var test_settings: Dictionary = initial_settings.duplicate(true)
+		test_settings["large_text"] = large_text_enabled
+		OfflinePersistence.write_settings(test_settings)
 
-		# Collect interactive controls and labels on MainMenu
-		var menu_box: VBoxContainer = test_menu.get_node_or_null("Center/VBox")
-		var menu_version: Control = test_menu.get_node_or_null("VersionLabel")
-		var menu_interactives: Array[Control] = []
-		if menu_box != null:
-			for child: Node in menu_box.get_children():
-				if (child is Button or child is OptionButton) and (child as Control).visible:
-					menu_interactives.append(child as Control)
-		if menu_version != null:
-			menu_interactives.append(menu_version)
-
-		# Assert every interactive control is completely inside the viewport
-		for ctrl: Control in menu_interactives:
-			var r: Rect2 = ctrl.get_global_rect()
-			if not vp_rect.encloses(r):
-				failures.append("MainMenu control %s (%s) clips outside viewport %s at vp %s" % [ctrl.name, r, vp_rect, vp_size])
-
-		# Assert no two controls/labels overlap on MainMenu
-		var all_menu_nodes: Array[Control] = []
-		if menu_box != null:
-			for child: Node in menu_box.get_children():
-				if child is Control and (child as Control).visible:
-					all_menu_nodes.append(child as Control)
-		if menu_version != null:
-			all_menu_nodes.append(menu_version)
-
-		for i in range(all_menu_nodes.size()):
-			for j in range(i + 1, all_menu_nodes.size()):
-				var a: Control = all_menu_nodes[i]
-				var b: Control = all_menu_nodes[j]
-				if a.visible and b.visible and a.get_global_rect().intersects(b.get_global_rect()):
-					failures.append("MainMenu controls overlap: %s and %s at vp %s" % [a.name, b.name, vp_size])
-
-		# Open SettingsDialog and check viewport fit & non-overlapping
-		test_menu._open_settings()
-		await process_frame
-		await process_frame
-		await create_timer(0.3).timeout
-		var open_settings: SettingsDialog = test_menu.get_node_or_null("SettingsDialog")
-		if open_settings == null:
-			failures.append("Failed to open SettingsDialog at vp %s" % str(vp_size))
-		else:
-			var panel_node: Control = open_settings.get_node_or_null("Center/SettingsPanel")
-			if panel_node != null and not vp_rect.encloses(panel_node.get_global_rect()):
-				failures.append("SettingsPanel (%s) clips outside viewport %s at vp %s" % [panel_node.get_global_rect(), vp_rect, vp_size])
-
-			var dlg_interactives: Array[Control] = [
-				open_settings._master_slider, open_settings._bgm_slider, open_settings._sfx_slider,
-				open_settings._fast_placement_check, open_settings._screen_shake_check, open_settings._notifications_check,
-				open_settings._large_text_check, open_settings._telemetry_option, open_settings._developer_mode_check,
-				open_settings._reset_btn, open_settings._close_btn, open_settings._save_btn
-			]
-
-			for ctrl: Control in dlg_interactives:
-				if ctrl != null and not vp_rect.encloses(ctrl.get_global_rect()):
-					failures.append("SettingsDialog control %s (%s) clips outside viewport %s at vp %s" % [ctrl.name, ctrl.get_global_rect(), vp_rect, vp_size])
-
-			for i in range(dlg_interactives.size()):
-				for j in range(i + 1, dlg_interactives.size()):
-					var a: Control = dlg_interactives[i]
-					var b: Control = dlg_interactives[j]
-					if a != null and b != null and a.visible and b.visible and a.get_global_rect().intersects(b.get_global_rect()):
-						failures.append("SettingsDialog controls overlap: %s and %s at vp %s" % [a.name, b.name, vp_size])
-
-			open_settings._close()
+		for vp_size: Vector2i in viewport_sizes:
+			root.size = vp_size
+			var test_menu: Control = menu_scene.instantiate()
+			root.add_child(test_menu)
 			await process_frame
+			await process_frame
+			await create_timer(0.3).timeout
+			# Window dimensions differ from the logical canvas under canvas_items stretch.
+			var vp_rect: Rect2 = test_menu.get_viewport_rect()
+			var vp_final_xform: Transform2D = test_menu.get_viewport().get_final_transform()
 
-		test_menu.queue_free()
-		await process_frame
+			# Collect interactive controls and labels on MainMenu
+			var menu_box: VBoxContainer = test_menu.get_node_or_null("Center/VBox")
+			var menu_version: Control = test_menu.get_node_or_null("VersionLabel")
+			var menu_interactives: Array[Control] = []
+			if menu_box != null:
+				for child: Node in menu_box.get_children():
+					if (child is Button or child is OptionButton) and (child as Control).visible:
+						menu_interactives.append(child as Control)
+			if menu_version != null:
+				menu_interactives.append(menu_version)
+
+			# Assert every interactive control is completely inside the viewport & meets >=48dp
+			for ctrl: Control in menu_interactives:
+				var r: Rect2 = ctrl.get_global_rect()
+				if not vp_rect.encloses(r):
+					failures.append("MainMenu control %s (%s) clips outside viewport %s at vp %s (large_text=%s)" % [ctrl.name, r, vp_rect, vp_size, large_text_enabled])
+				var rendered_h: float = abs(vp_final_xform.basis_xform(r.size).y)
+				if rendered_h < 47.9:
+					failures.append("MainMenu control %s rendered height %.1f px < 48dp target at vp %s (large_text=%s)" % [ctrl.name, rendered_h, vp_size, large_text_enabled])
+
+			# Assert no two controls/labels overlap on MainMenu
+			var all_menu_nodes: Array[Control] = []
+			if menu_box != null:
+				for child: Node in menu_box.get_children():
+					if child is Control and (child as Control).visible:
+						all_menu_nodes.append(child as Control)
+			if menu_version != null:
+				all_menu_nodes.append(menu_version)
+
+			for i in range(all_menu_nodes.size()):
+				for j in range(i + 1, all_menu_nodes.size()):
+					var a: Control = all_menu_nodes[i]
+					var b: Control = all_menu_nodes[j]
+					if a.visible and b.visible and a.get_global_rect().intersects(b.get_global_rect()):
+						failures.append("MainMenu controls overlap: %s and %s at vp %s (large_text=%s)" % [a.name, b.name, vp_size, large_text_enabled])
+
+			# Open SettingsDialog and check viewport fit, touch targets & non-overlapping
+			test_menu._open_settings()
+			await process_frame
+			await process_frame
+			await create_timer(0.3).timeout
+			var open_settings: SettingsDialog = test_menu.get_node_or_null("SettingsDialog")
+			if open_settings == null:
+				failures.append("Failed to open SettingsDialog at vp %s (large_text=%s)" % [str(vp_size), large_text_enabled])
+			else:
+				var panel_node: Control = open_settings.get_node_or_null("Center/SettingsPanel")
+				if panel_node != null and not vp_rect.encloses(panel_node.get_global_rect()):
+					failures.append("SettingsPanel (%s) clips outside viewport %s at vp %s (large_text=%s)" % [panel_node.get_global_rect(), vp_rect, vp_size, large_text_enabled])
+
+				var dlg_interactives: Array[Control] = [
+					open_settings._master_slider, open_settings._bgm_slider, open_settings._sfx_slider,
+					open_settings._fast_placement_check, open_settings._screen_shake_check, open_settings._notifications_check,
+					open_settings._large_text_check, open_settings._telemetry_option, open_settings._developer_mode_check,
+					open_settings._reset_btn, open_settings._close_btn, open_settings._save_btn
+				]
+
+				for ctrl: Control in dlg_interactives:
+					if ctrl != null:
+						var cr: Rect2 = ctrl.get_global_rect()
+						if not vp_rect.encloses(cr):
+							failures.append("SettingsDialog control %s (%s) clips outside viewport %s at vp %s (large_text=%s)" % [ctrl.name, cr, vp_rect, vp_size, large_text_enabled])
+						var dlg_rendered_h: float = abs(vp_final_xform.basis_xform(cr.size).y)
+						if dlg_rendered_h < 47.9:
+							failures.append("SettingsDialog control %s rendered height %.1f px < 48dp target at vp %s (large_text=%s)" % [ctrl.name, dlg_rendered_h, vp_size, large_text_enabled])
+
+				for i in range(dlg_interactives.size()):
+					for j in range(i + 1, dlg_interactives.size()):
+						var a: Control = dlg_interactives[i]
+						var b: Control = dlg_interactives[j]
+						if a != null and b != null and a.visible and b.visible and a.get_global_rect().intersects(b.get_global_rect()):
+							failures.append("SettingsDialog controls overlap: %s and %s at vp %s (large_text=%s)" % [a.name, b.name, vp_size, large_text_enabled])
+
+				open_settings._close()
+				await process_frame
+
+			test_menu.queue_free()
+			await process_frame
 
 	root.size = Vector2i(1280, 720)
 	OfflinePersistence.write_settings(initial_settings)
