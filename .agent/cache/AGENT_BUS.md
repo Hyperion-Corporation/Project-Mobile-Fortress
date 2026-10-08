@@ -2682,3 +2682,26 @@ Approach, before editing: persist `dda_enabled` (default off) via `OfflinePersis
 **Docs:** findings recorded in `docs/TESTING.md` (new "Legacy-tree findings" section); Q2 row updated (stays 🚧 Partial — export/version matrices unchanged); changelog `[Unreleased]` Fixed entry.
 
 **Handoff:** ready for Chat review under T53. Note for the lead/owner: the two recorded legacy findings (AGP-vs-Gradle, xcodeproj-under-Xcode-26.6) need deliberate decisions; the Android one is a one-line catalog change (`agp = "8.5.2"`) or a wrapper upgrade once chosen.
+
+### qwen — 2026-10-08 — T51 DONE: ID8 slice 2, header overflow, website tests in CI
+
+- **Commit:** `a11a2c0` (`feat(website): ID8 slice 2 hero ability + cross-support, header 320px fix, website CI`) on `harbinger`.
+- **Lane:** `docs/website/src/simulations/dualFrontDemo.ts`, `docs/website/src/frameworks/react/views/DualFrontDemoView.tsx`, `docs/website/src/frameworks/react/App.css`, `docs/website/src/frameworks/react/components/SearchBox.css`, `docs/website/test/unit/simulations/dual-front-demo.test.ts`, `docs/website/test/unit/components/dual-front-demo-view.test.tsx`, `.github/workflows/website.yml`, `docs/moon/roadmaps/internal_dashboard.md`, `docs/moon/CHANGELOG.md`. No C++, no Godot scripts.
+
+**What landed:**
+1. **ID8 slice 2 — hero + cross-support:** `dualFrontDemo.ts` extended with `activeCooldown`/`activeDamage` (hero) and `ownEnvMult`/`crossEnvMult` (cross-support) on `UnitDef`; `activeCooldownRemaining` on `PlacedUnit`; `UnitDef.front` now accepts `"both"`. Commander Qi (⭐ hero, 28 cost, 80-tick ability cooldown, 28 AoE damage) auto-triggers area ability when raiders are in range and ability is off cooldown. Signal Battery (🔗 cross-support, 20 cost, placed on either front, fires at both fronts with 0.55× own / 1.15× cross env multipliers). Budgets raised 40→60 per front. New helpers: `isHero()`, `isCrossSupport()`, `getAbilityCooldownFraction()`.
+2. **View updates:** Hero cells show ⭐ icon with gold cooldown bar; cross-support cells show 🔗 icon with ochre background; unit selection buttons show ⭐/🔗 badges; tooltip shows ability/cross-front details; instructions updated with hero and cross-support guidance.
+3. **Header 320px fix:** `App.css` topbar gets `overflow-x: hidden` + `min-width: 0`; at ≤480px: padding reduced to 0.5rem, gaps to 0.4rem, `.brand-name` hidden. `SearchBox.css` trigger gets `min-width: 0` at ≤640px (text/kbd already hidden there).
+4. **Website CI:** `.github/workflows/website.yml` runs ESLint, `tsc -b --noCheck`, and `vitest run` on pushes/PRs touching `docs/website/**` or the workflow itself. Node 20, npm workspace-aware.
+
+**Verification:**
+- `npx vitest run` → **78/78 PASS** (9 test files; 63 pre-existing + 15 new: hero ability area damage + cooldown + front-restriction, cross-support placement on both fronts + dual-front firing + damage multipliers, unit classification helpers, view hero/cross-support badge rendering).
+- `npx tsc -b --noCheck` → clean (exit 0).
+- `npx eslint -c stack/eslint/eslint.config.js src/simulations/dualFrontDemo.ts src/frameworks/react/views/DualFrontDemoView.tsx` → clean (exit 0).
+- **Not runnable locally:** the `website.yml` workflow itself (first run proves it on merge); Godot smokes (no Godot binary; this task is website-only).
+
+**Docs:** `internal_dashboard.md` ID8 row updated (🚧 Partial with slice 2 detail); changelog `[Unreleased]` Added entry.
+
+**Before/after test counts:** 63 → 78 vitest tests (+15).
+
+**Handoff:** ready for Chat review under T53.
