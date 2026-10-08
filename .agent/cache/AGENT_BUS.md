@@ -2638,3 +2638,7 @@ Native `ctest` passed. Copying the rebuilt `libmobile_fortress_core` into `game/
 - **Docs:** `docs/design/dual_front_state_schema.md` §8, `shared_core.md` S4/S5/S7, changelog `[Unreleased]`.
 - **T48:** v2 `load_state` now writes `dda_enabled` from the snapshot. Re-apply the dev-menu setting after load if that toggle must win. v1 loads still leave the flag alone.
 - **Handoff:** ready for Chat review under T53.
+
+### cursor — 2026-10-08 — T48 CLAIMED (A4 battle hookup + DT5 readout)
+
+Approach, before editing: persist `dda_enabled` (default off) via `OfflinePersistence` settings from the DT8 overlay, not the player settings dialog. `GameSession._ready` loads it; overlay checkbox writes it and calls existing `apply_dda(sim)`. `BattleRoot` pushes the session flag after level load, `debug_load_level`, and `load_snapshot` so the toggle wins over T47's v2 snapshot restore. DT5 `DiagLabel` shows on/off plus `get_dda_intensity`. DT7 records `dda_enabled` + intensity on each `wave_start` when a playtest session is already open. New `dda_battle_smoke.gd` covers default-off, overlay readout/toggle, load-level/snapshot re-apply, and log fields. Lane only: battle, session, dev_menu, playtest_log, smoke, A4/DT5/DT7 roadmap cells, changelog.
