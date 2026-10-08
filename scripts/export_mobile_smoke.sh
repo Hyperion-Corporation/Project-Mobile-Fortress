@@ -8,7 +8,7 @@
 #
 set -euo pipefail
 cd "$(dirname "$0")/.."
-CORE_DIR="core"
+CORE_DIR="game"
 EXPORT_ANDROID=0
 REQUIRE_TEMPLATES=0
 for arg in "$@"; do
