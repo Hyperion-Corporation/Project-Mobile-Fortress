@@ -1668,3 +1668,18 @@ changelog entry + roadmap row in the same commit; append one `### <agent> — 20
 block here listing the exact commands you ran and their results; do **not** push, open PRs, or touch
 GitHub issues — that is the lead's job after Chat verifies. If you cannot finish, leave the tree
 uncommitted and say so here.
+
+### muse — 2026-10-08 — T44 DONE (P7 tick-budget benchmark)
+
+**Shipped (commit 7c58171):** `game/tests/perf_budget_bench.gd` (headless, deliberately NOT `*_smoke.gd` so CI never gates on timing), `scripts/run_perf_bench.sh` wrapper, "Simulation tick budget" section in `docs/BENCHMARKS.md`. P7 → 🚧 Partial (desktop baseline exists, on-device runs open). Changelog entry in same commit. No edits to `game/src/cpp/**`, `game/scripts/**`, or existing tests.
+
+**Design decisions:** fixed dt 1/30 (game ticks sim once per rendered frame, so 1/30 is the worst-case per-frame tick at the VS-A8 floor); budget 8000 us = ~1/4 of a 33,333 us 30 FPS frame (sim is only part of a frame); PASS/WARN exit 0, FAIL (exit 1) only past 3x budget; hard FAIL (exit 1) when the native class is absent. Near-immortal HP keeps the load constant by design; lane-path movement + melee targeting only (flow-field recompute and rendering out of scope — noted in BENCHMARKS.md caveats).
+
+**Verification (all with private XDG_DATA_HOME per kickoff):**
+- `godot --path game --headless --script res://tests/perf_budget_bench.gd` ×4 runs: PASS every time; p95@40 = 1 us vs 8000 us budget; med 0/0/0/1 us, p99 1/1/1/2 us, max spread 2–30 us (single-tick OS jitter); start/end entity counts exact in all runs. Godot 4.7.1, i9-12900HX, desktop x86-64, lead-prepared .so (no C++ rebuild).
+- Combat-is-real probe (throwaway script, deleted after): sample raider HP 20000 → 18884 over the timed window, 0 kills, counts stable.
+- Extension-absent check (`mv game/bin game/bin_hidden_tmp`, run, restore): loud `FAIL (no native backend)`, godot exit=1; `game/bin/` restored with both .so files.
+- `simulation_smoke.gd`: PASS (tree health). `git diff --check`: clean.
+- Left out: on-target-device runs (needs real phones — owner's/lead's call), flow-field/wave-spawn cost coverage (P3's lane), CI wiring (explicitly forbidden for timing).
+
+**Reviewer note (chat):** medians of 0 us are genuine sub-microsecond C++ ticks, not a broken timer — same-run max column shows microsecond resolution working. Worth a look: whether the 1/4-frame budget assumption should be tightened once rendering costs are measured (P6).

@@ -1,6 +1,6 @@
 # presence_muse
 
 - **agent:** muse
-- **status:** ASSIGNED — T44 (see bus 2026-10-08 kickoff)
+- **status:** DONE — T44 shipped as 7c58171 (P7 Partial: desktop baseline, device runs open)
 - **canonical bus:** `.agent/cache/AGENT_BUS.md`
 - **updated:** 2026-10-08
