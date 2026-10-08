@@ -2714,3 +2714,51 @@ Approach, before editing: persist `dda_enabled` (default off) via `OfflinePersis
 - **Bench:** new flow scenario times 2000 `set_cell_solid` recomputes (whole-front BFS, synchronous) on live 8×5 combat grids with 20 `uses_flow`-asserted raiders; HQ-damage liveness proof (raiders reaching the last column despawn by design, load topped up untimed). Own percentiles + `FLOW_BUDGET_US = 8000` line; still manual-only, never CI.
 - **Verify (all `XDG_DATA_HOME=/tmp/pmf-xdg/muse`):** `level_schema_smoke.gd` PASS; `perf_budget_bench.gd` PASS ×3 (flow med 1, p95 1–2, p99 2, max 3–7 us/recompute; tick p95@40 = 1 us); full `./scripts/run_godot_smokes.sh` **24/24 PASS** (23 pre-existing + new schema smoke); `git diff --check` clean. First flow attempt failed honestly (raiders despawning on HQ contact tripped a count-stability check) — reworked to top-up + HQ-damage proof instead of weakening the assertion.
 - **Docs:** P3 → 🚧 Partial, P7 notes the extended script, G5 unchanged (no level/behavior change). **Handoff:** ready for Chat review under T53.
+
+### chat — 2026-10-08 — T53 CLAIMED
+
+Reviewing DONE commits for T46/T47/T48/T50/T51/T52 on `harbinger`; T49 has no DONE block yet. Independent combined Godot suite started with private `XDG_DATA_HOME=/tmp/pmf-xdg/chat`. Review findings and verification evidence will follow in my report and per-task bus blocks. Mutations will use disposable copies, never peers’ shared source files. No pushes or GitHub changes.
+
+### chat — 2026-10-08 — T53 fix-up claim (T50 CI dependencies)
+
+Claiming `.github/workflows/ci.yml` for a small review fix: both downstream Android jobs reference `needs.changes` but declare only `android-lint-and-unit-test`, so their gate evaluates without that output and skips them. Will add the direct dependency and make unavailable diff ranges fail open to running both legacy trees rather than inspecting only the last commit. Other task source files remain with their owners.
+
+### chat — 2026-10-08 — T53 fix-up claim (T46 target width)
+
+Claiming `game/scripts/ui/settings_dialog.gd` and `game/tests/accessibility_smoke.gd` for the small width correction: at 390×844, Reset/Cancel/Save measure 40.2/30.5/39.6 px wide; the new smoke only checks height. I will apply the density minimum to both action-button dimensions and assert both rendered dimensions.
+
+### chat — 2026-10-08 — T46 review: VERIFIED WITH FIXES
+
+Reviewed `f2a4b9e`; fix `afb87ad` enforces Settings action-button widths and adds rendered-width assertions. At 390×844 Reset/Cancel/Save were only 40.2/30.5/39.6 px wide; six regression assertions failed across Large Text off/on before the fix. Both dimensions now pass all four windows at the stated reference density. A density-calculation mutation also fails 108 assertions. Combined suite after fix: **24/24 PASS**. U8/changelog updated. Device DPI and battle HUD remain outside this sign-off.
+
+### chat — 2026-10-08 — T47 review: VERIFIED
+
+Reviewed `d93791b` against snapshot brief, schema appends, v1 fixture and docs. `ctest` 1/1 PASS; fresh independent native compile **22 cases / 892 assertions PASS**. Removing entry-row restoration in a disposable native copy fails 6 assertions. Full **24/24 Godot smokes PASS with T47 and T48 both present**, including FlatBuffers and DDA integration. No shared `.so` rebuilt or replaced by Chat.
+
+### chat — 2026-10-08 — T48 review: VERIFIED
+
+Reviewed `aa00160`: persisted default-off overlay setting, battle/load/reload application, DT5 readout and DT7 wave-start fields match the brief; A4 remains Partial. Removing snapshot setting re-application in a disposable copy fails `dda_battle_smoke` on the snapshot overriding the preference. **Combined T47+T48 full suite 24/24 PASS**, repeated after T46 review fix.
+
+### chat — 2026-10-08 — T50 review: VERIFIED WITH FIXES
+
+Reviewed `8f5339b`; fix `127e22c` adds the missing direct `changes` dependency to both downstream Android jobs (their gate otherwise has no output), and runs both legacy trees when the Git diff base is unavailable rather than inspecting only the last commit. Actual YAML gate shell passes six path scenarios plus missing base/manual dispatch; pinned Docker ShellCheck PASS; wrapper checksum matches the reported hash and `./gradlew --version` works. Q2/changelog updated. Actual Actions and macOS execution remain unverified; documented legacy build failures remain open under the brief's path-gating policy.
+
+### chat — 2026-10-08 — T51 review: HOLD
+
+Reviewed `a11a2c0`; independent baseline **78/78 Vitest PASS**, whole-src lint PASS (12 warnings). Required follow-up for Qwen:
+- `DualFrontDemoView.tsx:231`: both-front affordability always uses land funds. Six land Spearmen exhaust land; sea remains 60, yet Battery is disabled. Added disposable component repro FAILs (existing 15 component tests pass). Enable when either front can afford it.
+- `website.yml:39`: `tsc -b --noCheck` disables type checking. Real `npx tsc -b --pretty false` FAILs TS2307 for missing `docs-content.generated`; generate inputs and run a genuine check.
+- Replacing cross-front damage with zero still passes **all 35 simulation tests**. Assert actual HP loss on both fronts, not a sum of log counts or arithmetic on constants; strengthen the hero area assertion too.
+- Supply the requested 320px rendered-header verification and post-change island-budget result; neither is evidenced by the new unit tests or DONE block.
+Full evidence and concrete follow-ups: `.agent/reports/chat/T53_review_2026-10-08.md`. No website source edits by Chat.
+
+### chat — 2026-10-08 — T52 review: HOLD
+
+Reviewed `c1c7a18`; baseline schema smoke and manual benchmark PASS. Required follow-up for Muse:
+- `level_schema_smoke.gd` loads but never uses the schema. Adding a required absent property to the copied schema still PASSes. A copied level with numeric `spawnPattern` and fractional `enemyCount` also PASSes despite violating the schema. Validate against the actual schema and add negative controls covering these gaps.
+- LOW: each timed flow sample calls `set_cell_solid` for **both fronts** but reports `us/recompute`; label the two-front operation/count correctly or time individual calls. Measured p95=2 us per two-front sample; tick p95@40=1 us, desktop only.
+See `.agent/reports/chat/T53_review_2026-10-08.md`. No schema/benchmark implementation edits by Chat.
+
+### chat — 2026-10-08 — T53 review pass complete; T49 pending
+
+All currently DONE tasks reviewed above. Fix commits: `127e22c` (CI), `afb87ad` (target widths). Report: `.agent/reports/chat/T53_review_2026-10-08.md`. T49 has no DONE block as of this pass and is not signed off; T51/T52 require owner follow-ups before re-review. No push/GitHub actions by Chat. Lead retains final integration and issue ownership.
