@@ -198,7 +198,7 @@ public:
 	//                   spawned (no per-raider id set, so no heap). A later
 	//                   wave that arrives while raiders are still up counts
 	//                   as a slow clear. Manual leftovers share that field.
-	//   Unspent purse   (clamp(purse / baseline, 0, 2) - 1) * DDA_PURSE_WEIGHT.
+	//   Unspent purse   (clamp(purse / baseline, 0, DDA_PURSE_RATIO_MAX) - 1) * DDA_PURSE_WEIGHT.
 	//                   Baseline is land+sea captured at reset_run (the level's
 	//                   starting purse), so a rich level start is neutral and
 	//                   stockpiling or going broke is the signal.
@@ -208,9 +208,10 @@ public:
 	// The clear sample is dropped on reset_run, start_combat, debug_jump_wave,
 	// and load_state, and load_state rebases the purse baseline to the loaded
 	// purse. HQ, outposts, and currency themselves still come from the
-	// snapshot. That is enough to keep the next unspawned wave deterministic
-	// without a schema bump; one wave of "no clear sample" after a load is
-	// the accepted gap. FlatBuffers is unchanged.
+	// snapshot. Resumed decisions are deterministic from the loaded state,
+	// but can differ from uninterrupted play: the missing clear sample lasts
+	// until the next wave clears, and the rebased purse lasts until reset/load.
+	// FlatBuffers is unchanged.
 
 	std::vector<SimEvent> tick(double delta, bool income_enabled = true);
 
@@ -244,6 +245,7 @@ public:
 	static constexpr float DDA_CLEAR_SLOW_SECONDS = 14.0f;
 	static constexpr float DDA_CLEAR_WEIGHT = 0.15f;
 	static constexpr float DDA_PURSE_WEIGHT = 0.12f;
+	static constexpr float DDA_PURSE_RATIO_MAX = 2.0f;
 	static constexpr float DDA_CLEAR_UNKNOWN = -1.0f;
 
 	void set_dda_enabled(bool enabled);
@@ -309,7 +311,7 @@ private:
 	float dda_wave_spawn_time_ = 0.0f;
 	float dda_last_clear_seconds_ = DDA_CLEAR_UNKNOWN;
 	/// land+sea at the last reset_run. Load rebases this to the loaded purse.
-	int dda_purse_baseline_ = 28;
+	int64_t dda_purse_baseline_ = static_cast<int64_t>(land_resources_) + sea_resources_;
 };
 
 } // namespace mf

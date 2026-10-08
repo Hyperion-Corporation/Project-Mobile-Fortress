@@ -34,7 +34,7 @@ void SimWorld::reset_run(int start_land, int start_sea, int start_hq) {
 	invincible_ = false;
 	waves_disabled_ = false;
 	// A4 preference survives a new raid. The clear sample does not.
-	dda_purse_baseline_ = std::max(1, land_resources_ + sea_resources_);
+	dda_purse_baseline_ = std::max<int64_t>(1, static_cast<int64_t>(land_resources_) + sea_resources_);
 	reset_dda_observation();
 	for (auto &w : waves_) {
 		w.fired = false;
@@ -1026,7 +1026,7 @@ bool SimWorld::load_state(const uint8_t *data, size_t size) {
 	// next unspawned wave uses HQ, outposts, and post-load economy only.
 	// The enable flag is session state and is left alone.
 	reset_dda_observation();
-	dda_purse_baseline_ = std::max(1, land_resources_ + sea_resources_);
+	dda_purse_baseline_ = std::max<int64_t>(1, static_cast<int64_t>(land_resources_) + sea_resources_);
 	return true;
 }
 
@@ -1184,13 +1184,13 @@ float SimWorld::dda_intensity() const {
 		clear_term = DDA_CLEAR_WEIGHT * (1.0f - 2.0f * t);
 	}
 
-	const int purse = land_resources_ + sea_resources_;
-	const int baseline = dda_purse_baseline_ > 0 ? dda_purse_baseline_ : 1;
+	const int64_t purse = static_cast<int64_t>(land_resources_) + sea_resources_;
+	const int64_t baseline = dda_purse_baseline_ > 0 ? dda_purse_baseline_ : 1;
 	float purse_ratio = static_cast<float>(purse) / static_cast<float>(baseline);
 	if (purse_ratio < 0.0f) {
 		purse_ratio = 0.0f;
-	} else if (purse_ratio > 2.0f) {
-		purse_ratio = 2.0f;
+	} else if (purse_ratio > DDA_PURSE_RATIO_MAX) {
+		purse_ratio = DDA_PURSE_RATIO_MAX;
 	}
 	const float purse_term = (purse_ratio - 1.0f) * DDA_PURSE_WEIGHT;
 

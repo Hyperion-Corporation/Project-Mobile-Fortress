@@ -544,3 +544,17 @@ TEST_CASE("A4 two identical runs stay deterministic and load drops the clear sam
 	CHECK_FALSE(fresh.dda_enabled());
 	CHECK(fresh.dda_intensity() == doctest::Approx(1.0f));
 }
+
+TEST_CASE("A4 combined purse does not overflow valid per-front balances") {
+	SimWorld world;
+	world.reset_run(1500000000, 1500000000, 100);
+	CHECK(world.dda_intensity() == 1.0f);
+	world.set_dda_enabled(true);
+	CHECK(world.dda_intensity() == doctest::Approx(1.0f));
+	REQUIRE(world.spend(0, 250000000));
+	REQUIRE(world.spend(1, 250000000));
+	CHECK(world.dda_intensity() == doctest::Approx(1.0f - SimWorld::DDA_PURSE_WEIGHT / 6.0f));
+	const auto blob = world.save_state();
+	REQUIRE(world.load_state(blob.data(), blob.size()));
+	CHECK(world.dda_intensity() == doctest::Approx(1.0f));
+}

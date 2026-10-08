@@ -83,7 +83,7 @@ func _run() -> void:
 		failures.append("losing director did not reduce the unspawned wave count (%d vs %d)" % [losing.get_raider_count(), baseline.get_raider_count()])
 	if losing_hp.is_empty() or base_hp.is_empty() or float(losing_hp[0]) >= float(base_hp[0]):
 		failures.append("losing director did not reduce raider HP")
-	if not is_equal_approx(float(base_hp[0]), 50.0):
+	if base_hp.is_empty() or not is_equal_approx(float(base_hp[0]), 50.0):
 		failures.append("disabled wave HP was not the authored 50")
 
 	var rich_a := _fresh_sim()
