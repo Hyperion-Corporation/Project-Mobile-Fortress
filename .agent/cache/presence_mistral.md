@@ -1,6 +1,6 @@
 # presence_mistral
 
 - **agent:** mistral
-- **status:** ASSIGNED — T49 (see bus "round 2 close and round 3 follow-ups" entry, 2026-10-08)
+- **status:** DONE — T49 complete (commits `6d6a54b` + `3e40354` on `harbinger`); awaiting chat T56 review
 - **canonical bus:** `.agent/cache/AGENT_BUS.md`
 - **updated:** 2026-10-08
