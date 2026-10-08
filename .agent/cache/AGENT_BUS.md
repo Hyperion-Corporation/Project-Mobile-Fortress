@@ -1688,3 +1688,21 @@ uncommitted and say so here.
 - `godot --path game --headless --script res://tests/unit_token_smoke.gd` → PASS
 
 **Chat:** review vs G10/IOS2 + smoke. **Claude:** G10 ready after Chat verifies; IOS2 stays Partial.
+
+### chat — 2026-10-08 — T40 review: HOLD
+
+**Reviewed:** full `git diff main...HEAD` / implementation `1d72898`, `.agent/AGENTS.md` §§5–6 and relevant review/testing/performance rules, G10/IOS2, changelog and cursor's bus claims. Implementation stayed in its assigned code lane; no C++, project settings, scene, or website changes. No new `_process` allocations. IOS2 correctly remains Partial; no phone/device verification performed.
+
+**Fix-up `3f5b57a`:** MEDIUM — a release only 4 px across the outer grid edge still placed because off-grid cancellation ran only for drags; sub-threshold movement previewed a different cell than release committed. Both fixed. MEDIUM — preview accepted wrong-front/unaffordable units; it now checks front, resources (including existing fallback), hero uniqueness and redeploy travel state. Ignored touch events no longer fall into keyboard action lookup. Added boundary, wrong-front, affordability and OS-cancel assertions, and routed synthetic touch/drag through `Viewport.push_input` instead of calling `_input` directly. The extended smoke fails against the original `HEAD` implementation (exit 1, four regression assertions plus the consequent occupied-cell failure), then passes with fixes. Existing mouse assertions still exercise handlers directly; they are not proof of OS mouse emulation ordering.
+
+**Remaining HIGH / merge HOLD:** `BattleRoot._input` captures grid presses before GUI hit testing, so overlapping controls cannot consume them. Reproduction with the real viewport: add a default mouse-STOP `Button` of size `(40,40)` under `battle.hud.get_node("Root")`, centered on `land_grid.cell_to_global_center(Vector2i(1,0))`; push ScreenTouch press/release at its center using `root.push_input(event, true)`. The grid gains an occupant beneath the button. This was an injected overlap to test GUI priority, not a claim that the default desktop sidebar overlaps that cell. A GUI-aware gesture-start path and viewport tests for overlapping controls / emulated mouse ordering are required; do not solve this by disabling HUD touch emulation globally. This routing change needs another implementation pass rather than a speculative reviewer rewrite. G10 downgraded from Done to Partial; changelog records the limitation. Cursor's original append-only bus block is preserved and superseded by this review.
+
+**Independent verification:** Godot reports 4.7.1. Existing imports/native library worked, so no reimport/rebuild was necessary. Every Godot invocation used the following exact prefix (including the negative regression run and temporary probe):
+
+```sh
+XDG_DATA_HOME=/tmp/claude-1000/-home-pkhunter-Repositories-Game-Project-Mobile-Fortress/958b3fca-a5da-42fb-9038-c6c4289a5ec4/scratchpad/xdg/cursor godot --path game --headless --script res://tests/<name>.gd
+```
+
+Executed each of `touch_placement_smoke`, `modular_battle_smoke`, `gameplay_smoke`, `hero_e_smoke`, `scenario_control_smoke`, `level_picker_smoke`, `unit_token_smoke`: **all PASS**, both original required suite and final fixed suite. Extended touch smoke's intentional original-code regression run: **FAIL as expected**; restored fixed code immediately. Also ran the prefixed `godot --path game --headless --script /tmp/t40_review_probe.gd` before/after fixes: off-grid short-release placement and wrong-front validity changed `true -> false`; touch-through-STOP-button placement remains `true` (diagnostic exits 0, not a passing acceptance test). Probe reproduction is described above. `git diff --check`: PASS. CTest / website tests not applicable (neither changed).
+
+**Claude:** do not merge as complete G10 yet. Small fixes are committed; remaining GUI routing issue and integration-test gap are explicit. No push, PR, GitHub, branch switch, merge or other-worktree edits.
