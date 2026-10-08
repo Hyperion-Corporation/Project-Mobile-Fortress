@@ -89,6 +89,20 @@ describe("DualFrontDemoView", () => {
     const crossBtn = screen.getByRole("button", { name: /Battery/ });
     expect(crossBtn.textContent).toContain("🔗");
   });
+
+  it("enables cross-support when land is exhausted but sea can afford it", () => {
+    renderView();
+    const cell = (front: string, row: number, col: number) => screen.getByRole("button", {
+      name: new RegExp(`^${front} grid, column ${col + 1}, row ${row + 1}`),
+    });
+    fireEvent.click(screen.getByRole("button", { name: /Spearman/ }));
+    for (let c = 0; c < 6; c++) {
+      fireEvent.click(cell("land", 0, c));
+    }
+    expect(screen.getByText(/Land 兩/).querySelector("strong")?.textContent).toBe("0");
+    const batteryBtn = screen.getByRole("button", { name: /Battery/ });
+    expect(batteryBtn.getAttribute("disabled")).toBeNull();
+  });
 });
 
 describe("demo interactions", () => {

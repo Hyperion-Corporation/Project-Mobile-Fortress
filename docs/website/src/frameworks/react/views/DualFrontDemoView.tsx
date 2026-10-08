@@ -228,9 +228,9 @@ export default function DualFrontDemoView() {
             <>
               <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>Select unit:</span>
               {CONFIG.unitDefs.map((def) => {
-                const unitFront = def.front === "both" ? "land" : def.front as Front;
-                const budget = unitFront === "land" ? state.landBudget : state.seaBudget;
-                const affordable = def.cost <= budget;
+                const affordable = def.front === "both"
+                  ? def.cost <= state.landBudget || def.cost <= state.seaBudget
+                  : def.cost <= (def.front === "land" ? state.landBudget : state.seaBudget);
                 const heroBadge = isHero(def) ? " ⭐" : "";
                 const crossBadge = isCrossSupport(def) ? " 🔗" : "";
                 return (

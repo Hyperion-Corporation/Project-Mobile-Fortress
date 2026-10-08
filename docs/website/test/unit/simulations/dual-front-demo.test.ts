@@ -276,14 +276,23 @@ describe("hero ability", () => {
     state = placeUnit(state, "hero_qi", 2, 0, "land", CFG);
     state = startRun(state);
 
-    // Advance to tick 5 so the first land raider spawns
+    // Advance to tick 5 so the first land raider spawns at col 0
     for (let i = 0; i < 5; i++) state = tick(state, CFG);
 
-    // The hero should have fired its ability at the land raider
-    const landRaiders = state.raiders.filter((r) => r.front === "land" && r.alive);
-    // Raider was hit by ability (28 damage) — hp should be 28 - 28 = 0 or reduced
-    const hitRaider = state.raiders.find((r) => r.front === "land" && r.hp < 28);
-    expect(hitRaider).toBeDefined();
+    // The hero at col 2, row 0 with range 2 can reach raider at col 0 (distance = max(2,1) = 2)
+    const landRaiders = state.raiders.filter((r) => r.front === "land");
+    expect(landRaiders.length).toBeGreaterThanOrEqual(1);
+    // Every spawned land raider in range took exactly activeDamage (28)
+    const hitRaiders = landRaiders.filter((r) => r.hp < r.maxHp);
+    expect(hitRaiders.length).toBe(landRaiders.length);
+    for (const r of hitRaiders) {
+      expect(r.maxHp - r.hp).toBe(28);
+    }
+    // Sea raiders were NOT hit (none spawned yet at tick 5, but verify)
+    const seaRaiders = state.raiders.filter((r) => r.front === "sea");
+    for (const r of seaRaiders) {
+      expect(r.hp).toBe(r.maxHp);
+    }
   });
 
   it("hero ability goes on cooldown after triggering", () => {
@@ -332,18 +341,31 @@ describe("cross-support unit", () => {
     expect(def.crossEnvMult).toBe(1.15);
   });
 
-  it("cross_support fires at raiders on both fronts", () => {
+  it("cross_support fires at raiders on both fronts with exact HP loss", () => {
     let state = createState(CFG);
     state = placeUnit(state, "cross_support", 3, 0, "land", CFG);
     state = startRun(state);
 
-    // Advance until both land and sea raiders are in range
-    for (let i = 0; i < 20; i++) state = tick(state, CFG);
+    // Advance until both land and sea raiders have spawned and been hit
+    for (let i = 0; i < 25; i++) state = tick(state, CFG);
 
-    // Check the log for cross-support hits on both fronts
-    const ownHits = state.log.filter((l) => l.includes("Signal Battery") && l.includes("land raider"));
-    const crossHits = state.log.filter((l) => l.includes("Signal Battery") && l.includes("sea raider"));
-    expect(ownHits.length + crossHits.length).toBeGreaterThan(0);
+    // Land raiders (own front): damage = round(6 * 0.55) = 3 per hit
+    const landRaiders = state.raiders.filter((r) => r.front === "land" && r.hp < r.maxHp);
+    expect(landRaiders.length).toBeGreaterThanOrEqual(1);
+    for (const r of landRaiders) {
+      const dmg = r.maxHp - r.hp;
+      expect(dmg % 3).toBe(0);
+      expect(dmg).toBeGreaterThan(0);
+    }
+
+    // Sea raiders (cross front): damage = round(6 * 1.15) = 7 per hit
+    const seaRaiders = state.raiders.filter((r) => r.front === "sea" && r.hp < r.maxHp);
+    expect(seaRaiders.length).toBeGreaterThanOrEqual(1);
+    for (const r of seaRaiders) {
+      const dmg = r.maxHp - r.hp;
+      expect(dmg % 7).toBe(0);
+      expect(dmg).toBeGreaterThan(0);
+    }
   });
 
   it("cross_support deals reduced damage to own front and boosted to cross front", () => {

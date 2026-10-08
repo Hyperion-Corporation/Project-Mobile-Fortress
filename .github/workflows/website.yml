@@ -32,11 +32,14 @@ jobs:
 
       - run: npm ci
 
+      - name: Generate doc content
+        run: node scripts/generate-nav.mjs
+
       - name: Lint
         run: npx eslint -c stack/eslint/eslint.config.js src/
 
       - name: Type-check
-        run: npx tsc -b --noCheck
+        run: npx tsc -b --pretty false
 
       - name: Test
         run: npx vitest run
