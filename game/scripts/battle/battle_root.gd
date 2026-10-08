@@ -69,6 +69,7 @@ func _ready() -> void:
 		victory_time = sim.get_victory_time()
 	else:
 		sim.reset_run(start_land, start_sea, start_hq)
+	_apply_session_dda()
 	_sync_session_from_sim()
 	_wire_hud()
 	_set_phase(Phase.BUILD)
@@ -203,9 +204,25 @@ func _process_events(events: Array) -> void:
 			"hq_hit":
 				_free_visual(int(ev.get("id", -1)))
 			"wave_spawned":
-				status_message = "Wave %d inbound!" % int(ev.get("wave", 0))
+				var wave_n: int = int(ev.get("wave", 0))
+				status_message = "Wave %d inbound!" % wave_n
+				_note_wave_start(wave_n)
 			"income":
 				pass
+
+
+func _apply_session_dda() -> void:
+	GameSession.apply_dda(sim)
+
+
+func _note_wave_start(wave: int) -> void:
+	var enabled := false
+	var intensity := 1.0
+	if sim != null and sim.has_method("dda_enabled"):
+		enabled = bool(sim.dda_enabled())
+	if sim != null and sim.has_method("get_dda_intensity"):
+		intensity = float(sim.get_dda_intensity())
+	PlaytestLog.note_wave_start(wave, enabled, intensity)
 
 
 func _sync_session_from_sim() -> void:
@@ -561,6 +578,7 @@ func load_snapshot() -> bool:
 	_rebuild_placement_from_sim()
 	_sync_visuals()
 	_sync_session_from_sim()
+	_apply_session_dda()
 	status_message = "Snapshot loaded (%d bytes)" % bytes.size()
 	_update_hud()
 	return true
@@ -901,6 +919,7 @@ func debug_load_level(path: String = "") -> bool:
 	combat_time = 0.0
 	wave_index = 0
 	_set_phase(Phase.BUILD)
+	_apply_session_dda()
 	_sync_visuals()
 	_sync_session_from_sim()
 	status_message = "DT6 loaded %s" % GameSession.selected_level_id

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (2026-10-08, T48 A4 battle hookup + DT5 intensity readout)
+
+- **A4:** Modular battle now pushes the persisted DT8 overlay DDA toggle through `GameSession.apply_dda` after level load, `debug_load_level`, and `load_snapshot` (the overlay setting wins over a v2 snapshot's stored flag). Default remains off; player Settings is unchanged. With the toggle off, the director stays disabled.
+- **DT5:** Overlay `DiagLabel` shows `DDA on/off · intensity 0.00` from `SimulationCore.get_dda_intensity` (1.00 while off). `DdaToggle` is the persisted fine-tune, not a player-facing control.
+- **DT7:** Open playtest sessions record a `wave_start` event at each C++ `wave_spawned` with `dda_enabled` and `dda_intensity` so VS10 sessions can be compared. Smoke: `dda_battle_smoke.gd`. A4 stays 🚧 until tuned against playtest data.
+
 ### Changed (2026-10-08, T47 snapshot completeness — S4/S5)
 
 - **S4 / S5:** Schema v2 appends `Raider.entry_row`, `grid_width` / `grid_height`, both flow grids (cost, direction, solid), and the DDA inputs (`dda_enabled`, wave-open, spawn time, last clear, purse baseline). `save_state` / `load_state` round-trip them. A resumed mid-combat run with flow grids live and DDA on matches the same ticks without the round trip (`sim_world_tests`). Snapshots written before this change are version 1: they still load, leave the receiver's grids and DDA flag alone, drop the clear sample, and rebase the purse. Fixture: `game/tests/native/fixtures/s4_v1_midcombat.bin`.

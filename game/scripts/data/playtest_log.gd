@@ -84,6 +84,10 @@ static func mark_event(label: String, extra: Dictionary = {}) -> Dictionary:
 		"phase": str(extra.get("phase", "")),
 		"wave": int(extra.get("wave", -1)),
 	}
+	if extra.has("dda_enabled"):
+		event["dda_enabled"] = bool(extra["dda_enabled"])
+	if extra.has("dda_intensity"):
+		event["dda_intensity"] = float(extra["dda_intensity"])
 	for session in store["sessions"]:
 		if session is Dictionary and str(session.get("id", "")) == open_session_id:
 			var events: Array = session.get("events", [])
@@ -108,6 +112,19 @@ static func set_session_meta(fields: Dictionary) -> void:
 				session[key] = fields[key]
 			break
 	save_store(store)
+
+
+## Record DDA on/off and intensity at a wave spawn. No-op unless a session is open.
+static func note_wave_start(wave: int, dda_on: bool, intensity: float) -> Dictionary:
+	if open_session_id == "":
+		return {}
+	return mark_event("wave_start", {
+		"wave": wave,
+		"phase": "COMBAT",
+		"dda_enabled": dda_on,
+		"dda_intensity": intensity,
+		"note": "DDA %s · intensity %.2f" % ["on" if dda_on else "off", intensity],
+	})
 
 
 static func note_run_ended(result: Dictionary) -> void:
@@ -150,6 +167,11 @@ static func dashboard_session(session: Dictionary) -> Dictionary:
 			var extra := str(event.get("note", ""))
 			if extra != "":
 				line += " · " + extra
+			elif event.has("dda_enabled"):
+				line += " · DDA %s · intensity %.2f" % [
+					"on" if bool(event["dda_enabled"]) else "off",
+					float(event.get("dda_intensity", 1.0)),
+				]
 			lines.append(line)
 	var verdict := str(session.get("verdict", "needs_work"))
 	if verdict != "shows_promise" and verdict != "needs_work" and verdict != "no":

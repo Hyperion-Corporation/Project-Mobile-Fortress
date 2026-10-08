@@ -43,12 +43,19 @@ var _dev_taps: Array[float] = []
 const STEP_DT := 1.0 / 30.0
 
 ## A4 heuristic DDA preference. Off by default and not cleared by reset_run.
-## Battle scripts do not read this; call apply_dda(sim) to push it onto SimulationCore.
+## Persisted from the DT8 overlay (not the player settings dialog). BattleRoot
+## calls apply_dda(sim) after level load, debug_load_level, and load_snapshot.
 var dda_enabled: bool = false
 
 
-func set_dda_enabled(enabled: bool) -> void:
+func set_dda_enabled(enabled: bool, persist: bool = true) -> void:
+	if dda_enabled == enabled:
+		return
 	dda_enabled = enabled
+	if persist:
+		var settings: Dictionary = OfflinePersistence.read_settings()
+		settings["dda_enabled"] = enabled
+		OfflinePersistence.write_settings(settings)
 
 
 func apply_dda(sim: Node) -> void:
@@ -57,7 +64,9 @@ func apply_dda(sim: Node) -> void:
 
 
 func _ready() -> void:
-	developer_mode = bool(OfflinePersistence.read_settings().get("developer_mode", false))
+	var settings: Dictionary = OfflinePersistence.read_settings()
+	developer_mode = bool(settings.get("developer_mode", false))
+	dda_enabled = bool(settings.get("dda_enabled", false))
 	_ensure_dev_menu()
 
 

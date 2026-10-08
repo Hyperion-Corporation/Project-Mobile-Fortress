@@ -10,6 +10,7 @@ const PAPER := Color(0.93, 0.86, 0.74, 0.94)
 const CINNABAR := Color(0.72, 0.20, 0.14, 1)
 
 var _diag: Label
+var _dda_toggle: CheckBox
 var _speed_slider: HSlider
 var _speed_label: Label
 var _pause_btn: Button
@@ -81,6 +82,12 @@ func _build() -> void:
 	_diag.add_theme_color_override("font_color", INK)
 	_diag.add_theme_font_size_override("font_size", 12)
 	vbox.add_child(_diag)
+
+	_dda_toggle = CheckBox.new()
+	_dda_toggle.name = "DdaToggle"
+	_dda_toggle.text = "Heuristic DDA (A4)"
+	_dda_toggle.toggled.connect(_on_dda_toggled)
+	vbox.add_child(_dda_toggle)
 
 	var time_sec := Label.new()
 	time_sec.text = "TIME (DT4)"
@@ -297,6 +304,8 @@ func _bind_session() -> void:
 	_speed_slider.value = float(session.time_scale)
 	_on_speed_changed(_speed_slider.value)
 	_on_pause_changed(bool(session.is_paused))
+	if _dda_toggle:
+		_dda_toggle.set_pressed_no_signal(bool(session.dda_enabled))
 
 
 func _session() -> Node:
@@ -351,10 +360,22 @@ func _refresh_diag() -> void:
 		var bytes := float(Performance.get_monitor(Performance.MEMORY_STATIC))
 		if bytes > 0.0:
 			mem_line = "static mem: %.1f MB" % (bytes / (1024.0 * 1024.0))
-	_diag.text = "FPS %.0f · tick %.2f ms\nraiders L %d / S %d · defenders %d\n%s" % [
-		fps, tick_ms, land_n, sea_n, defs, mem_line
-	]
+	var dda_on := false
+	var intensity := 1.0
 	var sim := _find_sim()
+	if session:
+		dda_on = bool(session.dda_enabled)
+	if sim and sim.has_method("dda_enabled"):
+		dda_on = bool(sim.dda_enabled())
+	if sim and sim.has_method("get_dda_intensity"):
+		intensity = float(sim.get_dda_intensity())
+	if _dda_toggle and _dda_toggle.button_pressed != (session != null and bool(session.dda_enabled)):
+		if session:
+			_dda_toggle.set_pressed_no_signal(bool(session.dda_enabled))
+	_diag.text = "FPS %.0f · tick %.2f ms\nraiders L %d / S %d · defenders %d\n%s\nDDA %s · intensity %.2f" % [
+		fps, tick_ms, land_n, sea_n, defs, mem_line,
+		"on" if dda_on else "off", intensity
+	]
 	if sim and sim.has_method("get_wave_count") and _wave_spin:
 		var n: int = int(sim.get_wave_count())
 		if n > 0:
@@ -387,6 +408,15 @@ func _find_battle() -> Node:
 	if get_tree() == null:
 		return null
 	return get_tree().root.find_child("BattleRoot", true, false)
+
+
+func _on_dda_toggled(on: bool) -> void:
+	var session := _session()
+	if session == null or not session.has_method("set_dda_enabled"):
+		return
+	session.set_dda_enabled(on)
+	if session.has_method("apply_dda"):
+		session.apply_dda(_find_sim())
 
 
 func _on_fill_res() -> void:
