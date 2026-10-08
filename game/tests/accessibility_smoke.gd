@@ -196,6 +196,7 @@ func _run() -> void:
 	if start_focus != null:
 		var curr_focus: Control = start_focus
 		var dlg_visited: Array[Control] = []
+		var loop_closed := false
 		for _step in range(20):
 			dlg_visited.append(curr_focus)
 			var next_p := curr_focus.focus_next
@@ -207,11 +208,20 @@ func _run() -> void:
 				failures.append("SettingsDialog invalid focus_next path: %s on %s" % [str(next_p), curr_focus.name])
 				break
 			if next_c == start_focus:
+				loop_closed = true
 				break
 			curr_focus = next_c
 
-		if dlg_visited.size() < 10:
-			failures.append("SettingsDialog focus loop visited only %d controls (expected >= 10)" % dlg_visited.size())
+		var expected_controls: Array[Control] = []
+		expected_controls.append_array(sliders)
+		expected_controls.append_array(checkboxes)
+		expected_controls.append(opt)
+		expected_controls.append_array(action_buttons)
+		for expected: Control in expected_controls:
+			if expected != null and not dlg_visited.has(expected):
+				failures.append("SettingsDialog focus traversal missed %s" % expected.name)
+		if not loop_closed:
+			failures.append("SettingsDialog focus traversal did not close its loop")
 
 	# Test Focus Return to opener control on close
 	dlg._close()
@@ -232,6 +242,16 @@ func _run() -> void:
 	var loaded_true := OfflinePersistence.read_settings()
 	if not bool(loaded_true.get("large_text", false)):
 		failures.append("Failed to persist large_text=true via OfflinePersistence")
+
+	# A disabled-only assertion cannot detect a missing menu scaling implementation.
+	var large_menu: Control = menu_scene.instantiate()
+	root.add_child(large_menu)
+	await process_frame
+	var large_center: Control = large_menu.get_node("Center")
+	if not large_center.scale.is_equal_approx(Vector2.ONE * ThemeTokensScript.LARGE_TEXT_SCALE):
+		failures.append("MainMenu did not apply persisted large_text=true")
+	large_menu.queue_free()
+	await process_frame
 
 	# Test 5b: SettingsDialog loads large_text and scales panel
 	var test_dlg: SettingsDialog = SettingsDialogScript.new()
@@ -264,8 +284,8 @@ func _run() -> void:
 		failures.append("MainMenu Center scale expected 1.0 when large_text=false, got: %.2f" % center_ctrl.scale.x)
 	scaled_menu.queue_free()
 
-	# Restore clean default settings for subsequent smokes
-	OfflinePersistence.write_settings(OfflinePersistence.default_settings())
+	# Restore the settings present before the persistence checks.
+	OfflinePersistence.write_settings(initial_settings)
 
 	_finish(failures)
 

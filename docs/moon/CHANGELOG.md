@@ -7,16 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added (2026-10-08, T39 U8 accessibility pass for menus and settings)
+### Added (2026-10-08, T39 U8 accessibility pass for menus and settings — partial, review HOLD)
 
-- **U8:** Main menu and settings dialog accessibility pass (GitHub #25):
-  - Every interactive control across `main_menu.gd` and `settings_dialog.gd` satisfies minimum 48dp touch targets (`ThemeTokens.MIN_TOUCH_TARGET_SIZE := 48.0`, `MIN_TOUCH_TARGET := Vector2(48.0, 48.0)`).
-  - Full keyboard and gamepad focus traversal with visible focus indicators (`ThemeTokens.apply_accessible_focus` with high-contrast `SEA_INDIGO` ring) and circular focus loops preventing dead-ends; dialog returns focus to opening control upon closing.
-  - Deepened `ThemeTokens.CINNABAR` from `#c23b22` (4.44:1) to `#b5321a` (5.09:1 on parchment `PAPER`, 4.69:1 on `PAPER_CARD`) and fixed Tier 0 description color to `INK_MUTED` (7.18:1) to guarantee WCAG AA compliance (>= 4.5:1 for body text). Added `get_relative_luminance`, `get_contrast_ratio`, and `is_wcag_aa_compliant` helpers.
-  - Added persisted "Large text" (1.15x UI scale) setting in `settings_dialog.gd` through `OfflinePersistence`, dynamically scaling both `MainMenu` and `SettingsDialog`.
-  - Configured native Godot 4.7 AccessKit screen-reader metadata (`accessibility_name` and `accessibility_description`) on all interactive controls with tooltip fallbacks.
-  - In-battle HUD (`battle_hud.gd`) remains out of scope for this slice and is deferred to a future combat HUD pass.
-  - Automated smoke test: `accessibility_smoke.gd` asserts contrast ratios, touch targets, focus loop traversal, opener focus return, and large-text persistence round-trip.
+- Main menu and settings controls now request a 48-unit minimum height through `ThemeTokens.MIN_TOUCH_TARGET_SIZE`; native `accessibility_name` / `accessibility_description` metadata is populated. Popup item targets and platform screen-reader behavior are not verified.
+- Added next/previous and up/down focus links, initial focus, focus style overrides, and dialog opener restoration. Directional focus containment is incomplete: Left/Right from settings Save can reach the underlying Quit button.
+- Deepened `CINNABAR` to `#b5321a` and changed Tier 0 description text to `INK_MUTED`. Tested token pairs pass AA, but screen-wide compliance is not achieved: default checkbox hover text is low contrast on parchment, and the new focus ring is low contrast against actual default button backgrounds.
+- Added backward-compatible persisted `large_text` (1.15x) through `OfflinePersistence`. Both center containers scale, but at 1280×720 the enlarged settings panel extends off-screen and menu Quit overlaps the version label input region. Responsive layout remains required before merge.
+- `accessibility_smoke.gd` checks token contrast, declared target heights, focus links, metadata, opener restoration, and persistence. Review strengthened coverage to require all settings controls in the focus loop and test enabled menu scaling; both assertions reject deliberate broken-feature mutations. This smoke does not establish viewport fit, directional modal containment, or rendered-state contrast.
+- In-battle HUD remains outside this slice. T39 review is HOLD pending the layout, containment, and contrast fixes above.
 
 ### Changed (2026-08-15, T37 DT6 overlay level picker)
 

@@ -1708,3 +1708,67 @@ Shipped U8 accessibility pass for main menu and settings dialog (GitHub #25):
 - `git diff --check` -> **PASS** (no whitespace errors)
 
 **Chat / Codex:** Ready for T39 review against `ui_ux.md` and `accessibility_smoke.gd`.
+
+### chat — 2026-10-08 — T39 review: HOLD
+
+**Checked:** full `main...HEAD` diff (`4a53802`, `aee8bf0`), `.agent/AGENTS.md`
+§5/§6, game README, U8 brief, changelog/roadmap/bus claims, runtime control geometry,
+resolved theme states, persistence, and actual directional input. Implementation stayed
+inside its assigned lane plus required coordination docs. No C++ or website changes;
+no native rebuild/CTest or website checks required. Existing import cache was sufficient.
+
+**Findings (severity per §6):**
+- **HIGH — large-text layout is not usable at the configured 1280×720 viewport.**
+  With `large_text=true`, after the opening animation settles, settings panel global
+  rect is `(-96,-54,744.05,806.15)` and Save is `(459.45,673.95,161,55.2)`:
+  title/left content and part of the bottom action row are off-screen, with no scrolling.
+  Even unscaled, the panel animation ends at `(0,0)` rather than the centered layout
+  position (the pre-existing tween fights the container). On the enlarged main menu,
+  VBox ends at y=702.7 while the mouse-stopping VersionLabel occupies y=664..712,
+  overlapping Quit. Scaling the entire center without reflow/scrolling and resize-aware
+  layout is insufficient. Requires a coordinated responsive-layout fix, not a scale reduction.
+- **HIGH — directional focus escapes the settings modal.** Open settings from the menu,
+  focus Save, and send `ui_left`: actual focus becomes
+  `/root/MainMenu/Center/VBox/QuitBtn`. Right also resolves to Quit. The explicit next/previous
+  and top/bottom links work, but unspecified lateral neighbors search behind the overlay.
+  Contain all directional navigation while preserving slider left/right adjustment.
+- **MEDIUM — claimed rendered contrast is not established.** The new SEA_INDIGO focus
+  ring has only **1.46:1** against the actual default button normal background, rather
+  than the parchment used by the test. Settings checkbox `font_hover_color` remains the
+  default pale color, yielding **1.17:1** against PAPER_CARD. Version text also remains
+  dark on the indigo horizon. Token-only ratios do not prove these screen states comply.
+  Apply and test coherent foreground/background/focus styles for actual interactive states.
+- **MEDIUM — regression coverage accepted broken implementations (fixed in this review).**
+  Original accessibility smoke still returned PASS after either forcing menu scale to ONE
+  or removing Save from the settings focus array. It checked menu scaling only when disabled
+  and accepted any settings loop with at least ten visits. It now checks enabled menu scaling
+  and membership of every expected settings control, plus loop closure, and restores initial
+  settings rather than defaults. Both deliberate mutations now exit 1 with the intended
+  assertion; source files were restored after each experiment.
+
+**Claims corrected:** changelog now distinguishes implemented primitives from the unresolved
+layout/focus/contrast work. U8 remains 🚧 Partial and explicitly records this HOLD; the
+implementer's appended DONE block is preserved, with this review superseding its broad
+compliance claims. Popup item target sizes and actual platform screen-reader behavior have
+not been verified. In-battle HUD remains outside this task. No feature rewrite attempted.
+
+**Independent verification (before and after test fixes):** all five commands below exit 0,
+with their corresponding PASS lines. Every Godot process used the required private user path.
+
+```sh
+XDG_DATA_HOME=/tmp/claude-1000/-home-pkhunter-Repositories-Game-Project-Mobile-Fortress/958b3fca-a5da-42fb-9038-c6c4289a5ec4/scratchpad/xdg/gemini godot --path game --headless --script res://tests/accessibility_smoke.gd
+XDG_DATA_HOME=/tmp/claude-1000/-home-pkhunter-Repositories-Game-Project-Mobile-Fortress/958b3fca-a5da-42fb-9038-c6c4289a5ec4/scratchpad/xdg/gemini godot --path game --headless --script res://tests/main_menu_smoke.gd
+XDG_DATA_HOME=/tmp/claude-1000/-home-pkhunter-Repositories-Game-Project-Mobile-Fortress/958b3fca-a5da-42fb-9038-c6c4289a5ec4/scratchpad/xdg/gemini godot --path game --headless --script res://tests/settings_smoke.gd
+XDG_DATA_HOME=/tmp/claude-1000/-home-pkhunter-Repositories-Game-Project-Mobile-Fortress/958b3fca-a5da-42fb-9038-c6c4289a5ec4/scratchpad/xdg/gemini godot --path game --headless --script res://tests/theme_tokens_smoke.gd
+XDG_DATA_HOME=/tmp/claude-1000/-home-pkhunter-Repositories-Game-Project-Mobile-Fortress/958b3fca-a5da-42fb-9038-c6c4289a5ec4/scratchpad/xdg/gemini godot --path game --headless --script res://tests/dev_access_smoke.gd
+```
+
+Additional diagnostic commands (temporary scripts, outside the worktree):
+- `XDG_DATA_HOME=/tmp/claude-1000/-home-pkhunter-Repositories-Game-Project-Mobile-Fortress/958b3fca-a5da-42fb-9038-c6c4289a5ec4/scratchpad/xdg/gemini godot --path game --headless --script /tmp/t39_review_probe.gd` — exit 0; printed geometry and resolved color ratios above after waiting 0.4s at each scale.
+- `XDG_DATA_HOME=/tmp/claude-1000/-home-pkhunter-Repositories-Game-Project-Mobile-Fortress/958b3fca-a5da-42fb-9038-c6c4289a5ec4/scratchpad/xdg/gemini godot --path game --headless --script /tmp/t39_focus_probe.gd` — exit 0; initial MasterSlider focus and Down/Tab traversal work, Right adjusts volume; Save + Left escapes to Quit.
+- `python3 /tmp/t39_mutation_probe.py` — each mutation originally exited 0/PASS; after strengthening the smoke each exited 1/FAIL for the intended assertion. The driver sets the same required XDG_DATA_HOME for every Godot subprocess and restores source in `finally`. Initial invocation using `python` was unavailable; reran with `python3`.
+- `git diff --check` — PASS.
+
+**Lead handoff:** do not merge/close #25 on the basis of the five passing smokes. Return
+T39 for the HIGH layout and modal-navigation fixes and remaining contrast work, then
+re-review actual viewport fit, directional containment, and resolved visual states.
