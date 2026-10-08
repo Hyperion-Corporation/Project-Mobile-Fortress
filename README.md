@@ -2,31 +2,28 @@
 
 # Mobile Fortress
 
-**A cooperative tower-defense mobile game set during the 1540s–1560s Wōkòu pirate crisis on the East Asian coast — defend a Main HQ and its Resource/Trading Outposts, command an East Asian primary civilization (Ming China by default) alongside a supporting Western civilization (Portuguese by default), and extend the fight into a coastal-territory meta-game. Built as real, idiomatic Android Studio (Kotlin) and Xcode (Swift) app modules, sharing a planned C++ simulation core, CI/CD, docs, containerization, and LLM agent scaffolding.**
+**A cooperative tower-defense mobile game set during the 1540s–1560s Wōkòu pirate crisis on the East Asian coast — defend a Main HQ and its Resource/Trading Outposts, command an East Asian primary civilization (Ming China by default) alongside a supporting Western civilization (Portuguese by default), and extend the fight into a coastal-territory meta-game. Built as a Godot 4 game with a C++ simulation core (GDExtension), plus shared CI/CD, docs, and LLM agent scaffolding.**
 
-<a href="https://github.com/ACFHarbinger/Project-Mobile-Fortress/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/ACFHarbinger/Project-Mobile-Fortress/actions/workflows/ci.yml/badge.svg"></a>
-<a href="https://github.com/ACFHarbinger/Project-Mobile-Fortress/actions/workflows/docs.yml"><img alt="Docs" src="https://github.com/ACFHarbinger/Project-Mobile-Fortress/actions/workflows/docs.yml/badge.svg"></a>
+<a href="https://github.com/Hyperion-Corporation/Project-Mobile-Fortress/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/Hyperion-Corporation/Project-Mobile-Fortress/actions/workflows/ci.yml/badge.svg"></a>
+<a href="https://github.com/Hyperion-Corporation/Project-Mobile-Fortress/actions/workflows/docs.yml"><img alt="Docs" src="https://github.com/Hyperion-Corporation/Project-Mobile-Fortress/actions/workflows/docs.yml/badge.svg"></a>
 <img alt="PRs Welcome" src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg">
 
 </br>
 
-<a href="https://github.com/ACFHarbinger/Project-Mobile-Fortress/releases"><img alt="Release" src="https://img.shields.io/github/v/release/ACFHarbinger/Project-Mobile-Fortress?include_prereleases&logo=github&color=blue"></a>
+<a href="https://github.com/Hyperion-Corporation/Project-Mobile-Fortress/releases"><img alt="Release" src="https://img.shields.io/github/v/release/Hyperion-Corporation/Project-Mobile-Fortress?include_prereleases&logo=github&color=blue"></a>
 <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/License-AGPL--3.0%20%2F%20Commercial-blue.svg"></a>
-<a href="https://github.com/ACFHarbinger/Project-Mobile-Fortress/issues"><img alt="Open Issues" src="https://img.shields.io/github/issues/ACFHarbinger/Project-Mobile-Fortress?color=yellow"></a>
+<a href="https://github.com/Hyperion-Corporation/Project-Mobile-Fortress/issues"><img alt="Open Issues" src="https://img.shields.io/github/issues/Hyperion-Corporation/Project-Mobile-Fortress?color=yellow"></a>
 
 </br>
 
-<a href="https://kotlinlang.org/"><img alt="Kotlin" src="https://img.shields.io/badge/Kotlin-2.0-7F52FF?logo=kotlin&logoColor=white"></a>
-<a href="https://developer.android.com/"><img alt="Android" src="https://img.shields.io/badge/Android-API_24%2B-3DDC84?logo=android&logoColor=white"></a>
-<a href="https://developer.android.com/build/releases/gradle-plugin"><img alt="AGP" src="https://img.shields.io/badge/AGP-8.5-02303A?logo=gradle&logoColor=white"></a>
-<a href="https://swift.org/"><img alt="Swift" src="https://img.shields.io/badge/Swift-5.0-F05138?logo=swift&logoColor=white"></a>
-<a href="https://developer.apple.com/ios/"><img alt="iOS" src="https://img.shields.io/badge/iOS-16%2B-000000?logo=apple&logoColor=white"></a>
+<a href="https://godotengine.org/"><img alt="Godot" src="https://img.shields.io/badge/Godot-4.7-478CBF?logo=godotengine&logoColor=white"></a>
+<a href="game/BUILD_CPP.md"><img alt="C++" src="https://img.shields.io/badge/C%2B%2B-GDExtension-00599C?logo=cplusplus&logoColor=white"></a>
 <a href="https://github.com/casey/just"><img alt="Just" src="https://img.shields.io/badge/Just-Task_Runner-black"></a>
 
 </br>
 
 <a href="https://www.docker.com/"><img alt="Docker" src="https://img.shields.io/badge/Docker-Optional_Backend-2496ED?logo=docker&logoColor=white"></a>
-<a href="https://containers.dev/"><img alt="Dev Containers" src="https://img.shields.io/badge/Dev_Containers-Android_only-2496ED?logo=docker&logoColor=white"></a>
+<a href="https://containers.dev/"><img alt="Dev Containers" src="https://img.shields.io/badge/Dev_Containers-Android_only-2496ED?logo=containers&logoColor=white"></a>
 <a href="https://github.com/features/actions"><img alt="GitHub Actions" src="https://img.shields.io/badge/GitHub_Actions-CI%2FCD-2088FF?logo=githubactions&logoColor=white"></a>
 <a href="https://squidfunk.github.io/mkdocs-material/"><img alt="MkDocs Material" src="https://img.shields.io/badge/MkDocs-Material-526CFE?logo=materialformkdocs&logoColor=white"></a>
 
@@ -36,59 +33,60 @@
 
 **Mobile Fortress** is a cooperative tower-defense mobile game: players defend a Wōkòu-pirate-era coastal fortress network — a Main HQ plus Resource Outposts (fund land units) and Trading Outposts (fund naval units) — against raids from land and sea, then extend that fight into a light 4X-style coastal-territory meta-game. The design targets an underserved market gap identified in [`docs/moon/reports/Tower Defense Market Research.md`](docs/moon/reports/Tower%20Defense%20Market%20Research.md) — a AAA-quality, historically grounded 16th-century East Asian setting is largely absent from the current top-grossing tower-defense/4X-hybrid charts.
 
-The game is a **two-platform mobile client**: a Kotlin Android client under [`android/`](android/) and a Swift iOS client under [`ios/`](ios/), each following its platform's official conventions exactly (standard Android Studio / Gradle Kotlin DSL layout, standard Xcode project layout) — Android renders via a `SurfaceView` on a fixed-timestep game loop thread, iOS via a SpriteKit `SKScene`. Both clients are converging on a shared C++ simulation core (ECS via EnTT, bridged via JNI/Swift C++ interop) so Co-Op multiplayer sessions stay deterministic across platforms — see [`docs/moon/research/Multiplayer Tower Defense Implementation.md`](docs/moon/research/Multiplayer%20Tower%20Defense%20Implementation.md) for the full technical rationale and [`docs/moon/roadmaps/shared_core.md`](docs/moon/roadmaps/shared_core.md) for the migration plan. Raw assets and the shared spec live under [`game/`](game/) — see `game/README.md` for exactly what's shared today vs. planned. Around all of that, the repository carries a cross-cutting agentic/DevOps/docs framework (`.agent/`, `docs/`, `docs/moon/`, `.github/`, `infra/`) shared with this org's other project templates.
+The live product is the **Godot 4.7 game under [`game/`](game/)**: a dual-front (land + sea) offline tower-defense prototype where GDScript handles presentation, input, and run orchestration while a C++ `SimulationCore` GDExtension (EnTT ECS, FlatBuffers snapshots) owns the combat/economy simulation — see [`game/README.md`](game/README.md) to run it and [`docs/moon/roadmaps/shared_core.md`](docs/moon/roadmaps/shared_core.md) for the C++ core build-out. The Kotlin [`android/`](android/) and Swift [`ios/`](ios/) clients are **legacy inherited template trees** kept for reference — their CI jobs run only when their own paths change. Around all of that, the repository carries a cross-cutting agentic/DevOps/docs framework (`.agent/`, `docs/`, `docs/moon/`, `.github/`, `infra/`) shared with this org's other project templates, and a React dashboard/docs portal under [`docs/website/`](docs/website/).
 
 See [`docs/moon/ROADMAP.md`](docs/moon/ROADMAP.md) for the full game concept, architecture decisions, and phased delivery plan.
-
-## Why SurfaceView + Canvas (Android) / SpriteKit (iOS)?
-
-This project targets simple, dependency-light 2D game clients (per platform, ahead of the shared C++ core landing) on each platform independently — it is **not** a shared cross-platform engine. Android uses `SurfaceView` + a dedicated fixed-timestep loop thread; iOS uses SpriteKit's own display-link-driven `update(_:)`, with a clamped per-frame delta for the same "don't spiral after a long pause" reason. Jetpack Compose / SwiftUI are used for chrome around each game surface (menus, HUD, settings). For 3D, physics-heavy games, or a genuinely shared cross-platform core, see [`.agent/AGENTS.md`](.agent/AGENTS.md) §1.1, [`docs/adr/0002-rendering-approach.md`](docs/adr/0002-rendering-approach.md), [`docs/adr/0003-ios-rendering-approach.md`](docs/adr/0003-ios-rendering-approach.md), and [`docs/moon/roadmaps/shared_core.md`](docs/moon/roadmaps/shared_core.md).
 
 ## Repository Layout
 
 ```
 Project-Mobile-Fortress/
-├── android/                 # Kotlin Android client
-│   └── app/                 # standard com.android.application + kotlin-android module
-├── ios/                      # Swift iOS client
-│   ├── MyGame/               # App/, Core/, Engine/, Scenes/, UI/, Resources/
-│   ├── MyGame.xcodeproj
-│   └── Tests/                 # XCTest suite
-├── game/                     # Shared raw assets + documented (non-compiled) spec
-│   ├── assets/                # canonical level/wave JSON, shared textures/audio
-│   └── src/                   # level-schema.json, game-state-machine.md
-├── .agent/                   # LLM coding-agent prompts, rules, skills, workflows
+├── game/                     # Godot 4.7 project — THE LIVE PRODUCT
+│   ├── project.godot           # entry: scenes/main_menu.tscn
+│   ├── scenes/                 # main menu, battle scenes
+│   ├── scripts/                 # battle/, autoload/, ui/, data/ (GDScript)
+│   ├── src/cpp/                 # SimulationCore GDExtension (C++/EnTT)
+│   ├── src/schema/              # simulation_state.fbs snapshot schema
+│   ├── src/level-schema.json    # level-JSON contract
+│   ├── assets/levels/           # level/wave JSON
+│   └── tests/                   # headless GDScript smokes + native C++ tests
+├── android/                  # LEGACY Kotlin template client (SurfaceView)
+├── ios/                      # LEGACY Swift template client (SpriteKit)
+├── .agent/                   # LLM coding-agent rules, skills, workflows, AGENTS.md
 ├── .devcontainer/             # Dev Container — Android toolchain only, see below
 ├── .github/                   # Issue/PR templates, Dependabot, CI/release/docs workflows
 ├── infra/                     # Optional lightweight backend (leaderboards/cloud save)
 ├── docs/                       # architecture notes, ADRs, roadmap, design docs, research
 │   ├── design/                 # GDD, art/audio bibles, pitch deck, production/QA plans
 │   ├── moon/                   # ROADMAP.md, CHANGELOG.md, per-topic roadmaps, reports/, research/
-│   └── website/             # Vite + Vue 3 + TS SPA: interactive design hub + doc reader (deployed to gh-pages)
-├── git/                        # CONTRIBUTING.md, codecov.yaml
+│   └── website/             # React 19 + Vite + TS portal: dashboard + doc reader (deployed to gh-pages)
+├── git/                        # CONTRIBUTING.md, codecov.yaml, agent/board sync tooling
+├── scripts/                    # run_godot_smokes.sh, run_perf_bench.sh, export smoke, playtest sync
 ├── tools/{build,test,validation,ci,docs,infra,reducer,helper}/justfile
 ├── justfile                    # root — imports tools/*/justfile as `just` modules
 ├── gradlew, gradle/, build.gradle.kts, settings.gradle.kts, gradle.properties
-│                              # Gradle workspace root (:app → android/app/), so `./gradlew <task>` works from here directly
+│                              # Gradle workspace root (:app → legacy android/app/)
 ├── package.json                 # npm workspaces root (docs/website), so `npm run <script> -w docs/website` works from here directly
 └── pyproject.toml               # Python tooling deps (mkdocs-material, for local `mkdocs serve` only)
 ```
 
 | Path | Purpose |
 | --- | --- |
-| `android/app/` | `MainActivity`, `GameView` (SurfaceView), `GameLoop` (fixed-timestep thread), `engine/` (GameEngine, GameState, entities), `ui/` (Compose chrome). Gradle root lives at the repo root — see below. |
-| `ios/MyGame/` | `App/` (SwiftUI `@main`), `Core/GameManager.swift` (state machine), `Engine/` (Audio/Input/Physics/Storage), `Scenes/` (`GameScene` + nodes + SwiftUI screens), `UI/` (HUD/Shop/Theme). |
-| `game/` | Canonical shared assets (`assets/levels/`) and a documented, **not compiled**, spec both clients implement independently — see `game/README.md`. |
-| `.agent/` | LLM coding-agent prompts, rules, skills, and workflows (source of truth for `AGENTS.md`) |
+| `game/` | **The live product** — Godot 4.7 dual-front game; C++ `SimulationCore` under `src/cpp/` (build per `game/BUILD_CPP.md`), smokes under `tests/`. |
+| `game/scripts/` | GDScript layers: `battle/` (presentation/input), `autoload/` (`game_session.gd` run orchestration), `ui/` (menus/HUD/settings/dev overlay), `data/` (unit defs, level catalog, offline persistence, playtest log). |
+| `android/app/` | **Legacy** Kotlin template client (`MainActivity`, `GameView` SurfaceView, `GameLoop`, `engine/`, `ui/`). Gradle workspace root lives at the repo root. |
+| `ios/MyGame/` | **Legacy** Swift template client (`App/`, `Core/GameManager.swift`, `Engine/`, `Scenes/`, `UI/`). |
+| `.agent/` | LLM coding-agent rules, skills, and workflows (source of truth for `AGENTS.md`) |
 | `.devcontainer/` | VS Code Dev Container with the Android SDK cmdline-tools, JDK 17, emulator deps — **Android only**; iOS requires a native macOS host, see `.devcontainer/README.md` |
-| `.github/` | Issue/PR templates, Dependabot config, GitHub Actions workflows (`ci.yml` runs both an Android job set and a `macos-latest` iOS job; `release.yml` builds the signed Android bundle) |
+| `.github/` | Issue/PR templates, Dependabot config, GitHub Actions workflows (`godot-game.yml` covers `game/**`; `ci.yml` covers the legacy trees and `scripts/*.sh` shellcheck; `website.yml` covers `docs/website/**`; `docs.yml` builds/deploys the docs portal) |
 | `infra/` | **Optional** lightweight backend scaffolding for leaderboards/cloud save: `docker/`, `k8s/`, `helm/`, `terraform/`, `ansible/` — not needed for an offline game |
-| `docs/` | Architecture notes, ADRs (including the Android and iOS rendering-approach ADRs), design docs, research write-ups, roadmap, and `docs/website/` — the Vue 3 interactive design-hub + docs site deployed to GitHub Pages (MkDocs Material remains available locally for browsing the same Markdown) |
+| `docs/` | Architecture notes, ADRs, design docs, research write-ups, roadmap, and `docs/website/` — the React interactive dashboard + docs site deployed to GitHub Pages (MkDocs Material remains available locally for browsing the same Markdown) |
 | `git/` | `CONTRIBUTING.md` and `codecov.yaml` |
-| `docs/moon/` | `ROADMAP.md`, `CHANGELOG.md`, and per-topic roadmaps (including `ios.md` and `shared_core.md`) |
-| `tools/*/justfile` | `just` recipe modules — each now covers both platforms where relevant (e.g. `tools/build/justfile` has both Gradle and `xcodebuild` recipes) |
-| `gradlew` / `gradle/` / `build.gradle.kts` / `settings.gradle.kts` | The Gradle **workspace root** — `:app` (`android/app/`) is the only module today; a future native module just needs an `include(...)` line here. See [`docs/DEPENDENCY_POLICY.md`](docs/DEPENDENCY_POLICY.md#android-gradlelibsversionstoml). |
-| `package.json` | The npm **workspace root** — declares `docs/website` under `"workspaces"`; a future JS/TS package just needs adding to that array. See [`docs/DEPENDENCY_POLICY.md`](docs/DEPENDENCY_POLICY.md#node--npm-root-package-lockjson-npm-workspaces). |
+| `docs/moon/` | `ROADMAP.md`, `CHANGELOG.md`, and per-topic roadmaps (including `shared_core.md` and `vertical_slice.md`) |
+| `scripts/` | `run_godot_smokes.sh` (full headless smoke suite), `run_perf_bench.sh` (perf budget bench), `export_mobile_smoke.sh` (export config/APK smoke), `sync_playtest_session.sh` (playtest log sync) |
+| `tools/*/justfile` | `just` recipe modules (the Gradle/xcodebuild recipes target the legacy trees; `just test::godot-smokes` runs the Godot suite) |
+| `gradlew` / `gradle/` / `build.gradle.kts` / `settings.gradle.kts` | The Gradle **workspace root** — `:app` (legacy `android/app/`) is the only module today. See [`docs/DEPENDENCY_POLICY.md`](docs/DEPENDENCY_POLICY.md#android-gradlelibsversionstoml). |
+| `package.json` | The npm **workspace root** — declares `docs/website` under `"workspaces"`. See [`docs/DEPENDENCY_POLICY.md`](docs/DEPENDENCY_POLICY.md#node--npm-root-package-lockjson-npm-workspaces). |
 | `pyproject.toml` | Pins `mkdocs-material` for local `mkdocs serve` — this repo has no Python application code. |
 
 ## Quick Start
@@ -97,7 +95,7 @@ All commands below run from the repo root — none of them require `cd`-ing into
 
 ```bash
 # Clone the repo
-git clone https://github.com/ACFHarbinger/Project-Mobile-Fortress.git
+git clone https://github.com/Hyperion-Corporation/Project-Mobile-Fortress.git
 cd Project-Mobile-Fortress
 
 # Install pre-commit hooks
@@ -107,33 +105,36 @@ pip install pre-commit && pre-commit install
 just --list
 ```
 
-### Android
+### The game (Godot 4.7)
+
+1. Install [Godot 4.7](https://godotengine.org/download) and a C++ toolchain (CMake).
+2. Build the native simulation core: see [`game/BUILD_CPP.md`](game/BUILD_CPP.md) — `cmake -S game -B game/build && cmake --build game/build`, then copy the extension binary to `game/bin/`.
+3. Import `game/project.godot` in Godot and run (F5) — entry scene is `scenes/main_menu.tscn`. See [`game/README.md`](game/README.md) for controls and the Slice-0 loop.
 
 ```bash
-./gradlew assembleDebug     # or: just install (build + install onto a connected device/emulator)
+scripts/run_godot_smokes.sh            # full headless smoke suite (subset: pass smoke names)
+ctest --test-dir game/build --output-on-failure   # native C++ sim tests
+scripts/run_perf_bench.sh              # perf budget benchmark (manual gate)
 ```
 
-Or open `android/` in Android Studio and let it sync Gradle — it reads the root `settings.gradle.kts`/`build.gradle.kts` the same way the CLI does.
+### Legacy trees (reference only)
 
-### iOS
-
-**Requires a native macOS host with Xcode 15+** — see [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md#ios-ios).
+The [`android/`](android/) (Kotlin) and [`ios/`](ios/) (Swift) template clients are legacy — not the shipped product. They remain for reference; their CI jobs run only when their own paths change (known findings in [`docs/TESTING.md`](docs/TESTING.md)). The classic recipes still exist:
 
 ```bash
-open ios/MyGame.xcodeproj
+./gradlew assembleDebug     # legacy Android client (requires the AGP/Gradle mismatch fix recorded in docs/TESTING.md)
+just ios-build              # legacy iOS client (macOS host only)
 ```
-
-Select the `MyGame` scheme and an iOS Simulator destination, then Run (⌘R). Or from the CLI: `just ios-build` / `just ios-test`.
 
 ### Documentation website
 
-The interactive design hub + full-repo documentation portal at [`docs/website/`](docs/website/) — see [`docs/website/README.md`](docs/website/README.md) for site content and app layout (`src/views`, `src/styles`, `src/frameworks/vue/components`). `docs/website` is an npm workspace declared in the root `package.json`, so every command below targets it with `-w`/`--workspace` instead of `cd`-ing in:
+The React dashboard + full-repo documentation portal at [`docs/website/`](docs/website/) — see [`docs/website/README.md`](docs/website/README.md) for site content and app layout. `docs/website` is an npm workspace declared in the root `package.json`, so every command below targets it with `-w`/`--workspace` instead of `cd`-ing in:
 
 ```bash
 npm install                              # installs deps for every npm workspace (currently just docs/website)
-npm run dev -w docs/website          # http://localhost:5173, hot-reloading
-npm run build -w docs/website        # type-check (vue-tsc) + production build -> docs/website/dist/
-npm run preview -w docs/website      # serve the production build locally
+npm run dev -w docs/website          # hot-reloading dev server
+npm run build -w docs/website        # typedoc/API gen + astro/storybook assets + production build -> docs/website/dist/
+npm test -w docs/website            # vitest suite
 node docs/website/scripts/generate-nav.mjs   # regenerate nav.generated.ts after editing docs/mkdocs.yml's nav
 ```
 
@@ -147,17 +148,18 @@ The production build is deployed automatically to the `gh-pages` branch by [`.gi
 
 ```bash
 pip install .                                        # installs mkdocs-material, pinned in pyproject.toml
+mkdocs build --config-file docs/mkdocs.yml --strict  # the exact gate the Docs workflow runs
 mkdocs serve --config-file docs/mkdocs.yml            # http://localhost:8000
 ```
 
 ## Development
 
-See [`git/CONTRIBUTING.md`](git/CONTRIBUTING.md) for the contribution workflow, [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) for local setup on both platforms, and [`.devcontainer/`](.devcontainer/devcontainer.json) for a one-click containerized **Android** dev environment.
+See [`git/CONTRIBUTING.md`](git/CONTRIBUTING.md) for the contribution workflow, [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) for local setup, and [`.devcontainer/`](.devcontainer/devcontainer.json) for a one-click containerized dev environment.
 
 ## Releasing
 
-- **Android → Play Store**: see [`.agent/skills/release-to-play-store.md`](.agent/skills/release-to-play-store.md) and [`.github/workflows/release.yml`](.github/workflows/release.yml) — tagging `vX.Y.Z` builds a signed AAB/APK and (optionally, once fastlane credentials are configured) uploads to the Play Console's internal testing track.
-- **iOS → App Store**: not automated yet — see [`docs/moon/roadmaps/ios.md`](docs/moon/roadmaps/ios.md); `just ios-archive` produces an unsigned `.xcarchive` as a starting point.
+- **Godot → stores**: export presets live in `game/` — see [`game/EXPORT_MOBILE.md`](game/EXPORT_MOBILE.md) and `scripts/export_mobile_smoke.sh` for the current export path. Store automation is not wired yet for the Godot build.
+- **Legacy Android → Play Store**: [`.github/workflows/release.yml`](.github/workflows/release.yml) still targets the legacy `android/` tree — tagging `vX.Y.Z` builds a signed AAB/APK from it; see [`docs/moon/roadmaps/ios.md`](docs/moon/roadmaps/ios.md) for the legacy iOS path.
 
 ## License
 
