@@ -1689,3 +1689,53 @@ uncommitted and say so here.
 - `godot --path game --headless --import` aborted rc 134 after the filesystem scan (`cannot connect to daemon at tcp:5037`). Smokes still ran.
 - With `XDG_DATA_HOME=/tmp/claude-1000/-home-pkhunter-Repositories-Game-Project-Mobile-Fortress/958b3fca-a5da-42fb-9038-c6c4289a5ec4/scratchpad/xdg/grok`: `dda_smoke.gd` PASS rc 0, `simulation_smoke.gd` PASS rc 0, `modular_battle_smoke.gd` PASS rc 0, `scenario_control_smoke.gd` PASS rc 0, `flatbuffers_smoke.gd` PASS rc 0, `game_session_smoke.gd` PASS rc 0 (session script was touched).
 
+
+### chat — 2026-10-08 — T38 review: VERIFIED WITH FIXES
+
+**Reviewed:** all of `git diff main...HEAD` and commits `699773a` / `ca9909d`, against the T38 brief,
+`.agent/AGENTS.md` §§5–6 and applicable review/performance/testing rules. Implementation stays in
+its assigned lane (the allowed session toggle plus required coordination/docs). The director is
+default-off, deterministic, bounded, and scales only pending-wave count/HP; its added observation
+and arithmetic allocate no heap memory. API bindings, disabled behavior, reset/load semantics,
+changelog, A4 row, and Grok's handoff were checked. No website changes or website checks apply.
+
+**Fixed (`8253a03`):**
+- **MEDIUM:** combined land+sea purse used signed `int`, overflowing even when each balance was valid.
+  A neutral 1.5-billion-per-front start returned 0.88, and spending could increase intensity. Promoted
+  the sum and baseline to `int64_t` at reset, load, and evaluation; added a regression covering spend
+  and load. The reproducer failed before the fix and passes afterward.
+- **MEDIUM:** `dda_smoke.gd` indexed `base_hp[0]` after detecting an empty array, so missing spawns
+  could abort the test coroutine before `quit(1)`. Guarded the access. A temporary empty-array probe
+  now reports `DDA smoke: FAIL (2)` and exits 1 rather than hanging.
+- **MEDIUM:** hoisted the purse-ratio tuning cap into `DDA_PURSE_RATIO_MAX`; derived the initial
+  baseline from the actual default balances instead of duplicating 28.
+- **LOW:** clarified the changelog/header: saving does not reset DDA, loading clears the timing sample
+  and rebases the purse for the remainder of the run; resumed decisions can differ from uninterrupted
+  play. A4 remains **🚧 Partial**, now explicitly naming battle hookup and playtest validation.
+
+**Independent verification (final source/library):**
+- `cmake -S game -B game/build -DCMAKE_BUILD_TYPE=Release && cmake --build game/build -j$(nproc)`:
+  exit 0 (existing local dependency cache; only a doctest CMake deprecation warning).
+- `cp game/build/libmobile_fortress_core.so game/bin/libmobile_fortress_core.so` and
+  `cp game/build/libmobile_fortress_core.so game/bin/libmobile_fortress_core.linux.x86_64.so`: exit 0.
+- `ctest --test-dir game/build --output-on-failure`: PASS, 1/1 executable, 20 native cases.
+- Each `godot --path game --headless --script res://tests/<name>.gd`, prefixed with
+  `XDG_DATA_HOME=/tmp/claude-1000/-home-pkhunter-Repositories-Game-Project-Mobile-Fortress/958b3fca-a5da-42fb-9038-c6c4289a5ec4/scratchpad/xdg/grok`:
+  `dda_smoke`, `simulation_smoke`, `modular_battle_smoke`, `scenario_control_smoke`,
+  `flatbuffers_smoke`, `game_session_smoke` — all PASS, exit 0. Existing imports were sufficient;
+  no editor import was needed. The additional temporary smoke failure probe used the same prefix.
+- Separately compiled `main` and reviewed `sim_world.cpp`/`.h` with an identical 1,800-tick fixed-dt
+  replay driver: all serialized per-tick snapshots byte-identical with DDA disabled (1,843,312 bytes;
+  SHA256 `09b7231781314f39f906a5cf94af3e291663486d06bb9227b6e27632ef1af56e`). Harness:
+  `/tmp/t38-review-baseline-rupr9dqp`; compiled with `c++ -std=c++20 -O2`, generated-schema and
+  cached FlatBuffers include paths, then compared both executables' binary output.
+- Mutation check: compiled a temporary copy with the pending-wave scaling call removed, linked the
+  native test object, and ran `mutant --test-case=A4*`: exit 1, 2 cases / 31 assertions failed.
+  This confirms the feature tests reject a director that no longer changes waves. Log:
+  `/tmp/t38-review-mutation-2kn545dj/result.txt`. Repository implementation was never mutated.
+- `git diff --check`: PASS. Temporary in-repo failure probe removed.
+
+**Remaining scope:** battle does not apply the session toggle automatically and DT5 does not display
+intensity; no RL or playtest-balance claim is approved. Load intentionally resets DDA observations
+without a schema change, as allowed by the brief; the receiving object's enable flag is retained.
+The native/API baseline is mergeable with these fixes; A4 is not a completed shipping integration.
