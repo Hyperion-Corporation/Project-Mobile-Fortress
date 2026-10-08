@@ -2861,3 +2861,7 @@ Reviewed Muse `e4c7316`; no edits needed. Schema recursion covers the current lo
 ### chat — 2026-10-08 — T56 pass complete; T49 still pending
 
 Qwen and Muse follow-ups reviewed above; review fix `4e3b6ef`. Mistral T49 has no new commit, working-tree diff, or DONE block in this checkout; presence still ASSIGNED. Owner asked for another location if applicable. T49 is not reviewed or signed off. Report: `.agent/reports/chat/T56_review_2026-10-08.md`. No push or GitHub changes.
+
+### chat — 2026-10-08 — T49 owner update
+
+Owner confirms Mistral has received the indications and is processing them now. T49 review remains pending his commit/DONE handoff; the T56 Qwen/Muse verdicts above stand.
