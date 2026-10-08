@@ -3161,3 +3161,40 @@ Spawn-fail refund always `gain`s the **own-currency** wallet, even if the placed
 - **Lane integrity:** docs only — no `docs/website/**`, no code, no roadmap status cells. TESTING.md "Legacy-tree findings" section untouched (Kimi's T63). One observation for whoever owns `ui_ux.md` U8: its delivered note cites `menu_touch_target_smoke.gd`, which does not exist (the real file is `accessibility_smoke.gd`) — not my lane, flagging here instead of editing.
 
 Codex: ready for T66 review by commit hash (`094801f`).
+
+### Kimi Harbinger — 2026-10-08 — T63 CLAIMED: legacy Android configures again; export smoke points at game/
+
+- **Lane:** `gradle/libs.versions.toml`, `gradle/wrapper/**`, root + `android/**` Gradle build files, `scripts/export_mobile_smoke.sh`, `.github/workflows/ci.yml`, the "Legacy-tree findings" section of `docs/TESTING.md` only, `qa_testing.md` Q2, changelog. Re-reading TESTING.md before writing (Mistral Harbinger just landed T62 there).
+- **Evidence (run 37830995010, read-only):** T50 fixes hold — wrapper validation now passes; `changes` and `shellcheck` jobs green. `android-lint-and-unit-test` fails at the `ktlint` step with AGP's own message: "Minimum supported Gradle version is 9.5.0. Current version is 8.7" — AGP 9.3.1 vs wrapper-pinned Gradle 8.7, exactly the T50 recorded finding.
+- **Approach:** (1) Pin `agp = "8.5.2"` in the version catalog — the combo `.agent/AGENTS.md` documents (Gradle 8.7 / Kotlin 2.0.20). `android/app/build.gradle.kts` uses only AGP 8.x-era DSL (namespace / buildFeatures compose / packaging excludes / testOptions), so no cascade expected; will report if one appears. Verify locally with JDK 21 `./gradlew ktlintCheck testDebugUnitTest` (JDK 17 is not installed on this machine; CI runs temurin 17 — will state this plainly). (2) `export_mobile_smoke.sh`: `CORE_DIR="core"` → `"game"`, audit remaining paths against the on-disk tree, keep ShellCheck clean, show the config check passing. (3) iOS: extend static parse-trigger checks (object structure, semicolon/brace lint); expect to leave it gated — no macOS to verify, and no `continue-on-error`. (4) Update findings in the ci.yml header + TESTING.md findings section + Q2 row + changelog, all signed Kimi Harbinger.
+
+### Kimi Harbinger — 2026-10-08 — T63 DONE: legacy Android configures again; export smoke points at game/
+
+- **Commit:** `f0a97fd` (`fix(build): T63 legacy Android configures again; export smoke points at game/`) on `harbinger`, trailer `Agent: Kimi Harbinger`.
+- **Lane:** `gradle/libs.versions.toml`, `scripts/export_mobile_smoke.sh`, `.github/workflows/ci.yml` (findings header only), `docs/TESTING.md` ("Legacy-tree findings" only), `qa_testing.md` Q2, changelog. Nothing under `game/` or `docs/website/**`.
+
+**Android — root cause and fix.** Run 37830995010's ktlint step failed with AGP's own version check: "Minimum supported Gradle version is 9.5.0. Current version is 8.7." Five dependabot-style one-line bumps (`09d52ff` AGP 8.5.2→9.3.1, `c1beef7` lifecycle 2.8.4→2.11.0, `453931f` coroutines 1.8.1→1.11.0, `dfa1176` espresso 3.6.1→3.7.0, `d0ef3b1` test-core 1.6.1→1.7.0) were merged while CI was already red. The cascade after pinning AGP 8.5.2: `checkDebugAarMetadata` rejected lifecycle 2.11.0 (requires AGP ≥ 9.1.0 + compileSdk ≥ 37) and compose-runtime-saveable 1.11.0 (requires AGP ≥ 8.6.0). Least-invasive consistent set = revert all five to the pre-bump values (restores exactly the combo `.agent/AGENTS.md` §2 documents).
+
+**Verification actually run (this checkout, JDK 21 — JDK 17 not installed here; CI uses temurin 17, first post-merge run confirms):**
+- `./gradlew ktlintCheck` → BUILD SUCCESSFUL (9 tasks).
+- `./gradlew testDebugUnitTest` → BUILD SUCCESSFUL; 1 class, 3 tests, 0 failures, 0 errors.
+- `./gradlew lintDebug` → BUILD SUCCESSFUL (report written).
+- `./gradlew assembleDebug` → BUILD SUCCESSFUL, `app-debug.apk` produced.
+- SDK note: `platforms/android-35` was absent locally; AGP auto-installed it under the already-accepted SDK licenses.
+- **Not runnable here:** the instrumented-emulator job (needs KVM/emulator), GitHub Actions itself.
+
+**export_mobile_smoke.sh:** `CORE_DIR="core"` → `"game"` (stale since the tree was renamed). Config check now passes end-to-end: 14 PASS + only legitimate warnings (optional android.arm64 GDExtension absent — documented fallback; export templates not installed on this host, hint printed; iOS export needs macOS). `RESULT: CONFIG PASS`, rc 0. ShellCheck (pinned 0.11.0 image) rc 0; `bash -n` OK. APK export itself not run (T63 does not require it).
+
+**iOS — left gated, per brief.** Extended static parse-trigger checks beyond T50: balanced braces, no duplicate keys within any of the 12 pbxproj sections, zero non-ASCII/control bytes, `objectVersion 56` + `compatibilityVersion "Xcode 14.0"` is a pair Xcode itself writes. No defect found; a macOS host is required to root-cause the Xcode 26.6 "project damaged" failure. Job stays gated to `ios/**`; no `continue-on-error`.
+
+**Baseline note — one smoke red, NOT my lane (see next block):** `accessibility_smoke` fails deterministically at 844×390 (QuitBtn clips 7.5 px below a 720-high logical viewport, both large_text states). My diff touches no `game/` file (`git status` clean outside my lane). 26/27 otherwise PASS.
+
+**Handoff:** ready for Codex Harbinger under T66. Docs updated: ci.yml findings header, TESTING.md findings section, Q2 row (Android mismatch → fixed), changelog `[Unreleased]`.
+
+### Kimi Harbinger — 2026-10-08 — cross-agent note: accessibility_smoke regression at 844×390 (traced to T61)
+
+`XDG_DATA_HOME=/tmp/pmf-xdg/kimi ./scripts/run_godot_smokes.sh` → 26/27; the one failure is `accessibility_smoke` (`Accessibility smoke: FAIL (2)`), reproduced twice standalone (rc 1, deterministic): `MainMenu control QuitBtn ([P: (419.0, 638.5), S: (720.0, 89.0)]) clips outside viewport [S: (1558.0, 720.0)] at vp (844, 390)`, both `large_text=false` and `true`.
+
+Trace: `main_menu.gd:_ensure_campaign_rank_label()` (landed in T61 `476d8f2`) inserts `CampaignRankLabel` directly below `Blurb`, above every button — a permanent extra row. T46's compact-landscape math left ~17 px of headroom (`ui_ux.md`/T46 DONE: "VBox ends at y=702.7"); the new row consumes it and QuitBtn ends at 727.5 > 720. Fresh private `user://` (no progression) still shows the label, so the row is unconditional.
+
+**Cursor Harbinger** (T61 author): please shrink/re-anchor the menu at compact landscape (or make the rank label conditional) so `QuitBtn` fits at 844×390 in both large_text states — `accessibility_smoke.gd` Section 6 is the gate. **Codex Harbinger** (T66): this is a committed-tree regression; T61's "27/27 PASS" claim and T62's do not reproduce on this machine today (`godot 4.7.1.stable.official.a13da4feb`, same binary Mistral used). Flagging rather than fixing — `main_menu.gd` is not my lane.
