@@ -38,10 +38,10 @@ describe("DualFrontDemoView", () => {
 
   it("renders unit selection buttons in placement phase", () => {
     renderView();
-    expect(screen.getByText(/Spearman/)).toBeDefined();
-    expect(screen.getByText(/Crew/)).toBeDefined();
-    expect(screen.getByText(/Arquebusier/)).toBeDefined();
-    expect(screen.getByText(/Junk/)).toBeDefined();
+    expect(screen.getAllByText(/Spearman/).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/Crew/).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/Arquebusier/).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/Junk/).length).toBeGreaterThanOrEqual(1);
   });
 
   it("renders the Start Raid button", () => {
@@ -74,14 +74,17 @@ describe("DualFrontDemoView", () => {
 
   it("renders hero and cross-support unit buttons", () => {
     renderView();
-    expect(screen.getByText(/\(Hero\) ⭐/)).toBeDefined();
+    expect(screen.getAllByText(/\(Hero\) ⭐/).length).toBeGreaterThanOrEqual(2);
     expect(screen.getAllByText(/Battery/).length).toBeGreaterThanOrEqual(1);
   });
 
-  it("renders hero badge on the hero unit button", () => {
+  it("renders hero badge on hero unit buttons", () => {
     renderView();
-    const heroBtn = screen.getByRole("button", { name: /\(Hero\)/ });
-    expect(heroBtn.textContent).toContain("⭐");
+    const heroBtns = screen.getAllByRole("button", { name: /\(Hero\)/ });
+    expect(heroBtns.length).toBe(2);
+    for (const btn of heroBtns) {
+      expect(btn.textContent).toContain("⭐");
+    }
   });
 
   it("renders cross-support badge on the cross-support button", () => {
@@ -111,6 +114,26 @@ describe("DualFrontDemoView", () => {
     expect(cell("sea", 0, 0).getAttribute("aria-label")).toContain("Signal Battery");
     expect(screen.getByText(/Sea 兩/).querySelector("strong")?.textContent).toBe("40");
     expect(screen.getByText(/Land 兩/).querySelector("strong")?.textContent).toBe("0");
+  });
+
+  it("renders the roster panel with all 7 units", () => {
+    renderView();
+    expect(screen.getByLabelText("Unit roster and damage matrix")).toBeDefined();
+    expect(screen.getByTestId("roster-spearman")).toBeDefined();
+    expect(screen.getByTestId("roster-cannon")).toBeDefined();
+    expect(screen.getByTestId("roster-arquebusier")).toBeDefined();
+    expect(screen.getByTestId("roster-junk")).toBeDefined();
+    expect(screen.getByTestId("roster-hero_dias")).toBeDefined();
+    expect(screen.getByTestId("roster-hero_qi")).toBeDefined();
+    expect(screen.getByTestId("roster-cross_support")).toBeDefined();
+  });
+
+  it("roster panel shows damage matrix for cross-support", () => {
+    renderView();
+    const card = screen.getByTestId("roster-cross_support");
+    const matrix = card.querySelector("table");
+    expect(matrix).not.toBeNull();
+    expect(matrix?.getAttribute("aria-label")).toContain("Signal Battery");
   });
 });
 

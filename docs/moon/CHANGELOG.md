@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (2026-10-09, T64 ID8 slice 3: roster + damage matrix + drift test — Qwen Harbinger)
+
+- **Full roster in demo:** All 7 playable units from `unit_defs.gd` now in the website sim: 4 defenders (spearman, cannon, arquebusier, junk), 2 heroes (Capitão Dias ⭐, Commander Qi ⭐), and Signal Battery 🔗. Added missing `hero_dias` (Capitão Dias). Heroes now have `front: "both"` matching the game.
+- **Roster panel:** New `RosterPanel` component below the demo grids shows every unit with cost/currency, damage, range, cooldown, HP, and a 2×2 damage matrix (stands on land/sea × target land/sea) following the game's `get_effective_damage` rule (own multiplier vs same-front, cross multiplier vs opposite-front).
+- **Drift test:** `unit-defs-drift.test.ts` reads `game/scripts/data/unit_defs.gd` from the repo and verifies cost, damage, own_env_mult, cross_env_mult, currency, front, and kind match for all 7 shared units. Mutation proven: changing spearman damage from 8→99 in the game file fails the test.
+- **Sim module:** `UnitDef` now has `kind`, `currency`, `ownEnvMult`, `crossEnvMult` fields (all required). `isHero`/`isCrossSupport` use `kind` field. `getDamageMatrix()` helper added. Normal defender damage uses `ownEnvMult` per the game's rule.
+
 ### Fixed (2026-10-08, T63 legacy Android configures again; export smoke points at game/ — Kimi Harbinger)
 
 - **Android CI unblocked (Q2):** `gradle/libs.versions.toml` pinned AGP 9.3.1, which CI rejected with "Minimum supported Gradle version is 9.5.0" against the wrapper-pinned Gradle 8.7. Reverted to the documented combo — AGP 8.5.2 — and reverted the dependabot-style bumps that had cascaded from it (`lifecycleRuntimeKtx` 2.8.4, `kotlinxCoroutines` 1.8.1, `espressoCore` 3.6.1, `androidxTestCore` 1.6.1; lifecycle 2.11.0 alone requires AGP 9.1.0 + compileSdk 37 per its AAR metadata). Verified locally (JDK 21, SDK platform auto-installed with accepted licenses): `ktlintCheck` BUILD SUCCESSFUL, `lintDebug` BUILD SUCCESSFUL, `testDebugUnitTest` 3/3 tests 0 failures, `assembleDebug` produces `app-debug.apk`. CI runs JDK 17 — first post-merge run confirms. Instrumented emulator job unchanged, not runnable on this host.

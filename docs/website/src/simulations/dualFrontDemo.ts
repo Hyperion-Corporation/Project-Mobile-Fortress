@@ -16,12 +16,16 @@
 
 export type Front = "land" | "sea";
 export type Phase = "placing" | "running" | "win" | "lose";
+export type UnitKind = "defender" | "hero" | "cross_support";
 
 export interface UnitDef {
   id: string;
   name: string;
+  kind: UnitKind;
   front: Front | "both";
   cost: number;
+  /** Currency used to pay for this unit ("land" or "sea"). */
+  currency: "land" | "sea";
   hp: number;
   damage: number;
   range: number;
@@ -30,10 +34,10 @@ export interface UnitDef {
   activeCooldown?: number;
   /** Hero active ability damage (area). Absent for non-heroes. */
   activeDamage?: number;
-  /** Damage multiplier vs raiders on the unit's own front. */
-  ownEnvMult?: number;
+  /** Damage multiplier vs raiders on the front the unit stands on. */
+  ownEnvMult: number;
   /** Damage multiplier vs raiders on the opposite front. */
-  crossEnvMult?: number;
+  crossEnvMult: number;
 }
 
 export interface PlacedUnit {
@@ -101,14 +105,16 @@ export interface SimState {
 
 // Roster names, costs, HP and damage follow game/scripts/data/unit_defs.gd.
 // Range is simplified for this grid; cooldowns are rounded to 100 ms ticks.
+// ownEnvMult / crossEnvMult mirror the game's get_effective_damage rule.
 
 export const UNIT_DEFS: UnitDef[] = [
-  { id: "spearman", name: "Ming Garrison Spearman", front: "land", cost: 10, hp: 40, damage: 8, range: 2, cooldown: 7 },
-  { id: "cannon", name: "Fo-lang-ji Cannon Crew", front: "land", cost: 18, hp: 30, damage: 14, range: 3, cooldown: 12 },
-  { id: "arquebusier", name: "Portuguese Arquebusier", front: "sea", cost: 12, hp: 32, damage: 10, range: 2, cooldown: 9 },
-  { id: "junk", name: "East Asian War Junk", front: "sea", cost: 16, hp: 45, damage: 11, range: 2, cooldown: 9 },
-  { id: "hero_qi", name: "Commander Qi (Hero)", front: "land", cost: 28, hp: 55, damage: 12, range: 2, cooldown: 10, activeCooldown: 80, activeDamage: 28 },
-  { id: "cross_support", name: "Signal Battery", front: "both", cost: 20, hp: 28, damage: 6, range: 3, cooldown: 11, ownEnvMult: 0.55, crossEnvMult: 1.15 },
+  { id: "spearman", name: "Ming Garrison Spearman", kind: "defender", front: "land", cost: 10, currency: "land", hp: 40, damage: 8, range: 2, cooldown: 7, ownEnvMult: 1.0, crossEnvMult: 0.0 },
+  { id: "cannon", name: "Fo-lang-ji Cannon Crew", kind: "defender", front: "land", cost: 18, currency: "land", hp: 30, damage: 14, range: 3, cooldown: 12, ownEnvMult: 1.0, crossEnvMult: 0.35 },
+  { id: "arquebusier", name: "Portuguese Arquebusier", kind: "defender", front: "sea", cost: 12, currency: "sea", hp: 32, damage: 10, range: 2, cooldown: 9, ownEnvMult: 1.0, crossEnvMult: 0.25 },
+  { id: "junk", name: "East Asian War Junk", kind: "defender", front: "sea", cost: 16, currency: "sea", hp: 45, damage: 11, range: 2, cooldown: 9, ownEnvMult: 1.0, crossEnvMult: 0.0 },
+  { id: "hero_dias", name: "Capitão Dias (Hero)", kind: "hero", front: "both", cost: 26, currency: "sea", hp: 48, damage: 10, range: 2, cooldown: 11, ownEnvMult: 1.0, crossEnvMult: 0.65, activeCooldown: 100, activeDamage: 22 },
+  { id: "hero_qi", name: "Commander Qi (Hero)", kind: "hero", front: "both", cost: 28, currency: "land", hp: 55, damage: 12, range: 2, cooldown: 10, ownEnvMult: 1.0, crossEnvMult: 0.5, activeCooldown: 80, activeDamage: 28 },
+  { id: "cross_support", name: "Signal Battery", kind: "cross_support", front: "both", cost: 20, currency: "sea", hp: 28, damage: 6, range: 3, cooldown: 11, ownEnvMult: 0.55, crossEnvMult: 1.15 },
 ];
 
 export const DEFAULT_CONFIG: DemoConfig = {
@@ -373,7 +379,7 @@ function defendersFire(state: SimState, config: DemoConfig): SimState {
     }
 
     // Cross-support: fires at both fronts with env multipliers
-    if (def.ownEnvMult != null && def.crossEnvMult != null) {
+    if (isCrossSupport(def)) {
       const ownTargets = raiders.filter((r) => {
         if (!r.alive || r.hp <= 0) return false;
         if (r.front !== unit.front) return false;
@@ -423,8 +429,9 @@ function defendersFire(state: SimState, config: DemoConfig): SimState {
     // Normal defender: find closest alive raider on same front within range
     const target = findTarget(unit, def, raiders, config);
     if (target) {
-      target.hp -= def.damage;
-      log.push(`Tick ${state.tick}: ${def.name} hits raider for ${def.damage}`);
+      const dmg = Math.round(def.damage * def.ownEnvMult);
+      target.hp -= dmg;
+      log.push(`Tick ${state.tick}: ${def.name} hits raider for ${dmg}`);
       updatedUnits.push({
         ...unit,
         cooldownRemaining: def.cooldown,
@@ -522,15 +529,32 @@ export function runToEnd(state: SimState, config: DemoConfig = DEFAULT_CONFIG, m
 // ── Unit classification helpers ──────────────────────────────────────────────
 
 export function isHero(def: UnitDef): boolean {
-  return def.activeCooldown != null && def.activeDamage != null;
+  return def.kind === "hero";
 }
 
 export function isCrossSupport(def: UnitDef): boolean {
-  return def.ownEnvMult != null && def.crossEnvMult != null;
+  return def.kind === "cross_support";
 }
 
 /** Returns 0..1 fraction of hero ability cooldown remaining (0 = ready). */
 export function getAbilityCooldownFraction(unit: PlacedUnit, def: UnitDef): number {
   if (!isHero(def) || def.activeCooldown == null || def.activeCooldown === 0) return 0;
   return (unit.activeCooldownRemaining ?? 0) / def.activeCooldown;
+}
+
+/** Damage matrix: damage dealt when standing on front X vs target on front Y. */
+export interface DamageMatrix {
+  landVsLand: number;
+  landVsSea: number;
+  seaVsLand: number;
+  seaVsSea: number;
+}
+
+export function getDamageMatrix(def: UnitDef): DamageMatrix {
+  return {
+    landVsLand: Math.round(def.damage * def.ownEnvMult),
+    landVsSea: Math.round(def.damage * def.crossEnvMult),
+    seaVsLand: Math.round(def.damage * def.crossEnvMult),
+    seaVsSea: Math.round(def.damage * def.ownEnvMult),
+  };
 }

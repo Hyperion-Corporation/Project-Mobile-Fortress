@@ -8,6 +8,7 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import "./DualFrontDemoView.css";
+import RosterPanel from "../components/RosterPanel";
 import {
   createState,
   placeUnit,
@@ -326,6 +327,7 @@ export default function DualFrontDemoView() {
           </p>
         </div>
       )}
+      <RosterPanel />
     </div>
   );
 }

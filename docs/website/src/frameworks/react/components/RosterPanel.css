@@ -1,0 +1,120 @@
+.roster-panel {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
+  border-radius: 8px;
+}
+
+.roster-panel h3 {
+  margin: 0 0 0.75rem;
+  font-size: 1.1rem;
+  color: var(--text, #f4e9d8);
+}
+
+.roster-panel h4 {
+  margin: 0.75rem 0 0.5rem;
+  font-size: 0.9rem;
+  color: var(--text-muted, #a09080);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.roster-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.75rem;
+}
+
+.roster-card {
+  padding: 0.6rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  font-size: 0.82rem;
+}
+
+.roster-card.roster-hero {
+  border-color: rgba(201, 162, 39, 0.3);
+  background: rgba(201, 162, 39, 0.06);
+}
+
+.roster-card.roster-cross_support {
+  border-color: rgba(196, 132, 45, 0.3);
+  background: rgba(196, 132, 45, 0.06);
+}
+
+.roster-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.4rem;
+}
+
+.roster-name {
+  font-weight: 600;
+  color: var(--text, #f4e9d8);
+  font-size: 0.85rem;
+}
+
+.roster-cost {
+  color: var(--accent-gold, #c9a227);
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+.roster-stats {
+  display: flex;
+  gap: 0.6rem;
+  margin-bottom: 0.4rem;
+  color: var(--text-muted, #a09080);
+  font-size: 0.78rem;
+}
+
+.roster-ability {
+  margin-bottom: 0.4rem;
+  padding: 0.2rem 0.4rem;
+  background: rgba(201, 162, 39, 0.12);
+  border-radius: 3px;
+  font-size: 0.75rem;
+  color: var(--accent-gold, #c9a227);
+}
+
+.roster-matrix {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+  margin-top: 0.3rem;
+}
+
+.roster-matrix th,
+.roster-matrix td {
+  padding: 0.2rem 0.3rem;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.roster-matrix th {
+  color: var(--text-muted, #a09080);
+  font-weight: 500;
+  font-size: 0.7rem;
+}
+
+.roster-matrix td {
+  color: var(--text, #f4e9d8);
+  font-variant-numeric: tabular-nums;
+}
+
+.roster-zero {
+  color: rgba(255, 255, 255, 0.2);
+}
+
+.roster-unavailable {
+  opacity: 0.4;
+}
+
+@media (max-width: 480px) {
+  .roster-grid {
+    grid-template-columns: 1fr;
+  }
+}
