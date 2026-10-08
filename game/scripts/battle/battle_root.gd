@@ -650,17 +650,17 @@ func _on_screen_drag(sd: InputEventScreenDrag) -> void:
 
 
 func _commit_or_cancel_touch(vp_pos: Vector2) -> void:
+	# Cancellation takes priority over tap jitter tolerance.
+	if not _probe_grids(vp_pos):
+		_cancel_touch_gesture()
+		return
 	if not _touch_dragged and _touch_start_vp.distance_to(vp_pos) >= TOUCH_DRAG_THRESHOLD_PX:
 		_touch_dragged = true
 	var front := _touch_press_front
 	var cell := _touch_press_cell
 	if _touch_dragged:
-		if _probe_grids(vp_pos):
-			front = _hit_front_id
-			cell = _hit_cell
-		else:
-			_cancel_touch_gesture()
-			return
+		front = _hit_front_id
+		cell = _hit_cell
 	_end_touch_gesture()
 	_on_cell_clicked(front, cell)
 
@@ -681,10 +681,12 @@ func _refresh_touch_preview(vp_pos: Vector2) -> void:
 	_clear_touch_previews()
 	if not _probe_grids(vp_pos):
 		return
-	var grid: GridFront = land_grid if _hit_front_id == "land" else sea_grid
+	var front := _hit_front_id if _touch_dragged else _touch_press_front
+	var cell := _hit_cell if _touch_dragged else _touch_press_cell
+	var grid: GridFront = land_grid if front == "land" else sea_grid
 	if grid == null:
 		return
-	grid.set_touch_preview(_hit_cell, _preview_valid_for(grid, _hit_cell))
+	grid.set_touch_preview(cell, _preview_valid_for(grid, cell))
 
 
 func _clear_touch_previews() -> void:
@@ -697,7 +699,32 @@ func _clear_touch_previews() -> void:
 func _preview_valid_for(grid: GridFront, cell: Vector2i) -> bool:
 	if grid.occupants.has(cell):
 		return true
-	return grid.is_placeable(cell)
+	if not grid.is_placeable(cell):
+		return false
+	if pending_hero_id >= 0:
+		for defender in sim.get_defenders():
+			if int(defender.id) == pending_hero_id:
+				return not bool(defender.get("traveling", false))
+		return false
+	if debug_click_spawn != "":
+		return true
+	var def := UnitDefs.get_def(selected_unit_id)
+	if def.is_empty():
+		return false
+	var allowed := int(def.get("front", UnitDefs.Front.LAND))
+	if allowed == UnitDefs.Front.LAND and grid.front_id != "land":
+		return false
+	if allowed == UnitDefs.Front.SEA and grid.front_id != "sea":
+		return false
+	if UnitDefs.is_hero(selected_unit_id):
+		for defender in sim.get_defenders():
+			if str(defender.type) == selected_unit_id:
+				return false
+	var cost := int(def.get("cost", 10))
+	var currency := str(def.get("currency", "land"))
+	var funds: int = sim.get_land_resources() if currency == "land" else sim.get_sea_resources()
+	var fallback: int = sim.get_land_resources() if grid.front_id == "land" else sim.get_sea_resources()
+	return funds >= cost or fallback >= cost
 
 
 func _probe_grids(vp_pos: Vector2) -> bool:
@@ -720,6 +747,8 @@ func _probe_grids(vp_pos: Vector2) -> bool:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventScreenTouch or event is InputEventScreenDrag:
+		return
 	if event.is_action_pressed("pause_game"):
 		if not run_over:
 			GameSession.toggle_paused()

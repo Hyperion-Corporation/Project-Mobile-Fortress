@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed (2026-10-08, T45 review of T40)
+
+- Touch releases outside both grids now cancel even below the drag threshold; the preview follows the cell a sub-threshold tap will commit. Preview validity accounts for unit front, resources, hero uniqueness, and redeploy travel state. Touch smoke now dispatches touch/drag through the viewport and covers these boundary/affordability/front cases and OS cancellation; regressions fail against the original implementation.
+- **G10 remains Partial / review HOLD:** touch starts in `BattleRoot._input` before GUI consumption, so an overlapping HUD control can trigger placement underneath. Input routing and GUI integration coverage need another pass. IOS2 remains Partial; no device verification.
+
 ### Changed (2026-10-08, T40 G10/IOS2 touch placement)
 
 - **G10:** Modular dual-grid placement follows real `InputEventScreenTouch` / `InputEventScreenDrag` (hold preview, drag threshold, commit on release, off-grid cancel, second finger ignored). Emulated mouse-from-touch is swallowed so a finger cannot double-place; desktop left-click still places on press. Valid vs invalid preview uses fill+plus vs outline+X, not colour alone. Smoke: `touch_placement_smoke.gd`.

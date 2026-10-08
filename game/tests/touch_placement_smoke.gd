@@ -49,6 +49,39 @@ func _run() -> void:
 				break
 	var sea_a: Vector2i = sea_cells[0]
 
+	# Boundary regressions: short motion still cancels outside the grid, and
+	# sub-threshold motion previews the press cell that a tap will commit.
+	var edge_center: Vector2 = _cell_vp(battle, battle.land_grid, Vector2i(0, 0))
+	var edge_press := edge_center + Vector2(0, -30)
+	var edge_release := edge_center + Vector2(0, -34)
+	var edge_before: int = battle.sim.get_defender_count()
+	_push_touch(battle, 0, true, edge_press)
+	_push_touch(battle, 0, false, edge_release)
+	if battle.sim.get_defender_count() != edge_before:
+		failures.append("sub-threshold off-grid release placed a unit")
+	var boundary_press := edge_center + Vector2(30, 16)
+	var boundary_drag := edge_center + Vector2(34, 16)
+	_push_touch(battle, 0, true, boundary_press)
+	_push_drag(battle, 0, boundary_drag, boundary_drag - boundary_press)
+	if battle.land_grid.touch_preview_cell != Vector2i(0, 0):
+		failures.append("sub-threshold preview differs from tap commit cell")
+	var cancel := InputEventScreenTouch.new()
+	cancel.index = 0
+	cancel.canceled = true
+	battle.get_viewport().push_input(cancel, true)
+	if battle.is_touch_gesture_active():
+		failures.append("OS cancellation left a gesture active")
+	_push_touch(battle, 0, true, _cell_vp(battle, battle.sea_grid, sea_a))
+	if battle.sea_grid.touch_preview_kind != battle.sea_grid.PREVIEW_INVALID:
+		failures.append("land-only unit preview is valid on sea")
+	battle.get_viewport().push_input(cancel, true)
+	battle.sim.debug_set_resources(0, 0)
+	_push_touch(battle, 0, true, edge_center)
+	if battle.land_grid.touch_preview_kind != battle.land_grid.PREVIEW_INVALID:
+		failures.append("unaffordable unit preview is valid")
+	battle.get_viewport().push_input(cancel, true)
+	battle.sim.debug_set_resources(0, 40)
+
 	# 1. Tap places on land (emulated mouse during the hold must not double-fire).
 	battle.selected_unit_id = "spearman"
 	var before: int = int(battle.sim.get_defender_count())
@@ -237,9 +270,7 @@ func _push_touch(battle: Node, index: int, pressed: bool, vp_pos: Vector2) -> vo
 	ev.index = index
 	ev.pressed = pressed
 	ev.position = vp_pos
-	# Call the same Node._input Viewport would invoke. Do not also push_input:
-	# a live viewport would double-dispatch and place twice.
-	battle._input(ev)
+	battle.get_viewport().push_input(ev, true)
 
 
 func _push_drag(battle: Node, index: int, vp_pos: Vector2, relative: Vector2) -> void:
@@ -247,7 +278,7 @@ func _push_drag(battle: Node, index: int, vp_pos: Vector2, relative: Vector2) ->
 	ev.index = index
 	ev.position = vp_pos
 	ev.relative = relative
-	battle._input(ev)
+	battle.get_viewport().push_input(ev, true)
 
 
 func _deliver_mouse(battle: Node, grid: Node, vp_pos: Vector2, pressed: bool) -> void:
