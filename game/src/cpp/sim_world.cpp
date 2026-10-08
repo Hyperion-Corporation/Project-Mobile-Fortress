@@ -33,6 +33,9 @@ void SimWorld::reset_run(int start_land, int start_sea, int start_hq) {
 	infinite_sea_ = false;
 	invincible_ = false;
 	waves_disabled_ = false;
+	// A4 preference survives a new raid. The clear sample does not.
+	dda_purse_baseline_ = std::max(1, land_resources_ + sea_resources_);
+	reset_dda_observation();
 	for (auto &w : waves_) {
 		w.fired = false;
 	}
@@ -386,10 +389,14 @@ void SimWorld::run_defender_combat(double delta, std::vector<SimEvent> &events) 
 	}
 }
 
-void SimWorld::spawn_wave_raiders(int front, int count, int wave_index) {
+void SimWorld::spawn_wave_raiders(int front, int count, int wave_index, float hp_scale) {
 	const bool use_flow = flow_active();
 	for (int i = 0; i < count; i++) {
-		const float hp = 50.0f + static_cast<float>(wave_index) * 3.0f;
+		float hp = 50.0f + static_cast<float>(wave_index) * 3.0f;
+		// Scale only when the director actually moved the scalar. 1 stays the authored HP bits.
+		if (hp_scale != 1.0f) {
+			hp *= hp_scale;
+		}
 		const float speed = 26.0f + static_cast<float>(wave_index % 4) * 2.0f;
 		std::vector<Vec2> path;
 		int entry_row = -1;
@@ -417,8 +424,12 @@ void SimWorld::check_and_spawn_waves(std::vector<SimEvent> &events) {
 	}
 	if (combat_time_ >= waves_[current_wave_].delay) {
 		Wave &w = waves_[current_wave_];
-		spawn_wave_raiders(0, w.land_count, current_wave_);
-		spawn_wave_raiders(1, w.sea_count, current_wave_);
+		int land_count = w.land_count;
+		int sea_count = w.sea_count;
+		float hp_scale = 1.0f;
+		apply_dda_to_pending_wave(land_count, sea_count, hp_scale);
+		spawn_wave_raiders(0, land_count, current_wave_, hp_scale);
+		spawn_wave_raiders(1, sea_count, current_wave_, hp_scale);
 		w.fired = true;
 		SimEvent ev;
 		ev.type = "wave_spawned";
@@ -435,6 +446,7 @@ void SimWorld::start_combat() {
 	for (auto &w : waves_) {
 		w.fired = false;
 	}
+	reset_dda_observation();
 }
 
 void SimWorld::clear_waves() {
@@ -498,6 +510,9 @@ std::vector<SimEvent> SimWorld::tick(double delta, bool income_enabled) {
 	defenders_.erase(std::remove_if(defenders_.begin(), defenders_.end(),
 							[](const Defender &d) { return !d.alive; }),
 			defenders_.end());
+	if (dda_enabled_) {
+		observe_dda_clear();
+	}
 	if (in_combat_ && combat_time_ >= victory_time_ && raider_count() == 0) {
 		bool all_fired = true;
 		for (const auto &w : waves_) {
@@ -1007,6 +1022,11 @@ bool SimWorld::load_state(const uint8_t *data, size_t size) {
 			}
 		}
 	}
+	// A4 clear-time is not in the snapshot. Drop it and rebase purse so the
+	// next unspawned wave uses HQ, outposts, and post-load economy only.
+	// The enable flag is session state and is left alone.
+	reset_dda_observation();
+	dda_purse_baseline_ = std::max(1, land_resources_ + sea_resources_);
 	return true;
 }
 
@@ -1074,7 +1094,113 @@ bool SimWorld::debug_jump_wave(int wave_index) {
 	}
 	current_wave_ = wave_index;
 	combat_time_ = waves_[static_cast<size_t>(wave_index)].delay;
+	reset_dda_observation();
 	return true;
+}
+
+void SimWorld::set_dda_enabled(bool enabled) {
+	dda_enabled_ = enabled;
+}
+
+void SimWorld::reset_dda_observation() {
+	dda_wave_open_ = false;
+	dda_wave_spawn_time_ = 0.0f;
+	dda_last_clear_seconds_ = DDA_CLEAR_UNKNOWN;
+}
+
+int SimWorld::scale_wave_count(int base, float intensity) {
+	if (base <= 0) {
+		return 0;
+	}
+	const int scaled = static_cast<int>(std::lround(static_cast<double>(base) * static_cast<double>(intensity)));
+	return scaled < 1 ? 1 : scaled;
+}
+
+void SimWorld::apply_dda_to_pending_wave(int &land_count, int &sea_count, float &hp_scale) {
+	hp_scale = 1.0f;
+	if (!dda_enabled_) {
+		return;
+	}
+	if (dda_wave_open_) {
+		// The previous wave was still on the field when the next one came due.
+		dda_last_clear_seconds_ = DDA_CLEAR_SLOW_SECONDS;
+		dda_wave_open_ = false;
+	}
+	hp_scale = dda_intensity();
+	land_count = scale_wave_count(land_count, hp_scale);
+	sea_count = scale_wave_count(sea_count, hp_scale);
+	dda_wave_open_ = true;
+	dda_wave_spawn_time_ = combat_time_;
+}
+
+void SimWorld::observe_dda_clear() {
+	if (!dda_wave_open_ || raider_count() != 0) {
+		return;
+	}
+	float elapsed = combat_time_ - dda_wave_spawn_time_;
+	if (elapsed < 0.0f) {
+		elapsed = 0.0f;
+	}
+	dda_last_clear_seconds_ = elapsed;
+	dda_wave_open_ = false;
+}
+
+float SimWorld::dda_intensity() const {
+	if (!dda_enabled_) {
+		return 1.0f;
+	}
+	float hq_frac = 1.0f;
+	if (hq_max_hp_ > 0) {
+		hq_frac = static_cast<float>(hq_hp_) / static_cast<float>(hq_max_hp_);
+		if (hq_frac < 0.0f) {
+			hq_frac = 0.0f;
+		} else if (hq_frac > 1.0f) {
+			hq_frac = 1.0f;
+		}
+	}
+	const float hq_term = (hq_frac - 1.0f) * DDA_HQ_WEIGHT;
+
+	int outposts_lost = 0;
+	if (!land_outpost_alive_) {
+		outposts_lost += 1;
+	}
+	if (!sea_outpost_alive_) {
+		outposts_lost += 1;
+	}
+	const float outpost_term = -DDA_OUTPOST_PENALTY * static_cast<float>(outposts_lost);
+
+	float clear_term = 0.0f;
+	if (dda_last_clear_seconds_ >= 0.0f) {
+		const float span = DDA_CLEAR_SLOW_SECONDS - DDA_CLEAR_FAST_SECONDS;
+		float t = 0.0f;
+		if (span > 0.0f) {
+			t = (dda_last_clear_seconds_ - DDA_CLEAR_FAST_SECONDS) / span;
+		}
+		if (t < 0.0f) {
+			t = 0.0f;
+		} else if (t > 1.0f) {
+			t = 1.0f;
+		}
+		clear_term = DDA_CLEAR_WEIGHT * (1.0f - 2.0f * t);
+	}
+
+	const int purse = land_resources_ + sea_resources_;
+	const int baseline = dda_purse_baseline_ > 0 ? dda_purse_baseline_ : 1;
+	float purse_ratio = static_cast<float>(purse) / static_cast<float>(baseline);
+	if (purse_ratio < 0.0f) {
+		purse_ratio = 0.0f;
+	} else if (purse_ratio > 2.0f) {
+		purse_ratio = 2.0f;
+	}
+	const float purse_term = (purse_ratio - 1.0f) * DDA_PURSE_WEIGHT;
+
+	float intensity = 1.0f + hq_term + outpost_term + clear_term + purse_term;
+	if (intensity < DDA_INTENSITY_MIN) {
+		intensity = DDA_INTENSITY_MIN;
+	} else if (intensity > DDA_INTENSITY_MAX) {
+		intensity = DDA_INTENSITY_MAX;
+	}
+	return intensity;
 }
 
 int SimWorld::debug_spawn_raider_at(int front, Vec2i cell, float hp, float speed, float damage) {

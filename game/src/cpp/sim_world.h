@@ -171,7 +171,46 @@ public:
 	void add_wave(float delay, int land_count, int sea_count);
 	void set_build_phase_seconds(float seconds);
 	void set_victory_time(float seconds);
-	void spawn_wave_raiders(int front, int count, int wave_index);
+	/// `hp_scale` is 1 when A4 DDA is off. Any other value multiplies this wave's raider HP only.
+	void spawn_wave_raiders(int front, int count, int wave_index, float hp_scale = 1.0f);
+
+	// A4 heuristic DDA (shipping baseline, before any RL fine-tune).
+	//
+	// Off by default. While off, wave spawn is the authored count and the
+	// authored HP formula — no multiply — so an existing run is unchanged.
+	// While on, `dda_intensity()` is a scalar clamped to
+	// [DDA_INTENSITY_MIN, DDA_INTENSITY_MAX] and is applied only when a wave
+	// is about to spawn: raider count (deterministic round, at least 1 if the
+	// authored count is positive) and raider HP. Speed, damage, and the
+	// authored delay are not touched. Delays are absolute combat-clock
+	// timestamps shared with victory and debug_jump_wave; shifting them would
+	// move the whole raid. Already-spawned raiders keep the HP they spawned
+	// with. Direct `spawn_raider` / debug spawns are not scaled.
+	//
+	// Signals (each is a signed offset from 1, all tuning numbers are the
+	// constants below):
+	//   HQ fraction     (hp/max - 1) * DDA_HQ_WEIGHT. Full HQ is neutral.
+	//   Outposts lost   -DDA_OUTPOST_PENALTY per destroyed outpost (0, 1, or 2).
+	//   Previous clear  no sample yet → 0. Otherwise linear from
+	//                   +DDA_CLEAR_WEIGHT at DDA_CLEAR_FAST_SECONDS to
+	//                   -DDA_CLEAR_WEIGHT at DDA_CLEAR_SLOW_SECONDS.
+	//                   "Clear" means the field is empty after that wave
+	//                   spawned (no per-raider id set, so no heap). A later
+	//                   wave that arrives while raiders are still up counts
+	//                   as a slow clear. Manual leftovers share that field.
+	//   Unspent purse   (clamp(purse / baseline, 0, 2) - 1) * DDA_PURSE_WEIGHT.
+	//                   Baseline is land+sea captured at reset_run (the level's
+	//                   starting purse), so a rich level start is neutral and
+	//                   stockpiling or going broke is the signal.
+	//
+	// No RNG. The director stores a handful of scalars. It does not allocate.
+	// The enable flag is session state: reset_run and load_state keep it.
+	// The clear sample is dropped on reset_run, start_combat, debug_jump_wave,
+	// and load_state, and load_state rebases the purse baseline to the loaded
+	// purse. HQ, outposts, and currency themselves still come from the
+	// snapshot. That is enough to keep the next unspawned wave deterministic
+	// without a schema bump; one wave of "no clear sample" after a load is
+	// the accepted gap. FlatBuffers is unchanged.
 
 	std::vector<SimEvent> tick(double delta, bool income_enabled = true);
 
@@ -197,6 +236,21 @@ public:
 	/// Reuses `spawn_raider`, then places the raider on `cell` (flow from there, or lane starting there).
 	int debug_spawn_raider_at(int front, Vec2i cell, float hp = 50.0f, float speed = 26.0f, float damage = 6.0f);
 
+	static constexpr float DDA_INTENSITY_MIN = 0.75f;
+	static constexpr float DDA_INTENSITY_MAX = 1.25f;
+	static constexpr float DDA_HQ_WEIGHT = 0.20f;
+	static constexpr float DDA_OUTPOST_PENALTY = 0.10f;
+	static constexpr float DDA_CLEAR_FAST_SECONDS = 6.0f;
+	static constexpr float DDA_CLEAR_SLOW_SECONDS = 14.0f;
+	static constexpr float DDA_CLEAR_WEIGHT = 0.15f;
+	static constexpr float DDA_PURSE_WEIGHT = 0.12f;
+	static constexpr float DDA_CLEAR_UNKNOWN = -1.0f;
+
+	void set_dda_enabled(bool enabled);
+	bool dda_enabled() const { return dda_enabled_; }
+	/// Effective intensity. Returns 1 while the director is off.
+	float dda_intensity() const;
+
 private:
 	void update_flow_field(int front, Vec2i target);
 	Vec2 map_to_local(int front, Vec2i cell) const;
@@ -207,6 +261,10 @@ private:
 	void run_defender_combat(double delta, std::vector<SimEvent> &events);
 	void run_travel(double delta);
 	void check_and_spawn_waves(std::vector<SimEvent> &events);
+	void reset_dda_observation();
+	void apply_dda_to_pending_wave(int &land_count, int &sea_count, float &hp_scale);
+	void observe_dda_clear();
+	static int scale_wave_count(int base, float intensity);
 	float total_aura_at(Vec2 pos) const;
 	std::vector<Vec2> default_lane_path(int front) const;
 	int pick_entry_row(int front, int preferred) const;
@@ -246,6 +304,12 @@ private:
 	bool infinite_sea_ = false;
 	bool invincible_ = false;
 	bool waves_disabled_ = false;
+	bool dda_enabled_ = false;
+	bool dda_wave_open_ = false;
+	float dda_wave_spawn_time_ = 0.0f;
+	float dda_last_clear_seconds_ = DDA_CLEAR_UNKNOWN;
+	/// land+sea at the last reset_run. Load rebases this to the loaded purse.
+	int dda_purse_baseline_ = 28;
 };
 
 } // namespace mf

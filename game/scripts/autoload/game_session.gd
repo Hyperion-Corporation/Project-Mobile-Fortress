@@ -42,6 +42,19 @@ var _dev_menu: CanvasLayer
 var _dev_taps: Array[float] = []
 const STEP_DT := 1.0 / 30.0
 
+## A4 heuristic DDA preference. Off by default and not cleared by reset_run.
+## Battle scripts do not read this; call apply_dda(sim) to push it onto SimulationCore.
+var dda_enabled: bool = false
+
+
+func set_dda_enabled(enabled: bool) -> void:
+	dda_enabled = enabled
+
+
+func apply_dda(sim: Node) -> void:
+	if sim != null and sim.has_method("set_dda_enabled"):
+		sim.set_dda_enabled(dda_enabled)
+
 
 func _ready() -> void:
 	developer_mode = bool(OfflinePersistence.read_settings().get("developer_mode", false))

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (2026-10-08, T38 A4 heuristic DDA baseline)
+
+- **A4:** Rule-based difficulty director inside `SimWorld`, off by default. Intensity is clamped to 0.75–1.25 from HQ fraction, outposts lost, previous-wave clear time, and unspent currency versus the run's starting purse. It scales only the count and HP of waves that have not spawned (authored delays, speed, and damage stay put). `SimulationCore.set_dda_enabled` / `dda_enabled` / `get_dda_intensity`. `GameSession.dda_enabled` plus `apply_dda(sim)` is the session toggle; modular battle does not call it yet, and the DT5 overlay does not show intensity yet. Clear-time sample resets on save/load (schema unchanged) because HQ, outposts, and currency already round-trip. No RNG. Tests: `sim_world_test.cpp` A4 cases, `dda_smoke.gd`.
+
 ### Changed (2026-08-15, T37 DT6 overlay level picker)
 
 - **DT6:** DT8 overlay `LevelPickSelect` lists `LevelCatalog` dual-front JSONs. **Load level** sets `GameSession.selected_level_path` and calls `BattleRoot.debug_load_level` (in-place reset to that JSON's build/waves/兩). Wave jump stays DT3. Smoke: `level_picker_smoke.gd`.
