@@ -13,20 +13,41 @@
 ### 1 — Environment setup (5 min)
 
 ```bash
-# Build the native sim extension (if not already built)
-cd game && cmake -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build -j$(nproc)
-cp build/libmobile_fortress_core.so bin/libmobile_fortress_core.linux.template_debug.x86_64.so
+# Build the native sim extension first (if not already built) —
+# exact commands live in game/BUILD_CPP.md:
+#   cmake -S game -B game/build -DCMAKE_BUILD_TYPE=Release
+#   cmake --build game/build -j$(nproc)
+#   ... then copy the extension binary into game/bin/ as BUILD_CPP.md describes.
 
-# Open the project in Godot 4.7+
+# Open the project in Godot 4.7+ (4.7.1 verified headless 2026-10-08)
 godot --path game/
 # Press Play (F5) — default scene: scenes/main_menu.tscn
 ```
 
 > iOS testers: see `docs/moon/roadmaps/ios.md` — requires a macOS host or CI build.  
 > Android testers: install the debug APK from `game/exports/android/MobileFortress-debug.apk`
-> (run `bash game/scripts/export_mobile_smoke.sh --export-android` to rebuild if stale).
+> (run `bash scripts/export_mobile_smoke.sh --export-android` from the **repo root** to rebuild if stale).
 
-### 2 — Mandatory acceptance checks (VS-A1 – VS-A11)
+### 2 — DDA setting (A4 heuristic director, default OFF)
+
+The A4 heuristic difficulty director is **off by default** and lives in the developer
+overlay only (`~`/F12 or 5-tap unlock → "Heuristic DDA (A4)"); it is not part of the player
+settings dialog. When enabled it persists for modular battles, including after
+`debug_load_level` and reloads. **Record for every session whether DDA was on** — the
+session-log blocks below have a field for it. The DT7 playtest log records it
+automatically: each `wave_start` event carries `dda_enabled` and `dda_intensity`, so DDA-on
+sessions can be compared with DDA-off sessions wave by wave.
+
+### 3 — Window / device size
+
+The UI is verified headlessly at four reference windows: **1280×720** (desktop),
+**720×1280**, **390×844** (portrait phone), **844×390** (compact landscape) — every
+interactive control renders at ≥48 window pixels in both dimensions at all four sizes,
+with Large Text on or off (`accessibility_smoke`, `battle_hud_layout_smoke`). Record the
+window size or device you played at in the session log; if you hit a layout issue, note
+the window size alongside it.
+
+### 4 — Mandatory acceptance checks (VS-A1 – VS-A11)
 
 Complete this table during or immediately after your session. All **Hard** criteria must be ✅ before recording a "shows promise" verdict.
 
@@ -34,7 +55,7 @@ Complete this table during or immediately after your session. All **Hard** crite
 | --- | --- | --- | --- | --- |
 | VS-A1 | One complete session with **both land AND sea** fronts active | Hard | ☐ ✅ / ☐ ❌ | |
 | VS-A2 | Ming + Portuguese as the only playable civ pair | Hard | ☐ ✅ / ☐ ❌ | |
-| VS-A3 | Isometric 2.5D presentation; **ukiyo-e-readable art** (not pure greyboxes) | Hard | ☐ ✅ / ☐ ❌ | See art checklist §3 |
+| VS-A3 | Isometric 2.5D presentation; **ukiyo-e-readable art** (not pure greyboxes) | Hard | ☐ ✅ / ☐ ❌ | See art checklist §5 |
 | VS-A4 | Build/position/upgrade phase + combat/resource phase functional | Hard | ☐ ✅ / ☐ ❌ | |
 | VS-A5 | HQ primary lose condition; outpost loss is **economic only** | Hard | ☐ ✅ / ☐ ❌ | |
 | VS-A6 | ≥1 hero (grid place, aura, active CD, reposition travel) | Hard | ☐ ✅ / ☐ ❌ | Qi + E pulse |
@@ -44,7 +65,7 @@ Complete this table during or immediately after your session. All **Hard** crite
 | VS-A10 | Single player controlling both fronts; shared camera/perspective | Hard | ☐ ✅ / ☐ ❌ | |
 | VS-A11 | No networked co-op, PvP, live services, or gameplay gacha required | Scope | ☐ ✅ / ☐ N/A | Out-of-scope check |
 
-### 3 — Art & UX acceptance checklist (VS-A3 detail)
+### 5 — Art & UX acceptance checklist (VS-A3 detail)
 
 **Ukiyo-e-readable** means: colour palette is legible at a glance, unit silhouettes read clearly on the isometric tile grid, and the aesthetic is coherent (not pure programmer art). This is a qualitative gate, not a pixel count.
 
@@ -67,7 +88,7 @@ Complete this table during or immediately after your session. All **Hard** crite
 | --- | --- | --- |
 | | | |
 
-### 4 — Qualitative feedback prompts
+### 6 — Qualitative feedback prompts
 
 Answer briefly; one sentence per item is fine.
 
@@ -79,9 +100,9 @@ Answer briefly; one sentence per item is fine.
 6. **Memorable moment:** Was there any moment that felt genuinely fun or surprising?
 7. **Overall verdict:** Does this prototype "show promise" as a cooperative tower-defense concept? (Yes / Needs work / No)
 
-### 5 — Performance notes
+### 7 — Performance notes
 
-Record device + FPS if possible. Target: **30+ FPS with ≥10 units on screen**.
+Record device + FPS if possible. Target: **30+ FPS with ≥10 units on screen**. Headless budget reference: tick p95 ≤ 8000 µs at 40 units (`scripts/run_perf_bench.sh`, `docs/BENCHMARKS.md`).
 
 | Device | OS | FPS (est) | Unit count at worst frame | Notes |
 | --- | --- | --- | --- | --- |
@@ -99,6 +120,8 @@ Fill in one block per playtest session. Minimum 2 sessions (owner + ≥1 collabo
 - **Tester:** ___________
 - **Device/platform:** ___________
 - **Build:** commit ___________
+- **DDA (A4):** ☐ off (default) / ☐ on — the DT7 log's `wave_start` events record `dda_enabled`/`dda_intensity` either way
+- **Window/device size:** ___________ (e.g. 1280×720 desktop, 390×844 phone portrait)
 - **VS-A checks:** all Hard ✅ / failures: ___________
 - **Art/UX checks:** all ✅ / failures: ___________
 - **Qualitative answers:** (attach or paste below)
@@ -112,6 +135,8 @@ Fill in one block per playtest session. Minimum 2 sessions (owner + ≥1 collabo
 - **Tester:** ___________
 - **Device/platform:** ___________
 - **Build:** commit ___________
+- **DDA (A4):** ☐ off (default) / ☐ on — the DT7 log's `wave_start` events record `dda_enabled`/`dda_intensity` either way
+- **Window/device size:** ___________ (e.g. 1280×720 desktop, 390×844 phone portrait)
 - **VS-A checks:** all Hard ✅ / failures: ___________
 - **Art/UX checks:** all ✅ / failures: ___________
 - **Qualitative answers:** (attach or paste below)
