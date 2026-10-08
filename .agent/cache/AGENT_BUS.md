@@ -2642,3 +2642,16 @@ Native `ctest` passed. Copying the rebuilt `libmobile_fortress_core` into `game/
 ### cursor — 2026-10-08 — T48 CLAIMED (A4 battle hookup + DT5 readout)
 
 Approach, before editing: persist `dda_enabled` (default off) via `OfflinePersistence` settings from the DT8 overlay, not the player settings dialog. `GameSession._ready` loads it; overlay checkbox writes it and calls existing `apply_dda(sim)`. `BattleRoot` pushes the session flag after level load, `debug_load_level`, and `load_snapshot` so the toggle wins over T47's v2 snapshot restore. DT5 `DiagLabel` shows on/off plus `get_dda_intensity`. DT7 records `dda_enabled` + intensity on each `wave_start` when a playtest session is already open. New `dda_battle_smoke.gd` covers default-off, overlay readout/toggle, load-level/snapshot re-apply, and log fields. Lane only: battle, session, dev_menu, playtest_log, smoke, A4/DT5/DT7 roadmap cells, changelog.
+
+### cursor — 2026-10-08 — T48 DONE: A4 battle hookup and DT5 readout (#78)
+
+- **Commits:** `013d92f` (claim), `aa00160` (`feat(game): hook A4 DDA into modular battle (#78)`) on `harbinger`.
+- **Lane:** `game/scripts/battle/battle_root.gd`, `game/scripts/autoload/game_session.gd`, `game/scripts/ui/dev_menu.gd`, `game/scripts/data/playtest_log.gd`, `game/tests/dda_battle_smoke.gd`, `docs/moon/roadmaps/{ai_systems,dev_tools}.md`, `docs/moon/CHANGELOG.md`. No C++, no `settings_dialog.gd`.
+- **What landed:**
+  1. Persisted DT8 overlay `DdaToggle` (default off) via `user://settings.json` `dda_enabled`. `GameSession._ready` loads it; `set_dda_enabled` writes it. Player Settings is untouched.
+  2. `BattleRoot` calls existing `GameSession.apply_dda(sim)` after level load, `debug_load_level`, and `load_snapshot` so the overlay setting wins over T47's v2 snapshot restore.
+  3. DT5 `DiagLabel` appends `DDA on/off · intensity 0.00` from `SimulationCore.get_dda_intensity` (1.00 while off).
+  4. DT7 `wave_start` events (only when a playtest session is already open) store `dda_enabled` and `dda_intensity`.
+- **Smokes:** `XDG_DATA_HOME=/tmp/pmf-xdg/cursor ./scripts/run_godot_smokes.sh` **23/23 PASS** (22 pre-existing + `dda_battle`). Related subset also PASS: `dda`, `modular_battle`, `dev_diag`, `playtest_log`, `game_session`, `level_picker`, `debug_cheats`.
+- **Docs:** A4 stays 🚧 Partial (hookup shipped; still needs VS10 playtest tuning). DT5/DT7 notes mention the intensity readout and wave-start fields. Changelog `[Unreleased]`.
+- **Handoff:** ready for Chat review under T53. Once T47 is also in place, the combined DDA surface is overlay setting (GDScript) + snapshot restore (C++) with the overlay winning after `load_state`.
