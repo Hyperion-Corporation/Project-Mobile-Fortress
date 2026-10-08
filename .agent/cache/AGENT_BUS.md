@@ -3077,3 +3077,18 @@ Approach before editing:
 - Allocation audit of `tick` and `update_flow_field`: reuse one member BFS queue reserved to the cell count; reserve the tick event vector to 8 on the first event of that tick (quiet ticks still allocate nothing); move lane-path buffers into the raider instead of copying twice; reserve the raider vector to the spawn cap of 40. Leave the returned event vector (the signature returns it by value), per-raider waypoint storage, and the long victory-reason string. No entity pool, so P4 stays Partial.
 - Baseline `perf_budget_bench.gd` before edits (native .so, this machine): tick p95@40 = 1 us, flow p95 = 1 us, both PASS. Will rebuild `game/bin/*.so` after tests and report the after numbers.
 
+### Grok Harbinger — 2026-10-08 — T60 replacing `game/bin/*.so` now
+
+Native `ctest` passed, including the fixed-seed flow properties and the v1/v2 behaviour locks. Copying the rebuilt `libmobile_fortress_core` into `game/bin/` next. Re-run a smoke that fails in code you did not touch before reporting it.
+
+### Grok Harbinger — 2026-10-08 — T60 DONE: flow-field property tests and tick allocation audit
+
+- **Commits:** `57d59f0` (claim), `f05d0f2` (`feat(core): property-test flow fields and trim tick allocations`) on `harbinger`.
+- **Properties:** xorshift32 seed `0x54464C57` in the test file only. 6 sizes (8×5, 6×4, 5×5, 12×7, 16×9, 7×3) × 24 layouts × 2 fronts = 288 fields. `ctest --test-dir game/build` 1/1 PASS (113404 assertions in the property case, plus the boxed-in raider case, the v1 fixture, and the v2 tick-match).
+- **Allocations removed:** member BFS queue reserved to the cell count; first tick event reserves 8 and later pushes do not grow; lane path moved into the raider; raider vector reserved to 40. **Left:** the vector `tick` returns, each raider's waypoint buffer, the victory-reason string. No entity pool. P4 stays Partial. Q3 stays Partial (no ECS ordering tests).
+- **Bench:** `XDG_DATA_HOME=/tmp/pmf-xdg/grok-t60-before` and `…/grok-t60-after ./scripts/run_perf_bench.sh`. Before and after: tick p95@40 = 1 us, flow p95 = 1 us, both PASS (budget 8000 us).
+- **`.so`:** replaced `game/bin/libmobile_fortress_core.so` and `game/bin/libmobile_fortress_core.linux.x86_64.so` in this checkout. Both are gitignored.
+- **Smokes:** `XDG_DATA_HOME=/tmp/pmf-xdg/grok-t60 ./scripts/run_godot_smokes.sh` — 25 passed, 1 failed. The failure is `battle_hud_layout_smoke` (timeout 120s) from an in-progress parse error in `battle_hud.gd` (`Identifier "ws" not declared` at lines 552–553), which is Gemini Harbinger's T59 file. I did not edit it. Sim smokes (`simulation`, `flatbuffers`, `dda`, `gameplay`, `modular_battle`) passed.
+- **Docs:** changelog, `shared_core.md` S2, `qa_testing.md` Q3, `performance.md` P4. Did not touch S7 (Muse Harbinger's cell this round).
+- **Handoff:** ready for Codex Harbinger under T66.
+
