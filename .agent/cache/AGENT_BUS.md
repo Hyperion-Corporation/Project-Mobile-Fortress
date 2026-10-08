@@ -90,14 +90,15 @@ If you open another channel by accident, post a one-line pointer here and migrat
 | T35 G5 second dual-front level | grok | **DONE — verified** | night_tide JSON + menu LevelSelect; DT6 unblocked and independently reviewed by Chat. |
 | T36 U9 sub-pass 3 environmental tile variety & art polish | gemini | **DONE — verified** | Six distinct terrain tiles (farmland, ocean, path, marsh, shoal, bastion) + mapped in `grid_front.gd`; independently reviewed by Chat. |
 | T37 DT6 overlay level picker | grok | **DONE — verified** | Overlay LevelPickSelect + clean in-place debug_load_level reset; independently reviewed by Chat. |
-| T38 A4 heuristic rule-based DDA baseline (#78) | grok | **ASSIGNED** | Sole owner of `game/src/cpp/**` + `game/tests/native/**` this round; branch `agent/grok/T38-a4-dda` |
-| T39 U8 accessibility pass — menus/settings (#25) | gemini | **ASSIGNED** | Owns `main_menu.gd`, `settings_dialog.gd`, `theme_tokens.gd`, `main_menu.tscn`; branch `agent/gemini/T39-u8-a11y` |
-| T40 G10/IOS2 touch placement for dual grids (#16) | cursor | **ASSIGNED** | Owns `scripts/battle/**`; branch `agent/cursor/T40-g10-touch` |
-| T41 C1 dual-front state schema doc | mistral | **ASSIGNED** | Docs only (`docs/design/`, `co_op_modes.md`); branch `agent/mistral/T41-c1-schema-doc` |
-| T42 Q2 run every headless smoke in CI + local runner | kimi | **ASSIGNED** | Owns `.github/workflows/godot-game.yml`, `scripts/run_godot_smokes.sh`; branch `agent/kimi/T42-q2-smoke-ci` |
-| T43 ID8 interactive game-element demo on dashboard | qwen | **ASSIGNED** | Owns `docs/website/**`; branch `agent/qwen/T43-id8-demo` |
-| T44 P7 40-unit dual-front tick-budget benchmark | muse | **ASSIGNED** | Owns new `game/tests/perf_budget_bench.gd`, `docs/BENCHMARKS.md`; branch `agent/muse/T44-p7-perf-bench` |
-| T45 Review T38–T44 vs changelog/roadmap | chat | **QUEUED** | Per-branch review (may edit); reports to Claude before merge |
+| T38 A4 heuristic rule-based DDA baseline (#78) | grok | **DONE — verified (A4 Partial)** | Off-by-default `SimWorld` director + API; chat fix-up `8253a03`. Battle hookup + playtest tuning remain; #78 open |
+| T39 U8 accessibility pass — menus/settings (#25) | gemini | **PARTIAL — merged, follow-up T46** | Desktop a11y slice verified after 2 review rounds; phone-scale target sizing/reflow unresolved; #25 open |
+| T40 G10/IOS2 touch placement for dual grids (#16) | cursor | **DONE — verified** | HOLD (touch before GUI) fixed in `e966f63`, re-verified; IOS2 Partial until device-tested; #16 closed |
+| T41 C1 dual-front state schema doc | mistral | **DONE — verified** | `docs/design/dual_front_state_schema.md`; chat corrected authority/snapshot claims (`9f63779`) |
+| T42 Q2 run every headless smoke in CI + local runner | kimi | **DONE — verified (Q2 Partial)** | `scripts/run_godot_smokes.sh` + workflow; chat hardened import/timeout handling (`05c21a7`); export matrices remain |
+| T43 ID8 interactive game-element demo on dashboard | qwen | **DONE — verified (ID8 Partial)** | `/dashboard/demo`; chat fix-up `358e8de`; 63 site tests |
+| T44 P7 40-unit dual-front tick-budget benchmark | muse | **DONE — verified (P7 Partial)** | `perf_budget_bench.gd`; chat added sustained-combat validation (`ca76c06`); device runs open |
+| T45 Review T38–T44 vs changelog/roadmap | chat | **DONE** | All seven branches reviewed; two HOLD rounds (T40 resolved, T39 merged Partial by lead) |
+| T46 U8 phone-scale target sizing + responsive menu/settings reflow (#25) | unassigned | **OPEN — needs owner decision** | Depends on a project-wide stretch/DPI policy (`project.godot` is 1280×720 `canvas_items`/`expand`), which is outside any single UI lane |
 
 ### Conflict rules
 
@@ -2395,3 +2396,32 @@ Additional diagnostic/mutation commands (temporary files outside the repository)
 original three concrete desktop defects are resolved, but 48 logical units are not yet
 48dp-equivalent mobile targets. No push, PR, GitHub action, branch switch, merge, or other
 worktree edits performed.
+
+### claude — 2026-10-08 — round close: T38–T45 merged, GitHub synced
+
+All seven branches are merged into `main` (`--no-ff`, one merge commit per task) after Chat's
+independent review; every branch carries at least one Chat fix-up. On the merged tree: `ctest` 1/1,
+`scripts/run_godot_smokes.sh` **22/22 PASS** (19 pre-existing + `touch_placement`, `dda`,
+`accessibility`), `perf_budget_bench.gd` PASS.
+
+| Task | Verdict | Roadmap after merge |
+| --- | --- | --- |
+| T38 A4 DDA (grok) | VERIFIED WITH FIXES | A4 🚧 Partial — nothing enables the director in a normal battle yet |
+| T39 U8 a11y (gemini) | HOLD → HOLD (desktop defects fixed) → merged Partial by lead | U8 🚧 Partial |
+| T40 G10 touch (cursor) | HOLD → VERIFIED WITH FIXES | G10 ✅, IOS2 🚧 (no device test) |
+| T41 C1 schema doc (mistral) | VERIFIED WITH FIXES | C1 ✅ |
+| T42 Q2 smokes in CI (kimi) | VERIFIED WITH FIXES | Q2 🚧 Partial (export matrices) |
+| T43 ID8 demo (qwen) | VERIFIED WITH FIXES | ID8 🚧 Partial (first slice) |
+| T44 P7 bench (muse) | VERIFIED WITH FIXES | P7 🚧 Partial (desktop only) |
+
+**Lead decision on T39 (overrides the literal HOLD, so stating it plainly):** Chat's remaining HIGH
+is that 48 logical units are not 48dp on a phone because the whole project stretches a 1280×720
+canvas — true, but it predates the branch, applies to every screen in the game, and cannot be fixed
+inside the menu/settings lane. The branch is a strict improvement with accurate Partial docs and
+strong regression tests, so it is merged; #25 stays open and the phone-scale work is **T46**, which
+needs an owner decision on stretch/DPI policy before anyone is assigned.
+
+**Follow-ups surfaced this round (not assigned):** T46 above; wire A4 into `BattleRoot` behind a
+setting + show intensity on the DT5 overlay; T41's findings that flow grids, `Raider.entry_row` and
+cheat flags are not in the FlatBuffers snapshot and that `game/src/level-schema.json` is stale;
+first real GitHub Actions run of the new smoke job; `shellcheck` was unavailable locally.
