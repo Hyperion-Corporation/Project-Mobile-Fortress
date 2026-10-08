@@ -344,22 +344,24 @@ func _on_cell_clicked(front_id: String, cell: Vector2i) -> void:
 	var def: Dictionary = UnitDefs.get_def(selected_unit_id)
 	if def.is_empty():
 		return
-	var allowed: int = int(def.get("front", UnitDefs.Front.LAND))
-	if allowed == UnitDefs.Front.LAND and front_id != "land":
-		status_message = "That unit is land-only"
+	var plan: Dictionary = UnitDefs.placement_plan(
+		selected_unit_id, front_id, sim.get_land_resources(), sim.get_sea_resources()
+	)
+	if not bool(plan.get("allowed", false)):
+		status_message = (
+			"That unit is sea-only" if str(plan.get("reason", "")) == "sea_only"
+			else "That unit is land-only"
+		)
 		return
-	if allowed == UnitDefs.Front.SEA and front_id != "sea":
-		status_message = "That unit is sea-only"
+	var cost: int = int(plan.get("cost", 0))
+	var wallet := str(plan.get("wallet", ""))
+	if wallet == "":
+		status_message = "Not enough resources"
 		return
-
-	var currency: String = str(def.get("currency", "land"))
-	var cost: int = int(def.get("cost", 10))
-	var sim_front: int = 0 if currency == "land" else 1
-	if not sim.spend(sim_front, cost):
-		var alt: int = 0 if front_id == "land" else 1
-		if alt == sim_front or not sim.spend(alt, cost):
-			status_message = "Not enough resources"
-			return
+	var pay_front: int = 0 if wallet == "land" else 1
+	if not sim.spend(pay_front, cost):
+		status_message = "Not enough resources"
+		return
 
 	var pos: Vector2 = grid.cell_to_global_center(cell)
 	var range_px: float = float(def.get("range", 1.5)) * 48.0
@@ -374,7 +376,9 @@ func _on_cell_clicked(front_id: String, cell: Vector2i) -> void:
 		front_id_int, selected_unit_id, pos, range_px, damage, cooldown, own_m, cross_m, aura_r, aura_b
 	)
 	if did2 < 0:
-		sim.gain(sim_front, cost)
+		# Own-currency refund, even if the placed-front wallet paid (preserved T61).
+		var currency_front: int = 0 if str(plan.get("currency", "land")) == "land" else 1
+		sim.gain(currency_front, cost)
 		status_message = "Cannot place another %s" % str(def.get("name", selected_unit_id))
 		return
 
@@ -731,23 +735,15 @@ func _preview_valid_for(grid: GridFront, cell: Vector2i) -> bool:
 		return false
 	if debug_click_spawn != "":
 		return true
-	var def := UnitDefs.get_def(selected_unit_id)
-	if def.is_empty():
-		return false
-	var allowed := int(def.get("front", UnitDefs.Front.LAND))
-	if allowed == UnitDefs.Front.LAND and grid.front_id != "land":
-		return false
-	if allowed == UnitDefs.Front.SEA and grid.front_id != "sea":
+	if not UnitDefs.can_stand_on_front(selected_unit_id, grid.front_id):
 		return false
 	if UnitDefs.is_hero(selected_unit_id):
 		for defender in sim.get_defenders():
 			if str(defender.type) == selected_unit_id:
 				return false
-	var cost := int(def.get("cost", 10))
-	var currency := str(def.get("currency", "land"))
-	var funds: int = sim.get_land_resources() if currency == "land" else sim.get_sea_resources()
-	var fallback: int = sim.get_land_resources() if grid.front_id == "land" else sim.get_sea_resources()
-	return funds >= cost or fallback >= cost
+	return UnitDefs.can_afford(
+		selected_unit_id, sim.get_land_resources(), sim.get_sea_resources(), grid.front_id
+	)
 
 
 func _probe_grids(vp_pos: Vector2) -> bool:

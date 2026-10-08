@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (2026-10-08, T61 one affordability rule and menu citadel rank — Cursor Harbinger)
+
+- **G12:** `UnitDefs.placement_plan(id, placed_front, land, sea)` is the single answer for “can this stand here, and which wallet pays”: own currency first, then the other wallet only when the clicked grid uses that other wallet. `can_afford(..., placed_front)` is optional; the three-argument form stays own-currency-only. `battle_root` placement and touch preview call the helper — no second spend path. Spawn front remains the clicked grid. Spawn-fail refund still credits the unit’s own currency even if the fallback wallet paid (left for an owner decision).
+- **G8:** Main menu `CampaignRankLabel` shows the T58 citadel title, progress to the next rank, and campaign star total. Smoke: `placement_afford_smoke.gd` (battle path uses the helper: mutating the fallback fails the Qi-on-sea / 0-land placement) plus `unit_catalog_smoke.gd` plan cases.
+
 ### Added (2026-10-08, T59 U4/U8/IOS2 battle HUD phone-scale targets & citadel rank)
 
 - **U4 / U8 / IOS2 (Battle HUD):** Density-aware touch target sizing and responsive layout in `battle_hud.gd` (`game/scripts/ui/battle_hud.gd`). Sized all interactive buttons to $\ge 48\text{ dp}$ in both width and height across all four target viewports (`1280×720`, `720×1280`, `390×844`, `844×390`) with and without 1.15× Large Text (`ThemeTokens.large_text`).

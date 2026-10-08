@@ -51,6 +51,32 @@ func _run() -> void:
 	if UnitDefs.can_afford("cross_support", 100, 19):
 		failures.append("Should NOT afford cross_support when short on sea resources, even with surplus land")
 
+	# Placed-front plan: own currency first, then the other wallet only on the other grid.
+	var qi_land := UnitDefs.placement_plan("hero_qi", "land", 0, 100)
+	if bool(qi_land.get("allowed", false)) and str(qi_land.get("wallet", "x")) != "":
+		failures.append("Qi on land with 0 land must not fall back to sea")
+	var qi_sea := UnitDefs.placement_plan("hero_qi", "sea", 0, 28)
+	if str(qi_sea.get("wallet", "")) != "sea":
+		failures.append("Qi on sea with 0 land should pay sea (got %s)" % qi_sea.get("wallet", ""))
+	var spear_sea := UnitDefs.placement_plan("spearman", "sea", 40, 40)
+	if bool(spear_sea.get("allowed", true)) or str(spear_sea.get("reason", "")) != "land_only":
+		failures.append("spearman on sea should be land_only")
+	var arq_land := UnitDefs.placement_plan("arquebusier", "land", 40, 40)
+	if bool(arq_land.get("allowed", true)) or str(arq_land.get("reason", "")) != "sea_only":
+		failures.append("arquebusier on land should be sea_only")
+	var battery_land := UnitDefs.placement_plan("cross_support", "land", 20, 0)
+	if str(battery_land.get("wallet", "")) != "land":
+		failures.append("Signal Battery on land with 0 sea should pay land")
+	var battery_sea := UnitDefs.placement_plan("cross_support", "sea", 20, 0)
+	if str(battery_sea.get("wallet", "x")) != "":
+		failures.append("Signal Battery on sea with 0 sea must not fall back to land")
+	if not UnitDefs.can_afford("hero_qi", 0, 28, "sea"):
+		failures.append("can_afford with placed_front sea should allow Qi via sea")
+	if UnitDefs.can_afford("hero_qi", 0, 28, "land"):
+		failures.append("can_afford with placed_front land should not allow Qi on 0 land")
+	if UnitDefs.can_afford("spearman", 9, 100, "land"):
+		failures.append("spearman on land still requires land even with placed_front")
+
 	# 4. Cross-front synergy & multiplier calculations
 	# Signal Battery (cross_support): Base 6 dmg, 1.15 cross mult, 0.55 own mult
 	var sig_land_dmg := UnitDefs.get_effective_damage("cross_support", UnitDefs.Front.LAND)

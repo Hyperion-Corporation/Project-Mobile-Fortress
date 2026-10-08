@@ -184,7 +184,9 @@ static func get_cost(id: String) -> int:
 	return int(d.get("cost", 0))
 
 
-static func can_afford(id: String, land_res: int, sea_res: int) -> bool:
+static func can_afford(id: String, land_res: int, sea_res: int, placed_front: String = "") -> bool:
+	if placed_front != "":
+		return str(placement_plan(id, placed_front, land_res, sea_res).get("wallet", "")) != ""
 	if not has_def(id):
 		return false
 	var d := get_def(id)
@@ -197,6 +199,66 @@ static func can_afford(id: String, land_res: int, sea_res: int) -> bool:
 	elif cur == "sea":
 		return sea_res >= cost
 	return false
+
+
+## True when a non-raider unit may stand on the named grid ("land" or "sea").
+static func can_stand_on_front(id: String, placed_front: String) -> bool:
+	if not has_def(id):
+		return false
+	if placed_front != "land" and placed_front != "sea":
+		return false
+	var d := get_def(id)
+	if int(d.get("kind", Kind.DEFENDER)) == Kind.RAIDER:
+		return false
+	var allowed := int(d.get("front", Front.LAND))
+	if allowed == Front.LAND:
+		return placed_front == "land"
+	if allowed == Front.SEA:
+		return placed_front == "sea"
+	return allowed == Front.BOTH
+
+
+## Single placement rule used by BattleRoot. Spawn front is the clicked grid.
+## Wallet: own currency first; if that cannot pay and the placed grid uses the
+## other wallet, try that wallet. `wallet` is "" when unaffordable or illegal.
+## `currency` is the unit's own currency (spawn-fail refund still credits that).
+static func placement_plan(id: String, placed_front: String, land_res: int, sea_res: int) -> Dictionary:
+	var plan := {
+		"allowed": false,
+		"wallet": "",
+		"cost": 0,
+		"currency": "",
+		"reason": "unknown",
+	}
+	if not has_def(id):
+		return plan
+	var d := get_def(id)
+	if d.is_empty() or int(d.get("kind", Kind.DEFENDER)) == Kind.RAIDER:
+		plan["reason"] = "raider"
+		return plan
+	plan["cost"] = int(d.get("cost", 0))
+	plan["currency"] = str(d.get("currency", "land"))
+	if not can_stand_on_front(id, placed_front):
+		var allowed := int(d.get("front", Front.LAND))
+		plan["reason"] = "sea_only" if allowed == Front.SEA else "land_only"
+		return plan
+	plan["allowed"] = true
+	var cost: int = int(plan["cost"])
+	var currency: String = str(plan["currency"])
+	var own_bal: int = land_res if currency == "land" else sea_res
+	if own_bal >= cost:
+		plan["wallet"] = currency
+		plan["reason"] = "ok"
+		return plan
+	var placed_cur := "land" if placed_front == "land" else "sea"
+	if placed_cur != currency:
+		var fallback: int = land_res if placed_cur == "land" else sea_res
+		if fallback >= cost:
+			plan["wallet"] = placed_cur
+			plan["reason"] = "ok"
+			return plan
+	plan["reason"] = "unaffordable"
+	return plan
 
 
 static func get_units_for_front(front: Front) -> Array[String]:

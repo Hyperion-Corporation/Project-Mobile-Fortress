@@ -4,6 +4,7 @@ extends Control
 const SettingsDialogScript := preload("res://scripts/ui/settings_dialog.gd")
 const ThemeTokensScript := preload("res://scripts/ui/theme_tokens.gd")
 const LevelCatalogScript := preload("res://scripts/data/level_catalog.gd")
+const ProgressionScript := preload("res://scripts/data/progression.gd")
 
 @onready var start_btn: Button = $Center/VBox/StartBtn
 @onready var classic_btn: Button = $Center/VBox/ClassicBtn
@@ -17,6 +18,7 @@ const CINNABAR := ThemeTokensScript.CINNABAR
 
 var _resume_btn: Button
 var _last_run_label: Label
+var _campaign_rank_label: Label
 
 
 func _ready() -> void:
@@ -45,8 +47,10 @@ func _ready() -> void:
 		b.custom_minimum_size = Vector2(0, ThemeTokensScript.MIN_TOUCH_TARGET_SIZE)
 	_ensure_level_select()
 	_ensure_resume_and_history_ui(has_cpp)
+	_ensure_campaign_rank_label()
 	_ensure_version_label()
 	_refresh_last_run()
+	_refresh_campaign_rank()
 	_apply_density_sizes()
 	_apply_large_text()
 	_setup_focus_traversal()
@@ -127,6 +131,10 @@ func _apply_density_sizes() -> void:
 		if blurb:
 			blurb.add_theme_font_size_override("font_size", 11 if is_compact_landscape else 14)
 			blurb.custom_minimum_size = Vector2(box_w, 0)
+		var rank: Label = vbox.get_node_or_null("CampaignRankLabel")
+		if rank:
+			rank.add_theme_font_size_override("font_size", 11 if is_compact_landscape else 13)
+			rank.custom_minimum_size = Vector2(box_w, 0)
 
 		for child in vbox.get_children():
 			if child is Button or child is OptionButton:
@@ -244,6 +252,50 @@ func _ensure_resume_and_history_ui(has_cpp: bool) -> void:
 		vbox.move_child(_last_run_label, classic_btn.get_index())
 	else:
 		_last_run_label = vbox.get_node("LastRunLabel")
+
+
+func _ensure_campaign_rank_label() -> void:
+	var vbox: VBoxContainer = $Center/VBox
+	if vbox.get_node_or_null("CampaignRankLabel") == null:
+		_campaign_rank_label = Label.new()
+		_campaign_rank_label.name = "CampaignRankLabel"
+		_campaign_rank_label.custom_minimum_size = Vector2(480, 0)
+		_campaign_rank_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		_campaign_rank_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		_campaign_rank_label.add_theme_color_override("font_color", ThemeTokensScript.INK)
+		_campaign_rank_label.add_theme_font_size_override("font_size", 13)
+		_campaign_rank_label.focus_mode = Control.FOCUS_NONE
+		vbox.add_child(_campaign_rank_label)
+		var blurb_node: Node = vbox.get_node_or_null("Blurb")
+		if blurb_node:
+			vbox.move_child(_campaign_rank_label, blurb_node.get_index() + 1)
+	else:
+		_campaign_rank_label = vbox.get_node("CampaignRankLabel")
+	ThemeTokensScript.set_a11y_metadata(
+		_campaign_rank_label,
+		"Citadel rank",
+		"Current citadel rank, progress to the next rank, and campaign star total"
+	)
+
+
+func _refresh_campaign_rank() -> void:
+	if _campaign_rank_label == null:
+		return
+	var prestige := ProgressionScript.total_prestige()
+	var tier: Dictionary = ProgressionScript.get_prestige_tier(prestige)
+	var nxt: Dictionary = ProgressionScript.get_next_prestige_tier(prestige)
+	var stars := ProgressionScript.total_stars()
+	var title := str(tier.get("title", "Coastal Beacon"))
+	if bool(nxt.get("max_rank_reached", false)):
+		_campaign_rank_label.text = "Citadel · %s · max rank · campaign ★ %d" % [title, stars]
+		return
+	_campaign_rank_label.text = "Citadel · %s · %d/%d to %s · campaign ★ %d" % [
+		title,
+		prestige,
+		int(nxt.get("next_prestige_required", 0)),
+		str(nxt.get("next_title", "")),
+		stars,
+	]
 
 
 func _ensure_version_label() -> void:
