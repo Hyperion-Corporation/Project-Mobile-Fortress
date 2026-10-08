@@ -3057,3 +3057,23 @@ Finding from the lead's GGWall review: `battle_root.gd` (~line 746) lets a place
 Review T59–T65 by commit hash as DONE blocks land; same rules as T53/T56 (mutations on disposable copies, small fix-ups allowed with a bus claim, report under `.agent/reports/chat/`). T59 and T61 both touch the T58 progression helpers and T61/T64 both encode the damage/affordability rule — check they agree with each other and with `SimWorld`.
 
 **After Codex's review:** the lead verifies on `harbinger`, pushes, and syncs GitHub. Not assigned this round: VS10 playtest sessions (owner), device runs, anything needing macOS.
+
+### Gemini Harbinger — 2026-10-08 — T59 CLAIMED: battle HUD phone-scale targets & citadel rank
+
+Claiming T59 per brief:
+- **Lane**: `game/scripts/ui/battle_hud.gd`, new `game/tests/battle_hud_layout_smoke.gd`, `docs/moon/roadmaps/ui_ux.md` (U4/U8), `docs/moon/roadmaps/ios.md` (IOS2), `docs/moon/CHANGELOG.md`. Read-only use of `ThemeTokens`. No edits to `battle_root.gd` or `main_menu.gd`.
+- **Approach**:
+  1. Add dedicated mobile-accessible Pause and Speed buttons to the HUD TopBar (`PauseBtn` toggling `GameSession.is_paused`, `SpeedBtn` cycling `GameSession.time_scale` 1x/2x/3x).
+  2. In `battle_hud.gd`, ensure responsive density scaling and phone-viewport adaptations across all 4 target viewports (1280×720, 720×1280, 390×844, 844×390) and `large_text` off/on. Every interactive HUD button (unit buttons `BtnSpear`, `BtnCannon`, `BtnArq`, `BtnJunk`, `BtnHero`, `BtnHeroDias`, `BtnCross`, action buttons `StartCombatBtn`, `HeroAbilityBtn`, `SaveBtn`, `LoadBtn`, `PauseBtn`, `SpeedBtn`, PausePanel's `ResumeBtn`, `PauseSaveBtn`, `PauseMenuBtn`, and ResultPanel's `RestartBtn`, `MenuBtn`) will have minimum rendered window dimensions $\ge 47.9\text{ px}$ in BOTH width and height.
+  3. Arrange layouts (e.g. scroll/multi-column container or adaptive positioning for SideBar) so controls never overlap, never clip outside the viewport, and do not occlude the two grids more than the baseline at 1280×720.
+  4. In `show_result(...)`, display the citadel rank title (`Progression.get_prestige_tier`) and progress toward the next rank (`Progression.get_next_prestige_tier`) alongside existing stars and prestige lines.
+  5. Deliver new headless smoke `game/tests/battle_hud_layout_smoke.gd` asserting rendered window pixels $\ge 47.9\text{ px}$ in width and height, containment, non-overlap, and grid coverage at 1280×720 across all 4 resolutions and both `large_text` states.
+
+### Grok Harbinger — 2026-10-08 — T60 CLAIMED: flow-field property tests and tick allocation audit
+
+Approach before editing:
+- Property tests in `game/tests/native/sim_world_test.cpp` (doctest). Generator is an xorshift32 inside the test, seed `0x54464C57`, 6 grid sizes × 24 layouts × both fronts (288 fields). `SimWorld` stays RNG-free. The goal cell `(width-1, height/2)` is never solidified, so a direction never has to point at a solid goal. Checks: finite-cost non-goal cells step to a strictly cheaper in-grid neighbour; no direction enters a solid or leaves the grid; cutoff cells stay cost 9999 with a zero direction; a raider on one does not step onto a solid; toggling one open cell solid and back restores cost, direction, and solid bit.
+- Movement fix required by that raider check: `pick_flow_step` currently falls back to east even when east is solid and no legal neighbour exists. It will return `{0,0}` in that case only. The east fallback stays when east is open, so ordinary routes are unchanged. Existing v1 fixture and v2 tick-match tests are the behaviour lock.
+- Allocation audit of `tick` and `update_flow_field`: reuse one member BFS queue reserved to the cell count; reserve the tick event vector to 8 on the first event of that tick (quiet ticks still allocate nothing); move lane-path buffers into the raider instead of copying twice; reserve the raider vector to the spawn cap of 40. Leave the returned event vector (the signature returns it by value), per-raider waypoint storage, and the long victory-reason string. No entity pool, so P4 stays Partial.
+- Baseline `perf_budget_bench.gd` before edits (native .so, this machine): tick p95@40 = 1 us, flow p95 = 1 us, both PASS. Will rebuild `game/bin/*.so` after tests and report the after numbers.
+
