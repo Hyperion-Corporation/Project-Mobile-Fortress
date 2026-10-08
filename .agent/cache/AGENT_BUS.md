@@ -2440,7 +2440,8 @@ the owner asks each of you, in your own persistent session, to read this entry a
 Nothing else will be sent to you, so everything you need is below.
 
 **Where to work (owner decision, 2026-10-08 — supersedes round 1's worktrees):** everyone works
-in the **main checkout, directly on `main`**. No worktrees, no per-agent branches, no branch
+in the **main checkout, directly on the `harbinger` branch** (already checked out there; `main`
+is not committed to during implementation). No worktrees, no per-agent branches, no branch
 switching — the checkout is shared, so `git switch`/`git checkout <branch>`/`git stash`/`git reset`/
 `git restore` on files that are not yours would disrupt seven other agents. Because the tree is shared:
 
@@ -2470,8 +2471,8 @@ row in the same commit as the code (🚧 Partial unless it is really finished); 
 ending with the trailer in `git/messages/<agent>_coauthor.msg`; append one
 `### <agent> — <date> — T<n> DONE` (or `BLOCKED`) block at the end of this file, listing your commit
 hashes, and update `presence_<agent>.md`; leave none of YOUR files uncommitted. Do not push, open
-PRs, or touch GitHub. Chat reviews your commits on `main` after your DONE block; if Chat posts HOLD,
-fix what it names with follow-up commits and post a follow-up block. The lead verifies on `main`,
+PRs, or touch GitHub. Chat reviews your commits on `harbinger` after your DONE block; if Chat posts HOLD,
+fix what it names with follow-up commits and post a follow-up block. The lead verifies on `harbinger`,
 pushes, and syncs GitHub only after Chat verifies; a task Chat leaves on HOLD is reverted or
 downgraded to Partial by the lead before the push.
 
@@ -2516,7 +2517,7 @@ existing GDScript-facing method signatures — T48 builds on them in parallel.
 cannot be evaluated in the VS10 playtest.
 **Lane (GDScript only, no C++):** `game/scripts/battle/**`, `game/scripts/autoload/game_session.gd`,
 `game/scripts/ui/dev_menu.gd`, `game/scripts/data/playtest_log.gd`, one new smoke. Use the existing
-`SimulationCore.set_dda_enabled` / intensity getter and `GameSession.apply_dda` as they are on `main`.
+`SimulationCore.set_dda_enabled` / intensity getter and `GameSession.apply_dda` as they are today.
 **Done when:** a persisted setting (default off — the roadmap says baseline intensity with a hidden
 fine-tune, so this lives in the dev overlay, not the player settings dialog; `settings_dialog.gd`
 is Gemini's file this round) turns the director on for modular battles including after
@@ -2584,12 +2585,20 @@ defenders on live grids during combat) with its own reported percentiles and bud
 a CI gate. Roadmap: `performance.md` P3 and P7, `gameplay.md` G5 if its text changes.
 
 #### T53 — chat — review
-Review each task on `main` once its DONE block exists, as in T45: read the commits the DONE block
+Review each task on `harbinger` once its DONE block exists, as in T45: read the commits the DONE block
 lists (`git show <hash>`) against the task text above, re-run the verification yourself, check new tests
 fail when the feature is broken, fix small things with fix-up commits (your own paths only, same shared-tree rules as everyone), and post
 `### chat — <date> — T<n> review: VERIFIED | VERIFIED WITH FIXES | HOLD` here.
 T47 and T48 both touch the DDA surface from different sides: once both are DONE, run the full suite
-on `main` with both in place and say so.
+on `harbinger` with both in place and say so.
 
 **Not assigned, on purpose:** VS10 (owner's playtest), backend/co-op implementation, A5+,
 anything rejected or superseded.
+
+### claude — 2026-10-08 — branch change: team works on `harbinger`
+
+Owner direction: the round-1 `agent/*` branches (all already merged into `main`) and their
+worktrees under `../pmf-worktrees/` are deleted, and a new branch **`harbinger`** is cut from
+`main` for the team's implementation work. The main checkout is on `harbinger` now. The round 2
+entry above is updated in place to say so: commit to `harbinger`, never switch branches, and
+check `git branch --show-current` prints `harbinger` before your first commit.
