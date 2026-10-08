@@ -146,12 +146,12 @@ func _run() -> void:
 	var before: int = int(battle.sim.get_defender_count())
 	var land_tap_vp: Vector2 = _cell_vp(battle, battle.land_grid, land_a)
 	_push_touch(battle, 0, true, land_tap_vp)
-	_deliver_mouse(battle, battle.land_grid, land_tap_vp, true)
+	_push_emulated_mouse(battle, land_tap_vp, true)
 	if int(battle.sim.get_defender_count()) != before:
 		failures.append("emulated mouse placed during touch press (double-fire)")
-	_deliver_mouse(battle, battle.land_grid, land_tap_vp, false)
 	await process_frame
 	_push_touch(battle, 0, false, land_tap_vp)
+	_push_emulated_mouse(battle, land_tap_vp, false)
 	await process_frame
 	if int(battle.sim.get_defender_count()) != before + 1:
 		failures.append("land tap did not place (count %d -> %d)" % [before, battle.sim.get_defender_count()])
@@ -349,25 +349,10 @@ func _push_emulated_mouse(battle: Node, vp_pos: Vector2, pressed: bool) -> void:
 	battle.get_viewport().push_input(ev, true)
 
 
-func _deliver_mouse(battle: Node, grid: Node, vp_pos: Vector2, pressed: bool) -> void:
-	var ev := InputEventMouseButton.new()
-	ev.button_index = MOUSE_BUTTON_LEFT
-	ev.pressed = pressed
-	ev.position = vp_pos
-	ev.global_position = vp_pos
-	battle._input(ev)
-	if grid._click_area:
-		var world: Vector2 = battle.get_canvas_transform().affine_inverse() * vp_pos
-		var local_ev := InputEventMouseButton.new()
-		local_ev.button_index = MOUSE_BUTTON_LEFT
-		local_ev.pressed = pressed
-		local_ev.position = grid._click_area.get_global_transform().affine_inverse() * world
-		grid._on_click_input(local_ev)
-
-
 func _push_mouse_click(battle: Node, grid: Node, cell: Vector2i) -> void:
 	var vp: Vector2 = _cell_vp(battle, grid, cell)
-	_deliver_mouse(battle, grid, vp, true)
+	_push_emulated_mouse(battle, vp, true)
+	_push_emulated_mouse(battle, vp, false)
 
 
 func _cell_vp(battle: Node, grid: Node, cell: Vector2i) -> Vector2:

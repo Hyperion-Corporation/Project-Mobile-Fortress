@@ -774,7 +774,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_pressed("upgrade_unit"):
 		_upgrade_selected()
 	for action in SELECT_KEYS.keys():
-		if event.is_action_pressed(action):
+		if InputMap.has_action(action) and event.is_action_pressed(action):
 			_on_unit_selected(SELECT_KEYS[action])
 			return
 	if event is InputEventKey and event.pressed and not event.echo:

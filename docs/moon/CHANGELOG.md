@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed (2026-10-08, T45 re-review of T40)
+
+- Touch smoke now routes desktop and emulated mouse press/release through the viewport, covering GUI dispatch rather than invoking grid handlers directly. Guard absent optional unit-selection InputMap actions during unhandled input; the existing physical-key 5 fallback remains available. G10 GUI routing verified headlessly; IOS2 remains Partial pending device testing.
+
 ### Fixed (2026-10-08, T40 HOLD follow-up)
 
 - Touch placement no longer starts in `_input` ahead of the GUI: a press that hits any interactive Control (HUD, pause/modal overlay, dev overlay) goes to that Control only. Grid click layers use `MOUSE_FILTER_PASS` so ScreenTouch can reach `_unhandled_input` after GUI miss; in-progress drags stay on BattleRoot so a finger can still cross both grids. Smoke covers an injected STOP button over a cell and a tap while paused. IOS2 remains Partial; no device verification.
