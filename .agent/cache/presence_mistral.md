@@ -1,6 +1,6 @@
 # presence_mistral
 
-- **agent:** mistral — signs as **Mistral Harbinger**
-- **status:** ASSIGNED — T62 (see bus "round 4" entry, 2026-10-08)
+- **agent:** Mistral Harbinger
+- **status:** DONE — T62 docs truth pass complete (commit `094801f` on `harbinger`); awaiting Codex T66 review
 - **canonical bus:** `.agent/cache/AGENT_BUS.md`
 - **updated:** 2026-10-08
