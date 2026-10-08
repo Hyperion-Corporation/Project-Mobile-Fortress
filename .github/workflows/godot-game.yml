@@ -7,12 +7,14 @@ on:
     paths:
       - "game/**"
       - "scripts/run_godot_smokes.sh"
+      - "scripts/tests/test_run_godot_smokes.py"
       - ".github/workflows/godot-game.yml"
   pull_request:
     branches: [main]
     paths:
       - "game/**"
       - "scripts/run_godot_smokes.sh"
+      - "scripts/tests/test_run_godot_smokes.py"
       - ".github/workflows/godot-game.yml"
 
 concurrency:
@@ -74,6 +76,9 @@ jobs:
           unzip -q /tmp/godot.zip -d /tmp/godot
           chmod +x /tmp/godot/Godot_v4.7.1-stable_linux.x86_64
           echo "/tmp/godot" >> "$GITHUB_PATH"
+
+      - name: Test smoke runner failure detection
+        run: python3 -m unittest discover -s scripts/tests -p test_run_godot_smokes.py -v
 
       # Run every headless smoke under game/tests/ (auto-discovered), not just
       # one hard-coded smoke. Keep Godot pinned to 4.7.1 (matches local dev).

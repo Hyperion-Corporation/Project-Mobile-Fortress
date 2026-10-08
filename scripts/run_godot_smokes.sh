@@ -16,7 +16,7 @@
 #   SMOKE_LOG     combined log file (default: a fresh file under $TMPDIR)
 #
 # Exit codes: 0 = all passed (skips do not fail the run), 1 = at least one
-# failed, 2 = usage error (e.g. an unknown smoke name was requested).
+# failed (including import), 2 = usage error (e.g. an unknown smoke name was requested).
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -85,17 +85,30 @@ else
 fi
 
 # --- One-off import pass ------------------------------------------------------
-# Godot's headless --import can exit non-zero *after* a successful import
-# (e.g. the Android export plugin aborts when no adb daemon is reachable).
-# The import itself is idempotent and breakage is caught by the smokes'
-# parse-error scan below, so a non-zero import exit only warrants a warning.
+# An import failure must fail the gate even if cached resources let smokes pass.
+# Still run the smokes below to collect all available diagnostics.
 echo "== Import pass: $GODOT --path $GAME_DIR --headless --import =="
 import_rc=0
-timeout "$SMOKE_TIMEOUT" "$GODOT" --path "$GAME_DIR" --headless --import \
+timeout --kill-after=5s "$SMOKE_TIMEOUT" "$GODOT" --path "$GAME_DIR" --headless --import \
   >"$TMP_DIR/import.log" 2>&1 || import_rc=$?
-sed -e 's/\x1b\[[0-9;]*m//g' "$TMP_DIR/import.log"
-if ((import_rc != 0)); then
-  echo "WARN: --import exited $import_rc (continuing; smokes still validate the project)"
+sed -e 's/\x1b\[[0-9;]*m//g' "$TMP_DIR/import.log" >"$TMP_DIR/import.clean"
+cat "$TMP_DIR/import.clean"
+# A fresh headless import can abort during editor shutdown (exit 134).
+# Retry that exit once against the populated cache; never waive a failed retry
+# or error text from either attempt. Other failures are not retried.
+if ((import_rc == 134)); then
+  echo "WARN: import aborted (exit=134); retrying once"
+  import_rc=0
+  timeout --kill-after=5s "$SMOKE_TIMEOUT" "$GODOT" --path "$GAME_DIR" --headless --import \
+    >"$TMP_DIR/import-retry.log" 2>&1 || import_rc=$?
+  sed -e 's/\x1b\[[0-9;]*m//g' "$TMP_DIR/import-retry.log" >"$TMP_DIR/import-retry.clean"
+  cat "$TMP_DIR/import-retry.clean"
+  cat "$TMP_DIR/import-retry.clean" >>"$TMP_DIR/import.clean"
+fi
+import_failed=0
+if ((import_rc != 0)) || grep -Eq 'SCRIPT ERROR|Parse Error|(^|[^[:alnum:]_])FAIL([^[:alnum:]_]|$)' "$TMP_DIR/import.clean"; then
+  echo "FAIL: import (exit=$import_rc; see output above)"
+  import_failed=1
 fi
 echo ""
 
@@ -124,7 +137,7 @@ for smoke in "${smokes[@]}"; do
   out="$TMP_DIR/$smoke.log"
   start=$SECONDS
   rc=0
-  timeout "$SMOKE_TIMEOUT" "$GODOT" --path "$GAME_DIR" --headless \
+  timeout --kill-after=5s "$SMOKE_TIMEOUT" "$GODOT" --path "$GAME_DIR" --headless \
     --script "res://tests/$smoke.gd" >"$out" 2>&1 || rc=$?
   elapsed=$((SECONDS - start))
 
@@ -171,8 +184,13 @@ echo ""
 echo "== Summary: $passed passed, $failed failed, $skipped skipped (of ${#smokes[@]} selected) =="
 echo "Log: $SMOKE_LOG"
 
+if ((import_failed > 0)); then
+  echo "Import failed; smoke results do not override this failure."
+fi
 if ((failed > 0)); then
   echo "Failed smokes: ${failed_names[*]}"
+fi
+if ((failed > 0 || import_failed > 0)); then
   exit 1
 fi
 exit 0
