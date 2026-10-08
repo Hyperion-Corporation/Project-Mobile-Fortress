@@ -7,14 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added (2026-10-08, T39 U8 accessibility pass for menus and settings — HOLD follow-up delivered)
+### Added (2026-10-08, T39 U8 accessibility primitives — re-review HOLD)
 
-- Main menu and settings controls enforce >=48dp touch targets (`ThemeTokens.MIN_TOUCH_TARGET_SIZE`); native AccessKit `accessibility_name` / `accessibility_description` metadata is populated across all interactive elements. Popup item targets and platform screen-reader behavior remain unverified.
-- Closed-loop focus traversal with complete 4-way modal containment: `SettingsDialog` traps focus in all directions (`focus_neighbor_{top,bottom,left,right}`) preventing escape to `QuitBtn` underneath, preserves slider lateral input for value adjustment, disables host menu focus while open, and cleanly restores focus to the opener on close.
-- Rendered-state WCAG AA contrast compliance: button focus rings have 9.20:1 contrast against parchment button backgrounds (`PAPER_CARD`), button body text has 13.10:1 contrast, checkbox hover text has 13.10:1 contrast (`ThemeTokens.INK` on `PAPER_CARD`), and `VersionLabel` has 9.44:1 contrast (`PAPER` on `SEA_INDIGO` horizon).
-- Persisted `large_text` (1.15x UI scale) via `OfflinePersistence` with responsive layout reflow: compacted settings dialog panel geometry, animated via container-safe fade (eliminating position-fighting), container resize listening, and bottom-right `VersionLabel` anchoring to prevent overlap with `QuitBtn` across base 1280×720 and phone portrait 720×1280 viewports.
-- Extended `accessibility_smoke.gd` covering rendered-state contrast (focus rings, button text, checkbox hover, version label), 4-way modal focus trapping + host menu unfocusability, and multi-viewport (1280×720 and 720×1280) interactive control containment and pairwise non-overlapping under `large_text=true`. Retains reviewer's strengthened enabled-menu-scaling and full-focus-membership assertions.
-- In-battle HUD remains outside this slice and deferred to a dedicated combat HUD pass.
+- Main menu and settings controls use a named 48-unit logical-canvas minimum and native AccessKit metadata. **48dp-equivalent mobile targets remain unresolved:** canvas stretching shrinks controls in phone-sized windows; fixed-width content clips at direct phone-sized logical viewports. Popup item targets and platform screen readers remain unverified.
+- Persisted `large_text` (1.15x) through the backward-compatible `OfflinePersistence` settings path. The compacted settings panel and container-safe fade fix the original 1280×720 clipping; the relocated version label no longer overlaps Quit at that size. This is not responsive reflow.
+- Four-way modal focus containment, host button isolation, slider lateral adjustment, and opener focus restoration verified. Re-review limits focus restoration to buttons so static labels remain unfocusable.
+- Button normal/hover/pressed text and focus styles, checkbox text, and version-label contrast corrected. Re-review smoke checks instantiated screen controls, rather than only styling isolated helper objects.
+- Regression checks cover persistence, focus membership, post-animation geometry in 1280×720, 720×1280, 390×844, and 844×390 **windows with project stretching enabled**. A 720×1280 window actually has a 1280×2275 logical canvas; window-fit checks do not establish mobile touch-target compliance.
+- Re-review restored unrelated U7 roadmap row accidentally removed in the follow-up. U8 stays partial/on HOLD for mobile layout and target sizing; in-battle HUD remains out of scope.
 
 ### Changed (2026-08-15, T37 DT6 overlay level picker)
 

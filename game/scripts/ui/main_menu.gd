@@ -236,11 +236,8 @@ func _set_menu_focus_enabled(enabled: bool) -> void:
 	var vbox: VBoxContainer = get_node_or_null("Center/VBox")
 	if vbox:
 		for child in vbox.get_children():
-			if child is Control:
+			if child is BaseButton:
 				child.focus_mode = Control.FOCUS_ALL if enabled else Control.FOCUS_NONE
-	var version: Control = get_node_or_null("VersionLabel")
-	if version:
-		version.focus_mode = Control.FOCUS_ALL if enabled else Control.FOCUS_NONE
 
 
 func _apply_large_text() -> void:

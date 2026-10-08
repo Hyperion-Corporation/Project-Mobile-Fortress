@@ -97,6 +97,7 @@ func _run() -> void:
 				interactive_menu_controls.append(child as Control)
 
 		for ctrl: Control in interactive_menu_controls:
+			_check_rendered_contrast(ctrl, failures)
 			if ctrl.custom_minimum_size.y < min_target:
 				failures.append("Main menu control %s height %.1f < min touch target %.1f" % [
 					ctrl.name, ctrl.custom_minimum_size.y, min_target
@@ -232,6 +233,9 @@ func _run() -> void:
 			if ab.accessibility_name.strip_edges().is_empty():
 				failures.append("Action button %s missing accessibility_name" % ab.name)
 
+	for styled_control: Control in checkboxes + action_buttons + [opt]:
+		_check_rendered_contrast(styled_control, failures)
+
 	# Focus loop in SettingsDialog
 	var start_focus: Control = sliders[0]
 	if start_focus != null:
@@ -313,6 +317,11 @@ func _run() -> void:
 						failures.append("Menu control %s remains focusable while SettingsDialog is open" % child.name)
 		open_dlg._close()
 		await process_frame
+		for child in host_vbox.get_children():
+			if child is Label and child.focus_mode != Control.FOCUS_NONE:
+				failures.append("Closing settings made label focusable: %s" % child.name)
+		if host_menu.get_node("VersionLabel").focus_mode != Control.FOCUS_NONE:
+			failures.append("Closing settings made version label keyboard focusable without activation")
 	host_menu.queue_free()
 	await process_frame
 
@@ -374,7 +383,7 @@ func _run() -> void:
 	OfflinePersistence.write_settings(initial_settings)
 
 	# =========================================================================
-	# 6. Test Viewport Fit and Non-Overlapping with Large Text on at Multiple Viewports
+	# 6. Test fit in stretched windows (not device-independent touch-target sizing)
 	# =========================================================================
 	var large_test_settings: Dictionary = initial_settings.duplicate(true)
 	large_test_settings["large_text"] = true
@@ -382,7 +391,9 @@ func _run() -> void:
 
 	var viewport_sizes: Array[Vector2i] = [
 		Vector2i(1280, 720),
-		Vector2i(720, 1280)
+		Vector2i(720, 1280),
+		Vector2i(390, 844),
+		Vector2i(844, 390)
 	]
 
 	for vp_size: Vector2i in viewport_sizes:
@@ -391,6 +402,8 @@ func _run() -> void:
 		root.add_child(test_menu)
 		await process_frame
 		await process_frame
+		await create_timer(0.3).timeout
+		# Window dimensions differ from the logical canvas under canvas_items stretch.
 		var vp_rect: Rect2 = test_menu.get_viewport_rect()
 
 		# Collect interactive controls and labels on MainMenu
@@ -430,6 +443,7 @@ func _run() -> void:
 		test_menu._open_settings()
 		await process_frame
 		await process_frame
+		await create_timer(0.3).timeout
 		var open_settings: SettingsDialog = test_menu.get_node_or_null("SettingsDialog")
 		if open_settings == null:
 			failures.append("Failed to open SettingsDialog at vp %s" % str(vp_size))
@@ -477,3 +491,23 @@ func _finish(failures: Array[String]) -> void:
 			push_error(failure)
 		print("Accessibility smoke: FAIL (%d)" % failures.size())
 		quit(1)
+
+
+func _check_rendered_contrast(ctrl: Control, failures: Array[String]) -> void:
+	if ctrl == null:
+		failures.append("Missing control for rendered contrast check")
+		return
+	for state: String in ["normal", "hover", "pressed"]:
+		var bg := ThemeTokensScript.PAPER_CARD
+		if not ctrl is CheckBox:
+			var style := ctrl.get_theme_stylebox(state)
+			if not style is StyleBoxFlat:
+				failures.append("%s missing flat %s background" % [ctrl.name, state])
+				continue
+			bg = style.bg_color
+		var color_key := "font_color" if state == "normal" else "font_%s_color" % state
+		if ThemeTokensScript.get_contrast_ratio(ctrl.get_theme_color(color_key), bg) < 4.5:
+			failures.append("%s %s text contrast below 4.5:1" % [ctrl.name, state])
+		var focus := ctrl.get_theme_stylebox("focus")
+		if not focus is StyleBoxFlat or ThemeTokensScript.get_contrast_ratio(focus.border_color, bg) < 3.0:
+			failures.append("%s %s focus contrast below 3:1" % [ctrl.name, state])
