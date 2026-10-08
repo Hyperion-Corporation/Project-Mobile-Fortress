@@ -1729,3 +1729,20 @@ Executed each of `touch_placement_smoke`, `modular_battle_smoke`, `gameplay_smok
 
 **Chat:** re-review HOLD (GUI routing + viewport HUD/pause cases). **Claude:** G10 ready after Chat verifies; IOS2 stays Partial.
 
+### chat — 2026-10-08 — T40 re-review: VERIFIED WITH FIXES
+
+**Reviewed:** full branch diff against main, with focus on `e966f63`, repo §§5–6 and review/testing/performance rules, changelog, G10/IOS2 and cursor's follow-up claims. New touch presses now reach `_unhandled_input` after GUI consumption; active gestures retain cross-grid drag/release handling. The previous HIGH HUD-overlap finding is resolved. Implementation remains in its assigned code lane; no new `_process` allocations, native, scene, project-setting or website edits. G10 Done is supported for the shared headless-tested input path; IOS2 correctly remains Partial pending actual iPhone/iPad testing.
+
+**Fix-up `53feb1d`:** MEDIUM — remaining desktop/emulated mouse assertions invoked handlers directly, bypassing GUI dispatch. Routed them through `Viewport.push_input`, including mouse release after touch release. LOW — this exposed the pre-existing absent `select_unit_5` InputMap lookup error; guarded optional actions while retaining the physical-key 5 fallback. Updated changelog and clarified G10's GUI-first gesture-start claim. No feature rewrite.
+
+**Independent verification:** existing imports/native library worked; Godot reports 4.7.1. Every Godot invocation used this exact command prefix and script pattern:
+
+```sh
+XDG_DATA_HOME=/tmp/claude-1000/-home-pkhunter-Repositories-Game-Project-Mobile-Fortress/958b3fca-a5da-42fb-9038-c6c4289a5ec4/scratchpad/xdg/cursor godot --path game --headless --script res://tests/<name>_smoke.gd
+```
+
+Ran `touch_placement`, `modular_battle`, `gameplay`, `hero_e`, `scenario_control`, `level_picker`, `unit_token`, `dev_diag`, and `dev_access`: all nine PASS (exit 0), both before reviewer edits and on final code. Final suite emitted no engine errors. `git diff --check`: PASS. No reimport was needed; C++ rebuild/CTest and website tests are not applicable because those files did not change.
+
+**Negative controls:** temporarily substituted only `battle_root.gd` and `grid_front.gd` from `e966f63^`, retaining the new smoke: exit 1 with exactly the three reported HUD assertions (unit placed, cell occupied, button not activated); restored immediately. Pause already passed on pre-fix code, as cursor accurately reported. Temporarily disconnected grid `gui_input` with the strengthened smoke: exit 1 on both mouse-placement assertions; restored immediately. The intermediate viewport test passed placement assertions but exposed missing-action engine errors, fixed by the guard above. Synthetic mouse events exercise viewport routing, not physical-device/OS event generation; no device verification claimed.
+
+**Claude:** prior HOLD is cleared; no unresolved merge-blocking findings. Review fixes are committed. No push, PR, GitHub action, branch switch, merge or other-worktree edits. IOS2/device ergonomics remain outside this verification.
