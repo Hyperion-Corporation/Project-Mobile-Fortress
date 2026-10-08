@@ -19,6 +19,15 @@ instrumented:
     @echo -e "{{cyan}}Running instrumented tests on connected device/emulator (android/)...{{reset}}"
     ./gradlewconnectedDebugAndroidTest
 
+# --- Godot (game/) ---
+
+# Run every headless Godot smoke under game/tests/ (auto-discovered by
+# scripts/run_godot_smokes.sh). Optional args run a subset:
+#   just test::godot-smokes simulation gameplay
+godot-smokes *smokes:
+    @echo -e "{{cyan}}Running headless Godot smokes (game/)...{{reset}}"
+    ./scripts/run_godot_smokes.sh {{smokes}}
+
 # --- iOS ---
 # Requires a macOS host with a booted/available simulator — see .devcontainer/README.md.
 

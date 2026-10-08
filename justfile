@@ -56,6 +56,7 @@ help: helper::_print_header
     @echo "  just unit-test               Run Android unit tests (JVM, fast)"
     @echo "  just test-instrumented       Run Android instrumented tests on a connected device/emulator"
     @echo "  just ios-test                 Run the iOS XCTest suite on a simulator"
+    @echo "  just test::godot-smokes       Run every headless Godot smoke under game/tests/ (subset: just test::godot-smokes simulation gameplay)"
     @echo ""
     @echo -e "{{bold}}Lint / Format{{reset}}"
     @echo "  just lint-check              ktlint + Android Lint (see tools/validation/justfile)"

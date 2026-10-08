@@ -5,6 +5,15 @@
 | Android unit tests (JVM) | `android/app/src/test/` | JUnit 4 + `kotlin.test` | `./gradlew testDebugUnitTest` (`just unit-test`) |
 | Android instrumented tests (on-device) | `android/app/src/androidTest/` | JUnit 4 + Espresso + Compose UI test | `./gradlew connectedDebugAndroidTest` (`just test-instrumented`) |
 | iOS unit tests | `ios/Tests/` | XCTest | `xcodebuild ... test` (`just ios-test`) |
+| Godot headless smokes | `game/tests/*_smoke.gd` | Godot 4.7 `--headless` `SceneTree` scripts | `just test::godot-smokes` (`scripts/run_godot_smokes.sh`) |
+
+## Godot headless smokes (game/)
+
+Every `game/tests/*_smoke.gd` is a headless `SceneTree` smoke invoked as `godot --path game --headless --script res://tests/<name>.gd`. `scripts/run_godot_smokes.sh` (wrapped by `just test::godot-smokes`) discovers them automatically — adding a new `*_smoke.gd` needs no runner or CI edits. It performs a one-off `--import` pass, runs each smoke with a per-smoke timeout (`SMOKE_TIMEOUT`, default 120s), and fails a smoke on a non-zero exit **or** on known Godot failure text in its output (`SCRIPT ERROR`, `Parse Error`, a printed `FAIL`) even when the exit code is 0. It prints a per-smoke PASS/FAIL table, writes a combined log (`SMOKE_LOG`), and exits non-zero if any smoke failed. Run a subset with `just test::godot-smokes simulation gameplay`; override the binary with `GODOT=/path/to/godot`.
+
+Smokes that genuinely cannot run headless belong in the commented `SKIP_LIST` at the top of the script, each with a stated reason (currently empty — all smokes run). The native extension must be built first (`game/bin/libmobile_fortress_core*.so`, see `game/BUILD_CPP.md`).
+
+CI: `.github/workflows/godot-game.yml` runs the script on every PR/push touching `game/**` (plus the unchanged CMake/`ctest` job) and uploads `godot-smokes.log` as an artifact when the smoke job fails.
 
 ## What goes where
 

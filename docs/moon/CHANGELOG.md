@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (2026-10-08, T42 Q2 CI runs every headless Godot smoke)
+
+- **Q2:** `scripts/run_godot_smokes.sh` auto-discovers every `game/tests/*_smoke.gd` (new smokes need no runner/CI edits), does the one-off `--import` pass, and runs each headless with a per-smoke timeout (`SMOKE_TIMEOUT`, default 120s). A smoke fails on non-zero exit or on Godot failure text in its output (`SCRIPT ERROR`, `Parse Error`, a printed `FAIL`) even at exit 0; commented `SKIP_LIST` carries per-entry reasons (currently empty — all 19 smokes run). Per-smoke PASS/FAIL table + combined log; non-zero exit if any failed; subset args and `GODOT` env override supported. Local runner: `just test::godot-smokes [names]` (see `docs/TESTING.md`). The `godot-game.yml` smoke job now runs all smokes (was `simulation_smoke.gd` only), also triggers on `scripts/run_godot_smokes.sh` changes, and uploads `godot-smokes.log` as an artifact on failure; Godot stays pinned at 4.7.1 and the native CMake/`ctest` job is unchanged.
+
 ### Changed (2026-08-15, T37 DT6 overlay level picker)
 
 - **DT6:** DT8 overlay `LevelPickSelect` lists `LevelCatalog` dual-front JSONs. **Load level** sets `GameSession.selected_level_path` and calls `BattleRoot.debug_load_level` (in-place reset to that JSON's build/waves/兩). Wave jump stays DT3. Smoke: `level_picker_smoke.gd`.
