@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (2026-10-08, T44 P7 tick-budget benchmark)
+
+- **P7:** new headless `game/tests/perf_budget_bench.gd` (deliberately not `*_smoke.gd`, so CI never gates on timing) plus `scripts/run_perf_bench.sh`: loads `slice0_dual_front.json` through the public `SimulationCore` API, sustains 10/20/40/60-entity dual-front combat loads, and reports min/median/p95/p99/max tick us with entity counts. Budget: p95@40 ≤ 8000 us (~1/4 of a 30 FPS frame); PASS/WARN exit 0, FAIL only past 3x budget; hard FAIL if the native extension is absent. Desktop baseline (i9-12900HX, x86-64): p95@40 = 1 us, PASS ×4 runs. Numbers and caveats in `docs/BENCHMARKS.md`. P7 → 🚧 Partial (on-device runs still open).
+
 ### Changed (2026-08-15, T37 DT6 overlay level picker)
 
 - **DT6:** DT8 overlay `LevelPickSelect` lists `LevelCatalog` dual-front JSONs. **Load level** sets `GameSession.selected_level_path` and calls `BattleRoot.debug_load_level` (in-place reset to that JSON's build/waves/兩). Wave jump stays DT3. Smoke: `level_picker_smoke.gd`.
