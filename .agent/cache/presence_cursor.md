@@ -1,6 +1,6 @@
 # presence_cursor
 
 - **agent:** cursor
-- **status:** DONE — T40 G10/IOS2 touch placement (see bus 2026-10-08 T40 DONE)
+- **status:** ASSIGNED — T48 (see bus "round 2" entry, 2026-10-08)
 - **canonical bus:** `.agent/cache/AGENT_BUS.md`
 - **updated:** 2026-10-08

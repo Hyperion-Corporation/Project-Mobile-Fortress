@@ -98,7 +98,14 @@ If you open another channel by accident, post a one-line pointer here and migrat
 | T43 ID8 interactive game-element demo on dashboard | qwen | **DONE — verified (ID8 Partial)** | `/dashboard/demo`; chat fix-up `358e8de`; 63 site tests |
 | T44 P7 40-unit dual-front tick-budget benchmark | muse | **DONE — verified (P7 Partial)** | `perf_budget_bench.gd`; chat added sustained-combat validation (`ca76c06`); device runs open |
 | T45 Review T38–T44 vs changelog/roadmap | chat | **DONE** | All seven branches reviewed; two HOLD rounds (T40 resolved, T39 merged Partial by lead) |
-| T46 U8 phone-scale target sizing + responsive menu/settings reflow (#25) | unassigned | **OPEN — needs owner decision** | Depends on a project-wide stretch/DPI policy (`project.godot` is 1280×720 `canvas_items`/`expand`), which is outside any single UI lane |
+| T46 U8 phone-scale target sizing + responsive menu/settings reflow (#25) | gemini | **ASSIGNED** | Lead default policy in the 2026-10-08 round-2 entry (owner may override); branch `agent/gemini/T46-u8-phone-scale` |
+| T47 Snapshot completeness: `entry_row`, flow grids, cheat + DDA flags (S4/S5) | grok | **ASSIGNED** | Sole owner of `game/src/cpp/**`, `game/src/schema/**`, `game/tests/native/**`; branch `agent/grok/T47-snapshot-gaps` |
+| T48 A4 battle hookup + DT5 intensity readout (#78) | cursor | **ASSIGNED** | GDScript only: `scripts/battle/**`, `scripts/autoload/game_session.gd`, `scripts/ui/dev_menu.gd`; branch `agent/cursor/T48-a4-battle-hookup` |
+| T49 Docs workflow green (MkDocs strict) + AGENTS.md §1/§3/§4 refresh | mistral | **ASSIGNED** | `docs/**` (not `docs/website`, not `docs/moon/roadmaps` rows of others), `.github/workflows/docs.yml`, `.agent/AGENTS.md`; branch `agent/mistral/T49-docs-green` |
+| T50 `CI` workflow green: legacy Android/iOS jobs + shellcheck | kimi | **ASSIGNED** | `.github/workflows/ci.yml`, `scripts/*.sh` lint fixes; branch `agent/kimi/T50-ci-green` |
+| T51 ID8 slice 2 + 320px header overflow + website tests in CI | qwen | **ASSIGNED** | `docs/website/**`, new `.github/workflows/website.yml`; branch `agent/qwen/T51-id8-slice2` |
+| T52 Level schema refresh + level-JSON validation smoke; P3 flow-recompute bench | muse | **ASSIGNED** | `game/src/level-schema.json`, new `game/tests/level_schema_smoke.gd`, `game/tests/perf_budget_bench.gd`, `docs/BENCHMARKS.md`; branch `agent/muse/T52-level-schema-p3` |
+| T53 Review T46–T52 vs changelog/roadmap | chat | **QUEUED** | Review each branch when its DONE block lands; fix-ups allowed |
 
 ### Conflict rules
 
@@ -2425,3 +2432,149 @@ needs an owner decision on stretch/DPI policy before anyone is assigned.
 setting + show intensity on the DT5 overlay; T41's findings that flow grids, `Raider.entry_row` and
 cheat flags are not in the FlatBuffers snapshot and that `game/src/level-schema.json` is stale;
 first real GitHub Actions run of the new smoke job; `shellcheck` was unavailable locally.
+
+### claude — 2026-10-08 — round 2: T46–T53 (read this entry; it is your whole brief)
+
+**Process change (owner, 2026-10-08):** the lead no longer launches agents. Tasks are written here;
+the owner asks each of you, in your own persistent session, to read this entry and do your task.
+Nothing else will be sent to you, so everything you need is below.
+
+**Where to work.** Your worktree from round 1 still exists at `../pmf-worktrees/<agent>` (relative
+to the main checkout). Work only there. Start with:
+`git switch -c <your branch from the task board> main` (local `main` already contains round 1 and
+this entry). If the worktree is missing, `git worktree add ../pmf-worktrees/<agent> -b <branch> main`.
+After switching, copy `game/bin/*.so` from the main checkout if `game/bin/` is empty, and rebuild
+it yourself only if you change C++ (`game/BUILD_CPP.md`).
+
+**Verification is one command now:** `./scripts/run_godot_smokes.sh` (all `*_smoke.gd`; pass names
+to run a subset). Several of you run Godot at once and `user://` is shared per machine, so always
+set a private data dir: `XDG_DATA_HOME=/tmp/pmf-xdg/<agent> ./scripts/run_godot_smokes.sh`.
+Run the full suite before you declare DONE, plus `ctest --test-dir game/build` if C++ changed.
+Report the commands you actually ran and their real results; say plainly what you could not run.
+
+**Rules (unchanged, `.agent/AGENTS.md` §8):** stay in your lane; changelog entry + your roadmap
+row in the same commit as the code (🚧 Partial unless it is really finished); conventional commits
+ending with the trailer in `git/messages/<agent>_coauthor.msg`; append one
+`### <agent> — <date> — T<n> DONE` (or `BLOCKED`) block at the end of this file on your branch and
+update `presence_<agent>.md`; leave the tree clean. Do not push, open PRs, merge, or touch GitHub.
+Chat reviews your branch in your worktree after your DONE block; if Chat posts HOLD, fix what it
+names on the same branch and post a follow-up block. The lead merges only after Chat verifies.
+
+#### T46 — gemini — U8 phone-scale target sizing and responsive reflow (#25)
+**Why:** `project.godot` stretches a 1280×720 canvas (`canvas_items`/`expand`), so the 48-unit
+minimum from T39 is about 17 px on a 390×844 phone, and at phone-sized logical viewports the
+fixed-width settings panel clips. See Chat's "T39 re-review: HOLD" block for the measurements.
+**Lead default policy (owner may override on this bus before you start):** keep `canvas_items`
+stretch, keep 1280×720 as the landscape design size, and add a density-aware UI scale applied
+through `ThemeTokens` (derived from the actual window size / `DisplayServer.screen_get_scale()` /
+DPI, combined with the Large Text setting) so interactive targets are at least 48dp-equivalent in
+physical terms; make the main menu and settings reflow (no fixed widths; scroll when content
+exceeds the viewport) in portrait and landscape. Do not change stretch mode or orientation
+settings for the battle scene; if the policy cannot work without that, stop and post BLOCKED with
+the options instead of changing it.
+**Lane:** `game/scripts/ui/{main_menu,settings_dialog,theme_tokens}.gd`, `game/scenes/main_menu.tscn`,
+`game/tests/accessibility_smoke.gd`, and the `[display]` section of `game/project.godot` only if
+the policy above needs it. **Done when:** at 390×844, 844×390, 720×1280 and 1280×720 windows (with
+and without Large Text) every interactive control on both screens is fully on-screen, non-overlapping,
+and at least 48dp-equivalent in window pixels at a stated reference density; the smoke asserts this
+using window-pixel sizes, not logical units; all T39 assertions still hold. Roadmap: `ui_ux.md` U8
+(and correct the T46 caveat in `ios.md` IOS2 if you resolve it for these screens only — the battle
+HUD remains open, say so).
+
+#### T47 — grok — snapshot completeness (S4/S5)
+**Why:** T41's schema doc (`docs/design/dual_front_state_schema.md` §8) found runtime state that
+does not survive save/load: `Raider.entry_row`, the flow grids and `grid_size_`, the DT1/DT2 cheat
+flags, and (from T38) the DDA enable flag and its inputs. A resumed run can therefore path
+differently from the run that was saved.
+**Lane:** `game/src/cpp/**`, `game/src/schema/**`, `game/tests/native/**`, `game/tests/flatbuffers_smoke.gd`,
+and the doc's §8 to mark findings resolved. You are the only agent in C++ this round.
+**Done when:** each finding is either persisted (new FlatBuffers fields appended with defaults, so
+snapshots written by the current `main` still load — add a test that loads a pre-change snapshot
+fixture) or deliberately not persisted with the reason written in the doc (cheat flags are a
+reasonable candidate for "reset on load"); a doctest proves save → load → N ticks equals N ticks
+without the round trip, for a mid-combat state with flow grids live and with DDA on. Roadmap:
+`shared_core.md` S5 (and S2/S7 cells if their text changes). Do not change `SimulationCore`'s
+existing GDScript-facing method signatures — T48 builds on them in parallel.
+
+#### T48 — cursor — A4 battle hookup and DT5 readout (#78)
+**Why:** T38 shipped the difficulty director but nothing enables it in a normal battle, so it
+cannot be evaluated in the VS10 playtest.
+**Lane (GDScript only, no C++):** `game/scripts/battle/**`, `game/scripts/autoload/game_session.gd`,
+`game/scripts/ui/dev_menu.gd`, `game/scripts/data/playtest_log.gd`, one new smoke. Use the existing
+`SimulationCore.set_dda_enabled` / intensity getter and `GameSession.apply_dda` as they are on `main`.
+**Done when:** a persisted setting (default off — the roadmap says baseline intensity with a hidden
+fine-tune, so this lives in the dev overlay, not the player settings dialog; `settings_dialog.gd`
+is Gemini's file this round) turns the director on for modular battles including after
+`debug_load_level` and reload; the DT5 diagnostics overlay shows current intensity; the DT7
+playtest log records whether DDA was on and the intensity at each wave start, so sessions can be
+compared; with the setting off, behaviour is unchanged. New smoke covers on/off, overlay readout,
+and the log fields. Roadmap: `ai_systems.md` A4 (stays 🚧 until tuned against playtest data),
+`dev_tools.md` DT5/DT7 cells if their text changes.
+
+#### T49 — mistral — Docs workflow green and AGENTS.md refresh
+**Why:** the `Docs` workflow has failed on every recent push: MkDocs strict mode aborts on links
+from docs pages to files outside `docs/` (`.agent/reports/...`, `git/README.md`, `game/BUILD_CPP.md`,
+`game/src/schema/simulation_state.fbs`) and on a link to a roadmap file that no longer exists
+(`moon/roadmaps/multi_framework_platform.md`). Separately, `.agent/AGENTS.md` §1, §3, §4 and §7
+still describe the legacy Kotlin/Swift clients as the product, which misleads every new agent.
+**Lane:** `docs/**` except `docs/website/**` (in `docs/moon/roadmaps/` touch links only, not other
+agents' status cells), `.github/workflows/docs.yml`, `.agent/AGENTS.md`, `README.md` if it carries
+the same stale description. **Done when:** `mkdocs build --strict -f docs/mkdocs.yml` passes locally
+(install per `docs.yml`; report the exact command) with out-of-tree references turned into absolute
+GitHub URLs or equivalent rather than by disabling strict mode; AGENTS.md describes the Godot 4 +
+C++ game under `game/` as the live product, with correct module boundaries, CLI entry points
+(`scripts/run_godot_smokes.sh`, `ctest`, `scripts/run_perf_bench.sh`), review-severity examples
+that apply to Godot/C++, and the legacy `android/`/`ios/` trees described as legacy; bump its
+version/date. Keep §8 as is. Roadmap: `repo_automation.md` if a row fits, otherwise changelog only.
+
+#### T50 — kimi — `CI` workflow green
+**Why:** `ci.yml` has failed on every recent push, so a red X on `main` means nothing. Two causes
+seen on run 37797420404: `android-lint-and-unit-test` fails Gradle wrapper-jar validation, and
+`ios-test` fails because `ios/MyGame.xcodeproj` does not parse. Both trees are legacy (see
+`docs/moon/ROADMAP.md` "Template Scaffolding").
+**Lane:** `.github/workflows/ci.yml`, `gradle/wrapper/**` if the fix is a legitimate wrapper
+regeneration, `scripts/*.sh` for lint fixes, `docs/TESTING.md`. Not `godot-game.yml` behaviour
+(you may add a shellcheck step there). **Done when:** for each failing job you have found the real
+cause and either fixed it or — if the legacy tree is genuinely broken beyond a small fix — changed
+the job to run only when its own paths change and recorded the breakage as a finding, without
+deleting the legacy code or hiding a failure behind `continue-on-error`; a shellcheck job lints
+`scripts/*.sh` and the scripts are clean (shellcheck is not installed locally — use the
+`koalaman/shellcheck` container or say you could not run it). You cannot run Actions locally:
+state what was validated locally and what will only be proven by the first run after merge.
+Roadmap: `qa_testing.md` Q2.
+
+#### T51 — qwen — ID8 slice 2, header overflow, website tests in CI
+**Why:** the `/dashboard/demo` toy from T43 is the first thing collaborators will click; Chat left
+one LOW open (global header overflows at 320px) and the website's 63 vitest tests run in no workflow.
+**Lane:** `docs/website/**` and one new `.github/workflows/website.yml`. **Done when:** the header
+no longer overflows at 320px (test it); the demo gains the mechanics that make the real game
+distinctive — a hero with an active ability on cooldown and one cross-front support unit, mirroring
+`game/scripts/data/unit_defs.gd` — still as a pure, deterministic, unit-tested sim module with the
+view kept accessible and within the island budget; `website.yml` runs lint, type-check and
+`vitest run` on pushes/PRs touching `docs/website/**`. Report before/after test counts. Roadmap:
+`internal_dashboard.md` ID8.
+
+#### T52 — muse — level schema refresh, level validation smoke, P3 flow-recompute bench
+**Why:** T41 found `game/src/level-schema.json` is stale relative to the dual-front level JSONs, so
+nothing validates level data; and T44's benchmark does not exercise flow-field recompute, which is
+the cost P3 is about.
+**Lane:** `game/src/level-schema.json`, new `game/tests/level_schema_smoke.gd`,
+`game/tests/perf_budget_bench.gd`, `scripts/run_perf_bench.sh`, `docs/BENCHMARKS.md`. No C++ and no
+edits to the level JSONs (if a level is invalid, report it). **Done when:** the schema describes
+what `slice0_dual_front.json` and `night_tide_dual_front.json` actually contain and what the loader
+actually reads (cross-check `sim_world.cpp` and `level_catalog.gd`; note `level_01.json` is a
+legacy leftover the catalog skips); the smoke validates every catalog level against it and fails on
+a deliberately broken copy; the benchmark adds a flow-recompute scenario (placing/removing solid
+defenders on live grids during combat) with its own reported percentiles and budget line, still not
+a CI gate. Roadmap: `performance.md` P3 and P7, `gameplay.md` G5 if its text changes.
+
+#### T53 — chat — review
+Review each branch in its worktree once its DONE block exists, exactly as in T45: read the full
+`main...HEAD` diff against the task text above, re-run the verification yourself, check new tests
+fail when the feature is broken, fix small things with fix-up commits, and post
+`### chat — <date> — T<n> review: VERIFIED | VERIFIED WITH FIXES | HOLD` on that branch.
+T47 and T48 both touch the DDA surface from different sides: after reviewing each, check they still
+work together (merge one into a scratch branch of the other and run the suite) and say so.
+
+**Not assigned, on purpose:** VS10 (owner's playtest), backend/co-op implementation, A5+,
+anything rejected or superseded.
