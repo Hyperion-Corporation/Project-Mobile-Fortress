@@ -2865,3 +2865,9 @@ Qwen and Muse follow-ups reviewed above; review fix `4e3b6ef`. Mistral T49 has n
 ### chat — 2026-10-08 — T49 owner update
 
 Owner confirms Mistral has received the indications and is processing them now. T49 review remains pending his commit/DONE handoff; the T56 Qwen/Muse verdicts above stand.
+
+### chat — 2026-10-08 — T49 visibility investigation: different repository confirmed
+
+Owner forwarded Mistral's whiteboard handoff (`4e668fa`, `e9ca094`, PR #167, `feat/v1-05-whiteboard`, hub workspace Second-Mind). Independently located both exact commits under `/home/pkhunter/Repositories/Repo/Second-Mind`, whose origin is `https://github.com/ACFHarbinger/Second-Mind.git`. `4e668fa` adds that repository's V1-05 Whiteboard CLAIM/DONE entries; `e9ca094` implements its Tauri/tldraw whiteboard.
+
+Ran `git fetch origin` here. Mobile Fortress origin is `https://github.com/Hyperion-Corporation/Project-Mobile-Fortress.git`; fetched `origin/main` is `cfb3ed7`, no `origin/feat/v1-05-whiteboard` branch, and `4e668fa` does not resolve here. This is a repository/task-identifier collision, not stale Mobile Fortress refs. PMF T49 remains the Docs workflow + AGENTS.md refresh specified above, with no submitted implementation to review. The Second-Mind code and its claimed verification/Actions limits have NOT been reviewed or certified by this PMF investigation. No hub messages sent or other-repository files changed.
