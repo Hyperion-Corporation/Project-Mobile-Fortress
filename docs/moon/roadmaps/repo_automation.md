@@ -9,7 +9,7 @@ not game code — kept as its own small roadmap (mirroring why
 [`internal_dashboard.md`](internal_dashboard.md) exists separately from the game
 roadmaps) rather than shoehorned into `backend.md`/`qa_testing.md`, neither of which fit.
 
-See [`git/README.md`](../../git/README.md) for the setup/usage docs; this file tracks open work
+See [`git/README.md`](https://github.com/Hyperion-Corporation/Project-Mobile-Fortress/blob/main/git/README.md) for the setup/usage docs; this file tracks open work
 only.
 
 ## Deliverable index
@@ -40,3 +40,4 @@ functional and adapted to this repo in the meantime.
 | --- | --- | --- |
 | 2026-08-09 | R1 | Initial roadmap: tracks the `git/` automation suite audit/adaptation (RA1–RA3, delivered) and the deferred deterministic-sync mode (RA4, backlog). |
 | 2026-08-09 | R2 | Added RA5 (thin-pointer issue bodies) after a multi-agent brainstorm session found and fixed concrete issue/roadmap content drift (stale Rust references in the shared-game/performance/iOS issues; GCP vs. AWS in B4). Also fixed this file's own stale `multi_framework_platform.md` cross-reference to `internal_dashboard.md` (the file was renamed the same session). |
+| 2026-10-08 | R3 | Docs workflow strict-green pass (T49): this file's `git/README.md` link was a relative escape out of `docs/` that MkDocs strict mode rejects — now an absolute GitHub URL. Same treatment applied to the other out-of-tree doc links (see `CHANGELOG.md` [Unreleased]). |

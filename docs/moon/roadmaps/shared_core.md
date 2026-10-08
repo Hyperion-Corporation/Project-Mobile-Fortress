@@ -4,7 +4,7 @@
 
 **2026-08-11 note (final multi-agent pass):** C++ remains firm. The primary **game client is Godot 4**. Owner direction: use **both godot-cpp (GDExtension) and C++ modules** where appropriate.
 
-**2026-08-11 implementation note:** GDExtension `SimulationCore` is live under `game/src/cpp/` + `mobile_fortress_core.gdextension` (raiders, defenders, outposts, dual currency, HQ). Build: [`game/BUILD_CPP.md`](../../../game/BUILD_CPP.md). Epic #129.
+**2026-08-11 implementation note:** GDExtension `SimulationCore` is live under `game/src/cpp/` + `mobile_fortress_core.gdextension` (raiders, defenders, outposts, dual currency, HQ). Build: [`game/BUILD_CPP.md`](https://github.com/Hyperion-Corporation/Project-Mobile-Fortress/blob/main/game/BUILD_CPP.md). Epic #129.
 
 ## Decision: C++ simulation with Godot presentation
 

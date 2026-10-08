@@ -8,7 +8,7 @@
 > **Version**: 5.0  
 > **Date**: 2026-08-11  
 > **Status**: Active development — post multi-agent final pass  
-> **Decision record**: [`.agent/reports/shared/pmf_20260810_canonical_shared_report.md`](../../.agent/reports/shared/pmf_20260810_canonical_shared_report.md) · [admin status report](../../.agent/reports/admin/pmf_20260809_status_report.md)
+> **Decision record**: [`.agent/reports/shared/pmf_20260810_canonical_shared_report.md`](https://github.com/Hyperion-Corporation/Project-Mobile-Fortress/blob/main/.agent/reports/shared/pmf_20260810_canonical_shared_report.md) · [admin status report](https://github.com/Hyperion-Corporation/Project-Mobile-Fortress/blob/main/.agent/reports/admin/pmf_20260809_status_report.md)
 
 ## Overview
 

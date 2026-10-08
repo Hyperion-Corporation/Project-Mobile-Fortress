@@ -2,8 +2,8 @@ site_name: Mobile Fortress Documentation
 site_description: >-
   Documentation portal for Mobile Fortress, a cooperative Wōkòu-pirate-era coastal tower-defense mobile game.
 site_author: ACFHarbinger
-repo_url: https://github.com/ACFHarbinger/Project-Mobile-Fortress
-repo_name: ACFHarbinger/Project-Mobile-Fortress
+repo_url: https://github.com/Hyperion-Corporation/Project-Mobile-Fortress
+repo_name: Hyperion-Corporation/Project-Mobile-Fortress
 edit_uri: edit/main/docs/
 
 docs_dir: .

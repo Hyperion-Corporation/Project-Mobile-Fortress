@@ -2,7 +2,7 @@
 
 *Last updated: 2026-10-08. Reference for the dual-front simulation state as implemented in the Slice-0 C++ core (`SimWorld`), plus a clearly separated proposal for the C2 local Wi‑Fi asymmetric co-op.*
 
-**Status:** Part 1 is a source-accurate description of what exists today ([`game/src/cpp/`](../../game/src/cpp/) + FlatBuffers snapshot [`simulation_state.fbs`](../../game/src/schema/simulation_state.fbs)). Part 2 is a **proposal — nothing in it is implemented**. Line references are stable as of commit `e248146`.
+**Status:** Part 1 is a source-accurate description of what exists today ([`game/src/cpp/`](https://github.com/Hyperion-Corporation/Project-Mobile-Fortress/tree/main/game/src/cpp) + FlatBuffers snapshot [`simulation_state.fbs`](https://github.com/Hyperion-Corporation/Project-Mobile-Fortress/blob/main/game/src/schema/simulation_state.fbs)). Part 2 is a **proposal — nothing in it is implemented**. Line references are stable as of commit `e248146`.
 
 ## Contents
 
