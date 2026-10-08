@@ -1,8 +1,8 @@
 # Performance Benchmarks
 
-*Last updated: 2026-08-06.*
+*Last updated: 2026-10-08.*
 
-> **TODO:** No automated benchmark suite exists yet — this document records the **target budgets and planned instrumentation**, not measured results. Neither native client ships the real Mobile Fortress core loop today (see [`.agent/AGENTS.md`](https://github.com/ACFHarbinger/Project-Mobile-Fortress/blob/main/.agent/AGENTS.md) §7 "Known Constraints"); benchmarking the inherited template skeletons (a bouncing-entity demo on Android, a top-down shooter skeleton on iOS) wouldn't be representative of anything. This doc will gain real numbers as [`docs/moon/roadmaps/performance.md`](moon/roadmaps/performance.md)'s items land — track it there, not here, for status.
+> The Godot/C++ desktop measurement is in [Simulation Tick Budget](#simulation-tick-budget-p7-desktop-baseline). Target-device measurements remain open under P7. The earlier budgets, planned suites and native-client profiling instructions below are legacy planning context; the current VS-A8 acceptance floor is 30+ FPS with 10–40 units.
 
 ---
 
@@ -12,6 +12,7 @@
 - [Planned Benchmark Suite](#planned-benchmark-suite)
 - [Why These Targets](#why-these-targets)
 - [Profiling Tools (Available Today)](#profiling-tools-available-today)
+- [Simulation Tick Budget](#simulation-tick-budget-p7-desktop-baseline)
 - [Reporting a Regression](#reporting-a-regression)
 
 ---
@@ -66,6 +67,86 @@ xcrun xctrace record --template 'Time Profiler' --launch ios/MyGame.xcodeproj
 ```
 
 See [`.agent/rules/game_loop_performance.md`](https://github.com/ACFHarbinger/Project-Mobile-Fortress/blob/main/.agent/rules/game_loop_performance.md)'s closing note on both platforms: profile before "optimizing" — most naive frame-drop reports trace back to allocation or an accidental main-thread blocking call, not raw compute cost.
+
+---
+
+## Simulation Tick Budget (P7 Desktop Baseline)
+
+First measured sim numbers for the project (T44). The benchmark times only
+the native `SimulationCore.tick()` call — no rendering, HUD sync, or audio —
+at the VS-A8 design ceiling (~40 units across both fronts, sustained raid).
+
+### How to run it
+
+```bash
+# Manual gate only — never wire into CI (timing is machine-dependent,
+# and *_smoke.gd wiring would pick up only CI-safe smokes anyway).
+scripts/run_perf_bench.sh
+# or directly:
+godot --path game --headless --script res://tests/perf_budget_bench.gd
+```
+
+On a shared machine, prefix a private `XDG_DATA_HOME=` so parallel Godot
+runs do not share `user://`. The script loads the real
+`slice0_dual_front.json` level through the public `SimulationCore` API
+(`load_level_json`, `spawn_raider`, `spawn_defender`), builds a 10 / 20 /
+40 / 60-entity dual-front load (half raiders, half combat-engaged
+defenders, split across land + sea fronts), warms up 200 ticks, then times
+2000 fixed-dt (1/30 s) ticks per level with `Time.get_ticks_usec()` into a
+pre-sized buffer (no benchmark-side allocation inside the timed loop) and reports
+min / median / p95 / p99 / max plus the entity counts actually reached.
+Untimed snapshots verify damage and movement on each front across the
+measured window and a subsequent 60-tick probe. Synthetic 500-pixel defender
+range keeps targets in reach throughout; high raider HP prevents deaths.
+The public tick includes native event-array creation and bridge overhead.
+If the native GDExtension did not load, the script prints FAIL and exits 1
+rather than benchmarking a fallback backend.
+
+### Budget derivation
+
+VS-A8 requires 30+ FPS with 10–40 units. One 30 FPS frame is 33_333 us;
+the sim tick is only part of a frame (rendering, HUD sync, audio, OS
+margin), so the benchmark assigns the sim at most ~1/4 of the frame:
+**`SIM_BUDGET_US = 8000`**. The p95 tick at the 40-unit ceiling is
+compared against it: PASS (exit 0) at or under budget, WARN (exit 0) up to
+3x budget, FAIL (exit 1) beyond — exit code fails only on gross regression
+so the script is usable as a manual gate without being flaky.
+
+### Measured numbers (2026-10-08)
+
+Machine: 12th Gen Intel i9-12900HX (24 threads), desktop x86-64 Linux,
+Godot 4.7.1 headless, lead-prepared native library (Release build type;
+this task did not rebuild C++). Three consecutive reviewer runs after the
+sustained-combat fix, 2000 timed ticks per load level per run:
+
+| Load (entities) | Median (us) | p95 (us) | p99 (us) | Max spread across 3 runs (us) |
+| --- | --- | --- | --- | --- |
+| 10 (5 raiders + 5 defenders) | 0 | 1 | 1 | 4–6 |
+| 20 (10 + 10) | 0 | 1 | 1 | 1–3 |
+| 40 (20 + 20, design ceiling) | 0 | 1 | 1 | 2–4 |
+| 60 (30 + 30, over-budget stress) | 0 | 1 | 2–3 | 3–4 |
+
+Verdict: **PASS** in all three runs — p95@40 = 1 us against the 8000 us
+budget, i.e. roughly three orders of magnitude of headroom on this
+machine. Microsecond timer resolution is too coarse to establish a scaling curve
+from these medians/p95 values; the outliers were not profiled. Start/end entity counts
+matched the target load exactly in every run (no mid-run deaths).
+
+### Explicit caveats (why P7 stays Partial, not Done)
+
+- **Desktop only, NOT a target phone.** These numbers say nothing about
+  Android 13+ / iOS 17+ devices, thermal throttling, or battery (P8).
+  The "on target devices" part of P7 remains open: re-run this script on
+  representative hardware before the collaborator playtest.
+- **Sim tick only.** Rendering, TileMap/HUD sync, GDScript presentation
+  (`battle_root.gd`), and audio are not measured.
+- **Synthetic lane-path movement + defender targeting only.** The load uses explicit
+  lane paths; flow-field recompute cost (P3) and the C++-owned wave-spawn
+  path are not exercised here. Combat-phase wave scheduling is deliberately
+  not started; defender attacks and movement run independently of that flag.
+- Medians of 0 us mean elapsed times fall below the timer resolution;
+  they do not mean zero simulation work. Damage/movement assertions detect
+  a no-op tick independently of the timer.
 
 ---
 
