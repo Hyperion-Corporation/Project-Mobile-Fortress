@@ -19,7 +19,7 @@ CI: `.github/workflows/godot-game.yml` runs the script on every PR/push touching
 
 Runner regression tests use a temporary fixture and fake Godot binary: `python3 -m unittest discover -s scripts/tests -p test_run_godot_smokes.py -v` (also run in CI).
 
-### Per-smoke coverage (27 smokes on disk, 2026-10-08 — read from the smoke files)
+### Per-smoke coverage (28 smokes on disk, 2026-10-09 — read from the smoke files)
 
 The runner discovers smokes automatically, so this table describes coverage, not a
 list to keep in sync — new smokes are added to CI with no edits anywhere.
@@ -27,9 +27,10 @@ list to keep in sync — new smokes are added to CI with no edits anywhere.
 | Smoke | Covers |
 | --- | --- |
 | `accessibility_smoke` | U8: ≥48dp touch targets, closed-loop keyboard/gamepad focus, WCAG AA contrast from ThemeTokens pairs, large-text round-trip, screen-reader metadata |
-| `battle_hud_layout_smoke` | T59: rendered-window target sizing for every interactive HUD control at 1280×720 / 720×1280 / 390×844 / 844×390, large text on/off, non-overlap, viewport containment, grid coverage baseline; results-panel rank lines |
+| `battle_hud_layout_smoke` | T59: rendered-window target sizing for every interactive HUD control at 1280×720 / 720×1280 / 390×844 / 844×390, large text on/off, non-overlap, viewport containment, fixed pre-T59 grid coverage baseline (16640 px²); results-panel rank lines |
 | `dda_smoke` | A4: `SimulationCore` DDA toggle, intensity readout, wave scaling |
 | `dda_battle_smoke` | T48: DDA battle hookup, DT5 overlay intensity readout, DT7 wave-start DDA fields |
+| `determinism_smoke` | T65: fixed-dt repeat and mid-wave save/load on every catalog level; full-buffer comparison plus one-tick placement perturbation |
 | `debug_cheats_smoke` | DT1/DT2: debug APIs + force-lose through `GameSession.end_run` |
 | `dev_access_smoke` | DT8: developer-mode unlock independent of telemetry; opens overlay stub |
 | `dev_diag_smoke` | DT5/DT4: overlay stats + pause/step/speed time control |
@@ -43,7 +44,7 @@ list to keep in sync — new smokes are added to CI with no edits anywhere.
 | `main_menu_smoke` | Configured entry scene, modular/classic/quit controls, backend status text |
 | `modular_battle_smoke` | battle_root + `SimulationCore` defenders, hero redeploy across fronts |
 | `offline_persistence_smoke` | VS8 modular path: snapshot write/resume via OfflinePersistence + battle_root helpers |
-| `placement_afford_smoke` | T61: battle uses `UnitDefs.placement_plan`; Qi-on-sea cross-wallet case; menu rank + campaign stars |
+| `placement_afford_smoke` | T61: battle uses `UnitDefs.placement_plan`; Qi-on-sea cross-wallet case, infinite-wallet priority; menu rank + campaign stars |
 | `playtest_log_smoke` | DT7: Mark session event to `user://`; sync maps to PlaytestNotesView shape |
 | `progression_smoke` | G8: star rating, prestige, persistence, `GameSession` wiring |
 | `scenario_control_smoke` | DT3: jump-wave, spawn-at-cell, reload current level (no RNG) |

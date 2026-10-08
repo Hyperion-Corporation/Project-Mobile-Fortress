@@ -7,7 +7,7 @@
 [![Docs](https://github.com/Hyperion-Corporation/Project-Mobile-Fortress/actions/workflows/docs.yml/badge.svg)](https://github.com/Hyperion-Corporation/Project-Mobile-Fortress/actions/workflows/docs.yml)
 
 > **Version**: 3.1
-> **Last Updated**: 2026-10-08
+> **Last Updated**: 2026-10-09
 > **Purpose**: Authoritative reference for AI assistants (Claude, GPT, Gemini, Mistral, Grok, Copilot, etc.) working on Mobile Fortress.
 
 ## Table of Contents
@@ -41,7 +41,7 @@ The locked consensus decision (2026-08, see [`docs/moon/ROADMAP.md`](../docs/moo
 | Level data | JSON validated against `game/src/level-schema.json` | `game/assets/levels/`; catalog in `game/scripts/data/level_catalog.gd`; validation smoke `game/tests/level_schema_smoke.gd` |
 | Mobile export | Godot Android/iOS export presets | [`game/EXPORT_MOBILE.md`](../game/EXPORT_MOBILE.md); iOS export requires a macOS/Xcode host |
 | Docs portal | MkDocs Material (strict mode in CI) + Vite/React SPA under `docs/website/` | `docs/mkdocs.yml`, `.github/workflows/docs.yml` |
-| Legacy Android client | Kotlin 2.0.20, AGP 9.3.1, Gradle 8.7 wrapper-pinned (known incompatible pairing; see §7), minSdk 24 / compileSdk 35 | `android/` — legacy tree; always `./gradlew`, never bare `gradle` |
+| Legacy Android client | Kotlin 2.0.20, AGP 8.5.2, Gradle 8.7 wrapper-pinned (T63 verified locally on JDK 21), minSdk 24 / compileSdk 35 | `android/` — legacy tree; always `./gradlew`, never bare `gradle` |
 | Legacy iOS client | Swift 5, iOS 16+ target, SpriteKit | `ios/` — legacy tree; requires macOS to build |
 | Config | `local.properties` (git-ignored), `.env.example` for optional backend | unchanged |
 
@@ -66,7 +66,7 @@ The locked consensus decision (2026-08, see [`docs/moon/ROADMAP.md`](../docs/moo
 | `scripts/run_godot_smokes.sh` (or `just test::godot-smokes`) | Run every headless Godot smoke under `game/tests/` (auto-discovered). Optional args run a subset; overrides: `GODOT=`, `SMOKE_TIMEOUT=`. Build the native extension first (see `game/BUILD_CPP.md`). |
 | `ctest --test-dir game/build --output-on-failure` | Native C++ sim tests (`sim_world_tests`). Build first: `cmake -S game -B game/build && cmake --build game/build`. |
 | `scripts/run_perf_bench.sh` | Dual-front tick-budget + flow-recompute benchmark. Manual gate only (never CI); record results in `docs/BENCHMARKS.md`. |
-| `scripts/export_mobile_smoke.sh [--export-android]` | Mobile export smoke (known stale `CORE_DIR="core"` in the script; fix that path before use with `game/`). Export setup: `game/EXPORT_MOBILE.md`. |
+| `scripts/export_mobile_smoke.sh [--export-android]` | Mobile export smoke targeting `game/` (T63 config checks pass; templates and platform binaries are separate prerequisites). Export setup: `game/EXPORT_MOBILE.md`. |
 | `scripts/sync_playtest_session.sh <exported-playtest-sessions.json> [dest]` | Merge an exported DT7 log into dashboard data; the source-file argument is required. |
 | `mkdocs build --config-file docs/mkdocs.yml --strict` | Documentation gate — the exact command the `Docs` workflow runs; out-of-tree references must be absolute GitHub URLs, never relative escapes (strict mode fails on them). |
 | `npm test -w docs/website` / `npm run build -w docs/website` | Dashboard SPA vitest suite / production build. |
@@ -108,7 +108,7 @@ The locked consensus decision (2026-08, see [`docs/moon/ROADMAP.md`](../docs/moo
 ## 7. Known Constraints
 
 - The game is at **Slice-0 / Phase 1**: playable offline dual-front prototype; the VS10 collaborator playtest gate remains open before Phase 1b (see `docs/moon/roadmaps/vertical_slice.md`).
-- `android/` and `ios/` are legacy inherited template trees, not the product. Known open findings: the Android tree pins AGP 9.3.1 against the wrapper-pinned Gradle 8.7 (cannot build), and `ios/MyGame.xcodeproj` does not parse under current Xcode — recorded in `docs/TESTING.md` "Legacy-tree findings". CI runs these jobs only when their own paths change; do not "fix" them by deleting the trees or hiding failures.
+- `android/` and `ios/` are legacy inherited template trees, not the product. T63 repaired the Android dependency pins (AGP 8.5.2 / Gradle 8.7; lint, unit tests and assemble verified on JDK 21). The open finding is that `ios/MyGame.xcodeproj` does not parse under the recorded CI Xcode version — recorded in `docs/TESTING.md` "Legacy-tree findings". CI runs these jobs only when their own paths change; do not "fix" them by deleting the trees or hiding failures.
 - The A4 heuristic DDA baseline ships **off by default** (dev-overlay setting only) pending playtest tuning (#78 open).
 - The optional backend under `infra/` is unimplemented scaffolding — see each `infra/*/README.md` and [`docs/moon/roadmaps/backend.md`](../docs/moon/roadmaps/backend.md) before assuming any service exists.
 - Multiplayer/co-op networking, cosmetics monetization, sentiment automation, and RL difficulty tuning are pre-implementation — see [`docs/moon/ROADMAP.md`](../docs/moon/ROADMAP.md) for phase sequencing before assuming any are wired up.

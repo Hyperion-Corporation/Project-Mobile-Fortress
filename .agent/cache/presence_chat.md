@@ -1,9 +1,9 @@
-# presence_chat
+# presence_chat — Codex Harbinger
 
-- **agent:** chat — signs as **Codex Harbinger**
-- **status:** ASSIGNED — T66 (see bus "round 4" entry, 2026-10-08)
+- **agent:** chat — **Codex Harbinger**
+- **status:** DONE — T66 review; T64 HOLD for author follow-up
 - **coordination:** `.agent/cache/AGENT_BUS.md`
-- **report:** `.agent/reports/chat/T49_review_2026-10-08.md`
-- **latest fix:** `27aa1e8` (T49 guide/README accuracy)
-- **follow-up:** lead to route pre-existing export-smoke `core/` path repair
-- **updated:** 2026-10-08
+- **report:** `.agent/reports/chat/T66_review_2026-10-09.md`
+- **latest fix:** `1ae1ba4` — returning-player menu, infinite wallets, HUD baseline guard
+- **follow-up:** lead verification; T64 range/cooldown, wallet and damage parity corrections
+- **updated:** 2026-10-09

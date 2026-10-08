@@ -65,7 +65,7 @@ Every `tests/*_smoke.gd` is auto-discovered by the runner — a new smoke needs 
 list to update here or in CI:
 
 ```bash
-./scripts/run_godot_smokes.sh                       # every smoke (27 on disk today)
+./scripts/run_godot_smokes.sh                       # every discovered smoke
 ./scripts/run_godot_smokes.sh simulation gameplay   # subset by name (any form)
 ctest --test-dir game/build                          # native C++ sim tests (doctest)
 ./scripts/run_perf_bench.sh                          # manual perf gate — docs/BENCHMARKS.md

@@ -122,7 +122,7 @@ scripts/run_perf_bench.sh              # perf budget benchmark (manual gate)
 The [`android/`](android/) (Kotlin) and [`ios/`](ios/) (Swift) template clients are legacy — not the shipped product. They remain for reference; their CI jobs run only when their own paths change (known findings in [`docs/TESTING.md`](docs/TESTING.md)). The classic recipes still exist:
 
 ```bash
-./gradlew assembleDebug     # legacy Android client (requires the AGP/Gradle mismatch fix recorded in docs/TESTING.md)
+./gradlew assembleDebug     # legacy Android client (T63 dependency pins verified; see docs/TESTING.md)
 just ios-build              # legacy iOS client (macOS host only)
 ```
 
@@ -158,7 +158,7 @@ See [`git/CONTRIBUTING.md`](git/CONTRIBUTING.md) for the contribution workflow, 
 
 ## Releasing
 
-- **Godot → stores**: export presets live in `game/` — see [`game/EXPORT_MOBILE.md`](game/EXPORT_MOBILE.md) for the export setup. `scripts/export_mobile_smoke.sh` still references the old `core/` directory and needs that path corrected before use. Store automation is not wired yet for the Godot build.
+- **Godot → stores**: export presets live in `game/` — see [`game/EXPORT_MOBILE.md`](game/EXPORT_MOBILE.md) for the export setup. `scripts/export_mobile_smoke.sh` checks the `game/` export configuration; actual exports also need platform templates and native binaries. Store automation is not wired yet for the Godot build.
 - **Legacy Android → Play Store**: [`.github/workflows/release.yml`](.github/workflows/release.yml) still targets the legacy `android/` tree — tagging `vX.Y.Z` builds a signed AAB/APK from it; see [`docs/moon/roadmaps/ios.md`](docs/moon/roadmaps/ios.md) for the legacy iOS path.
 
 ## License

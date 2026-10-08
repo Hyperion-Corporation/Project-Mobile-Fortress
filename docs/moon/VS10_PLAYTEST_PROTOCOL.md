@@ -40,12 +40,12 @@ sessions can be compared with DDA-off sessions wave by wave.
 
 ### 3 — Window / device size
 
-The UI is verified headlessly at four reference windows: **1280×720** (desktop),
+Menu, settings and battle action controls are measured headlessly at four reference windows: **1280×720** (desktop),
 **720×1280**, **390×844** (portrait phone), **844×390** (compact landscape) — every
-interactive control renders at ≥48 window pixels in both dimensions at all four sizes,
+tested interactive control renders at ≥48 window pixels in both dimensions at all four sizes,
 with Large Text on or off (`accessibility_smoke`, `battle_hud_layout_smoke`). Record the
 window size or device you played at in the session log; if you hit a layout issue, note
-the window size alongside it.
+the window size alongside it. These checks are not a device playtest or a guarantee that both grids are fully visible: the existing sea-grid bounds extend below the 720-unit landscape canvas. T66 verifies returning-player menu content and a fixed pre-T59 HUD/grid-coverage reference.
 
 ### 4 — Mandatory acceptance checks (VS-A1 – VS-A11)
 

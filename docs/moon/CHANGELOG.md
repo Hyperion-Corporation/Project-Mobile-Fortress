@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Reviewed (2026-10-09, T66 round 4) — Codex Harbinger
+
+- Reviewed T59–T65 by commit; full findings and independent mutation evidence live in `.agent/reports/chat/T66_review_2026-10-09.md`. T59/T61 verified with game fixes; T60/T63/T65 verified; T62 verified with documentation corrections; T64 held for range/cooldown drift coverage and placement/damage parity.
+- Reconciled AGENTS/README with repaired Android/export configuration, updated the smoke inventory to include T65, and distinguished headless control measurements from full-grid/device playtesting in VS10 guidance. ID8 remains Partial with the T64 review hold recorded.
+
 ### Fixed (2026-10-09, T66 menu and review guards) — Codex Harbinger
 
 - Placement and preview preserve infinite-wallet mode with an empty purse, including own-wallet priority before a finite fallback. The new T61 affordability pre-check had rejected these placements.

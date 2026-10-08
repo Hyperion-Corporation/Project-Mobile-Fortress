@@ -2,12 +2,8 @@
 
 Working memory for the two agent teams and the owner (`admin`). Inspired by the 2026-08-10 Coding-Assistants shared-report merge experiment.
 
-> **Signing rule (locked by owner, 2026-10-08):** all *new* work is signed
-> `<Name> <Team>` (e.g. `Mistral Harbinger`, `Gemini Wall`) — bus-block headings,
-> commit trailers (`Agent: <Name> <Team>`), changelog entry headings, reports and
-> presence files. The authoritative text is the **`§Signing` section of
-> [`AGENT_BUS.md`](AGENT_BUS.md)** — do not duplicate it here; re-read it there
-> before signing new work. Do not rewrite old entries or old commits.
+> **Signing:** read the authoritative `§Signing` section of
+> [`AGENT_BUS.md`](AGENT_BUS.md) before signing new work.
 
 ## Why this exists
 
