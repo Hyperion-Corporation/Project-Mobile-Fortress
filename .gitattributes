@@ -1,0 +1,3 @@
+# Append-only coordination logs: parallel agent branches each add blocks; keep both sides.
+.agent/cache/AGENT_BUS.md merge=union
+docs/moon/CHANGELOG.md merge=union

@@ -29,6 +29,11 @@ If you open another channel by accident, post a one-line pointer here and migrat
 | Claude (Code) | `claude` | **role change:** now team lead — delegates work, maintains GitHub issues | 2026-08-14 |
 | Gemini (Antigravity) | `gemini` | design/art lead — UI improvements, assets; keeps T14 (website/design framing) | 2026-08-14 |
 | Owner | `admin` | wake: reassigned roles this session — see claude 2026-08-14 entry | 2026-08-14 |
+| Cursor (Agent) | `cursor` | joined 2026-10-08 — implementer; **T40 ASSIGNED** | 2026-10-08 |
+| Mistral (Vibe) | `mistral` | joined 2026-10-08 — implementer; **T41 ASSIGNED** | 2026-10-08 |
+| Kimi (Code) | `kimi` | joined 2026-10-08 — implementer; **T42 ASSIGNED** | 2026-10-08 |
+| Qwen (Code) | `qwen` | joined 2026-10-08 — implementer; **T43 ASSIGNED** | 2026-10-08 |
+| Muse | `muse` | joined 2026-10-08 — implementer; **T44 ASSIGNED** | 2026-10-08 |
 
 ---
 
@@ -85,6 +90,14 @@ If you open another channel by accident, post a one-line pointer here and migrat
 | T35 G5 second dual-front level | grok | **DONE — verified** | night_tide JSON + menu LevelSelect; DT6 unblocked and independently reviewed by Chat. |
 | T36 U9 sub-pass 3 environmental tile variety & art polish | gemini | **DONE — verified** | Six distinct terrain tiles (farmland, ocean, path, marsh, shoal, bastion) + mapped in `grid_front.gd`; independently reviewed by Chat. |
 | T37 DT6 overlay level picker | grok | **DONE — verified** | Overlay LevelPickSelect + clean in-place debug_load_level reset; independently reviewed by Chat. |
+| T38 A4 heuristic rule-based DDA baseline (#78) | grok | **ASSIGNED** | Sole owner of `game/src/cpp/**` + `game/tests/native/**` this round; branch `agent/grok/T38-a4-dda` |
+| T39 U8 accessibility pass — menus/settings (#25) | gemini | **ASSIGNED** | Owns `main_menu.gd`, `settings_dialog.gd`, `theme_tokens.gd`, `main_menu.tscn`; branch `agent/gemini/T39-u8-a11y` |
+| T40 G10/IOS2 touch placement for dual grids (#16) | cursor | **ASSIGNED** | Owns `scripts/battle/**`; branch `agent/cursor/T40-g10-touch` |
+| T41 C1 dual-front state schema doc | mistral | **ASSIGNED** | Docs only (`docs/design/`, `co_op_modes.md`); branch `agent/mistral/T41-c1-schema-doc` |
+| T42 Q2 run every headless smoke in CI + local runner | kimi | **ASSIGNED** | Owns `.github/workflows/godot-game.yml`, `scripts/run_godot_smokes.sh`; branch `agent/kimi/T42-q2-smoke-ci` |
+| T43 ID8 interactive game-element demo on dashboard | qwen | **ASSIGNED** | Owns `docs/website/**`; branch `agent/qwen/T43-id8-demo` |
+| T44 P7 40-unit dual-front tick-budget benchmark | muse | **ASSIGNED** | Owns new `game/tests/perf_budget_bench.gd`, `docs/BENCHMARKS.md`; branch `agent/muse/T44-p7-perf-bench` |
+| T45 Review T38–T44 vs changelog/roadmap | chat | **QUEUED** | Per-branch review (may edit); reports to Claude before merge |
 
 ### Conflict rules
 
@@ -1615,3 +1628,43 @@ dev-tools round are both done. The next roadmap gate is still **VS10** (collabor
 `docs/moon/VS10_PLAYTEST_PROTOCOL.md`) — that's the owner's own action to run, not agent work, and
 the tooling to support it (diagnostics overlay, session logging, scenario control) now exists.
 No new work assigned pending owner direction — asking rather than guessing on what's next.
+
+### claude — 2026-10-08 — new round kickoff: expanded team, T38–T45
+
+**Owner direction (2026-10-08):** delegate implementation to the full team — Grok, Gemini, Cursor,
+Mistral, Kimi, Qwen, Muse — with Codex (`chat`) reviewing (and editing if needed) and Claude merging
++ syncing GitHub. Five agents are new to this bus; roster rows added above.
+
+**Environment prepared by lead:** Godot **4.7.1** (the CI-pinned build) is now at
+`~/.local/bin/godot`, and the native extension is built once in the main checkout
+(`game/build`, `game/bin`). Every worktree gets a copy of `game/bin/*.so`, so headless smokes are
+runnable by everyone this round — "smoke unavailable locally" is no longer an acceptable review note.
+
+**Isolation (new this round):** one git worktree + branch per agent under
+`../pmf-worktrees/<agent>` (`agent/<agent>/T<n>-<slug>`), all cut from the same `main` commit.
+Nobody works in the main checkout except the lead. `AGENT_BUS.md` and `docs/moon/CHANGELOG.md` are
+`merge=union` in `.gitattributes`, so parallel appends merge cleanly.
+
+**Assignments and file ownership (do not edit outside your lane without a bus note):**
+
+| Task | Agent | Lane | Roadmap row you update |
+| --- | --- | --- | --- |
+| T38 A4 heuristic DDA baseline | grok | `game/src/cpp/**`, `game/tests/native/**`, one new `game/tests/dda_smoke.gd` | `ai_systems.md` A4 |
+| T39 U8 accessibility (menus/settings) | gemini | `game/scripts/ui/{main_menu,settings_dialog,theme_tokens}.gd`, `game/scenes/main_menu.tscn`, one new smoke | `ui_ux.md` U8 |
+| T40 G10/IOS2 touch placement | cursor | `game/scripts/battle/**`, one new smoke | `gameplay.md` G10, `ios.md` IOS2 |
+| T41 C1 dual-front state schema doc | mistral | new `docs/design/dual_front_state_schema.md` (docs only) | `co_op_modes.md` C1 |
+| T42 Q2 all smokes in CI | kimi | `.github/workflows/godot-game.yml`, new `scripts/run_godot_smokes.sh`, `tools/test/justfile` | `qa_testing.md` Q2 |
+| T43 ID8 interactive demo | qwen | `docs/website/**` | `internal_dashboard.md` ID8 |
+| T44 P7 tick-budget benchmark | muse | new `game/tests/perf_budget_bench.gd`, `docs/BENCHMARKS.md` | `performance.md` P7 |
+| T45 review | chat | any branch, fix-up commits allowed | — |
+
+**Deliberately not assigned:** VS10 (owner's own playtest), backend B2–B11, A5+ (blocked on A4 +
+playtest evidence), G9/G13, anything rejected/superseded (#33, #62, #125). Only one agent is in
+`sim_world.*` this round on purpose.
+
+**Rules for implementers (same as `.agent/AGENTS.md` §8):** commit your own work on your branch
+with a conventional-commit message and your coauthor trailer (`git/messages/<agent>_coauthor.msg`);
+changelog entry + roadmap row in the same commit; append one `### <agent> — 2026-10-08 — T<n> DONE`
+block here listing the exact commands you ran and their results; do **not** push, open PRs, or touch
+GitHub issues — that is the lead's job after Chat verifies. If you cannot finish, leave the tree
+uncommitted and say so here.

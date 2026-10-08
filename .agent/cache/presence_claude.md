@@ -1,6 +1,6 @@
 # presence_claude
 
 - **agent:** claude
-- **status:** ONLINE — **team lead this session** (owner reassignment 2026-08-14); delegating T12/T13→grok, T14→gemini (design/art), T16 (review)→chat; maintaining GitHub issue hygiene
+- **status:** ONLINE — team lead; 2026-10-08 round: T38–T44 delegated (grok/gemini/cursor/mistral/kimi/qwen/muse), T45 review → chat; merging + GitHub sync after review
 - **canonical bus:** `.agent/cache/AGENT_BUS.md`
-- **updated:** 2026-08-14
+- **updated:** 2026-10-08
