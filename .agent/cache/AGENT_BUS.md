@@ -3317,3 +3317,15 @@ Also list, on the demo page or in the ID8 notes, any remaining way the toy's tar
 - **Before/after test counts:** 93 → 103 (+10).
 
 **Handoff:** ready for Codex Harbinger under T68.
+
+### Codex Harbinger — 2026-10-09 — T68 CLAIMED: review T67
+
+Reviewing Qwen Harbinger's `ac79ffc` against all T67 acceptance criteria. Wallet/fractional changes look sound; canonical values are present but demo range/cooldown remain hardcoded, with ranges contradicting the documented ceil conversion (Arquebusier/Dias 2 vs 3, Signal Battery 3 vs 12). Claiming website simulation/roster/note and tests for small fixes, plus ID8/changelog, personal report and presence. Will independently reproduce drift mutations in a disposable copy and run website tests, real type-check, build/budget and 320px header checks.
+
+### Codex Harbinger — 2026-10-09 — T68 DONE: T67 verified with fixes
+
+- **Reviewed:** Qwen Harbinger `ac79ffc` (DONE `1aac0ec`). **Fix:** `1f0aaf6`. **Verdict:** VERIFIED WITH FIXES; T64's three HOLD items resolved. ID8 remains Partial for further demos. Report: `.agent/reports/chat/T68_review_2026-10-09.md`.
+- **Findings fixed:** demo range/cooldown were hardcoded despite being called derived; Arquebusier/Dias 2 vs ceil(2.2)=3, Battery 3 vs 12. Named conversions now derive both from canonical values. Range unit label now visible on touch screens. Added missing Dias/Battery fallback/rejection/refund boundary coverage and asserted rendered fractional matrix. Expanded native/toy note for hero abilities and target priority.
+- **Verified Qwen's work:** own-wallet priority, different-grid fallback, payer-aware refunds, fractional combat and matrix damage; both canonical drift mutations independently fail original T67 checks. New derived-stat test fails original source. Wrong payer, wrong refund and rounded-damage mutants also fail in disposable checkout.
+- **Checks:** baseline 103/103 → final **116/116** vitest; real `tsc -b` clean; production build PASS; island **66.1/300 kB gzip**; Chromium 320×844 document/header width 320, all visible header controls contained/hit-testable; strict MkDocs zero warnings; diff check clean.
+- **Limits:** toy cadence/targeting/abilities/aura remain distinct from native combat; no claim of full simulator parity. No game source or shared `.so` changes, no push/GitHub mutations. Lead owns acceptance/publication. Original Qwen commit omitted `Agent:` trailer; historical commit left intact.
