@@ -48,7 +48,7 @@ function RosterCard({ def }: { def: UnitDef }) {
       </div>
       <div className="roster-stats">
         <span title="Damage">⚔️ {def.damage}</span>
-        <span title={`Range: ${def.canonicalRange} world units (grid: ${def.range} cells)`}>🎯 {def.canonicalRange}</span>
+        <span title={`Range: ${def.canonicalRange} world units (grid: ${def.range} cells)`}>🎯 {def.canonicalRange} world units</span>
         <span title={`Cooldown: ${def.canonicalCooldown}s (grid: ${def.cooldown} ticks)`}>⏱️ {def.canonicalCooldown}s</span>
         <span title="HP">❤️ {def.hp}</span>
       </div>

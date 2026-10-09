@@ -453,3 +453,38 @@ describe("own-wallet-first placement", () => {
     expect(state.seaBudget).toBe(60);
   });
 });
+
+// Exercise both payment/refund branches for all cross-front units, not just Qi.
+describe.each(["hero_qi", "hero_dias", "cross_support"])("%s wallet boundaries", (id) => {
+  const def = getUnitDef(id)!;
+  const other = def.currency === "land" ? "sea" : "land";
+  const ownKey = def.currency === "land" ? "landBudget" : "seaBudget";
+  const otherKey = other === "land" ? "landBudget" : "seaBudget";
+  it.each(["own", "fallback"])("charges and refunds the %s wallet at exact cost", (payer) => {
+    const state = { ...createState(CFG), [ownKey]: payer === "own" ? def.cost : 0,
+      [otherKey]: payer === "fallback" ? def.cost : 0 };
+    expect(canPlace(state, id, 0, 0, other)).toBeNull();
+    const placed = placeUnit(state, id, 0, 0, other);
+    const units = other === "land" ? placed.landUnits : placed.seaUnits;
+    expect(units).toHaveLength(1);
+    expect(units[0].front).toBe(other);
+    expect(units[0].paidFrom).toBe(payer === "own" ? def.currency : other);
+    expect(placed.landBudget).toBe(0);
+    expect(placed.seaBudget).toBe(0);
+    const refunded = removeUnit(placed, units[0].uid);
+    expect(refunded.landBudget).toBe(state.landBudget);
+    expect(refunded.seaBudget).toBe(state.seaBudget);
+    expect(refunded.landUnits).toHaveLength(0);
+    expect(refunded.seaUnits).toHaveLength(0);
+  });
+  it("rejects two insufficient wallets without combining or spending them", () => {
+    const state = { ...createState(CFG), landBudget: def.cost - 1, seaBudget: def.cost - 1 };
+    expect(canPlace(state, id, 0, 0, other)).toBe("Insufficient budget");
+    expect(placeUnit(state, id, 0, 0, other)).toBe(state);
+  });
+  it("does not use the opposite wallet when placed on its own front", () => {
+    const state = { ...createState(CFG), [ownKey]: 0, [otherKey]: def.cost };
+    expect(canPlace(state, id, 0, 0, def.currency)).toBe("Insufficient budget");
+    expect(placeUnit(state, id, 0, 0, def.currency)).toBe(state);
+  });
+});

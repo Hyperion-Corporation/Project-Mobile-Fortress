@@ -117,14 +117,32 @@ export interface SimState {
 // cooldown = round(canonicalCooldown * 10) for 100ms ticks.
 // ownEnvMult / crossEnvMult mirror the game's get_effective_damage rule.
 
+/** Convert canonical world units to whole Chebyshev cells for this toy grid. */
+export function worldRangeToDemoCells(worldRange: number): number {
+  return Math.ceil(worldRange);
+}
+
+/** Quantize canonical seconds to the demo's 100 ms ticks. */
+export function secondsToDemoTicks(seconds: number): number {
+  return Math.round(seconds * 10);
+}
+
+function withDemoTiming(def: Omit<UnitDef, "range" | "cooldown">): UnitDef {
+  return {
+    ...def,
+    range: worldRangeToDemoCells(def.canonicalRange),
+    cooldown: secondsToDemoTicks(def.canonicalCooldown),
+  };
+}
+
 export const UNIT_DEFS: UnitDef[] = [
-  { id: "spearman", name: "Ming Garrison Spearman", kind: "defender", front: "land", cost: 10, currency: "land", hp: 40, damage: 8, canonicalRange: 1.6, canonicalCooldown: 0.7, range: 2, cooldown: 7, ownEnvMult: 1.0, crossEnvMult: 0.0 },
-  { id: "cannon", name: "Fo-lang-ji Cannon Crew", kind: "defender", front: "land", cost: 18, currency: "land", hp: 30, damage: 14, canonicalRange: 2.8, canonicalCooldown: 1.2, range: 3, cooldown: 12, ownEnvMult: 1.0, crossEnvMult: 0.35 },
-  { id: "arquebusier", name: "Portuguese Arquebusier", kind: "defender", front: "sea", cost: 12, currency: "sea", hp: 32, damage: 10, canonicalRange: 2.2, canonicalCooldown: 0.85, range: 2, cooldown: 9, ownEnvMult: 1.0, crossEnvMult: 0.25 },
-  { id: "junk", name: "East Asian War Junk", kind: "defender", front: "sea", cost: 16, currency: "sea", hp: 45, damage: 11, canonicalRange: 1.8, canonicalCooldown: 0.9, range: 2, cooldown: 9, ownEnvMult: 1.0, crossEnvMult: 0.0 },
-  { id: "hero_dias", name: "Capitão Dias (Hero)", kind: "hero", front: "both", cost: 26, currency: "sea", hp: 48, damage: 10, canonicalRange: 2.2, canonicalCooldown: 1.1, range: 2, cooldown: 11, ownEnvMult: 1.0, crossEnvMult: 0.65, activeCooldown: 100, activeDamage: 22 },
-  { id: "hero_qi", name: "Commander Qi (Hero)", kind: "hero", front: "both", cost: 28, currency: "land", hp: 55, damage: 12, canonicalRange: 2.0, canonicalCooldown: 1.0, range: 2, cooldown: 10, ownEnvMult: 1.0, crossEnvMult: 0.5, activeCooldown: 80, activeDamage: 28 },
-  { id: "cross_support", name: "Signal Battery", kind: "cross_support", front: "both", cost: 20, currency: "sea", hp: 28, damage: 6, canonicalRange: 12.0, canonicalCooldown: 1.1, range: 3, cooldown: 11, ownEnvMult: 0.55, crossEnvMult: 1.15 },
+  withDemoTiming({ id: "spearman", name: "Ming Garrison Spearman", kind: "defender", front: "land", cost: 10, currency: "land", hp: 40, damage: 8, canonicalRange: 1.6, canonicalCooldown: 0.7, ownEnvMult: 1.0, crossEnvMult: 0.0 }),
+  withDemoTiming({ id: "cannon", name: "Fo-lang-ji Cannon Crew", kind: "defender", front: "land", cost: 18, currency: "land", hp: 30, damage: 14, canonicalRange: 2.8, canonicalCooldown: 1.2, ownEnvMult: 1.0, crossEnvMult: 0.35 }),
+  withDemoTiming({ id: "arquebusier", name: "Portuguese Arquebusier", kind: "defender", front: "sea", cost: 12, currency: "sea", hp: 32, damage: 10, canonicalRange: 2.2, canonicalCooldown: 0.85, ownEnvMult: 1.0, crossEnvMult: 0.25 }),
+  withDemoTiming({ id: "junk", name: "East Asian War Junk", kind: "defender", front: "sea", cost: 16, currency: "sea", hp: 45, damage: 11, canonicalRange: 1.8, canonicalCooldown: 0.9, ownEnvMult: 1.0, crossEnvMult: 0.0 }),
+  withDemoTiming({ id: "hero_dias", name: "Capitão Dias (Hero)", kind: "hero", front: "both", cost: 26, currency: "sea", hp: 48, damage: 10, canonicalRange: 2.2, canonicalCooldown: 1.1, ownEnvMult: 1.0, crossEnvMult: 0.65, activeCooldown: 100, activeDamage: 22 }),
+  withDemoTiming({ id: "hero_qi", name: "Commander Qi (Hero)", kind: "hero", front: "both", cost: 28, currency: "land", hp: 55, damage: 12, canonicalRange: 2.0, canonicalCooldown: 1.0, ownEnvMult: 1.0, crossEnvMult: 0.5, activeCooldown: 80, activeDamage: 28 }),
+  withDemoTiming({ id: "cross_support", name: "Signal Battery", kind: "cross_support", front: "both", cost: 20, currency: "sea", hp: 28, damage: 6, canonicalRange: 12.0, canonicalCooldown: 1.1, ownEnvMult: 0.55, crossEnvMult: 1.15 }),
 ];
 
 export const DEFAULT_CONFIG: DemoConfig = {

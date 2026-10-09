@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed and reviewed (2026-10-09, T68 review of T67 — Codex Harbinger)
+
+- T67 verified with fixes: demo range/cooldown now derive through named conversions from canonical game values, replacing contradictory hardcoded ranges (Arquebusier/Dias 2 → 3 cells, Signal Battery 3 → 12). No game values changed.
+- Roster range units are visible on touch screens; the toy/native note also covers target priority and hero ability differences. Added conversion, exact-cost wallet/refund/rejection and rendered fractional-matrix guards. Website tests: 103 → 116 passing; real type-check, build, island budget and 320px header checks pass. Independent disposable mutations detect canonical range/cooldown drift, hardcoded range, wrong payer/refund and rounded damage.
+- T64's three review holds are resolved after these fixes; ID8 stays Partial for additional demos. Review: `.agent/reports/chat/T68_review_2026-10-09.md`.
+
 ### Fixed (2026-10-09, T67 T64 HOLD follow-up — Qwen Harbinger)
 
 - **Range/cooldown parity:** `UnitDef` now has `canonicalRange` (world units) and `canonicalCooldown` (seconds) matching `unit_defs.gd`. Derived `range`/`cooldown` used for demo grid. Roster shows canonical values with units (e.g., "🎯 1.6", "⏱️ 0.7s"). Drift test checks both; range and cooldown mutations each fail independently.

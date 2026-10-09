@@ -328,7 +328,7 @@ export default function DualFrontDemoView() {
         </div>
       )}
       <div style={{ marginTop: "0.75rem", padding: "0.5rem 0.75rem", background: "rgba(255,255,255,0.03)", border: "1px solid var(--border, rgba(255,255,255,0.1))", borderRadius: "6px", fontSize: "0.78rem", color: "var(--text-muted)" }}>
-        <strong>Toy vs native combat:</strong> This demo simplifies targeting — normal defenders only fire at raiders on their own front, while the damage matrix shows cross-front values for reference. Signal Battery fires at both fronts per tick; native combat chooses one eligible closest target. Range uses Chebyshev distance on a 6×3 grid (canonical values shown in roster).
+        <strong>Toy vs native combat:</strong> This demo simplifies targeting — normal defenders only fire at raiders on their own front, while the damage matrix shows cross-front values for reference. Signal Battery can hit both fronts per firing turn; native combat chooses one eligible closest target. This toy prioritizes raiders nearest the path entrance, not nearest the defender. Heroes automatically use same-front area attacks here; native abilities are manually cast, with Qi dealing a 35-damage world-radius pulse and Dias targeting only the opposite front. Range rounds world units up to Chebyshev cells on a 6×3 grid; cooldown seconds round to 100 ms ticks (canonical values shown in roster).
       </div>
       <RosterPanel />
     </div>

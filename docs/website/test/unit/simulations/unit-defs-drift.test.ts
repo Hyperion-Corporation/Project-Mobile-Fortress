@@ -93,6 +93,14 @@ describe("unit_defs.gd drift test", () => {
     }
   });
 
+  it("demo range and cooldown derive from canonical game values", () => {
+    for (const g of gameUnits) {
+      const w = getUnitDef(g.id)!;
+      expect(w.range, `${g.id} demo range`).toBe(Math.ceil(g.range));
+      expect(w.cooldown, `${g.id} demo cooldown`).toBe(Math.round(g.cooldown * 10));
+    }
+  });
+
   it("canonical range matches game range for every shared unit", () => {
     for (const g of gameUnits) {
       const w = getUnitDef(g.id)!;

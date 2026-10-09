@@ -131,6 +131,9 @@ describe("DualFrontDemoView", () => {
     const matrix = card.querySelector("table");
     expect(matrix).not.toBeNull();
     expect(matrix?.getAttribute("aria-label")).toContain("Signal Battery");
+    expect([...matrix!.querySelectorAll("td")].map(cell => cell.textContent)).toEqual(["3.3", "6.9", "6.9", "3.3"]);
+    expect(card.textContent).toContain("12 world units");
+    expect(card.textContent).toContain("1.1s");
   });
 });
 
