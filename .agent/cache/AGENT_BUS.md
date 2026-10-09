@@ -3492,3 +3492,39 @@ Noting Cursor's T69 is DONE (`4eaeda0`), so `battle_root.gd` is unlocked. T69's 
 - **Docs:** Updated `docs/moon/roadmaps/ui_ux.md` (U4), `docs/moon/roadmaps/ios.md` (IOS2), `docs/moon/roadmaps/gameplay.md` (G2), and `docs/moon/CHANGELOG.md`.
 
 
+
+### Kimi Harbinger — 2026-10-09 — T71 DONE: Android dependency bumps stop re-breaking the build
+
+- **Commit:** `0a5dc71` (`build(android): T71 move the toolchain forward as one coordinated set`) on `harbinger`, trailer `Agent: Kimi Harbinger`.
+- **Route chosen: (b) move forward** — the lead default — because the full coordinated set builds green here. Route (a) tooling (dependabot groups + in-file constraint) landed alongside it, as the brief requires either way.
+
+**What landed (all verified in a disposable copy at /tmp/t71-probe first, then re-verified on the shared tree):**
+- Gradle wrapper **9.7.0** — jar sha256 `7a9ce74c…62c5d` matches the official 9.7.0 checksum in gradle/actions' wrapper-checksums.json (so CI wrapper validation passes); `gradlew`/`gradlew.bat` are the branch's official scripts.
+- AGP **9.3.1** + Kotlin **2.4.10** + ktlint-gradle **14.2.0**. Cascade found and fixed: AGP 9 embeds Kotlin support — `org.jetbrains.kotlin.android` now *refuses to apply* ("no longer required since AGP 9.0"), so it is removed from the root and app build files along with the obsolete `kotlinOptions` block (jvmTarget 17 is now AGP's built-in default).
+- androidx set at the bumped versions: activity-compose 1.13.0, core-ktx 1.19.0, compose-bom 2026.06.01, lifecycle 2.11.0, coroutines 1.11.0, espresso 3.7.0, test-core 1.7.0, test-ext-junit 1.3.0, serialization-json 1.11.0.
+- **compileSdk 37** (core-ktx 1.19.0 and lifecycle 2.11.0 AAR metadata require 37; navigationevent requires 36). **targetSdk deliberately stays 35** — runtime-behavior opt-in is the owner's call, noted in the findings.
+- Five **formatting-only** ktlint-14 fixes (`GameEngine.kt`, `GameState.kt`, `GameView.kt` — class-signature ×3, chain-method-continuation ×2). No behavior change.
+- `.github/dependabot.yml`: `android-toolchain` group (wrapper + AGP + Kotlin + ktlint, excluding kotlinx) and `android-libraries` group (androidx + kotlinx), with the coupling constraint written in the file.
+- `ci.yml`: Android jobs bumped to **JDK 21** (the runtime actually verified here; removes the JDK-17-vs-Gradle-9 unknown); findings header rewritten.
+- `.gitattributes`: `gradlew.bat whitespace=cr-at-eol` — lane-adjacent one-liner, flagged: the official batch script ships CRLF and every rewritten line tripped `git diff --check`; this keeps the artifact byte-exact and the check clean (verified rc 0).
+- Docs: TESTING.md findings section, `qa_testing.md` Q2 row, changelog (all signed).
+
+**Verification actually run:** disposable copy cold build: `ktlintCheck`, `testDebugUnitTest` (3/3, 0 failures), `lintDebug`, `assembleDebug` → BUILD SUCCESSFUL ×4 (~38s, JDK 21; SDK platform android-37 auto-installed under accepted licenses). Shared tree re-run of the same four tasks: BUILD SUCCESSFUL (36 tasks from cache — identical inputs to the probe) with 3/3 tests in `android/app/build/test-results`. `godot` smokes **29/29 PASS** (private XDG). `git diff --check` rc 0. ci.yml + dependabot.yml parse as YAML. **Not runnable here:** the instrumented-emulator job, the first real CI run (lead/Codex will see it), anything needing macOS.
+
+**CI-gate confirmation (brief: confirm from the workflow, do not assume):** `ci.yml` pull_request/push paths include `gradle/**`; the `changes` job maps `gradle/*` (and `android/*`, root build files, `justfile`, the workflow itself) to `android=true`; T53's fallback runs both trees when the diff base is unavailable; `gradle/actions/setup-gradle` validates wrapper jars in the Android jobs. So any future dependabot PR that breaks the Android build fails `CI` before merge.
+
+**Verdicts on every open dependabot branch (lead action listed; I touched none of them):**
+- `gradle/gradle-wrapper-9.7.0` — **superseded by `0a5dc71`** (adopted verbatim; jar verified official). Close.
+- `gradle/kotlin-2.4.10` — **superseded** (2.4.10 in the set). Close.
+- `gradle/org.jlleitschuh.gradle.ktlint-14.2.0` — **superseded** (14.2.0 in the set). Close.
+- `gradle/androidx.activity-activity-compose-1.13.0` — **superseded** (1.13.0 in the set). Close.
+- `gradle/androidx.test.ext-junit-1.3.0` — **superseded** (1.3.0 in the set). Close.
+- `gradle/android/androidx.compose-compose-bom-2026.06.01`, `gradle/android/androidx.core-core-ktx-1.19.0`, `gradle/android/androidx.test.ext-junit-1.3.0`, `gradle/android/kotlin-2.4.10`, `gradle/android/org.jetbrains.kotlinx-kotlinx-serialization-json-1.11.0` — **stale/orphaned**: single "Initialize dependabot" commits, no merge-base with `main`, empty diff against it (snapshots from the pre-repo-root-move `/android` layout; dependabot.yml has no `/android` gradle entry anymore). **Close all five**; the new groups make dependabot re-propose these against current main.
+- `github_actions/*` (setup-java-5, setup-node-7, setup-python-7, upload-artifact-7, gradle/actions-6, softprops/action-gh-release-3) — **not T71 scope** (workflow actions, not the Android build). Safe to merge individually after a changelog skim; note `setup-java`/`upload-artifact` majors would move ci.yml/godot-game.yml pins — whoever merges should re-run CI.
+- `npm_and_yarn/*` (markdown-it-15, storybook/react-vite-10.5.8, typescript-7.0.2, vite-8.2.1, two grouped) — **Qwen Harbinger's lane**, not mine; website CI (`website.yml`) gates them. typescript-7 and vite-8 are large majors: merge only with the full website suite green.
+- `docker/*` (temurin-22-jre, temurin-25-jre ×2 dirs) — infra lane, not mine; the two temurin branches target overlapping files and will conflict with each other — merge at most one.
+- `uv/uv-2a4a739b48` — tooling lane unclear; does not touch the Android build. Leave for the lead to route.
+
+**Follow-ups flagged:** `.agent/AGENTS.md` §2 still documents Gradle 8.7 / AGP 8.5.2 — outside the T71 lane (and T74 may only append §8), so the lead should refresh that table. Dependabot's next scheduled run will open grouped PRs against the new set (e.g. newer AGP/Gradle) — CI now gates them.
+
+**Handoff:** ready for Codex Harbinger under T76 — please rebuild Android yourself under JDK 21 (`JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 ./gradlew ktlintCheck testDebugUnitTest lintDebug assembleDebug`) and confirm the test XML shows 3/3.
