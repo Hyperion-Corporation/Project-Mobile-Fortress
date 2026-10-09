@@ -5,9 +5,9 @@
 [![Android](https://img.shields.io/badge/Android-13%2B-3DDC84?logo=android&logoColor=white)](https://developer.android.com/)
 [![iOS](https://img.shields.io/badge/iOS-17%2B-000000?logo=apple&logoColor=white)](https://developer.apple.com/ios/)
 
-> **Version**: 5.0  
-> **Date**: 2026-08-11  
-> **Status**: Active development — post multi-agent final pass  
+> **Version**: 6.0  
+> **Date**: 2026-10-09  
+> **Status**: Active development — Slice-0 VS0–VS9 delivered; VS10 playtest gate pending  
 > **Decision record**: [`.agent/reports/shared/pmf_20260810_canonical_shared_report.md`](https://github.com/Hyperion-Corporation/Project-Mobile-Fortress/blob/main/.agent/reports/shared/pmf_20260810_canonical_shared_report.md) · [admin status report](https://github.com/Hyperion-Corporation/Project-Mobile-Fortress/blob/main/.agent/reports/admin/pmf_20260809_status_report.md)
 
 ## Overview
@@ -41,14 +41,14 @@ Status markers: ✅ Done · 🚧 In Progress · 📋 Pending · ❌ Rejected · 
 | Phase | Focus | Status |
 | --- | --- | --- |
 | 0 | Template scaffolding (legacy native clients, CI, docs, agent tooling) | ✅ Done |
-| **1a** | **Slice-0: offline dual-front Godot prototype** | 🚧 **Current** |
-| 1 | Single-player Wōkòu-era loop polish (G3+, economy, heroes) | 📋 Pending |
-| 2 | C++ sim packaging (S0–S5) behind Godot | 📋 Parallel after VS1 starts |
+| **1a** | **Slice-0: offline dual-front Godot prototype** | 🚧 **Current** — VS0–VS9 ✅; VS10 playtest gate pending |
+| 1 | Single-player Wōkòu-era loop polish (G3+, economy, heroes) | 🚧 In progress — delivered via agent rounds 1–4; several rows Partial pending playtest data |
+| 2 | C++ sim packaging (S0–S5) behind Godot | 🚧 Partial — S0/S1/S3/S4 ✅, S2/S5/S7/S8 🚧, S6 pending (see [`shared_core.md`](roadmaps/shared_core.md)) |
 | 3 | Meta: cosmetics/battle pass/skin lootboxes, clans, LiveOps foundations | ⏸ After slice fun |
 | 4 | Local Wi‑Fi asymmetric co-op → later online session service | ⏸ After slice fun |
 | 5 | ML systems (gated) + sentiment research | 🔬 / ⏸ |
 | 6 | LiveOps, compliance, regional launch | ⏸ |
-| 7 | Internal dashboard (static/local first; live Docker later) | ⏸ Secondary (25%) |
+| 7 | Internal dashboard (static/local first; live Docker later) | 🚧 Secondary (25%) — ID2/ID3/ID6 delivered, ID7/ID8 🚧 Partial, ID5 rejected (see [`internal_dashboard.md`](roadmaps/internal_dashboard.md)) |
 
 **Ownership:** small team (3 humans). Track owners mostly TBD; [`ai_systems.md`](roadmaps/ai_systems.md) owned by ACFHarbinger.
 
@@ -87,25 +87,44 @@ Legacy Android SurfaceView + iOS SpriteKit skeletons, CI/CD, docs, `.agent/`, `i
 
 | # | Item | Status |
 | --- | --- | --- |
-| VS0 | Godot 4 client expansion from `game/project.godot` | 🚧 |
-| VS1 | **G2 dual-front core loop** | 📋 **Next implement** |
-| VS2–VS10 | Pathing stub, input, phases, outposts, hero/support, art, save, exports, playtest | 📋 |
+| VS0 | Godot 4 client expansion from `game/project.godot` | ✅ Scaffold playable |
+| VS1 | **G2 dual-front core loop** | ✅ Done (classic + modular views) |
+| VS2–VS9 | Pathing stub, input, phases, outposts, hero/support, art, save, exports | ✅ Done (see [`vertical_slice.md`](roadmaps/vertical_slice.md) for per-item notes) |
+| VS10 | Collaborator playtest + "shows promise" decision record | 🚧 **Protocol ready** — sessions pending ([`VS10_PLAYTEST_PROTOCOL.md`](VS10_PLAYTEST_PROTOCOL.md)) |
 
 **Supersedes:** 2026-08-09 Android-first single-lane VS1–VS5 timebox.
+
+### Where we are (2026-10-09, per-area snapshot — area files are the source of truth)
+
+| Area | Headline status (from the area file) |
+| --- | --- |
+| [`vertical_slice.md`](roadmaps/vertical_slice.md) | VS0–VS9 ✅; VS10 🚧 Protocol ready |
+| [`gameplay.md`](roadmaps/gameplay.md) | G2 playable; G3/G4/G5/G6/G7/G8/G12 🚧 Partial; G10 ✅; G9/G11/G13 deferred |
+| [`shared_core.md`](roadmaps/shared_core.md) | S0/S1/S3/S4 ✅; S2/S5/S7/S8 🚧; S6 pending |
+| [`ui_ux.md`](roadmaps/ui_ux.md) | U2/U3 ✅; U4/U8/U9/U10 delivered; U1 slice-0 theme; U5–U7 deferred |
+| [`dev_tools.md`](roadmaps/dev_tools.md) | DT1–DT8 🚧 Slice-0 wired |
+| [`performance.md`](roadmaps/performance.md) | P3/P4/P7 🚧 Partial (headless baselines; on-device runs open); rest pending |
+| [`qa_testing.md`](roadmaps/qa_testing.md) | Q1 ✅; Q2/Q3/Q4 🚧 Partial; Q10 pending — Slice-0 exit gate |
+| [`ai_systems.md`](roadmaps/ai_systems.md) | A4 🚧 Partial (off by default, tuning pending playtests); rest research/deferred |
+| [`ios.md`](roadmaps/ios.md) | IOS1–IOS3 🚧 Partial (device runs need macOS) |
+| [`internal_dashboard.md`](roadmaps/internal_dashboard.md) | ID2/ID3/ID6 ✅; ID7/ID8 🚧 Partial; ID1 in progress; ID5 rejected |
+| [`monetization.md`](roadmaps/monetization.md) | M1 ❌ rejected (power gacha); M3 first track pending after slice fun |
+| [`backend.md`](roadmaps/backend.md) | B1 ✅; rest deferred |
+| [`co_op_modes.md`](roadmaps/co_op_modes.md) | C1 ✅ schema doc delivered; implementation deferred post Slice-0 |
 
 ---
 
 ## Track: Internal Dashboard (secondary)
 
-React host under `docs/website/`. **Static/local/batch first**; live remote not required for small team. See [`internal_dashboard.md`](roadmaps/internal_dashboard.md). ID5 real-time WebSocket remains rejected for v1. Sentiment automation is research (A12/A13), not launch automation.
+React host under `docs/website/`. **Static/local/batch first**; live remote not required for small team. See [`internal_dashboard.md`](roadmaps/internal_dashboard.md): ID2 (IA/wireframes), ID3 (dashboard skeleton) and ID6 (lore map) are delivered; ID7 (visualizer) and ID8 (interactive demo) are Partial; ID5 real-time WebSocket remains rejected for v1. Sentiment automation is research (A12/A13), not launch automation.
 
 ---
 
 ## Immediate execution order
 
-1. **G2 / VS1** dual-front playable loop on Godot  
-2. S0 Godot↔C++ spike (godot-cpp + modules) in parallel when capacity allows  
-3. VS playtest gate (“shows promise”)  
-4. Then G3 pathing depth, cosmetics track, local Wi‑Fi co-op design implementation  
+1. **VS10 playtest gate** — owner + collaborator sessions per [`VS10_PLAYTEST_PROTOCOL.md`](VS10_PLAYTEST_PROTOCOL.md); both must reach "shows promise" (Phase 1a exit)  
+2. Post-gate polish backlog: Flow-Field presentation depth (G3/S2), A4 DDA tuning against playtest data, on-device perf runs (P7/P8, Android arm64 core under S8)  
+3. Local Wi‑Fi asymmetric co-op design implementation (C2+) after Phase 1a  
+4. Cosmetics/monetization track (M3) after slice fun is confirmed  
 
 **Do not** start with multiplayer fleet, power gacha, or autonomous sentiment balancing.

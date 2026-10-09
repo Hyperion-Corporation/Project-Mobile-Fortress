@@ -15,11 +15,13 @@ Every `game/tests/*_smoke.gd` is a headless `SceneTree` smoke invoked as `godot 
 
 Smokes that genuinely cannot run headless belong in the commented `SKIP_LIST` at the top of the script, each with a stated reason (currently empty — all smokes run). The native extension must be built first (`game/bin/libmobile_fortress_core*.so`, see `game/BUILD_CPP.md`).
 
+**Layout smokes must not rely on a clean player profile.** Returning-player state (saved progression, run history, persisted settings such as Large Text) changes menu/HUD layout and has hidden real bugs before — a main-menu clipping bug was invisible on a clean profile (T61 finding, T77 fix). Any new layout smoke sets up its own saved progress/history inside its private `XDG_DATA_HOME` instead of assuming a fresh `user://`.
+
 CI: `.github/workflows/godot-game.yml` runs the script on every PR/push touching `game/**` (plus the unchanged CMake/`ctest` job) and uploads `godot-smokes.log` as an artifact when the smoke job fails.
 
 Runner regression tests use a temporary fixture and fake Godot binary: `python3 -m unittest discover -s scripts/tests -p test_run_godot_smokes.py -v` (also run in CI).
 
-### Per-smoke coverage (28 smokes on disk, 2026-10-09 — read from the smoke files)
+### Per-smoke coverage (29 smokes on disk, 2026-10-09 — read from the smoke files)
 
 The runner discovers smokes automatically, so this table describes coverage, not a
 list to keep in sync — new smokes are added to CI with no edits anywhere.
@@ -28,6 +30,7 @@ list to keep in sync — new smokes are added to CI with no edits anywhere.
 | --- | --- |
 | `accessibility_smoke` | U8: ≥48dp touch targets, closed-loop keyboard/gamepad focus, WCAG AA contrast from ThemeTokens pairs, large-text round-trip, screen-reader metadata |
 | `battle_hud_layout_smoke` | T59: rendered-window target sizing for every interactive HUD control at 1280×720 / 720×1280 / 390×844 / 844×390, large text on/off, non-overlap, viewport containment, fixed pre-T59 grid coverage baseline (16640 px²); results-panel rank lines |
+| `battle_layout_smoke` | T70: both grids fully inside the viewport (containment), grids do not overlap each other or interactive HUD buttons, rendered cell size reported, at 1280×720 / 844×390 / 720×1280 / 390×844; off-canvas mutation check |
 | `dda_smoke` | A4: `SimulationCore` DDA toggle, intensity readout, wave scaling |
 | `dda_battle_smoke` | T48: DDA battle hookup, DT5 overlay intensity readout, DT7 wave-start DDA fields |
 | `determinism_smoke` | T65: fixed-dt repeat and mid-wave save/load on every catalog level; full-buffer comparison plus one-tick placement perturbation |
