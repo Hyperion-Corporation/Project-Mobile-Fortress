@@ -1,0 +1,34 @@
+const e=`# Shared Core Roadmap — C++ + Godot (decided)
+
+**Owner:** TBD
+
+**2026-08-11 note (final multi-agent pass):** C++ remains firm. The primary **game client is Godot 4**. Owner direction: use **both godot-cpp (GDExtension) and C++ modules** where appropriate.
+
+**2026-08-11 implementation note:** GDExtension \`SimulationCore\` is live under \`game/src/cpp/\` + \`mobile_fortress_core.gdextension\` (raiders, defenders, outposts, dual currency, HQ). Build: [\`game/BUILD_CPP.md\`](https://github.com/Hyperion-Corporation/Project-Mobile-Fortress/blob/main/game/BUILD_CPP.md). Epic #129.
+
+## Decision: C++ simulation with Godot presentation
+
+| Layer | Technology | Purpose |
+| --- | --- | --- |
+| Presentation / tools | **Godot 4** (isometric 2.5D, exports to Android/iOS) | Unified client |
+| Simulation | **C++20**, ECS via [EnTT](https://github.com/skypjack/entt) | Pathing, combat, economy |
+| Godot integration | **godot-cpp (GDExtension)** first; C++ modules later if needed | Owner C4 |
+| Serialization | [FlatBuffers](https://flatbuffers.dev/) | Snapshots / net later |
+| Dependency management | CMake + FetchContent (godot-cpp, EnTT); optional vcpkg | See \`game/CMakeLists.txt\` |
+
+## Roadmap
+
+| # | Item | Effort | Status |
+| --- | --- | --- | --- |
+| S0 | **Spike:** Godot↔C++ boundary (GDExtension) | M | ✅ **Done** — \`SimulationCore\` loads in Godot 4.7 |
+| S1 | C++ workspace (CMake) with EnTT skeleton | L | ✅ **Done** — \`game/CMakeLists.txt\` + EnTT components |
+| S2 | Pathfinding in C++ (Flow Field later; lane paths now) | L | 🚧 **Partial** — staggered-row flow; T60 fixed-seed property tests (288 fields, seed \`0x54464C57\`); a boxed-in raider stays put instead of stepping into a solid; lane fallback if grids are off |
+| S3 | Wire godot-cpp so Godot scenes call into the sim | M | ✅ **Done** — modular \`battle_root\` + classic \`main.gd\` |
+| S4 | FlatBuffers state snapshot for save/load and later replication | M | ✅ **Done** — schema v2 also stores flow grids, \`entry_row\`, and DDA inputs; v1 snapshots still load; cheat flags reset on load |
+| S5 | Move dual-front game logic into C++; Godot presentation | XL | 🚧 **In progress** — combat + wave-on-flow in C++ \`SimWorld\`; a v2 snapshot resumes that flow and the DDA director; UX still Godot |
+| S6 | Async/job bridging sim thread ↔ Godot main (TSan) | M | 📋 Pending (retarget from Kotlin/Swift era) |
+| S7 | Cross-platform regression suite (soft determinism) | L | 🚧 **Partial** — \`ctest\` \`sim_world_tests\` (v1 fixture + v2 flow/DDA tick match) + headless smokes incl. \`determinism_smoke.gd\` (T65: scripted fixed-dt sessions past wave 2 on every catalog level, byte-identical repeat + save/load-resume buffers, 1-tick perturbation control); Godot CI job added |
+| S8 | Android 13+ / iOS 17+ Godot export packaging | M | 🚧 **Partial** — presets + smoke; **Android debug APK exported** (2026-08-11); NDK arm64 sim + signed store pipelines still open |
+
+Effort key: S = days, M = 1–2 weeks, L = 3–6 weeks, XL = multi-month/cross-cutting.
+`;export{e as default};
