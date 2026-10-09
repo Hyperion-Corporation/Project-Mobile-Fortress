@@ -3567,3 +3567,26 @@ Approach, before editing:
 - **Desktop:** reconfigured `game/build` (host `flatc` still built), `ctest --test-dir game/build` **1/1** `sim_world_tests`. `XDG_DATA_HOME=/tmp/pmf-xdg/grok ./scripts/run_godot_smokes.sh` **29 passed, 0 failed, 0 skipped**. Import log: `SimulationCore ready`.
 - **Docs:** S8 stays Partial (signed store pipelines and the iOS dylib still open). IOS3 notes the Android `.so` and that no ios.arm64 binary is declared. No `SimWorld` behaviour change.
 - **Handoff:** ready for Codex Harbinger under T76.
+
+### Qwen Harbinger — 2026-10-09 — T75 DONE: ID8 slice 4, citadel rank widget + drift test
+
+- **Commit:** `7e673e3` (`feat(website): T75 ID8 slice 4 — citadel rank widget with drift test against progression.gd`) on `harbinger`.
+- **Lane:** `docs/website/src/simulations/citadelRank.ts` (new), `docs/website/src/frameworks/react/components/CitadelRankWidget.tsx` (new), `docs/website/src/frameworks/react/components/CitadelRankWidget.css` (new), `docs/website/src/frameworks/react/views/DualFrontDemoView.tsx`, `docs/website/test/unit/simulations/citadel-rank-drift.test.ts` (new), `docs/moon/roadmaps/internal_dashboard.md`, `docs/moon/CHANGELOG.md`. No other agents' files touched.
+
+**What landed:**
+
+1. **Citadel rank widget** on `/dashboard/demo`: Shows all 6 prestige tiers (Coastal Beacon → Imperial Coastal Stronghold) with titles, historical titles (Chinese), thresholds, and descriptions. Slider + number input control for prestige value. Shows current rank badge, progress bar to next tier, remaining prestige needed. Max-rank case shows 🏆 badge. All values derived from `game/scripts/data/progression.gd` via Vite `?raw` import — not hardcoded.
+
+2. **Browser-safe module** (`citadelRank.ts`): `parsePrestigeTiers()` extracts tier data from GDScript source. `getPrestigeTier()` and `getNextPrestigeTier()` mirror the game's `Progression.get_prestige_tier` / `get_next_prestige_tier` exactly (including max-rank case and boundary values). No Node.js imports — safe for browser bundle.
+
+3. **Drift test** (`citadel-rank-drift.test.ts`): 9 tests — parses all 6 tiers, checks ranks 0-5 in order, thresholds [0, 250, 750, 1500, 3000, 5000], titles, historical titles. Tests `getPrestigeTier` at boundary values (0, 249, 250, 749, 750, 5000, 99999). Tests `getNextPrestigeTier` for max-rank, just-below-threshold (749 → 0.998 progress), and mid-point (1125 → 0.5 progress). **Mutation proven:** changing Sentry Bastion threshold 250→999 fails 3 tests (`tier thresholds match game data`, `getPrestigeTier returns correct tier at threshold boundaries`, `getNextPrestigeTier computes correct progress just below threshold`).
+
+4. **Keyboard accessible:** Slider and number input both have proper labels and aria attributes. Tab-navigable.
+
+**Verification:**
+- `npx vitest run` → **125/125 PASS** (11 files; 103 pre-existing + 9 drift + 13 view tests that now interact with the widget).
+- `npx tsc -b --pretty false` → exit 0.
+- `npm run build` → success; island budget **66.1 kB gzip** (budget 300 kB) — OK.
+- **Before/after test counts:** 103 → 125 (+22).
+
+**Handoff:** ready for Codex Harbinger under T76.
