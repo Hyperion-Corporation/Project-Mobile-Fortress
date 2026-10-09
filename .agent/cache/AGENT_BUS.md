@@ -158,6 +158,7 @@ Lower-case aliases (`gemini`, `chat`, …) remain valid in the task-board Owner 
 | T74 `docs/moon/ROADMAP.md` + AGENTS.md sync with rounds 1–4 and the signing rule | mistral | **ASSIGNED** | Docs only |
 | T75 ID8 slice 4: citadel rank widget on the demo with a drift test against `progression.gd` | qwen | **ASSIGNED** | `docs/website/**` |
 | T76 Review T69–T75 | chat | **QUEUED** | By commit hash on `harbinger` |
+| T77 Hotfix: main menu clips at 844×390 + Large Text on the CI runner (`Godot game` red on `main`) | cursor | **ASSIGNED** | `game/scripts/ui/main_menu.gd`, `accessibility_smoke.gd`; right after T69 |
 
 ### Conflict rules
 
@@ -3402,3 +3403,23 @@ A4 stays Partial "until tuned against playtest data" and no playtests have run. 
 Same rules as T66. T69 and T70 share `battle_root.gd` — check the hand-off order was respected and that T70 did not undo the refund fix. For T71, rebuild Android yourself under JDK 21.
 
 **Acknowledged by the owner, not assigned:** `ios/MyGame.xcodeproj` stays path-gated until someone has a Mac. VS10 playtest sessions and device runs remain with the owner.
+
+### Claude Harbinger — 2026-10-09 — T77 added: `Godot game` is red on `main` (Cursor Harbinger, after T69)
+
+Workflow results for the merge at `589ed0f`: Website green, Docs green, `CI` Android jobs all green under JDK 17 (lint/unit, debug build, instrumented 29 and 35 — T63 confirmed), `ios-test` red as expected, and **`Godot game` red**: `accessibility_smoke` fails on the runner (run 37871627277) while passing 28/28 here.
+
+```
+MainMenu content Title clips at vp (844, 390) (large_text=true)
+MainMenu content QuitBtn clips at vp (844, 390) (large_text=true)
+MainMenu control QuitBtn ([P: (365.0, 647.5), S: (828.0, 102.35)]) clips outside viewport [P: (0,0), S: (1558.0, 720.0)] at vp (844, 390) (large_text=true)
+```
+
+Only Large Text on, only 844×390. QuitBtn ends at 749.85 against a 720-high canvas, so the column is about 30 px too tall there; locally it fits. The likely difference is text metrics (the runner has no desktop fonts, so labels measure differently) — treat that as a hypothesis and confirm it.
+
+#### T77 — Cursor Harbinger — make the compact-landscape menu fit regardless of font metrics
+
+- Lane: `game/scripts/ui/main_menu.gd`, `game/tests/accessibility_smoke.gd`, `ui_ux.md` U8 note, changelog (`### Fixed`). Do it straight after T69.
+- Reproduce first: find a local setup that fails the same way (for example forcing the fallback font, or scaling label heights in a disposable copy) and say what reproduced it. If you cannot reproduce it, say so and fix by construction.
+- Fix by construction, not by trimming pixels until it passes here: at compact landscape the menu column must fit the available height for any reasonable text height — scroll, a two-column action layout, or a measured scale-to-fit that never takes a touch target under 48 px. Keep rank, resume and history visible for returning players.
+- The smoke must be able to catch this class of failure on a developer machine: add a case that inflates text height (e.g. +20%) at 844×390 with Large Text on and still requires containment. Reverting your fix must fail it locally.
+- The lead will re-run the `Godot game` workflow on `harbinger` to confirm on the runner.
