@@ -374,9 +374,7 @@ func _on_cell_clicked(front_id: String, cell: Vector2i) -> void:
 		front_id_int, selected_unit_id, pos, range_px, damage, cooldown, own_m, cross_m, aura_r, aura_b
 	)
 	if did2 < 0:
-		# Own-currency refund, even if the placed-front wallet paid (preserved T61).
-		var currency_front: int = 0 if str(plan.get("currency", "land")) == "land" else 1
-		sim.gain(currency_front, cost)
+		_refund_paid_wallet(pay_front, cost)
 		status_message = "Cannot place another %s" % str(def.get("name", selected_unit_id))
 		return
 
@@ -506,8 +504,16 @@ func _upgrade_selected() -> void:
 		status_message = "Unit upgraded (+25% damage, +range)"
 		_sync_session_from_sim()
 	else:
-		sim.gain(front, cost)
+		_refund_paid_wallet(front, cost)
 		status_message = "Unit cannot be upgraded while traveling"
+
+
+func _refund_paid_wallet(pay_front: int, cost: int) -> void:
+	if sim == null or cost <= 0:
+		return
+	if sim.has_method("debug_infinite_resources") and bool(sim.debug_infinite_resources(pay_front)):
+		return
+	sim.gain(pay_front, cost)
 
 
 func _finish(victory: bool, reason: String) -> void:

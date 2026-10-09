@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed (2026-10-09, T69 failed-spawn refunds the paying wallet — Cursor Harbinger)
+
+- **G12:** When `spawn_defender` rejects a paid placement (hero uniqueness), the refund goes to the wallet `placement_plan` charged — including the other-grid fallback — not the unit's own-currency wallet. Infinite-wallet fronts skip `gain` because `spend` deducted nothing. Upgrade-fail refund (same front that spent) was already correct; it now also skips infinite. Smoke: `placement_afford_smoke.gd` (second Qi on sea with land empty; second Dias on land with sea empty; infinite sea must not gain).
+
 ### Fixed and reviewed (2026-10-09, T68 review of T67 — Codex Harbinger)
 
 - T67 verified with fixes: demo range/cooldown now derive through named conversions from canonical game values, replacing contradictory hardcoded ranges (Arquebusier/Dias 2 → 3 cells, Signal Battery 3 → 12). No game values changed.
