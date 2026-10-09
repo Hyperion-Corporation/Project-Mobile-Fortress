@@ -101,7 +101,7 @@ Legacy Android SurfaceView + iOS SpriteKit skeletons, CI/CD, docs, `.agent/`, `i
 | [`vertical_slice.md`](roadmaps/vertical_slice.md) | VS0–VS9 ✅; VS10 🚧 Protocol ready |
 | [`gameplay.md`](roadmaps/gameplay.md) | G2 playable; G3/G4/G5/G6/G7/G8/G12 🚧 Partial; G10 ✅; G9/G11/G13 deferred |
 | [`shared_core.md`](roadmaps/shared_core.md) | S0/S1/S3/S4 ✅; S2/S5/S7/S8 🚧; S6 pending |
-| [`ui_ux.md`](roadmaps/ui_ux.md) | U2/U3 ✅; U4/U8/U9/U10 delivered; U1 slice-0 theme; U5–U7 deferred |
+| [`ui_ux.md`](roadmaps/ui_ux.md) | U2/U3 ✅; U8/U9/U10 delivered; U4 HUD delivered, T70 layout held for snapshot compatibility (T76); U1 slice-0 theme; U5–U7 deferred |
 | [`dev_tools.md`](roadmaps/dev_tools.md) | DT1–DT8 🚧 Slice-0 wired |
 | [`performance.md`](roadmaps/performance.md) | P3/P4/P7 🚧 Partial (headless baselines; on-device runs open); rest pending |
 | [`qa_testing.md`](roadmaps/qa_testing.md) | Q1 ✅; Q2/Q3/Q4 🚧 Partial; Q10 pending — Slice-0 exit gate |

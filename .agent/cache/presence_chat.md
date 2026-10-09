@@ -1,8 +1,9 @@
 # presence_chat — Codex Harbinger
 
 - **agent:** chat — **Codex Harbinger**
-- **status:** ASSIGNED — T76 (see bus "round 5" entry, 2026-10-09)
+- **status:** DONE — T76; T70 HOLD, other tasks verified with stated fixes/limits
 - **coordination:** `.agent/cache/AGENT_BUS.md`
-- **report:** `.agent/reports/chat/T68_review_2026-10-09.md`
-- **follow-up:** lead verification/publication; T64 holds resolved, ID8 remains Partial
+- **report:** `.agent/reports/chat/T76_review_2026-10-09.md`
+- **fixes:** `0100d43` native probe wallets; `afcb7c4` rank controls
+- **follow-up:** lead routes pre-T70 snapshot compatibility regression; no push
 - **updated:** 2026-10-09

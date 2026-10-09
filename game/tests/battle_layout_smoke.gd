@@ -31,79 +31,106 @@ func _run() -> void:
 
 	print("\n=== T70 Battle Layout Smoke: Testing Dual-Grid Viewport Containment & Touch Targets ===")
 
-	for vp_size: Vector2i in viewport_sizes:
-		root.size = vp_size
-		var battle: Node2D = battle_scene.instantiate()
-		root.add_child(battle)
-		await process_frame
-		await process_frame
-		await create_timer(0.05).timeout
+	var initial_settings := OfflinePersistence.read_settings()
+	var saved_paths := [Progression.PROGRESSION_PATH, OfflinePersistence.RESULTS_PATH, OfflinePersistence.HISTORY_PATH]
+	var saved_files: Dictionary = {}
+	for path in saved_paths:
+		saved_files[path] = FileAccess.get_file_as_bytes(path) if FileAccess.file_exists(path) else null
+	OfflinePersistence.write_json(Progression.PROGRESSION_PATH, {"schema_version": 1, "total_prestige": 5000, "levels": {"slice0_dual_front": {"best_stars": 3}}})
+	OfflinePersistence.write_results({"victory": true, "stars": 3, "enemies_killed": 20})
+	OfflinePersistence.write_json(OfflinePersistence.HISTORY_PATH, {"schema_version": 1, "runs": [{"victory": true, "stars": 3}]})
+	for large_text in [false, true]:
+		var settings := initial_settings.duplicate(true)
+		settings["large_text"] = large_text
+		OfflinePersistence.write_settings(settings)
+		for vp_size: Vector2i in viewport_sizes:
+			root.size = vp_size
+			var battle: Node2D = battle_scene.instantiate()
+			root.add_child(battle)
+			await process_frame
+			await process_frame
+			await create_timer(0.05).timeout
 
-		var land_grid: GridFront = battle.get("land_grid")
-		var sea_grid: GridFront = battle.get("sea_grid")
-		var hud: CanvasLayer = battle.get_node_or_null("HUD")
+			var land_grid: GridFront = battle.get("land_grid")
+			var sea_grid: GridFront = battle.get("sea_grid")
+			var hud: CanvasLayer = battle.get_node_or_null("HUD")
 
-		if land_grid == null or sea_grid == null:
-			failures.append("Grids missing at vp %s" % str(vp_size))
+			if land_grid == null or sea_grid == null:
+				failures.append("Grids missing at vp %s" % str(vp_size))
+				battle.queue_free()
+				continue
+
+			var vp_rect: Rect2 = battle.get_viewport_rect()
+			var vp_final_xform: Transform2D = battle.get_viewport().get_final_transform()
+
+			var land_rect: Rect2 = land_grid.get_bounding_rect()
+			var sea_rect: Rect2 = sea_grid.get_bounding_rect()
+
+			# 1. Viewport containment
+			if not vp_rect.encloses(land_rect):
+				failures.append("LandGrid clips outside viewport at %s: land_rect=%s, vp=%s" % [
+					str(vp_size), str(land_rect), str(vp_rect)
+				])
+			if not vp_rect.encloses(sea_rect):
+				failures.append("SeaGrid clips outside viewport at %s: sea_rect=%s, vp=%s" % [
+					str(vp_size), str(sea_rect), str(vp_rect)
+				])
+
+			# 2. Non-overlap between grids
+			if land_rect.intersects(sea_rect):
+				failures.append("LandGrid and SeaGrid overlap at %s: land_rect=%s, sea_rect=%s" % [
+					str(vp_size), str(land_rect), str(sea_rect)
+				])
+
+			# Check every visible interactive HUD control, including controls moved by layout.
+			if hud != null:
+				for btn in hud.find_children("*", "BaseButton", true, false):
+					if btn.is_visible_in_tree():
+						for grid_rect in [land_rect, sea_rect]:
+							if btn.get_global_rect().intersects(grid_rect):
+								failures.append("Grid overlaps %s at %s (large_text=%s)" % [btn.name, vp_size, large_text])
+			# All 80 centers resolve to their distinct cell/front and match sim projection.
+			for front in [0, 1]:
+				var grid: GridFront = land_grid if front == 0 else sea_grid
+				for y in grid.rows:
+					for x in grid.cols:
+						var cell := Vector2i(x, y)
+						var center := grid.cell_to_global_center(cell)
+						if not battle._probe_grids(battle.get_canvas_transform() * center) or battle._hit_front_id != grid.front_id or battle._hit_cell != cell:
+							failures.append("Touch probe misses cell/front: %s/%s" % [front, cell])
+						if grid.world_to_cell(center) != cell:
+							failures.append("Cell center round trip failed: %s/%s" % [front, cell])
+						if not grid.get("_click_area").get_global_rect().has_point(center):
+							failures.append("Mouse input misses cell center: %s/%s" % [front, cell])
+						var projected: Vector2 = battle._sim_to_screen_pos(front, battle._cell_to_sim_pos(front, cell))
+						if not projected.is_equal_approx(center):
+							failures.append("Sim projection differs from drawn cell: %s/%s" % [front, cell])
+				var outpost: Node2D = battle.visual_nodes.get("outpost_" + str(front))
+				if outpost == null or not outpost.global_position.is_equal_approx(grid.cell_to_global_center(Vector2i(4, 2))):
+					failures.append("Outpost marker missing or misplaced: %s" % front)
+
+			# 4. Measure rendered cell dimensions in window pixels
+			var cell_canvas_w: float = 128.0 * battle.land_host.scale.x
+			var cell_canvas_h: float = 64.0 * battle.land_host.scale.y
+			var cell_rendered: Vector2 = vp_final_xform.basis_xform(Vector2(cell_canvas_w, cell_canvas_h)).abs()
+			var note_below_40 := ""
+			if cell_rendered.x < 40.0 or cell_rendered.y < 40.0:
+				note_below_40 = " [NOTE: Dimension < 40px on phone scale; documented ergonomics finding]"
+
+			print("  LT=%s VP %4dx%4d | Host scale: %.3f | Rendered cell: %5.1f x %5.1f px%s" % [
+				large_text, vp_size.x, vp_size.y,
+				battle.land_host.scale.x,
+				cell_rendered.x, cell_rendered.y,
+				note_below_40
+			])
+
+			# 5. Bastion / HQ Citadel check at (cols - 1, rows / 2) -> (7, 2)
+			var hq_cell := Vector2i(land_grid.cols - 1, land_grid.rows / 2)
+			if not land_grid.in_bounds(hq_cell) or not sea_grid.in_bounds(hq_cell):
+				failures.append("HQ bastion cell %s out of bounds at %s" % [str(hq_cell), str(vp_size)])
+
 			battle.queue_free()
-			continue
-
-		var vp_rect: Rect2 = battle.get_viewport_rect()
-		var vp_final_xform: Transform2D = battle.get_viewport().get_final_transform()
-
-		var land_rect: Rect2 = land_grid.get_bounding_rect()
-		var sea_rect: Rect2 = sea_grid.get_bounding_rect()
-
-		# 1. Viewport containment
-		if not vp_rect.encloses(land_rect):
-			failures.append("LandGrid clips outside viewport at %s: land_rect=%s, vp=%s" % [
-				str(vp_size), str(land_rect), str(vp_rect)
-			])
-		if not vp_rect.encloses(sea_rect):
-			failures.append("SeaGrid clips outside viewport at %s: sea_rect=%s, vp=%s" % [
-				str(vp_size), str(sea_rect), str(vp_rect)
-			])
-
-		# 2. Non-overlap between grids
-		if land_rect.intersects(sea_rect):
-			failures.append("LandGrid and SeaGrid overlap at %s: land_rect=%s, sea_rect=%s" % [
-				str(vp_size), str(land_rect), str(sea_rect)
-			])
-
-		# 3. Non-overlap with interactive HUD controls
-		if hud != null:
-			var sidebar: Control = hud.get_node_or_null("Root/SideBar")
-			if sidebar != null and sidebar.visible:
-				for btn: Node in sidebar.get_children():
-					if btn is Button and (btn as Button).visible:
-						var btn_rect: Rect2 = (btn as Button).get_global_rect()
-						if btn_rect.intersects(land_rect):
-							failures.append("LandGrid overlaps HUD button %s at %s" % [btn.name, str(vp_size)])
-						if btn_rect.intersects(sea_rect):
-							failures.append("SeaGrid overlaps HUD button %s at %s" % [btn.name, str(vp_size)])
-
-		# 4. Measure rendered cell dimensions in window pixels
-		var cell_canvas_w: float = 128.0 * battle.land_host.scale.x
-		var cell_canvas_h: float = 64.0 * battle.land_host.scale.y
-		var cell_rendered: Vector2 = vp_final_xform.basis_xform(Vector2(cell_canvas_w, cell_canvas_h)).abs()
-		var note_below_40 := ""
-		if cell_rendered.x < 40.0 or cell_rendered.y < 40.0:
-			note_below_40 = " [NOTE: Dimension < 40px on phone scale; documented ergonomics finding]"
-
-		print("  VP %4dx%4d | Host scale: %.3f | Rendered cell: %5.1f x %5.1f px%s" % [
-			vp_size.x, vp_size.y,
-			battle.land_host.scale.x,
-			cell_rendered.x, cell_rendered.y,
-			note_below_40
-		])
-
-		# 5. Bastion / HQ Citadel check at (cols - 1, rows / 2) -> (7, 2)
-		var hq_cell := Vector2i(land_grid.cols - 1, land_grid.rows / 2)
-		if not land_grid.in_bounds(hq_cell) or not sea_grid.in_bounds(hq_cell):
-			failures.append("HQ bastion cell %s out of bounds at %s" % [str(hq_cell), str(vp_size)])
-
-		battle.queue_free()
-		await process_frame
+			await process_frame
 
 	# -------------------------------------------------------------------------
 	# 6. Disposable Mutation Proof: Off-canvas grid triggers failure
@@ -129,6 +156,13 @@ func _run() -> void:
 		print("  Disposable mutation check: PASS (off-canvas grid correctly detected)")
 
 	root.size = Vector2i(1280, 720)
+	OfflinePersistence.write_settings(initial_settings)
+	for path in saved_paths:
+		if saved_files[path] == null:
+			DirAccess.remove_absolute(path)
+		else:
+			var file := FileAccess.open(path, FileAccess.WRITE)
+			file.store_buffer(saved_files[path])
 	_finish(failures)
 
 
