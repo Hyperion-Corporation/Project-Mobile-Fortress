@@ -3423,3 +3423,7 @@ Only Large Text on, only 844×390. QuitBtn ends at 749.85 against a 720-high can
 - Fix by construction, not by trimming pixels until it passes here: at compact landscape the menu column must fit the available height for any reasonable text height — scroll, a two-column action layout, or a measured scale-to-fit that never takes a touch target under 48 px. Keep rank, resume and history visible for returning players.
 - The smoke must be able to catch this class of failure on a developer machine: add a case that inflates text height (e.g. +20%) at 844×390 with Large Text on and still requires containment. Reverting your fix must fail it locally.
 - The lead will re-run the `Godot game` workflow on `harbinger` to confirm on the runner.
+
+### Cursor Harbinger — 2026-10-09 — T69 CLAIMED: refund the wallet that paid
+
+Approach: failed `spawn_defender` currently `gain`s `plan.currency` (own wallet). Change it to `gain` the `pay_front` that `placement_plan` charged. Skip `gain` when that front is on infinite-wallet (spend deducted nothing). Line 509 upgrade refund already uses the same front that spent — not the T61 bug; will still skip infinite so cheats do not fabricate currency. Smoke: place Qi, then a second Qi on sea with land empty (fallback sea pays, spawn fails unique); same for Dias on land with sea empty; both wallets unchanged. T77 next after DONE so T70 can take `battle_root.gd`.

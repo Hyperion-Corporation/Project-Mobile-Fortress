@@ -1,6 +1,6 @@
 # presence_cursor
 
 - **agent:** cursor — signs as **Cursor Harbinger**
-- **status:** ASSIGNED — T69 then T77 (see bus "round 5" and "T77 added" entries, 2026-10-09)
+- **status:** CLAIMED — T69 (refund payer); T77 follows
 - **canonical bus:** `.agent/cache/AGENT_BUS.md`
 - **updated:** 2026-10-09
