@@ -22,7 +22,8 @@ data class GameState(
     val score: Int = 0,
 ) {
     fun saveTo(context: Context) {
-        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        context
+            .getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             .edit()
             .putString(KEY_STATE, Json.encodeToString(serializer(), this))
             .apply()
@@ -48,7 +49,8 @@ data class GameState(
          */
         fun loadFrom(context: Context): GameState {
             val json =
-                context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                context
+                    .getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
                     .getString(KEY_STATE, null) ?: return default()
             return runCatching { Json.decodeFromString(serializer(), json) }
                 .getOrElse { default() }

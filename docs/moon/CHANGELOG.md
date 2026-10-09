@@ -7,6 +7,60 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Reviewed (2026-10-09, T76 round 5 — Codex Harbinger)
+
+- Reviewed T69–T75 plus T77. Expanded the battle layout guard to saved progression/history, Large Text off/on, every visible HUD button, outpost marker positions and all 80 cell centers/projections. T70 is **HOLD**: pre-T70 snapshots load without migration but map defenders onto wrong cells or outside the grid. Full findings and independent checks are recorded in `.agent/reports/chat/T76_review_2026-10-09.md`.
+
+### Fixed (2026-10-09, T74 roadmap index + agent-guide sync — Mistral Harbinger)
+
+- `docs/moon/ROADMAP.md` v6.0: the index was frozen at the 2026-08-11 state; it now tracks the per-area files (the source of truth) after agent rounds 1–4. Corrections: Phase 1 "Pending" → In progress (rounds 1–4 delivered the polish rows, several Partial pending playtest data); Phase 2 "Parallel after VS1 starts" → Partial (S0/S1/S3/S4 done, S2/S5/S7/S8 partial, S6 pending); Phase 7 dashboard "⏸" → Partial (ID2/ID3/ID6 delivered, ID7/ID8 partial); the Slice-0 track showed VS0 🚧/VS1 "next implement"/VS2–VS10 📋 → VS0–VS9 ✅, VS10 🚧 Protocol ready; the "Immediate execution order" still opened with "G2/VS1 next" → VS10 playtest gate first, then the post-gate backlog; new per-area "Where we are" snapshot table. No area file's status was upgraded — the index only repeats what they say.
+- `.agent/AGENTS.md` v3.2: §8 gained the signing rule (signature in bus/changelog/report/presence, `Agent: <Name> <Team>` commit trailer above the coauthor trailer, authoritative text on the bus `§Signing`) and the two-team layout (Harbinger on `harbinger`, Wall on `GGWall`, lead merges to `main`); §4 gained the JDK 21 Gradle requirement and the returning-player-profile rule for layout smokes. Beyond the two named sections, two lines that directly contradicted T71's verified toolchain were corrected (§2 legacy-stack row and §7 legacy constraint: AGP 8.5.2/Gradle 8.7 → the T71 coordinated set, wrapper 9.7.0 + AGP 9.3.1 + Kotlin 2.4.10 + compileSdk 37). Existing §8 bullets untouched.
+- `docs/TESTING.md`: the per-smoke coverage table gains the missing `battle_layout_smoke` row (T70) and the count moved 28 → 29; new "Layout smokes must not rely on a clean player profile" rule (T61 finding, T77 fix). The "Legacy-tree findings" section was not touched (Kimi's T71 owns it).
+
+### Added (2026-10-09, T75 ID8 slice 4: citadel rank widget + drift test — Qwen Harbinger)
+
+- **Citadel rank widget** on `/dashboard/demo`: shows all 6 prestige tiers (Coastal Beacon → Imperial Coastal Stronghold) with titles, historical titles, thresholds, and descriptions. Slider + number input control shows current rank and progress to next tier. Max-rank case handled (🏆 badge). Values derived from `game/scripts/data/progression.gd` via Vite `?raw` import — not hardcoded.
+- **Drift test** (`citadel-rank-drift.test.ts`): reads `progression.gd`, parses PRESTIGE_TIERS, asserts rank/threshold/title/historical_title match for all 6 tiers. Also tests `getPrestigeTier` and `getNextPrestigeTier` at boundary values. **Mutation proven:** changing Sentry Bastion threshold 250→999 fails 3 tests.
+- **Browser-safe module** (`citadelRank.ts`): parsing and tier logic without Node.js imports. File loading done via Vite `?raw` import in the demo view.
+
+### Added (2026-10-09, T72 Android arm64 GDExtension — Grok Harbinger)
+
+- **S8:** `scripts/build_android_gdextension.sh` cross-compiles godot-cpp and `mobile_fortress_core` for `android.arm64` with NDK r27c (27.2.12479018), API 33, `c++_shared`, and `-Wl,-z,max-page-size=16384` (common-page-size left at 4 KB). The gitignored output is `game/bin/libmobile_fortress_core.android.arm64.so`. `mobile_fortress_core.gdextension` maps `android.debug.arm64` and `android.release.arm64`. No `SimWorld` behaviour change. Signed store pipelines and the iOS dylib stay open.
+
+### Added (2026-10-09, T73 scripted balance probe — Muse Harbinger)
+
+- **A4 tuning input / Q10 prep:** New manual `game/tests/balance_probe.gd` (never CI; `scripts/run_balance_probe.sh`) plays 5 fixed bots × DDA off/on on both catalog levels to the end of the run with probe-enforced `UnitDefs` wallets. Full 20-run table in `docs/BENCHMARKS.md`: every bot loses with DDA off; DDA-on flips 3 runs to 1-star victories with the director near its 0.75 easing floor; no bot holds both outposts. Labeled scripted-bot data with owner questions, not tuning decisions.
+
+### Fixed (2026-10-09, T76 citadel rank controls — Codex Harbinger)
+
+- Rank slider uses single-prestige steps so entering 749 no longer silently displays slider value 750 or jumps to 760 on ArrowRight. Number input handles exponent notation as a number and bounds values; max-rank values keep the slider within its range. Added three interaction tests (125 → 128 total). T75 actually added 9 tests over the T68 baseline of 116, not 22.
+
+### Fixed (2026-10-09, T76 balance-probe accounting — Codex Harbinger)
+
+- Probe placement now spends the native wallet rather than only private counters: both reported unspent funds and DDA resource pressure previously used inflated balances. Regenerated the benchmark table; four DDA-on victories now occur instead of three. Added an affordable Qi + Battery strategy, all 24 repeat checks, both-mode no-defender sanity, failed-payment/spawn/timeout checks and correct elapsed tick count. A4 remains Partial; these are bot observations, not tuning decisions.
+
+### Changed (2026-10-09, T71 Android dependency strategy — toolchain moved forward as one set — Kimi Harbinger)
+
+- **Q2 / Android CI:** dependabot bumps can no longer re-break the build piecemeal. T63's reverts are superseded by a coordinated move forward, verified locally under JDK 21 (`ktlintCheck`, `testDebugUnitTest` 3/3, `lintDebug`, `assembleDebug` all green): Gradle wrapper **9.7.0** (official jar checksum `7a9ce74c…62c5d`), AGP **9.3.1** — which embeds Kotlin support, so `org.jetbrains.kotlin.android` is removed from the root and app build files along with the obsolete `kotlinOptions` block — Kotlin **2.4.10**, ktlint-gradle **14.2.0** (five formatting-only fixes in `GameEngine.kt`/`GameState.kt`/`GameView.kt` for its new defaults), androidx at the bumped versions (activity-compose 1.13.0, core-ktx 1.19.0, compose-bom 2026.06.01, lifecycle 2.11.0, coroutines 1.11.0, espresso 3.7.0, test-core 1.7.0, test-junit 1.3.0, serialization-json 1.11.0), **compileSdk 37** (core-ktx 1.19.0 / lifecycle 2.11.0 require it), **targetSdk stays 35** deliberately (runtime-behavior opt-in is the owner's call).
+- **`.github/dependabot.yml`:** new `android-toolchain` group (Gradle wrapper + AGP + Kotlin + ktlint plugin, excluding kotlinx) and `android-libraries` group (androidx + kotlinx) with an in-file coupling-constraint comment — coupled bumps arrive as single PRs, and CI's Android jobs (which run for every `gradle/**` change) fail any incompatible piece before merge. The Android CI jobs use JDK 21, matching the verified runtime.
+
+### Fixed (2026-10-09, T70 both grids fully visible in landscape and portrait — Gemini Harbinger)
+
+- **U4 / IOS2 / G2:** Resolved #1 playability gap where LandGrid and SeaGrid were positioned in vertical series, pushing SeaGrid 296 px off the bottom of the 720-height canvas in landscape. Implemented responsive layout in `battle_root.gd` (`_apply_layout`):
+  - **Landscape (1280×720, 844×390):** Dual fronts arranged side-by-side (Land on left, Sea on right) with scale $s \approx 0.559$, guaranteeing 100% viewport containment (`vp_rect.encloses`), zero inter-grid overlap, and zero overlap with HUD TopBar and SideBar.
+  - **Portrait (720×1280, 390×844):** Grids stacked vertically in the main column to the left of the SideBar, fully contained within the canvas.
+  - **Coordinate invariance:** Engine-free `SimWorld` coordinate roots $(300, 200)$ and $(300, 600)$ preserved; exact affine mapping translates `_cell_to_sim_pos`, `_sim_pos_to_cell`, and `_sim_to_screen_pos` with zero sub-pixel drift. Tokens, lane paths, and outpost visuals scale with `host.scale`.
+  - **HQ Bastion visual:** Column 7 bastion / citadel outline at cell $(7, 2)$ rendered in `grid_front.gd` with distinct cartographic outlines; `_click_area` expanded to cover full isometric footprint $[-320, 512] \times [-32, 416]$.
+  - **Ergonomics & Smokes:** Added headless smoke `game/tests/battle_layout_smoke.gd` (auto-discovered, 29/29 total smokes passing) verifying viewport containment, grid non-overlap, HUD clearance, cell size reporting across all 4 viewports, and disposable off-canvas mutation detection. Documented touch ergonomics finding where phone-scale isometric cell heights drop below 40px (mitigated by G10 drag-preview affordance).
+
+### Fixed (2026-10-09, T77 compact-landscape menu fit — Cursor Harbinger)
+
+- **U8:** Compact landscape (logical `vp_h<=720` and `vp_w>1280`, including 844×390) lays the six menu actions in a two-column grid and never scales the full-rect `Center` container. Large Text scales the `VBox` only, clamped so touch targets stay ≥48dp. Rank, Resume and last-run history stay visible. Smoke: `accessibility_smoke.gd` inflates text +20% at 844×390 with Large Text on and still requires containment.
+
+### Fixed (2026-10-09, T69 failed-spawn refunds the paying wallet — Cursor Harbinger)
+
+- **G12:** When `spawn_defender` rejects a paid placement (hero uniqueness), the refund goes to the wallet `placement_plan` charged — including the other-grid fallback — not the unit's own-currency wallet. Infinite-wallet fronts skip `gain` because `spend` deducted nothing. Upgrade-fail refund (same front that spent) was already correct; it now also skips infinite. Smoke: `placement_afford_smoke.gd` (second Qi on sea with land empty; second Dias on land with sea empty; infinite sea must not gain).
+
 ### Fixed and reviewed (2026-10-09, T68 review of T67 — Codex Harbinger)
 
 - T67 verified with fixes: demo range/cooldown now derive through named conversions from canonical game values, replacing contradictory hardcoded ranges (Arquebusier/Dias 2 → 3 cells, Signal Battery 3 → 12). No game values changed.

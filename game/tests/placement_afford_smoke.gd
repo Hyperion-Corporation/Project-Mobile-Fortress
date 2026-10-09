@@ -157,6 +157,79 @@ func _check_battle(failures: Array[String]) -> void:
 		failures.append("infinite sea must pay before finite land fallback")
 	battle.sim.debug_set_infinite_resources(1, false)
 
+	# T69: failed unique spawn refunds the wallet that paid, not own-currency.
+	if battle.has_method("debug_load_level"):
+		battle.debug_load_level()
+		await process_frame
+	if battle.sim.has_method("debug_set_resources"):
+		battle.sim.debug_set_resources(0, 28)
+		battle.sim.debug_set_resources(1, 0)
+	var qi_land := _first_placeable(battle.land_grid)
+	battle.selected_unit_id = "hero_qi"
+	if qi_land.x >= 0:
+		battle._on_cell_clicked("land", qi_land)
+	if battle.sim.has_method("debug_set_resources"):
+		battle.sim.debug_set_resources(0, 0)
+		battle.sim.debug_set_resources(1, 40)
+	var land_at_fail: int = battle.sim.get_land_resources()
+	var sea_at_fail: int = battle.sim.get_sea_resources()
+	var qi_sea := _first_placeable(battle.sea_grid)
+	if qi_sea.x < 0:
+		failures.append("no sea cell for failed Qi spawn")
+	else:
+		battle.selected_unit_id = "hero_qi"
+		battle._on_cell_clicked("sea", qi_sea)
+		if battle.sim.get_land_resources() != land_at_fail or battle.sim.get_sea_resources() != sea_at_fail:
+			failures.append("failed Qi sea-fallback refunded the wrong wallet (land %d→%d sea %d→%d)" % [
+				land_at_fail, battle.sim.get_land_resources(), sea_at_fail, battle.sim.get_sea_resources()
+			])
+		var qi_count := 0
+		for defender in battle.sim.get_defenders():
+			if str(defender.get("type", "")) == "hero_qi":
+				qi_count += 1
+		if qi_count != 1:
+			failures.append("second Qi should fail unique spawn, count=%d" % qi_count)
+
+	if battle.sim.has_method("debug_set_resources"):
+		battle.sim.debug_set_resources(0, 0)
+		battle.sim.debug_set_resources(1, 26)
+	var dias_sea := _first_placeable(battle.sea_grid)
+	battle.selected_unit_id = "hero_dias"
+	if dias_sea.x >= 0:
+		battle._on_cell_clicked("sea", dias_sea)
+	if battle.sim.has_method("debug_set_resources"):
+		battle.sim.debug_set_resources(0, 40)
+		battle.sim.debug_set_resources(1, 0)
+	land_at_fail = battle.sim.get_land_resources()
+	sea_at_fail = battle.sim.get_sea_resources()
+	var dias_land := _first_placeable(battle.land_grid)
+	if dias_land.x < 0:
+		failures.append("no land cell for failed Dias spawn")
+	else:
+		battle.selected_unit_id = "hero_dias"
+		battle._on_cell_clicked("land", dias_land)
+		if battle.sim.get_land_resources() != land_at_fail or battle.sim.get_sea_resources() != sea_at_fail:
+			failures.append("failed Dias land-fallback refunded the wrong wallet (land %d→%d sea %d→%d)" % [
+				land_at_fail, battle.sim.get_land_resources(), sea_at_fail, battle.sim.get_sea_resources()
+			])
+
+	# Infinite payer: spend deducted nothing, so a failed spawn must not gain.
+	if battle.sim.has_method("debug_set_infinite_resources"):
+		battle.sim.debug_set_resources(0, 0)
+		battle.sim.debug_set_resources(1, 0)
+		battle.sim.debug_set_infinite_resources(1, true)
+		land_at_fail = battle.sim.get_land_resources()
+		sea_at_fail = battle.sim.get_sea_resources()
+		qi_sea = _first_placeable(battle.sea_grid)
+		battle.selected_unit_id = "hero_qi"
+		if qi_sea.x >= 0:
+			battle._on_cell_clicked("sea", qi_sea)
+		if battle.sim.get_land_resources() != land_at_fail or battle.sim.get_sea_resources() != sea_at_fail:
+			failures.append("infinite sea failed spawn must not gain (land %d→%d sea %d→%d)" % [
+				land_at_fail, battle.sim.get_land_resources(), sea_at_fail, battle.sim.get_sea_resources()
+			])
+		battle.sim.debug_set_infinite_resources(1, false)
+
 	battle.queue_free()
 	await process_frame
 

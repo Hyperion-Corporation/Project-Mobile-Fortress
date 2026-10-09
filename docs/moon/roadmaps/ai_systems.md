@@ -11,7 +11,7 @@ Scope: procedural content, dynamic difficulty, pathing research, monetization/re
 | A1 | WFC raid-map generation | L | 📋 Research | Nice research — do not block Slice-0 |
 | A2 | MILP-augmented WFC for solvability | L | 📋 Research | After A1 |
 | A3 | Nested WFC for large maps | M | 📋 Research | Only if A1/A2 backtracking costs measured |
-| A4 | Heuristic rule-based DDA (shipping baseline) | M | 🚧 Partial | Native/API + battle hookup (T48): DT8 overlay toggle (default off), DT5 intensity readout, DT7 wave-start fields. Stays Partial until tuned against VS10 playtest data |
+| A4 | Heuristic rule-based DDA (shipping baseline) | M | 🚧 Partial | Native/API + battle hookup (T48): DT8 overlay toggle (default off), DT5 intensity readout, DT7 wave-start fields. Scripted-bot table in `docs/BENCHMARKS.md` (T73): T76 corrected native wallet spending and regenerated 24 runs with 24 identical repeats; DDA-on flips 4 losing bot runs to 1-star wins, intensity reaches 0.75 (time at floor not measured). Stays Partial until tuned against VS10 playtest data |
 | A5 | RL continuous-action DDA (hidden fine-tune of baseline intensity) | XL | 📋 Pending | **Blocked:** A4 + playtest evidence that rules fail a flow metric |
 | A6 | Two-agent imitation + adversarial RL difficulty | XL | 📋 Deferred | After A5 evaluated |
 | A7 | CMAB (LinUCB) personalized offers — opt-in cohorts | XL | 📋 Deferred | Needs live non-personalized store baseline |

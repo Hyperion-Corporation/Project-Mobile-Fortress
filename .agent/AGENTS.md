@@ -6,7 +6,7 @@
 [![CI](https://github.com/Hyperion-Corporation/Project-Mobile-Fortress/actions/workflows/ci.yml/badge.svg)](https://github.com/Hyperion-Corporation/Project-Mobile-Fortress/actions/workflows/ci.yml)
 [![Docs](https://github.com/Hyperion-Corporation/Project-Mobile-Fortress/actions/workflows/docs.yml/badge.svg)](https://github.com/Hyperion-Corporation/Project-Mobile-Fortress/actions/workflows/docs.yml)
 
-> **Version**: 3.1
+> **Version**: 3.2
 > **Last Updated**: 2026-10-09
 > **Purpose**: Authoritative reference for AI assistants (Claude, GPT, Gemini, Mistral, Grok, Copilot, etc.) working on Mobile Fortress.
 
@@ -41,7 +41,7 @@ The locked consensus decision (2026-08, see [`docs/moon/ROADMAP.md`](../docs/moo
 | Level data | JSON validated against `game/src/level-schema.json` | `game/assets/levels/`; catalog in `game/scripts/data/level_catalog.gd`; validation smoke `game/tests/level_schema_smoke.gd` |
 | Mobile export | Godot Android/iOS export presets | [`game/EXPORT_MOBILE.md`](../game/EXPORT_MOBILE.md); iOS export requires a macOS/Xcode host |
 | Docs portal | MkDocs Material (strict mode in CI) + Vite/React SPA under `docs/website/` | `docs/mkdocs.yml`, `.github/workflows/docs.yml` |
-| Legacy Android client | Kotlin 2.0.20, AGP 8.5.2, Gradle 8.7 wrapper-pinned (T63 verified locally on JDK 21), minSdk 24 / compileSdk 35 | `android/` — legacy tree; always `./gradlew`, never bare `gradle` |
+| Legacy Android client | Kotlin 2.4.10, AGP 9.3.1, Gradle 9.7.0 wrapper-pinned, compileSdk 37 / targetSdk 35 (T71 coordinated set, verified under JDK 21) | `android/` — legacy tree; always `./gradlew`, never bare `gradle` |
 | Legacy iOS client | Swift 5, iOS 16+ target, SpriteKit | `ios/` — legacy tree; requires macOS to build |
 | Config | `local.properties` (git-ignored), `.env.example` for optional backend | unchanged |
 
@@ -71,6 +71,11 @@ The locked consensus decision (2026-08, see [`docs/moon/ROADMAP.md`](../docs/moo
 | `mkdocs build --config-file docs/mkdocs.yml --strict` | Documentation gate — the exact command the `Docs` workflow runs; out-of-tree references must be absolute GitHub URLs, never relative escapes (strict mode fails on them). |
 | `npm test -w docs/website` / `npm run build -w docs/website` | Dashboard SPA vitest suite / production build. |
 | `just --list` | Recipe modules; the Gradle/xcodebuild recipes target the **legacy** trees only. |
+
+Two local-environment rules worth restating:
+
+- **Gradle (legacy Android tree) runs under JDK 21 here**: point `JAVA_HOME` at a JDK 21 install before any `./gradlew ...` command — JDK 21 is the verified environment (the machine-default JDK is not, and the CI Android jobs also use JDK 21).
+- **Layout smokes must not rely on a clean player profile**: returning-player state (saved progression, run history, persisted settings) changes menu/HUD layout and has hidden real bugs before — a clipping bug was invisible on a clean profile (T61/T77). Any new layout smoke sets up its own saved progress/history inside a private `XDG_DATA_HOME` rather than assuming a fresh `user://`.
 
 ## 5. Coding Standards
 
@@ -108,7 +113,7 @@ The locked consensus decision (2026-08, see [`docs/moon/ROADMAP.md`](../docs/moo
 ## 7. Known Constraints
 
 - The game is at **Slice-0 / Phase 1**: playable offline dual-front prototype; the VS10 collaborator playtest gate remains open before Phase 1b (see `docs/moon/roadmaps/vertical_slice.md`).
-- `android/` and `ios/` are legacy inherited template trees, not the product. T63 repaired the Android dependency pins (AGP 8.5.2 / Gradle 8.7; lint, unit tests and assemble verified on JDK 21). The open finding is that `ios/MyGame.xcodeproj` does not parse under the recorded CI Xcode version — recorded in `docs/TESTING.md` "Legacy-tree findings". CI runs these jobs only when their own paths change; do not "fix" them by deleting the trees or hiding failures.
+- `android/` and `ios/` are legacy inherited template trees, not the product. The Android tree's toolchain is the T71 coordinated set (wrapper 9.7.0 + AGP 9.3.1 + Kotlin 2.4.10 + compileSdk 37; `ktlintCheck`, unit tests, lint and assemble verified on JDK 21); dependabot now proposes these bumps as grouped sets. The open finding is that `ios/MyGame.xcodeproj` does not parse under the recorded CI Xcode version — recorded in `docs/TESTING.md` "Legacy-tree findings". CI runs these jobs only when their own paths change; do not "fix" them by deleting the trees or hiding failures.
 - The A4 heuristic DDA baseline ships **off by default** (dev-overlay setting only) pending playtest tuning (#78 open).
 - The optional backend under `infra/` is unimplemented scaffolding — see each `infra/*/README.md` and [`docs/moon/roadmaps/backend.md`](../docs/moon/roadmaps/backend.md) before assuming any service exists.
 - Multiplayer/co-op networking, cosmetics monetization, sentiment automation, and RL difficulty tuning are pre-implementation — see [`docs/moon/ROADMAP.md`](../docs/moon/ROADMAP.md) for phase sequencing before assuming any are wired up.
@@ -122,3 +127,5 @@ When multiple AI assistants (Claude, Grok, Chat/Codex, Gemini, etc.) are working
 - **Update the changelog and roadmap(s) as part of that same commit**, not as a follow-up: `docs/moon/CHANGELOG.md` gets an entry for what shipped, and the relevant `docs/moon/roadmaps/*.md` status line(s) move from `📋 Pending`/`🚧 Partial` to reflect reality. A task isn't done until the docs match the diff.
 - **GitHub project issues are the team lead's responsibility, not each agent's.** Whoever is acting as team lead for the session (see the current role split logged on `AGENT_BUS.md`) owns retitling/commenting/closing issues after independently verifying the work — don't post to GitHub for your own unreviewed changes.
 - If your session ends mid-task (blocked, handed off, or simply out of budget), say so on the bus instead of committing partial/broken work — an uncommitted working-tree diff plus a bus note is better than a commit that doesn't build or pass its own smokes.
+- **Sign all new work as `<Name> <Team>`** (e.g. `Mistral Harbinger`, `Gemini Wall`): bus-block headings, changelog entry headings, report titles and presence files carry the signature, and every commit carries an `Agent: <Name> <Team>` trailer placed above the usual `Co-authored-by:` trailer from `git/messages/*_coauthor.msg`. The authoritative rule — including the current roster and team names — is the **`§Signing` section of `.agent/cache/AGENT_BUS.md`**; re-read it there rather than relying on this summary.
+- **Two teams share this repository**: the Harbinger team works on branch `harbinger`, the Wall team on branch `GGWall`, and the team lead merges `harbinger` into `main` after review — do not switch branches or push; commit to `harbinger` and post your CLAIMED/DONE blocks on the bus.

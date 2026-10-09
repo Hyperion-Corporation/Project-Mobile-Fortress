@@ -94,8 +94,7 @@ func _apply_coastal_theme() -> void:
 		subtitle.add_theme_color_override("font_color", CINNABAR)
 
 
-## Returns the logical-unit minimum height required for ≥48dp window pixels at the current window.
-func _density_min_h() -> float:
+func _window_size_for_density() -> Vector2:
 	var tree := get_tree()
 	var ws := ThemeTokensScript.CANVAS_DESIGN_SIZE
 	if tree and tree.root and tree.root.size.x >= 200 and tree.root.size.y >= 200:
@@ -104,7 +103,77 @@ func _density_min_h() -> float:
 		var ds_size := DisplayServer.window_get_size()
 		if ds_size.x >= 200 and ds_size.y >= 200:
 			ws = Vector2(ds_size)
-	return ThemeTokensScript.compute_density_min_size(ws)
+	return ws
+
+
+## Returns the logical-unit minimum height required for ≥48dp window pixels at the current window.
+func _density_min_h() -> float:
+	return ThemeTokensScript.compute_density_min_size(_window_size_for_density())
+
+
+## Resolves an action control from VBox or the compact ActionGrid (T77).
+func _find_action(action_name: String) -> Control:
+	var vbox: VBoxContainer = get_node_or_null("Center/VBox")
+	if vbox == null:
+		return null
+	var grid: Node = vbox.get_node_or_null("ActionGrid")
+	if grid != null and grid.has_node(action_name):
+		return grid.get_node(action_name) as Control
+	return vbox.get_node_or_null(action_name) as Control
+
+
+func _apply_action_layout(is_compact_landscape: bool) -> void:
+	var vbox: VBoxContainer = get_node_or_null("Center/VBox")
+	if vbox == null:
+		return
+	var grid: GridContainer = vbox.get_node_or_null("ActionGrid")
+	if grid == null:
+		grid = GridContainer.new()
+		grid.name = "ActionGrid"
+		grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		vbox.add_child(grid)
+	var action_names: Array[String] = [
+		"LevelSelect", "StartBtn", "ResumeBtn", "ClassicBtn", "SettingsBtn", "QuitBtn"
+	]
+	var actions: Array[Control] = []
+	for action_name in action_names:
+		var node: Control = _find_action(action_name)
+		if node:
+			actions.append(node)
+	if is_compact_landscape:
+		grid.visible = true
+		grid.columns = 2
+		grid.add_theme_constant_override("h_separation", 8)
+		grid.add_theme_constant_override("v_separation", 2)
+		for node in actions:
+			if node.get_parent() != grid:
+				node.reparent(grid)
+		var compact_order: Array[String] = [
+			"Title", "Subtitle", "Blurb", "CampaignRankLabel", "LastRunLabel", "ActionGrid"
+		]
+		var compact_idx := 0
+		for node_name in compact_order:
+			var node: Node = vbox.get_node_or_null(node_name)
+			if node:
+				vbox.move_child(node, compact_idx)
+				compact_idx += 1
+	else:
+		for node in actions:
+			if node.get_parent() != vbox:
+				node.reparent(vbox)
+		grid.visible = false
+		var desktop_order: Array[String] = [
+			"Title", "Subtitle", "Blurb", "CampaignRankLabel",
+			"LevelSelect", "StartBtn", "ResumeBtn", "LastRunLabel",
+			"ClassicBtn", "SettingsBtn", "QuitBtn"
+		]
+		var desktop_idx := 0
+		for node_name in desktop_order:
+			var node: Node = vbox.get_node_or_null(node_name)
+			if node:
+				vbox.move_child(node, desktop_idx)
+				desktop_idx += 1
+		vbox.move_child(grid, desktop_idx)
 
 
 ## Re-applies density-aware minimum heights to all interactive controls.
@@ -137,12 +206,13 @@ func _apply_density_sizes() -> void:
 		if rank:
 			rank.add_theme_font_size_override("font_size", 11 if is_compact_landscape else 13)
 			rank.custom_minimum_size = Vector2(box_w, 0)
+		var last_run: Label = vbox.get_node_or_null("LastRunLabel")
+		if last_run:
+			last_run.add_theme_font_size_override("font_size", 11 if is_compact_landscape else 13)
+			last_run.custom_minimum_size = Vector2(box_w, 0)
 
-		for child in vbox.get_children():
-			if child is Button or child is OptionButton:
-				var ctrl := child as Control
-				ctrl.custom_minimum_size = Vector2(0, min_h)
-				ctrl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		_apply_action_layout(is_compact_landscape)
+		_apply_min_height_to_actions(vbox, min_h)
 	var ver: Control = get_node_or_null("VersionLabel")
 	if ver:
 		ver.custom_minimum_size = Vector2(160, min_h)
@@ -150,9 +220,24 @@ func _apply_density_sizes() -> void:
 		ver.offset_bottom = -8.0
 
 
+func _apply_min_height_to_actions(vbox: VBoxContainer, min_h: float) -> void:
+	for child in vbox.get_children():
+		if child is GridContainer:
+			for gchild in child.get_children():
+				if gchild is Button or gchild is OptionButton:
+					var grid_ctrl := gchild as Control
+					grid_ctrl.custom_minimum_size = Vector2(0, min_h)
+					grid_ctrl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		elif child is Button or child is OptionButton:
+			var ctrl := child as Control
+			ctrl.custom_minimum_size = Vector2(0, min_h)
+			ctrl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+
 func _on_viewport_size_changed() -> void:
 	_apply_density_sizes()
 	_apply_large_text()
+	_setup_focus_traversal()
 	var center: Control = get_node_or_null("Center")
 	if center:
 		center.pivot_offset = center.size / 2.0
@@ -191,7 +276,9 @@ func _ensure_level_select() -> void:
 
 
 func _on_level_selected(index: int) -> void:
-	var select: OptionButton = $Center/VBox/LevelSelect
+	var select: OptionButton = _find_action("LevelSelect") as OptionButton
+	if select == null:
+		return
 	var entry: Variant = select.get_item_metadata(index)
 	if entry is Dictionary:
 		_apply_level_entry(entry)
@@ -338,7 +425,7 @@ func _on_version_gui_input(event: InputEvent) -> void:
 func _open_settings() -> void:
 	if get_node_or_null("SettingsDialog") != null:
 		return
-	var settings_btn: Button = $Center/VBox.get_node_or_null("SettingsBtn")
+	var settings_btn: Button = _find_action("SettingsBtn") as Button
 	var dlg := SettingsDialogScript.new()
 	dlg.name = "SettingsDialog"
 	dlg.opener_control = settings_btn
@@ -354,33 +441,61 @@ func _open_settings() -> void:
 
 
 func _set_menu_focus_enabled(enabled: bool) -> void:
-	var vbox: VBoxContainer = get_node_or_null("Center/VBox")
-	if vbox:
-		for child in vbox.get_children():
-			if child is BaseButton:
-				child.focus_mode = Control.FOCUS_ALL if enabled else Control.FOCUS_NONE
+	var mode := Control.FOCUS_ALL if enabled else Control.FOCUS_NONE
+	for action_name in ["LevelSelect", "StartBtn", "ResumeBtn", "ClassicBtn", "SettingsBtn", "QuitBtn"]:
+		var child: Control = _find_action(action_name)
+		if child is BaseButton:
+			(child as BaseButton).focus_mode = mode
 
 
 func _apply_large_text() -> void:
 	var settings: Dictionary = OfflinePersistence.read_settings()
 	var is_large: bool = bool(settings.get("large_text", false))
 	var center: Control = get_node_or_null("Center")
+	var vbox: VBoxContainer = center.get_node_or_null("VBox") if center else null
+	var vp: Viewport = get_viewport()
+	var vp_size: Vector2 = vp.get_visible_rect().size if vp else ThemeTokensScript.CANVAS_DESIGN_SIZE
+	var is_compact_landscape: bool = vp_size.y <= 720.0 and vp_size.x > 1280.0
+	if vbox:
+		vbox.scale = Vector2.ONE
+		vbox.pivot_offset = vbox.size / 2.0
 	if center:
-		var s: float = 1.0
-		if is_large:
-			s = ThemeTokensScript.LARGE_TEXT_SCALE
-			var vp: Viewport = get_viewport()
-			var vbox: VBoxContainer = center.get_node_or_null("VBox")
-			if vp and vbox:
-				var vbox_h: float = maxf(vbox.size.y, vbox.get_combined_minimum_size().y)
-				if vbox_h > 0.0:
-					var avail_h: float = vp.get_visible_rect().size.y - 16.0
-					var max_s: float = avail_h / vbox_h
-					s = maxf(1.0, minf(s, max_s))
+		# Never scale the full-rect Center: 1.15× from the viewport center clips Title and Quit
+		# on compact landscape when font metrics exceed the measured vbox height (CI 844×390).
 		center.pivot_offset = center.size / 2.0
-		center.scale = Vector2(s, s)
+		if is_large and not is_compact_landscape:
+			center.scale = Vector2.ONE * ThemeTokensScript.LARGE_TEXT_SCALE
+		else:
+			center.scale = Vector2.ONE
 		if not center.resized.is_connected(_on_center_resized):
 			center.resized.connect(_on_center_resized)
+	if is_large and is_compact_landscape:
+		call_deferred("_fit_compact_large_text")
+
+
+func _fit_compact_large_text() -> void:
+	var settings: Dictionary = OfflinePersistence.read_settings()
+	if not bool(settings.get("large_text", false)):
+		return
+	var center: Control = get_node_or_null("Center")
+	var vbox: VBoxContainer = center.get_node_or_null("VBox") if center else null
+	var vp: Viewport = get_viewport()
+	if vbox == null or vp == null:
+		return
+	var vp_size: Vector2 = vp.get_visible_rect().size
+	if vp_size.y > 720.0 or vp_size.x <= 1280.0:
+		return
+	var vbox_h: float = maxf(vbox.size.y, vbox.get_combined_minimum_size().y)
+	var s: float = ThemeTokensScript.LARGE_TEXT_SCALE
+	if vbox_h > 0.0:
+		s = minf(s, (vp_size.y - 16.0) / vbox_h)
+	var canvas_scale: float = ThemeTokensScript.get_window_canvas_scale(_window_size_for_density())
+	var rendered_at_one: float = _density_min_h() * canvas_scale
+	if rendered_at_one > 0.0:
+		s = maxf(s, ThemeTokensScript.MIN_DP_TARGET / rendered_at_one)
+	s = clampf(s, 0.01, ThemeTokensScript.LARGE_TEXT_SCALE)
+	vbox.pivot_offset = vbox.size / 2.0
+	vbox.scale = Vector2(s, s)
 
 
 func _on_center_resized() -> void:
@@ -390,9 +505,8 @@ func _on_center_resized() -> void:
 
 
 func _setup_focus_traversal() -> void:
-	var vbox: VBoxContainer = $Center/VBox
 	var controls: Array[Control] = []
-	var select: OptionButton = vbox.get_node_or_null("LevelSelect")
+	var select: OptionButton = _find_action("LevelSelect") as OptionButton
 	if select and select.visible and not select.disabled:
 		controls.append(select)
 	if start_btn and start_btn.visible and not start_btn.disabled:
@@ -401,7 +515,7 @@ func _setup_focus_traversal() -> void:
 		controls.append(_resume_btn)
 	if classic_btn and classic_btn.visible and not classic_btn.disabled:
 		controls.append(classic_btn)
-	var settings_btn: Button = vbox.get_node_or_null("SettingsBtn")
+	var settings_btn: Button = _find_action("SettingsBtn") as Button
 	if settings_btn and settings_btn.visible and not settings_btn.disabled:
 		controls.append(settings_btn)
 	if quit_btn and quit_btn.visible and not quit_btn.disabled:

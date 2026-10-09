@@ -110,16 +110,17 @@ func _run() -> void:
 
 	# Boundary regressions: short motion still cancels outside the grid, and
 	# sub-threshold motion previews the press cell that a tap will commit.
+	var host_s: float = battle.land_host.scale.x if "land_host" in battle else 1.0
 	var edge_center: Vector2 = _cell_vp(battle, battle.land_grid, Vector2i(0, 0))
-	var edge_press := edge_center + Vector2(0, -30)
-	var edge_release := edge_center + Vector2(0, -34)
+	var edge_press := edge_center + Vector2(0, -30 * host_s)
+	var edge_release := edge_center + Vector2(0, -34 * host_s)
 	var edge_before: int = battle.sim.get_defender_count()
 	_push_touch(battle, 0, true, edge_press)
 	_push_touch(battle, 0, false, edge_release)
 	if battle.sim.get_defender_count() != edge_before:
 		failures.append("sub-threshold off-grid release placed a unit")
-	var boundary_press := edge_center + Vector2(30, 16)
-	var boundary_drag := edge_center + Vector2(34, 16)
+	var boundary_press := edge_center + Vector2(30 * host_s, 16 * host_s)
+	var boundary_drag := edge_center + Vector2(34 * host_s, 16 * host_s)
 	_push_touch(battle, 0, true, boundary_press)
 	_push_drag(battle, 0, boundary_drag, boundary_drag - boundary_press)
 	if battle.land_grid.touch_preview_cell != Vector2i(0, 0):

@@ -14,6 +14,9 @@ vcpkg_installed/
 
 # Local C++ / GDExtension build outputs
 build/
+# Android arm64 cross tree (scripts/build_android_gdextension.sh). The .so
+# itself lands in bin/ and is gitignored with the desktop library.
+build-android-arm64/
 bin/
 *.gd.uid
 *.gdextension.uid

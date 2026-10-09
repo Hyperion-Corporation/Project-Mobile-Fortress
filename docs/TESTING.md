@@ -15,11 +15,13 @@ Every `game/tests/*_smoke.gd` is a headless `SceneTree` smoke invoked as `godot 
 
 Smokes that genuinely cannot run headless belong in the commented `SKIP_LIST` at the top of the script, each with a stated reason (currently empty — all smokes run). The native extension must be built first (`game/bin/libmobile_fortress_core*.so`, see `game/BUILD_CPP.md`).
 
+**Layout smokes must not rely on a clean player profile.** Returning-player state (saved progression, run history, persisted settings such as Large Text) changes menu/HUD layout and has hidden real bugs before — a main-menu clipping bug was invisible on a clean profile (T61 finding, T77 fix). Any new layout smoke sets up its own saved progress/history inside its private `XDG_DATA_HOME` instead of assuming a fresh `user://`.
+
 CI: `.github/workflows/godot-game.yml` runs the script on every PR/push touching `game/**` (plus the unchanged CMake/`ctest` job) and uploads `godot-smokes.log` as an artifact when the smoke job fails.
 
 Runner regression tests use a temporary fixture and fake Godot binary: `python3 -m unittest discover -s scripts/tests -p test_run_godot_smokes.py -v` (also run in CI).
 
-### Per-smoke coverage (28 smokes on disk, 2026-10-09 — read from the smoke files)
+### Per-smoke coverage (29 smokes on disk, 2026-10-09 — read from the smoke files)
 
 The runner discovers smokes automatically, so this table describes coverage, not a
 list to keep in sync — new smokes are added to CI with no edits anywhere.
@@ -28,6 +30,7 @@ list to keep in sync — new smokes are added to CI with no edits anywhere.
 | --- | --- |
 | `accessibility_smoke` | U8: ≥48dp touch targets, closed-loop keyboard/gamepad focus, WCAG AA contrast from ThemeTokens pairs, large-text round-trip, screen-reader metadata |
 | `battle_hud_layout_smoke` | T59: rendered-window target sizing for every interactive HUD control at 1280×720 / 720×1280 / 390×844 / 844×390, large text on/off, non-overlap, viewport containment, fixed pre-T59 grid coverage baseline (16640 px²); results-panel rank lines |
+| `battle_layout_smoke` | T70: both grids fully inside the viewport (containment), grids do not overlap each other or interactive HUD buttons, rendered cell size reported, at 1280×720 / 844×390 / 720×1280 / 390×844; off-canvas mutation check |
 | `dda_smoke` | A4: `SimulationCore` DDA toggle, intensity readout, wave scaling |
 | `dda_battle_smoke` | T48: DDA battle hookup, DT5 overlay intensity readout, DT7 wave-start DDA fields |
 | `determinism_smoke` | T65: fixed-dt repeat and mid-wave save/load on every catalog level; full-buffer comparison plus one-tick placement perturbation |
@@ -94,10 +97,10 @@ per tick @40 units; p95 = 1 µs/recompute).
 - A `changes` job diffs the push/PR range and gates the legacy jobs per tree: the three Android jobs run only when `android/**`, `gradle/**`, the root Gradle build files, `justfile`, or the workflow itself change; `ios-test` (`macos-latest`, full XCTest suite via `xcodebuild`) runs only when `ios/**` or the workflow changes. The live product under `game/**` is covered by `.github/workflows/godot-game.yml` instead, so game pushes are no longer gated on the legacy trees.
 - A `shellcheck` job lints every `scripts/*.sh` with the digest-pinned `koalaman/shellcheck` 0.11.0 image. Run the same check locally with `docker run --rm -v "$PWD:/mnt" -w /mnt koalaman/shellcheck:v0.11.0 scripts/*.sh`; keep new/edited scripts clean.
 
-### Legacy-tree findings (recorded 2026-10-08, T50; Android finding resolved by T63)
+### Legacy-tree findings (recorded 2026-10-08, T50; Android toolchain moved forward by T71)
 
-- `gradle/wrapper/gradle-wrapper.jar` was a non-official build and failed `gradle/actions/setup-gradle` wrapper validation on every run. It was regenerated with Gradle 8.7's own `wrapper` task and now matches the official 8.7 checksum (`cb0da675…156b8`). **Resolved (T50)** — validation passes on run 37830995010.
-- ~~The Android tree still has a toolchain mismatch~~ **Resolved (T63, 2026-10-08):** `gradle/libs.versions.toml` pinned **AGP 9.3.1**, which cannot run on the wrapper-pinned **Gradle 8.7** (CI's own words: "Minimum supported Gradle version is 9.5.0"). The pin was reverted to **AGP 8.5.2**, and the dependabot-style bumps it had cascaded into were reverted to the last consistent set (`lifecycleRuntimeKtx` 2.8.4, `kotlinxCoroutines` 1.8.1, `espressoCore` 3.6.1, `androidxTestCore` 1.6.1) — lifecycle 2.11.0 alone demands AGP 9.1.0 + compileSdk 37. Verified locally (JDK 21; CI uses JDK 17): `ktlintCheck`, `lintDebug`, and `testDebugUnitTest` (3 tests, 0 failures) all BUILD SUCCESSFUL. `assembleDebug` also builds. The instrumented-emulator job is not runnable on this host.
+- `gradle/wrapper/gradle-wrapper.jar` was a non-official build and failed `gradle/actions/setup-gradle` wrapper validation on every run. Regenerated with Gradle 8.7's own `wrapper` task — **Resolved (T50)**, validation passed on run 37830995010. The wrapper later moved to **9.7.0** (T71); that jar's checksum is the official `7a9ce74c…62c5d`, also validation-clean.
+- ~~The Android tree toolchain mismatch~~ **Resolved by moving forward (T71, 2026-10-09):** T63 had reverted the piecemeal dependabot bumps (AGP 9.3.1 against the Gradle 8.7 wrapper broke every run — CI: "Minimum supported Gradle version is 9.5.0"). T71 then moved the whole toolchain forward as **one coordinated set**, built and verified locally under JDK 21: Gradle wrapper **9.7.0** (official checksum `7a9ce74c…62c5d`), AGP **9.3.1** (Kotlin support is now built into AGP — `org.jetbrains.kotlin.android` is no longer applied), Kotlin **2.4.10**, ktlint-gradle **14.2.0** (five formatting-only fixes in `GameEngine.kt`/`GameState.kt`/`GameView.kt` for its new rules), androidx set at the bumped versions, **compileSdk 37** (core-ktx 1.19.0 / lifecycle 2.11.0 require it); **targetSdk deliberately stays 35** (separate runtime-behavior opt-in for the owner). `ktlintCheck`, `testDebugUnitTest` (3/3), `lintDebug`, `assembleDebug` all green. `.github/dependabot.yml` now groups `android-toolchain` (wrapper + AGP + Kotlin + ktlint, excluding kotlinx) and `android-libraries` (androidx + kotlinx) so coupled bumps arrive together; CI's Android jobs run for every `gradle/**` change (and both trees if the diff base is unavailable), so a breaking bump fails before merge. The Android CI jobs use JDK 21 (what was verified here); the instrumented-emulator job is unchanged.
 - `ios/MyGame.xcodeproj` fails to parse on the `macos-latest` runner under Xcode 26.6 ("project is damaged … parse error"), although the pbxproj passes static structure checks (no conflict markers, no dangling UUID refs, valid OpenStep plist, no BOM/CRLF, balanced braces, no duplicate keys, no non-ASCII bytes; `objectVersion 56` / `compatibilityVersion "Xcode 14.0"` is a pair Xcode itself writes). Needs a macOS host to root-cause. The iOS job remains gated to `ios/**` and will re-surface this on real changes there.
 
 ## Coverage

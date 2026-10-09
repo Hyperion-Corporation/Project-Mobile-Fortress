@@ -1,0 +1,192 @@
+.citadel-rank-widget {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
+  border-radius: 8px;
+}
+
+.citadel-rank-widget h3 {
+  margin: 0 0 0.75rem;
+  font-size: 1.1rem;
+  color: var(--text, #f4e9d8);
+}
+
+.citadel-rank-widget h4 {
+  margin: 0.75rem 0 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-muted, #a09080);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.crw-current {
+  margin-bottom: 1rem;
+}
+
+.crw-rank-badge {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.6rem 0.8rem;
+  background: rgba(201, 162, 39, 0.1);
+  border: 1px solid rgba(201, 162, 39, 0.3);
+  border-radius: 6px;
+}
+
+.crw-rank-num {
+  font-size: 0.75rem;
+  color: var(--accent-gold, #c9a227);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.crw-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text, #f4e9d8);
+}
+
+.crw-historical {
+  font-size: 0.85rem;
+  color: var(--text-muted, #a09080);
+  font-style: italic;
+}
+
+.crw-description {
+  margin: 0.4rem 0 0;
+  font-size: 0.82rem;
+  color: var(--text-muted, #a09080);
+  line-height: 1.4;
+}
+
+.crw-control {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.crw-control label {
+  font-size: 0.85rem;
+  color: var(--text, #f4e9d8);
+}
+
+.crw-control input[type="range"] {
+  flex: 1;
+  min-width: 120px;
+  accent-color: var(--accent-gold, #c9a227);
+}
+
+.crw-number-input {
+  width: 80px;
+  padding: 0.3rem 0.5rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  color: var(--text, #f4e9d8);
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.crw-progress {
+  margin-bottom: 1rem;
+}
+
+.crw-progress-bar {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.crw-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-gold, #c9a227), #e6c54b);
+  border-radius: 4px;
+  transition: width 0.2s ease;
+}
+
+.crw-progress-info {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.4rem;
+  font-size: 0.78rem;
+  color: var(--text-muted, #a09080);
+}
+
+.crw-max-rank {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.8rem;
+  background: rgba(201, 162, 39, 0.15);
+  border-radius: 6px;
+  font-size: 0.9rem;
+  color: var(--accent-gold, #c9a227);
+}
+
+.crw-max-title {
+  font-weight: 600;
+}
+
+.crw-all-ranks {
+  margin-top: 0.5rem;
+}
+
+.crw-rank-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.crw-rank-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.82rem;
+  color: var(--text-muted, #a09080);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.crw-rank-item.crw-active {
+  background: rgba(201, 162, 39, 0.12);
+  color: var(--text, #f4e9d8);
+  border: 1px solid rgba(201, 162, 39, 0.3);
+}
+
+.crw-rank-item.crw-earned {
+  color: var(--text, #f4e9d8);
+  opacity: 0.7;
+}
+
+.crw-rank-item .crw-rank-num {
+  width: 1.5rem;
+  text-align: center;
+  font-weight: 600;
+}
+
+.crw-rank-title {
+  flex: 1;
+}
+
+.crw-rank-threshold {
+  font-variant-numeric: tabular-nums;
+  color: var(--accent-gold, #c9a227);
+}
+
+@media (max-width: 480px) {
+  .crw-control {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .crw-number-input {
+    width: 100%;
+  }
+}

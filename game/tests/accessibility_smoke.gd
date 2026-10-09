@@ -91,10 +91,7 @@ func _run() -> void:
 	if menu_vbox == null:
 		failures.append("Main menu Center/VBox missing")
 	else:
-		var interactive_menu_controls: Array[Control] = []
-		for child: Node in menu_vbox.get_children():
-			if child is Button or child is OptionButton:
-				interactive_menu_controls.append(child as Control)
+		var interactive_menu_controls: Array[Control] = _menu_interactives(menu_vbox)
 
 		for ctrl: Control in interactive_menu_controls:
 			_check_rendered_contrast(ctrl, failures)
@@ -403,14 +400,18 @@ func _run() -> void:
 			root.add_child(test_menu)
 			# Exercise the largest ordinary menu: a returning player with a save
 			# and last-run/history summary, without depending on user:// contents.
-			test_menu.get_node("Center/VBox/ResumeBtn").show()
-			test_menu.get_node("Center/VBox/LastRunLabel").text = (
-				OfflinePersistence.format_results_summary({
-					"victory": true, "reason": "All waves cleared", "enemies_killed": 12,
-					"units_placed": 6, "sim": "C++", "stars": 3, "total_prestige": 870
-				}) + "\n"
-				+ "(20 run(s) in offline history)"
-			)
+			var resume_btn: Control = _menu_action(test_menu, "ResumeBtn")
+			if resume_btn:
+				resume_btn.show()
+			var last_run: Label = test_menu.get_node_or_null("Center/VBox/LastRunLabel")
+			if last_run:
+				last_run.text = (
+					OfflinePersistence.format_results_summary({
+						"victory": true, "reason": "All waves cleared", "enemies_killed": 12,
+						"units_placed": 6, "sim": "C++", "stars": 3, "total_prestige": 870
+					}) + "\n"
+					+ "(20 run(s) in offline history)"
+				)
 			await process_frame
 			await process_frame
 			await create_timer(0.3).timeout
@@ -421,11 +422,7 @@ func _run() -> void:
 			# Collect interactive controls and labels on MainMenu
 			var menu_box: VBoxContainer = test_menu.get_node_or_null("Center/VBox")
 			var menu_version: Control = test_menu.get_node_or_null("VersionLabel")
-			var menu_interactives: Array[Control] = []
-			if menu_box != null:
-				for child: Node in menu_box.get_children():
-					if (child is Button or child is OptionButton) and (child as Control).visible:
-						menu_interactives.append(child as Control)
+			var menu_interactives: Array[Control] = _menu_interactives(menu_box, true)
 			if menu_version != null:
 				menu_interactives.append(menu_version)
 
@@ -442,11 +439,7 @@ func _run() -> void:
 					failures.append("MainMenu control %s rendered height %.1f px < 48dp target at vp %s (large_text=%s)" % [ctrl.name, rendered_h, vp_size, large_text_enabled])
 
 			# Assert no two controls/labels overlap on MainMenu
-			var all_menu_nodes: Array[Control] = []
-			if menu_box != null:
-				for child: Node in menu_box.get_children():
-					if child is Control and (child as Control).visible:
-						all_menu_nodes.append(child as Control)
+			var all_menu_nodes: Array[Control] = _menu_content_nodes(menu_box)
 			if menu_version != null:
 				all_menu_nodes.append(menu_version)
 
@@ -507,10 +500,116 @@ func _run() -> void:
 			test_menu.queue_free()
 			await process_frame
 
+	# T77: inflated text at 844×390 + Large Text must still stay inside the canvas.
+	var inflate_settings: Dictionary = initial_settings.duplicate(true)
+	inflate_settings["large_text"] = true
+	OfflinePersistence.write_settings(inflate_settings)
+	root.size = Vector2i(844, 390)
+	var inflate_menu: Control = menu_scene.instantiate()
+	root.add_child(inflate_menu)
+	var inflate_resume: Control = _menu_action(inflate_menu, "ResumeBtn")
+	if inflate_resume:
+		inflate_resume.show()
+	var inflate_last: Label = inflate_menu.get_node_or_null("Center/VBox/LastRunLabel")
+	if inflate_last:
+		inflate_last.text = (
+			OfflinePersistence.format_results_summary({
+				"victory": true, "reason": "All waves cleared", "enemies_killed": 12,
+				"units_placed": 6, "sim": "C++", "stars": 3, "total_prestige": 870
+			}) + "\n"
+			+ "(20 run(s) in offline history)"
+		)
+	await process_frame
+	await process_frame
+	_inflate_menu_text(inflate_menu, 1.2)
+	if inflate_menu.has_method("_apply_large_text"):
+		inflate_menu._apply_large_text()
+	await process_frame
+	await process_frame
+	await create_timer(0.3).timeout
+	var inflate_vp: Rect2 = inflate_menu.get_viewport_rect()
+	var inflate_xform: Transform2D = inflate_menu.get_viewport().get_final_transform()
+	var inflate_box: VBoxContainer = inflate_menu.get_node_or_null("Center/VBox")
+	var inflate_nodes: Array[Control] = _menu_content_nodes(inflate_box)
+	for ctrl: Control in inflate_nodes:
+		if not inflate_vp.encloses(ctrl.get_global_rect()):
+			failures.append("MainMenu inflated content %s clips at vp (844, 390) (large_text=true +20%% text)" % ctrl.name)
+	for ctrl: Control in _menu_interactives(inflate_box, true):
+		var rendered_h: float = inflate_xform.basis_xform(ctrl.get_global_rect().size).abs().y
+		if rendered_h < 47.9:
+			failures.append("MainMenu inflated control %s height %.1f px < 48dp at 844×390" % [ctrl.name, rendered_h])
+	inflate_menu.queue_free()
+	await process_frame
+
 	root.size = Vector2i(1280, 720)
 	OfflinePersistence.write_settings(initial_settings)
 
 	_finish(failures)
+
+
+func _menu_action(menu: Node, action_name: String) -> Control:
+	if menu == null:
+		return null
+	var vbox: Node = menu.get_node_or_null("Center/VBox")
+	if vbox == null:
+		return null
+	var grid: Node = vbox.get_node_or_null("ActionGrid")
+	if grid != null and grid.has_node(action_name):
+		return grid.get_node(action_name) as Control
+	return vbox.get_node_or_null(action_name) as Control
+
+
+func _menu_interactives(menu_box: Node, visible_only: bool = false) -> Array[Control]:
+	var out: Array[Control] = []
+	if menu_box == null:
+		return out
+	for child in menu_box.get_children():
+		if child is GridContainer:
+			for gchild in child.get_children():
+				if gchild is Button or gchild is OptionButton:
+					var grid_ctrl := gchild as Control
+					if not visible_only or grid_ctrl.visible:
+						out.append(grid_ctrl)
+		elif child is Button or child is OptionButton:
+			var ctrl := child as Control
+			if not visible_only or ctrl.visible:
+				out.append(ctrl)
+	return out
+
+
+func _menu_content_nodes(menu_box: Node) -> Array[Control]:
+	var out: Array[Control] = []
+	if menu_box == null:
+		return out
+	for child in menu_box.get_children():
+		if not (child is Control) or not (child as Control).visible:
+			continue
+		if child is GridContainer:
+			for gchild in child.get_children():
+				if gchild is Control and (gchild as Control).visible:
+					out.append(gchild as Control)
+		else:
+			out.append(child as Control)
+	return out
+
+
+func _inflate_menu_text(menu: Node, factor: float) -> void:
+	var vbox: Node = menu.get_node_or_null("Center/VBox") if menu else null
+	if vbox == null:
+		return
+	_inflate_control_tree(vbox, factor)
+
+
+func _inflate_control_tree(node: Node, factor: float) -> void:
+	if node is Control:
+		var ctrl := node as Control
+		var font_size: int = ctrl.get_theme_font_size("font_size")
+		if font_size > 0:
+			ctrl.add_theme_font_size_override("font_size", int(round(float(font_size) * factor)))
+		if ctrl.custom_minimum_size.y > 0.0:
+			ctrl.custom_minimum_size.y *= factor
+	for child in node.get_children():
+		_inflate_control_tree(child, factor)
 
 
 func _finish(failures: Array[String]) -> void:

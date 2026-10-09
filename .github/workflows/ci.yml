@@ -12,11 +12,15 @@ name: CI
 #     failed gradle/actions wrapper validation. Regenerated with Gradle 8.7's
 #     own `wrapper` task; sha256 now matches the official 8.7 checksum
 #     (cb0da6751c2b753a16ac168bb354870ebb1e162e9083f116729cec9c781156b8).
-#   * (T63, resolved) gradle/libs.versions.toml pinned AGP 9.3.1, which needs
-#     Gradle 9.5+; reverted to AGP 8.5.2 plus the pre-bump library set it had
-#     cascaded into (lifecycle 2.8.4, coroutines 1.8.1, espresso 3.6.1,
-#     test-core 1.6.1). ktlintCheck, lintDebug, testDebugUnitTest, and
-#     assembleDebug verified locally (JDK 21; CI uses JDK 17).
+#   * (T63, superseded by T71) The catalog had pinned AGP 9.3.1 against the
+#     Gradle 8.7 wrapper; T63 reverted it. T71 then moved the whole toolchain
+#     forward as one set: wrapper 9.7.0 (official checksum
+#     7a9ce74c...62c5d) + AGP 9.3.1 + Kotlin 2.4.10 + ktlint-gradle 14.2.0 +
+#     androidx bumps, compileSdk 37, targetSdk deliberately 35. AGP 9 embeds
+#     Kotlin support, so org.jetbrains.kotlin.android is no longer applied.
+#     Verified locally under JDK 21 (which the Android jobs here use):
+#     ktlintCheck / testDebugUnitTest (3/3) / lintDebug / assembleDebug all
+#     green. Dependabot groups keep coupled bumps together.
 #   * (open) ios/MyGame.xcodeproj fails to parse on the macos-latest runner
 #     under Xcode 26.6 ("project is damaged ... parse error"), although the
 #     pbxproj passes static structure checks (no conflict markers, no dangling
@@ -136,7 +140,7 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: "21"
 
       - name: Cache Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -171,7 +175,7 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: "21"
       - uses: gradle/actions/setup-gradle@v4
       - name: Assemble debug APK
         run: ./gradlew assembleDebug
@@ -192,7 +196,7 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: "21"
       - uses: gradle/actions/setup-gradle@v4
 
       - name: Enable KVM group perms
