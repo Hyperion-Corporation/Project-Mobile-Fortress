@@ -11,6 +11,7 @@ import PlaytestNotesView from "./frameworks/react/views/PlaytestNotesView";
 import LoreMapView from "./frameworks/react/views/LoreMapView";
 import UnitVisualizerView from "./frameworks/react/views/UnitVisualizerView";
 import DualFrontDemoView from "./frameworks/react/views/DualFrontDemoView";
+import CosmeticAuditView from "./frameworks/react/views/CosmeticAuditView";
 
 const router = createAppRouter({
   routes: [
@@ -26,6 +27,7 @@ const router = createAppRouter({
         { path: "dashboard/lore-map",           element: <LoreMapView /> },
         { path: "dashboard/visualizer",         element: <UnitVisualizerView /> },
         { path: "dashboard/demo",               element: <DualFrontDemoView /> },
+        { path: "dashboard/cosmetics",          element: <CosmeticAuditView /> },
         { path: "dashboard/requirements",       element: <DashboardRequirementsView /> },
         { path: "*",                            element: <DocPage /> },
       ],

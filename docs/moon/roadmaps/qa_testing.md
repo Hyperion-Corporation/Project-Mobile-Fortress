@@ -14,7 +14,7 @@ Scope: correctness of dual-front gameplay, C++/Godot integration, later netcode,
 | Q6 | Device farm coverage for Godot Android/iOS exports | M | 📋 Deferred |
 | Q7 | Crash reporting on release builds | S | 📋 Pending |
 | Q8 | Retention analytics instrumentation with opt-out = no collection | M | 📋 Deferred until consent design |
-| Q9 | ~~Gacha-rate audit for power gacha~~ → **lootbox probability audit** for cosmetic skin boxes only | M | 📋 Deferred with M1b/M2 |
+| Q9 | ~~Gacha-rate audit for power gacha~~ → **lootbox probability audit** for cosmetic skin boxes only | M | ✅ **Delivered (T86)** — `lootbox_audit_smoke.gd` Monte Carlo statistical goodness-of-fit audit (20,000 pulls) + `/dashboard/cosmetics` live audit runner and vitest suite; #59 |
 | Q10 | Playtesting dual-front pacing / cognitive load (Slice-0 exit) | M | 📋 Pending · Slice-0 gate |
 
 Effort key: S = days, M = 1–2 weeks, L = 3–6 weeks, XL = multi-month/cross-cutting.

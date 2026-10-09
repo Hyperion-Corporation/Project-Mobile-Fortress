@@ -47,6 +47,7 @@ export default function DashboardView() {
           <Link to="/dashboard/lore-map" style={{ color: "var(--text-muted)", fontSize: "0.83rem", textDecoration: "none" }}>🗺️ Lore Map</Link>
           <Link to="/dashboard/visualizer" style={{ color: "var(--text-muted)", fontSize: "0.83rem", textDecoration: "none" }}>🎭 Visualizer</Link>
           <Link to="/dashboard/demo" style={{ color: "var(--text-muted)", fontSize: "0.83rem", textDecoration: "none" }}>⚔️ Demo</Link>
+          <Link to="/dashboard/cosmetics" style={{ color: "var(--text-muted)", fontSize: "0.83rem", textDecoration: "none" }}>🎁 Cosmetics & Audit</Link>
           <Link to="/dashboard/requirements" style={{ color: "var(--text-muted)", fontSize: "0.83rem", textDecoration: "none" }}>📋 Requirements</Link>
         </div>
       </div>

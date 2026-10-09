@@ -15,7 +15,7 @@ Scope: monetization aligned to UTAUT3 constructs in market research, **without p
 | --- | --- | --- | --- | --- |
 | M1 | ~~Hero-commander power gacha~~ | — | ❌ **Rejected** | Pay-to-win risk |
 | M1b | Cosmetic **skin lootboxes** (units/HQ/UI skins only; no combat stat power) | L | 📋 Deferred post cosmetics | Hedonic; Kompu-Gacha-safe disclosure |
-| M2 | Transparent probability disclosure + currency-expiration limits for any lootbox/random cosmetic | M | 📋 Pending | Regulatory compliance |
+| M2 | Transparent probability disclosure + currency-expiration limits for any lootbox/random cosmetic | M | ✅ **Delivered (T86)** — `cosmetic_lootbox.gd` + `/dashboard/cosmetics` probability disclosure API; anti-Kompu-Gacha verification; pity rules (10-pull Epic, 50-pull Legendary); 90-day currency expiration policy; #34 | Regulatory compliance |
 | M3 | Cosmetic skins, animations, HQ decoration (direct purchase and/or earn) | M | 📋 Pending · **first monetization track** | Hedonic Motivation |
 | M4 | Faction premium-currency contribution (alliance defense funding) | M | 📋 Deferred (needs clans) | Social Influence |
 | M5 | Frictionless battle pass (transparent, non-probabilistic) | L | 📋 After M3 | Effort Expectancy / Price Value |

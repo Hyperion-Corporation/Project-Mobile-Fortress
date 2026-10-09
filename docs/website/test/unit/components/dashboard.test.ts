@@ -164,6 +164,13 @@ describe("dashboard view imports smoke", () => {
     expect(typeof mod.default).toBe("function");
   });
 
+  it("CosmeticAuditView module resolves", async () => {
+    const mod = await import(
+      "../../../src/frameworks/react/views/CosmeticAuditView"
+    );
+    expect(typeof mod.default).toBe("function");
+  });
+
   it("useDashboardData hook module resolves", async () => {
     const mod = await import("../../../src/hooks/useDashboardData");
     expect(typeof mod.useDashboardData).toBe("function");
