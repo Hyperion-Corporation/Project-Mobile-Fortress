@@ -11,7 +11,7 @@ Scope: the Wōkòu-pirate-era tower-defense core loop and its meta-progression l
 | # | Item | Effort | Status | Milestone |
 | --- | --- | --- | --- | --- |
 | G1 | ~~Demo entity (`Ball`) with bounce physics~~ — template placeholder, superseded by G2+ | S | ✅ Done (superseded) | — |
-| G2 | Dual-front grid fortress-defense core loop (land + sea): place units, defend HQ, cross-front support | L | 🚧 **Playable** — polish remaining | Slice-0; epic #128 |
+| G2 | Dual-front grid fortress-defense core loop (land + sea): place units, defend HQ, cross-front support | L | 🚧 **Playable** — dual-front responsive layout (T70 / #12): LandGrid and SeaGrid reflow side-by-side in landscape and stacked in portrait, eliminating off-canvas clipping while preserving exact C++ `SimWorld` invariant simulation coordinates; polish remaining | Slice-0; epic #128 |
 | G3 | Flow Field pathfinding for enemy raiders (land and naval); naive lane pathing ships in Slice-0 | L | 🚧 **Partial** — waves use staggered-row flow + solid detour; lanes if grids off | Post Slice-0 polish |
 | G4 | Hero-commander system: grid place, aura, active CD, reposition travel — **not** power-gacha | M | 🚧 **Slice-0 pair** — Qi pulse + Capitão Dias cross-front salvo; one of each type | Expand post-slice |
 | G5 | Data-driven level/wave definitions (JSON) | M | 🚧 **Slice-0 pair (T35)** — `slice0_dual_front` + `night_tide_dual_front`; menu `LevelSelect` | Slice-0 |

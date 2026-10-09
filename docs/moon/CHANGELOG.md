@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed (2026-10-09, T70 both grids fully visible in landscape and portrait — Gemini Harbinger)
+
+- **U4 / IOS2 / G2:** Resolved #1 playability gap where LandGrid and SeaGrid were positioned in vertical series, pushing SeaGrid 296 px off the bottom of the 720-height canvas in landscape. Implemented responsive layout in `battle_root.gd` (`_apply_layout`):
+  - **Landscape (1280×720, 844×390):** Dual fronts arranged side-by-side (Land on left, Sea on right) with scale $s \approx 0.559$, guaranteeing 100% viewport containment (`vp_rect.encloses`), zero inter-grid overlap, and zero overlap with HUD TopBar and SideBar.
+  - **Portrait (720×1280, 390×844):** Grids stacked vertically in the main column to the left of the SideBar, fully contained within the canvas.
+  - **Coordinate invariance:** Engine-free `SimWorld` coordinate roots $(300, 200)$ and $(300, 600)$ preserved; exact affine mapping translates `_cell_to_sim_pos`, `_sim_pos_to_cell`, and `_sim_to_screen_pos` with zero sub-pixel drift. Tokens, lane paths, and outpost visuals scale with `host.scale`.
+  - **HQ Bastion visual:** Column 7 bastion / citadel outline at cell $(7, 2)$ rendered in `grid_front.gd` with distinct cartographic outlines; `_click_area` expanded to cover full isometric footprint $[-320, 512] \times [-32, 416]$.
+  - **Ergonomics & Smokes:** Added headless smoke `game/tests/battle_layout_smoke.gd` (auto-discovered, 29/29 total smokes passing) verifying viewport containment, grid non-overlap, HUD clearance, cell size reporting across all 4 viewports, and disposable off-canvas mutation detection. Documented touch ergonomics finding where phone-scale isometric cell heights drop below 40px (mitigated by G10 drag-preview affordance).
+
 ### Fixed (2026-10-09, T77 compact-landscape menu fit — Cursor Harbinger)
 
 - **U8:** Compact landscape (logical `vp_h<=720` and `vp_w>1280`, including 844×390) lays the six menu actions in a two-column grid and never scales the full-rect `Center` container. Large Text scales the `VBox` only, clamped so touch targets stay ≥48dp. Rank, Resume and last-run history stay visible. Smoke: `accessibility_smoke.gd` inflates text +20% at 844×390 with Large Text on and still requires containment.

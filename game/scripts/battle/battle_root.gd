@@ -59,8 +59,12 @@ func _ready() -> void:
 		return
 	GameSession.reset_run()
 	_setup_grids()
-	sim.set_lane_path(0, land_grid.path_world_points())
-	sim.set_lane_path(1, sea_grid.path_world_points())
+	_apply_layout()
+	var vp := get_viewport()
+	if vp and not vp.size_changed.is_connected(_apply_layout):
+		vp.size_changed.connect(_apply_layout)
+	sim.set_lane_path(0, _lane_path_sim_points(0))
+	sim.set_lane_path(1, _lane_path_sim_points(1))
 	if sim.load_level_json(_level_path()):
 		start_land = sim.get_land_resources()
 		start_sea = sim.get_sea_resources()
@@ -122,6 +126,127 @@ func _setup_grids() -> void:
 		sim.init_grids(Vector2i(8, 5))
 		sim.set_cell_solid(0, Vector2i(4, 2), true) # resource outpost
 		sim.set_cell_solid(1, Vector2i(4, 2), true) # trading outpost
+
+
+func _cell_to_sim_pos(front: int, cell: Vector2i) -> Vector2:
+	var base_y := 200.0 if front == 0 else 600.0
+	return Vector2(
+		300.0 + float(cell.x - cell.y) * 32.0,
+		base_y + float(cell.x + cell.y) * 16.0
+	)
+
+
+func _sim_pos_to_cell(front: int, pos: Vector2) -> Vector2i:
+	var base_y := 200.0 if front == 0 else 600.0
+	var dx := (pos.x - 300.0) / 32.0
+	var dy := (pos.y - base_y) / 16.0
+	var cx := int(roundf((dy + dx) * 0.5))
+	var cy := int(roundf((dy - dx) * 0.5))
+	return Vector2i(cx, cy)
+
+
+func _sim_to_screen_pos(front: int, pos: Vector2) -> Vector2:
+	var host: Node2D = land_host if front == 0 else sea_host
+	if host == null:
+		return pos
+	var base_y := 200.0 if front == 0 else 600.0
+	var local_x := (pos.x - 300.0) * 2.0 + 64.0
+	var local_y := (pos.y - base_y) * 2.0 + 32.0
+	return host.global_position + Vector2(local_x, local_y) * host.scale
+
+
+func _lane_path_sim_points(front: int) -> PackedVector2Array:
+	var pts := PackedVector2Array()
+	# Spawn slightly off-map left of entry cell (0, 2)
+	var first: Vector2 = _cell_to_sim_pos(front, Vector2i(0, 2))
+	pts.append(first + Vector2(-32.0, 0.0))
+	for x in range(8):
+		pts.append(_cell_to_sim_pos(front, Vector2i(x, 2)))
+	# HQ approach past last cell (7, 2)
+	var last: Vector2 = _cell_to_sim_pos(front, Vector2i(7, 2))
+	pts.append(last + Vector2(32.0, 0.0))
+	return pts
+
+
+func _apply_layout() -> void:
+	if land_host == null or sea_host == null:
+		return
+	var vp := get_viewport()
+	var vp_rect: Rect2 = vp.get_visible_rect() if vp != null else get_viewport_rect()
+	var vp_w: float = vp_rect.size.x
+	var vp_h: float = vp_rect.size.y
+	if vp_w <= 10.0 or vp_h <= 10.0:
+		vp_w = 1280.0
+		vp_h = 720.0
+
+	var is_portrait: bool = vp_w < vp_h
+
+	var bg: ColorRect = get_node_or_null("Bg") as ColorRect
+	if bg != null:
+		bg.size = Vector2(maxf(1280.0, vp_w), maxf(720.0, vp_h))
+
+	var s: float = 1.0
+	if not is_portrait:
+		# Landscape: side-by-side (Land on left, Sea on right)
+		var sidebar: Control = null
+		if hud != null:
+			sidebar = hud.get_node_or_null("Root/SideBar")
+		var max_x := vp_w - 310.0
+		if sidebar != null and sidebar.is_inside_tree() and sidebar.visible:
+			var sb_rect := sidebar.get_global_rect()
+			if sb_rect.position.x > 100.0:
+				max_x = minf(max_x, sb_rect.position.x - 16.0)
+		elif vp_w > 1300.0 and vp_h <= 720.0:
+			max_x = vp_w - 460.0
+
+		var left_margin := 16.0
+		var avail_w := max_x - left_margin
+		var gap := 20.0
+		var avail_grid_w := (avail_w - gap) * 0.5
+		var min_y := 52.0
+		var max_y := vp_h - 36.0
+		var avail_grid_h := max_y - min_y
+
+		var scale_w := avail_grid_w / 832.0
+		var scale_h := avail_grid_h / 448.0
+		s = clampf(minf(scale_w, scale_h), 0.2, 1.0)
+
+		var grid_y_top := min_y + (avail_grid_h - 448.0 * s) * 0.5
+		land_host.scale = Vector2(s, s)
+		sea_host.scale = Vector2(s, s)
+		# TileMap local bounds: min_x = -256.0, max_x = 576.0, min_y = -32.0 (with label)
+		land_host.position = Vector2(left_margin + 256.0 * s, grid_y_top + 32.0 * s)
+		sea_host.position = Vector2(left_margin + 832.0 * s + gap + 256.0 * s, grid_y_top + 32.0 * s)
+	else:
+		# Portrait: stacked vertically in the main area to the left of SideBar
+		var sidebar: Control = null
+		if hud != null:
+			sidebar = hud.get_node_or_null("Root/SideBar")
+		var max_x := vp_w - 320.0
+		if sidebar != null and sidebar.is_inside_tree() and sidebar.visible:
+			var sb_rect := sidebar.get_global_rect()
+			if sb_rect.position.x > 100.0:
+				max_x = minf(max_x, sb_rect.position.x - 16.0)
+
+		var left_margin := 16.0
+		var avail_w := max_x - left_margin
+		var min_y := 56.0
+		var max_y := vp_h - 36.0
+		var avail_h := max_y - min_y
+		var gap := 24.0
+
+		var scale_w := avail_w / 832.0
+		var scale_h := (avail_h - gap) / (2.0 * 448.0)
+		s = clampf(minf(scale_w, scale_h), 0.2, 1.0)
+
+		var grid_x_left := left_margin + maxf(0.0, (avail_w - 832.0 * s) * 0.5)
+		var grid_y_top := min_y + (avail_h - (2.0 * 448.0 * s + gap)) * 0.5
+		land_host.scale = Vector2(s, s)
+		sea_host.scale = Vector2(s, s)
+		land_host.position = Vector2(grid_x_left + 256.0 * s, grid_y_top + 32.0 * s)
+		sea_host.position = Vector2(grid_x_left + 256.0 * s, grid_y_top + 448.0 * s + gap + 32.0 * s)
+
+	_sync_visuals()
 
 
 func _wire_hud() -> void:
@@ -275,8 +400,8 @@ func _start_combat() -> void:
 		status_message = "Place at least one unit before combat"
 		_update_hud()
 		return
-	sim.set_lane_path(0, land_grid.path_world_points())
-	sim.set_lane_path(1, sea_grid.path_world_points())
+	sim.set_lane_path(0, _lane_path_sim_points(0))
+	sim.set_lane_path(1, _lane_path_sim_points(1))
 	sim.start_combat()
 	_set_phase(Phase.COMBAT)
 	combat_time = 0.0
@@ -309,8 +434,8 @@ func _on_cell_clicked(front_id: String, cell: Vector2i) -> void:
 	var grid: GridFront = land_grid if front_id == "land" else sea_grid
 
 	if pending_hero_id >= 0 and grid.is_placeable(cell):
-		var to: Vector2 = grid.cell_to_global_center(cell)
 		var new_front: int = 0 if front_id == "land" else 1
+		var to: Vector2 = _cell_to_sim_pos(new_front, cell)
 		if sim.start_defender_travel(pending_hero_id, to, new_front, 1.6):
 			if cell_by_defender.has(pending_hero_id):
 				var old: Dictionary = cell_by_defender[pending_hero_id]
@@ -361,7 +486,8 @@ func _on_cell_clicked(front_id: String, cell: Vector2i) -> void:
 		status_message = "Not enough resources"
 		return
 
-	var pos: Vector2 = grid.cell_to_global_center(cell)
+	var front_id_int := 0 if front_id == "land" else 1
+	var pos: Vector2 = _cell_to_sim_pos(front_id_int, cell)
 	var range_px: float = float(def.get("range", 1.5)) * 48.0
 	var damage: float = float(def.get("damage", 10))
 	var cooldown: float = float(def.get("cooldown", 1.0))
@@ -369,7 +495,6 @@ func _on_cell_clicked(front_id: String, cell: Vector2i) -> void:
 	var cross_m: float = float(def.get("cross_env_mult", 0.0))
 	var aura_r: float = float(def.get("aura_radius", 0.0)) * 48.0
 	var aura_b: float = float(def.get("aura_damage_bonus", 0.0))
-	var front_id_int := 0 if front_id == "land" else 1
 	var did2: int = sim.spawn_defender(
 		front_id_int, selected_unit_id, pos, range_px, damage, cooldown, own_m, cross_m, aura_r, aura_b
 	)
@@ -403,20 +528,27 @@ func _sync_visuals() -> void:
 			token.setup_raider(front_num)
 			raiders_root.add_child(token)
 			visual_nodes[id] = token
-		visual_nodes[id].global_position = r["position"]
+		visual_nodes[id].global_position = _sim_to_screen_pos(front_num, r["position"])
+		var host: Node2D = land_host if front_num == 0 else sea_host
+		if host != null:
+			visual_nodes[id].scale = host.scale
 
 	for d in sim.get_defenders():
 		var id: int = int(d["id"])
 		live_ids[id] = true
 		var utype: String = str(d.get("type", "spearman"))
 		var udef: Dictionary = UnitDefs.get_def(utype)
+		var front_num := int(d.get("front", 0))
 		if not visual_nodes.has(id):
 			var token: Node2D = UnitTokenScript.new()
 			token.setup_defender(utype, udef)
 			units_root.add_child(token)
 			visual_nodes[id] = token
 		var node: Node2D = visual_nodes[id]
-		node.global_position = d["position"]
+		node.global_position = _sim_to_screen_pos(front_num, d["position"])
+		var host: Node2D = land_host if front_num == 0 else sea_host
+		if host != null:
+			node.scale = host.scale
 		if node.has_method("set_traveling"):
 			node.set_traveling(bool(d.get("traveling", false)))
 		if node.has_method("set_selected"):
@@ -444,6 +576,9 @@ func _sync_outpost(front_id: int, hp: float, alive: bool, grid: GridFront) -> vo
 	var node: Node2D = visual_nodes[id_key]
 	var cell := Vector2i(4, 2)
 	node.global_position = grid.cell_to_global_center(cell)
+	var host: Node2D = land_host if front_id == 0 else sea_host
+	if host != null:
+		node.scale = host.scale
 	var max_hp: float = 40.0
 	if front_id == 0 and sim.has_method("get_land_outpost_max"):
 		max_hp = float(sim.get_land_outpost_max())
@@ -612,7 +747,7 @@ func _rebuild_placement_from_sim() -> void:
 		var grid: GridFront = land_grid if front == 0 else sea_grid
 		if grid == null:
 			continue
-		var cell: Vector2i = grid.world_to_cell(pos)
+		var cell: Vector2i = _sim_pos_to_cell(front, pos)
 		if not grid.in_bounds(cell):
 			continue
 		var front_id := "land" if front == 0 else "sea"
@@ -852,7 +987,7 @@ func debug_spawn_at_cell(type_id: String, front: int, cell: Vector2i) -> int:
 	if grid.occupants.has(cell):
 		status_message = "DT3 cell occupied"
 		return -1
-	var pos: Vector2 = grid.cell_to_global_center(cell)
+	var pos: Vector2 = _cell_to_sim_pos(front, cell)
 	var range_px: float = float(def.get("range", 1.5)) * 48.0
 	var damage: float = float(def.get("damage", 10))
 	var cooldown: float = float(def.get("cooldown", 1.0))
@@ -880,10 +1015,8 @@ func debug_jump_wave(wave_number: int) -> bool:
 	if sim == null or not sim.has_method("debug_jump_wave") or run_over or phase == Phase.RESULT:
 		return false
 	if phase == Phase.BUILD:
-		if land_grid:
-			sim.set_lane_path(0, land_grid.path_world_points())
-		if sea_grid:
-			sim.set_lane_path(1, sea_grid.path_world_points())
+		sim.set_lane_path(0, _lane_path_sim_points(0))
+		sim.set_lane_path(1, _lane_path_sim_points(1))
 		if not bool(sim.get_in_combat()):
 			sim.start_combat()
 		_set_phase(Phase.COMBAT)
@@ -914,10 +1047,8 @@ func debug_load_level(path: String = "") -> bool:
 		sim.init_grids(Vector2i(8, 5))
 		sim.set_cell_solid(0, Vector2i(4, 2), true)
 		sim.set_cell_solid(1, Vector2i(4, 2), true)
-	if land_grid:
-		sim.set_lane_path(0, land_grid.path_world_points())
-	if sea_grid:
-		sim.set_lane_path(1, sea_grid.path_world_points())
+	sim.set_lane_path(0, _lane_path_sim_points(0))
+	sim.set_lane_path(1, _lane_path_sim_points(1))
 	if not sim.load_level_json(_level_path()):
 		status_message = "DT6 load failed"
 		_update_hud()

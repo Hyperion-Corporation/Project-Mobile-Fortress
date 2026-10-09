@@ -127,7 +127,22 @@ func _draw() -> void:
 	var op_color := ThemeTokensScript.GOLD if front_id == "land" else ThemeTokensScript.SEA_INDIGO_BRIGHT
 	draw_polyline(op_pts, Color(op_color.r, op_color.g, op_color.b, 0.4), 2.0)
 
-	# 3. Ukiyo-e wave foam & elevation contours
+	# 3. Main HQ Citadel bastion highlight (cell (cols - 1, rows / 2))
+	var hq_cell := Vector2i(cols - 1, rows / 2)
+	var hq_center := cell_to_local_center(hq_cell)
+	var hq_pts := PackedVector2Array([
+		hq_center + Vector2(0, -half_h - 2),
+		hq_center + Vector2(half_w + 4, 0),
+		hq_center + Vector2(0, half_h + 2),
+		hq_center + Vector2(-half_w - 4, 0),
+		hq_center + Vector2(0, -half_h - 2),
+	])
+	var hq_color := ThemeTokensScript.CINNABAR if front_id == "land" else ThemeTokensScript.GOLD
+	draw_polyline(hq_pts, Color(hq_color.r, hq_color.g, hq_color.b, 0.65), 2.5)
+	# Inner fortress citadel crenelation mark
+	draw_line(hq_center + Vector2(-half_w * 0.4, 0), hq_center + Vector2(half_w * 0.4, 0), Color(hq_color.r, hq_color.g, hq_color.b, 0.5), 1.5)
+
+	# 4. Ukiyo-e wave foam & elevation contours
 	if front_id == "sea":
 		var wave_col := Color(ThemeTokensScript.PAPER.r, ThemeTokensScript.PAPER.g, ThemeTokensScript.PAPER.b, 0.3)
 		for x in range(0, cols, 2):
@@ -195,20 +210,56 @@ func _ensure_click_layer() -> void:
 	if _click_area and is_instance_valid(_click_area):
 		_click_area.queue_free()
 	_click_area = Control.new()
-	# Approximate orthographic bounds covering the tilemap footprint
-	var tile_w := 64.0
-	var tile_h := 32.0
+	var tile_w := 128.0
+	var tile_h := 64.0
 	if _tilemap and _tilemap.tile_set:
 		var ts: Vector2i = _tilemap.tile_set.tile_size
 		tile_w = float(ts.x)
 		tile_h = float(ts.y)
-	_click_area.position = Vector2(-tile_w, -tile_h)
-	_click_area.size = Vector2(cols * tile_w * 0.85 + tile_w, rows * tile_h * 0.85 + tile_h * 2.0)
+	# Full isometric diamond footprint covering all 8x5 cells + padding
+	var min_x := -(rows - 1) * (tile_w * 0.5) - (tile_w * 0.5) - 16.0
+	var max_x := (cols - 1) * (tile_w * 0.5) + (tile_w * 0.5) + 16.0
+	var min_y := -tile_h * 0.5 - 36.0
+	var max_y := (cols + rows - 2) * (tile_h * 0.5) + (tile_h * 0.5) + 16.0
+	_click_area.position = Vector2(min_x, min_y)
+	_click_area.size = Vector2(max_x - min_x, max_y - min_y)
 	# PASS: desktop mouse still reaches gui_input, but ScreenTouch is not consumed
 	# so BattleRoot._unhandled_input can place after HUD/modals have had their chance.
 	_click_area.mouse_filter = Control.MOUSE_FILTER_PASS
 	_click_area.gui_input.connect(_on_click_input)
 	add_child(_click_area)
+
+
+## Returns the global bounding rect of this front's grid including tiles and label.
+func get_bounding_rect() -> Rect2:
+	var g_min := Vector2(1e9, 1e9)
+	var g_max := Vector2(-1e9, -1e9)
+	var half_w := 64.0
+	var half_h := 32.0
+	if _tilemap and _tilemap.tile_set:
+		var ts: Vector2i = _tilemap.tile_set.tile_size
+		half_w = float(ts.x) * 0.5
+		half_h = float(ts.y) * 0.5
+	var parent_scale := Vector2.ONE
+	var p_node: Node = get_parent()
+	if p_node is Node2D:
+		parent_scale = (p_node as Node2D).scale
+	half_w *= parent_scale.x
+	half_h *= parent_scale.y
+	for y in range(rows):
+		for x in range(cols):
+			var p: Vector2 = cell_to_global_center(Vector2i(x, y))
+			g_min.x = minf(g_min.x, p.x - half_w)
+			g_min.y = minf(g_min.y, p.y - half_h)
+			g_max.x = maxf(g_max.x, p.x + half_w)
+			g_max.y = maxf(g_max.y, p.y + half_h)
+	if _label != null and is_instance_valid(_label):
+		var lbl_r := _label.get_global_rect()
+		g_min.x = minf(g_min.x, lbl_r.position.x)
+		g_min.y = minf(g_min.y, lbl_r.position.y)
+		g_max.x = maxf(g_max.x, lbl_r.end.x)
+		g_max.y = maxf(g_max.y, lbl_r.end.y)
+	return Rect2(g_min, g_max - g_min)
 
 
 func _on_click_input(event: InputEvent) -> void:
