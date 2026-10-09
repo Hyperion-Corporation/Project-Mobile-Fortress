@@ -155,7 +155,7 @@ Lower-case aliases (`gemini`, `chat`, …) remain valid in the task-board Owner 
 | T71 Android dependency bumps: stop them re-breaking the build (investigate + fix or workaround) | kimi | **ASSIGNED** | `.github/dependabot.yml`, `gradle/**`, Android build files, `ci.yml`, `docs/TESTING.md` findings section |
 | T72 Android arm64 build of the C++ core (S8) | grok | **ASSIGNED** | `game/src/cpp/**` build files, new build script, `.gdextension` |
 | T73 Scripted balance probe across levels, DDA off/on (A4, Q10 prep) | muse | **ASSIGNED** | new manual `game/tests/balance_probe.gd`, `docs/BENCHMARKS.md` section |
-| T74 `docs/moon/ROADMAP.md` + AGENTS.md sync with rounds 1–4 and the signing rule | mistral | **ASSIGNED** | Docs only |
+| T74 `docs/moon/ROADMAP.md` + AGENTS.md sync with rounds 1–4 and the signing rule | mistral | **DONE — local verify; awaits Codex T76 review** | Commit `18b4640` on `harbinger`; strict MkDocs 0 warnings, smokes 29/29, ctest 1/1 |
 | T75 ID8 slice 4: citadel rank widget on the demo with a drift test against `progression.gd` | qwen | **ASSIGNED** | `docs/website/**` |
 | T76 Review T69–T75 | chat | **QUEUED** | By commit hash on `harbinger` |
 | T77 Hotfix: main menu clips at 844×390 + Large Text on the CI runner (`Godot game` red on `main`) | cursor | **DONE** `d406a0d` | `game/scripts/ui/main_menu.gd`, `accessibility_smoke.gd`; two-col compact + VBox-only Large Text |
@@ -3590,3 +3590,36 @@ Approach, before editing:
 - **Before/after test counts:** 103 → 125 (+22).
 
 **Handoff:** ready for Codex Harbinger under T76.
+
+### Mistral Harbinger — 2026-10-09 — T74 CLAIMED: roadmap index and agent guide sync
+
+- **Lane:** `docs/moon/ROADMAP.md`, `.agent/AGENTS.md` (append-only for §8; §4 notes), `docs/TESTING.md` except the "Legacy-tree findings" section (Kimi's T71), `repo_automation.md` history row (R6), changelog. No status cells in `docs/moon/roadmaps/*.md`, no code.
+- **Approach:**
+  1. Read every per-area roadmap file (`gameplay`, `ui_ux`, `performance`, `monetization`, `backend`, `ai_systems`, `qa_testing`, `ios`, `shared_core`, `internal_dashboard`, `vertical_slice`, `co_op_modes`, `dev_tools`, `repo_automation`) and diff their statuses against the `ROADMAP.md` index summary. The area files win; I will fix the index and list each correction in DONE, never upgrading anything an area file calls Partial.
+  2. `.agent/AGENTS.md`: append to §8 the `§Signing` pointer + `Agent: <Name> <Team>` commit-trailer format and the two-team layout (Harbinger/`harbinger`, Wall/`GGWall`, lead merges to `main`); add the JDK 21 Gradle note and the returning-player-profile smoke rule to §4; bump version (3.0 → 3.1).
+  3. `docs/TESTING.md`: refresh smoke count/coverage table and baseline wording to the current suite (T70/T77 may have added smokes since my 27-row table), and document the returning-player-profile rule — re-reading immediately before writing to avoid trampling Kimi's T71 edits; the findings section stays untouched.
+  4. Run before writing: full smoke suite (private XDG_DATA_HOME), `ctest`, strict MkDocs — and only cite commands I actually ran.
+- Changelog entry + `repo_automation.md` R6 row in the same commit as the work; `Agent: Mistral Harbinger` trailer throughout. No pushes, no GitHub.
+
+### Mistral Harbinger — 2026-10-09 — T74 DONE
+
+**Commit on `harbinger`:** `18b4640` (`docs: roadmap index + agent guide sync with rounds 1-4 (T74)`), trailer `Agent: Mistral Harbinger`.
+
+**ROADMAP.md v6.0 — every index correction, listed (area files are the source of truth; none of their statuses was upgraded):**
+1. Phase 1 "📋 Pending" → **🚧 In progress** — rounds 1–4 delivered the polish rows (G3/G4/G5/G6/G7/G8/G12, U2–U4/U8–U10, DT1–DT8, Q2–Q4, A4 baseline); several remain Partial pending playtest data.
+2. Phase 2 "📋 Parallel after VS1 starts" → **🚧 Partial** (S0/S1/S3/S4 ✅, S2/S5/S7/S8 🚧, S6 pending per `shared_core.md`).
+3. Phase 7 dashboard "⏸ Secondary" → **🚧 Secondary** (ID2/ID3/ID6 ✅, ID7/ID8 🚧 Partial, ID5 rejected per `internal_dashboard.md`).
+4. Slice-0 track table: VS0 "🚧" → ✅ Scaffold playable; VS1 "📋 Next implement" → ✅ Done; VS2–VS10 "📋" → VS2–VS9 ✅, VS10 🚧 Protocol ready.
+5. "Immediate execution order" opened with "G2/VS1 next" → now leads with the **VS10 playtest gate**, then post-gate backlog (G3/S2 depth, A4 tuning, on-device runs incl. T72's arm64 core), co-op design, cosmetics.
+6. New "Where we are" per-area snapshot table (13 areas) — all statuses quoted from the area files.
+7. Version/date 5.0/2026-08-11 → 6.0/2026-10-09; status line updated. The Game Concept Summary, topic-roadmaps list and Template Scaffolding track were already accurate and are unchanged.
+
+**AGENTS.md v3.2:** §8 appended (not rewritten) — signing rule with the `Agent: <Name> <Team>` trailer format and a pointer to the bus `§Signing` (not duplicated), plus the two-team layout (Harbinger/`harbinger`, Wall/`GGWall`, lead merges `harbinger`→`main`, no branch switching/pushing by agents). §4 appended the JDK 21 Gradle note (JDK 21 is the verified environment for `./gradlew` and what CI uses — I deliberately did *not* claim the default JDK fails the new 9.7.0 wrapper, which is unverified) and the returning-player-profile layout-smoke rule (T61 finding, T77 fix). **Beyond the two named sections:** lines 44 (§2 legacy-stack row) and 116 (§7 legacy constraint) still said T63's AGP 8.5.2/Gradle 8.7 and directly contradicted T71's verified coordinated set, so I corrected them to wrapper 9.7.0 + AGP 9.3.1 + Kotlin 2.4.10 + compileSdk 37 — flagged here for the reviewer to keep or revert.
+
+**TESTING.md:** the coverage table (28 rows, last touched by the T66 review) was missing T70's `battle_layout_smoke` — row added from its header, count 28 → 29 (29 smokes on disk, verified); added the "Layout smokes must not rely on a clean player profile" rule. Kimi's "Legacy-tree findings" section untouched. `git diff --check` notes trailing double-spaces in ROADMAP.md — that is the file's existing hard-break convention, kept deliberately.
+
+**Commands run in this checkout (2026-10-09):** `./scripts/run_godot_smokes.sh` → **29/29 PASS** (private `XDG_DATA_HOME=/tmp/pmf-xdg/mistral`); `ctest --test-dir game/build` → **1/1 PASS**; `mkdocs build --config-file docs/mkdocs.yml --strict` (mkdocs-material venv) → **exit 0, 0 warnings** before and after the edits. **Not run:** any `./gradlew` command (JDK 21 claim comes from the lead's brief and Kimi's T71 DONE, both of which ran it); the website suite (Qwen's T75 lane is mid-flight).
+
+**Lane integrity:** docs only; no `docs/website/**`, no code, no roadmap status cells (only ROADMAP.md index content, which is my lane). One observation for the lead: `repo_automation.md` history had R6 taken by the T66 review, so mine is R7.
+
+Codex: ready for T76 review by commit hash (`18b4640`).
