@@ -3292,3 +3292,28 @@ Also list, on the demo page or in the ID8 notes, any remaining way the toy's tar
 - At the two landscape windows (1280×720, 844×390) the sea grid extends below the 720-high canvas (Codex, T66 — predates round 4).
 - `ios/MyGame.xcodeproj` still cannot be opened by Xcode 26.6; job stays path-gated.
 - T63's Android fix reverts five dependency bumps; open dependabot PRs for those will re-break it if merged.
+
+### Qwen Harbinger — 2026-10-09 — T67 DONE: T64 HOLD follow-up
+
+- **Commit:** `ac79ffc` (`fix(website): T67 T64 HOLD follow-up — range/cooldown parity, own-wallet-first, fractional damage`) on `harbinger`.
+- **Lane:** `docs/website/src/simulations/dualFrontDemo.ts`, `docs/website/src/frameworks/react/views/DualFrontDemoView.tsx`, `docs/website/src/frameworks/react/components/RosterPanel.tsx`, `docs/website/test/unit/simulations/dual-front-demo.test.ts`, `docs/website/test/unit/simulations/unit-defs-drift.test.ts`, `docs/website/test/unit/components/dual-front-demo-view.test.tsx`, `docs/moon/roadmaps/internal_dashboard.md`, `docs/moon/CHANGELOG.md`. No other agents' files touched.
+
+**All three HOLD items resolved:**
+
+1. **Range/cooldown parity.** `UnitDef` now has `canonicalRange` (world units) and `canonicalCooldown` (seconds) matching `unit_defs.gd` exactly. Derived `range`/`cooldown` used for demo grid. Roster shows canonical values with unit labels (e.g., "🎯 1.6", "⏱️ 0.7s"). Drift test checks both. **Mutations proven:**
+   - Changing spearman range 1.6→9999 → `canonical range` test FAILS
+   - Changing spearman cooldown 0.7→9999 → `canonical cooldown` test FAILS
+
+2. **Own-wallet-first placement.** `canPlace`/`placeUnit`/`removeUnit` follow `UnitDefs.placement_plan`: charge unit's own currency first; fall back to clicked grid's wallet only when different and can pay. `PlacedUnit.paidFrom` tracks which wallet paid; removal refunds that wallet. Tests for Qi (land currency), Dias (sea currency), Signal Battery (sea currency): own-first, fallback when own exhausted, rejection when both insufficient, refund to correct wallet.
+
+3. **Fractional damage.** `getDamageMatrix` and combat use raw float values — Signal Battery shows 3.3/6.9 (not 3/7), cannon cross shows 4.9 (not 5). Roster displays with `toFixed(1)` for non-integers.
+
+4. **Targeting differences documented.** Demo page now has a note explaining: normal defenders only fire at own-front raiders (matrix shows cross-front for reference); Signal Battery fires both fronts per tick (native combat chooses one closest target); range uses Chebyshev distance on 6×3 grid.
+
+**Verification:**
+- `npx vitest run` → **103/103 PASS** (10 files; 93 pre-existing + 10 new: 2 drift range/cooldown + 8 own-wallet-first).
+- `npx tsc -b --pretty false` → exit 0.
+- `SITE_BASE=/Project-Mobile-Fortress/ npm run build` → success; island budget **66.1 kB gzip** (budget 300 kB) — OK.
+- **Before/after test counts:** 93 → 103 (+10).
+
+**Handoff:** ready for Codex Harbinger under T68.
