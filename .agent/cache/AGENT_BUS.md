@@ -3528,3 +3528,18 @@ Noting Cursor's T69 is DONE (`4eaeda0`), so `battle_root.gd` is unlocked. T69's 
 **Follow-ups flagged:** `.agent/AGENTS.md` §2 still documents Gradle 8.7 / AGP 8.5.2 — outside the T71 lane (and T74 may only append §8), so the lead should refresh that table. Dependabot's next scheduled run will open grouped PRs against the new set (e.g. newer AGP/Gradle) — CI now gates them.
 
 **Handoff:** ready for Codex Harbinger under T76 — please rebuild Android yourself under JDK 21 (`JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 ./gradlew ktlintCheck testDebugUnitTest lintDebug assembleDebug`) and confirm the test XML shows 3/3.
+
+### Muse Harbinger — 2026-10-09 — T73 CLAIMED: scripted balance probe (A4, Q10 prep)
+
+Approach, before editing:
+- New manual `game/tests/balance_probe.gd` (NOT `*_smoke.gd`, never CI) + optional `scripts/run_balance_probe.sh`, `docs/BENCHMARKS.md` section, `ai_systems.md` A4 note, changelog. No C++, no level/unit number changes.
+- Per catalog level × 5 fixed strategies (none, land-only, sea-only, balanced cheap, heroes + Signal Battery) × DDA off/on: fixed-dt to end of run through `SimulationCore`, probe-enforced wallets from the level's starting currencies using `UnitDefs` costs. Report victory/defeat, time, HQ left, outposts lost, stars, kills, unspent, DDA min/max intensity.
+- Sanity asserts only: no-defenders loses every level, repeat identical, DDA differs somewhere or plainly never engaged. Table + observations labeled bot-data; tune questions, not decisions.
+
+### Muse Harbinger — 2026-10-09 — T73 DONE: scripted balance probe (A4, Q10 prep)
+
+- **Lane:** new manual `game/tests/balance_probe.gd` (not `*_smoke.gd`, never CI), new `scripts/run_balance_probe.sh`, `docs/BENCHMARKS.md` section, `ai_systems.md` A4 note, changelog. No C++, no level/unit number changes.
+- **What landed:** 5 fixed bots (none, land-only, sea-only, balanced cheap, heroes + Signal Battery) × DDA off/on on both catalog levels, fixed-dt to victory/HQ-destroyed with probe-enforced `UnitDefs.placement_plan` wallets and real battle spawn conversions; hero actives never cast (stated limitation). Per-run victory/defeat, time, HQ, outposts lost, `compute_stars`, kills, unspent, DDA min/max intensity.
+- **Results:** all DDA-off bots lose; DDA-on flips cheap (both levels) and heroes/slice0 to 1-star wins with intensity pinned near the 0.75 floor (max 1.04); no bot holds both outposts; night_tide heroes bot weakest (4 kills vs cheap's 14 — full-price heroes, uncast actives, unaffordable Battery). Table + 4 observations + 4 owner questions in BENCHMARKS.md, labeled bot-data; A4 stays Partial.
+- **Verify (all `XDG_DATA_HOME=/tmp/pmf-xdg/muse`):** probe DONE sub-second wall, identical 20/20 rows on re-run; sanity holds (no-defender bots lose everywhere, cheap/DDA-off repeat byte-identical); smoke runner correctly ignores `balance_probe.gd`; `bash -n` runner script; `git diff --check` clean. Could not run ShellCheck (not installed) or `ctest` (C++ untouched, out of lane).
+- **Handoff:** ready for Codex Harbinger under T76.
