@@ -3461,4 +3461,34 @@ Noting Cursor's T69 is DONE (`4eaeda0`), so `battle_root.gd` is unlocked. T69's 
   3. Markers & Touchability: preserve HQ approach/outpost visibility and full tap/drag responsiveness. Measure and report rendered window pixel sizes per cell across all 4 viewports.
   4. Smoke Verification: ensure `touch_placement_smoke.gd`, `modular_battle_smoke.gd`, `placement_afford_smoke.gd` pass; add/extend smoke asserting containment across all 4 reference resolutions with Large Text off and on, failing on simulated out-of-bounds mutation.
 
+### Gemini Harbinger — 2026-10-09 — T70 DONE: both grids fully visible in landscape
+
+- **Feat:** `10889ac` (`fix(battle): layout both grids visible in landscape and portrait (T70)`).
+- **Layout & Containment:**
+  - In landscape (`1280×720`, `844×390`), LandGrid and SeaGrid reflow side-by-side ($s \approx 0.559$, Land on left, Sea on right) with full SideBar/TopBar clearance, eliminating the 296 px off-canvas SeaGrid bottom overflow.
+  - In portrait (`720×1280`, `390×844`), grids remain stacked in the column left of the right-anchored SideBar.
+  - Background `Bg` dynamically expands to fill arbitrary viewport sizes.
+  - Both grids have 100% viewport containment (`vp_rect.encloses`), zero mutual overlap, and zero overlap with HUD interactive buttons (`PauseBtn`, `SpeedBtn`, unit/action buttons).
+- **Coordinate Invariance:**
+  - Preserved invariant engine-free `SimWorld` combat coordinates: roots remain $(300, 200)$ for land and $(300, 600)$ for sea.
+  - `_cell_to_sim_pos`, `_sim_pos_to_cell`, and `_sim_to_screen_pos` provide exact affine translation with $0.0\text{ px}$ sub-pixel error across all 80 cells.
+  - Tokens (raiders, defenders, outposts) and lane paths scale with `host.scale`.
+  - T69 wallet refund fix (`_refund_paid_wallet`) preserved untouched.
+- **Visuals & Affordance:**
+  - Bastion / HQ Citadel at cell $(7, 2)$ drawn in `grid_front.gd` with high-contrast cinnabar/gold outlines and inner citadel mark.
+  - `_click_area` expanded to cover full diamond footprint $[-320, 512] \times [-36, 416]$ with `Control.MOUSE_FILTER_PASS`.
+  - Added `GridFront.get_bounding_rect() -> Rect2` taking parent host scale into account.
+- **Rendered Cell Dimensions & Ergonomics Findings:**
+  - `1280×720` (Desktop landscape): $71.5 \times 35.8\text{ px}$.
+  - `844×390` (Phone landscape): $44.3 \times 22.1\text{ px}$.
+  - `720×1280` (Tablet portrait): $72.0 \times 36.0\text{ px}$.
+  - `390×844` (Phone portrait): $39.0 \times 19.5\text{ px}$.
+  - Finding: Due to 2:1 isometric aspect projection, cell vertical height drops below 40 px on phone viewports; this is mitigated by the G10 drag-and-preview affordance allowing players to scrub across cells before committing release.
+- **Smokes & Verifications:**
+  - Added `game/tests/battle_layout_smoke.gd` (auto-discovered headless smoke) testing all 4 reference viewports for viewport containment, inter-grid separation, HUD clearance, cell size reporting, and disposable off-canvas mutation test.
+  - Updated `game/tests/touch_placement_smoke.gd` to scale boundary probe offsets by `battle.land_host.scale`.
+  - Full test suite run: **29 passed, 0 failed, 0 skipped (29/29 PASS)**.
+  - Mutation test: intentionally displacing SeaGrid off-canvas fails `battle_layout_smoke.gd` as expected.
+- **Docs:** Updated `docs/moon/roadmaps/ui_ux.md` (U4), `docs/moon/roadmaps/ios.md` (IOS2), `docs/moon/roadmaps/gameplay.md` (G2), and `docs/moon/CHANGELOG.md`.
+
 
