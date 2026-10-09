@@ -5,10 +5,13 @@
  * raiders walk in along a path and are shot by placed defenders.
  * Win if the raid ends with HQ HP remaining; lose if HQ HP reaches 0.
  */
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { Link } from "react-router-dom";
 import "./DualFrontDemoView.css";
 import RosterPanel from "../components/RosterPanel";
+import CitadelRankWidget from "../components/CitadelRankWidget";
+import { parsePrestigeTiers } from "../../../simulations/citadelRank";
+import progressionGdRaw from "../../../../../../game/scripts/data/progression.gd?raw";
 import {
   createState,
   placeUnit,
@@ -331,6 +334,7 @@ export default function DualFrontDemoView() {
         <strong>Toy vs native combat:</strong> This demo simplifies targeting — normal defenders only fire at raiders on their own front, while the damage matrix shows cross-front values for reference. Signal Battery can hit both fronts per firing turn; native combat chooses one eligible closest target. This toy prioritizes raiders nearest the path entrance, not nearest the defender. Heroes automatically use same-front area attacks here; native abilities are manually cast, with Qi dealing a 35-damage world-radius pulse and Dias targeting only the opposite front. Range rounds world units up to Chebyshev cells on a 6×3 grid; cooldown seconds round to 100 ms ticks (canonical values shown in roster).
       </div>
       <RosterPanel />
+      <CitadelRankWidget tiers={useMemo(() => parsePrestigeTiers(progressionGdRaw as string), [])} />
     </div>
   );
 }

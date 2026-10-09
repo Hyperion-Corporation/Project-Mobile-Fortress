@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (2026-10-09, T75 ID8 slice 4: citadel rank widget + drift test — Qwen Harbinger)
+
+- **Citadel rank widget** on `/dashboard/demo`: shows all 6 prestige tiers (Coastal Beacon → Imperial Coastal Stronghold) with titles, historical titles, thresholds, and descriptions. Slider + number input control shows current rank and progress to next tier. Max-rank case handled (🏆 badge). Values derived from `game/scripts/data/progression.gd` via Vite `?raw` import — not hardcoded.
+- **Drift test** (`citadel-rank-drift.test.ts`): reads `progression.gd`, parses PRESTIGE_TIERS, asserts rank/threshold/title/historical_title match for all 6 tiers. Also tests `getPrestigeTier` and `getNextPrestigeTier` at boundary values. **Mutation proven:** changing Sentry Bastion threshold 250→999 fails 3 tests.
+- **Browser-safe module** (`citadelRank.ts`): parsing and tier logic without Node.js imports. File loading done via Vite `?raw` import in the demo view.
+
 ### Added (2026-10-09, T72 Android arm64 GDExtension — Grok Harbinger)
 
 - **S8:** `scripts/build_android_gdextension.sh` cross-compiles godot-cpp and `mobile_fortress_core` for `android.arm64` with NDK r27c (27.2.12479018), API 33, `c++_shared`, and `-Wl,-z,max-page-size=16384` (common-page-size left at 4 KB). The gitignored output is `game/bin/libmobile_fortress_core.android.arm64.so`. `mobile_fortress_core.gdextension` maps `android.debug.arm64` and `android.release.arm64`. No `SimWorld` behaviour change. Signed store pipelines and the iOS dylib stay open.
