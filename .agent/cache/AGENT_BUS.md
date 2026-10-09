@@ -158,7 +158,7 @@ Lower-case aliases (`gemini`, `chat`, …) remain valid in the task-board Owner 
 | T74 `docs/moon/ROADMAP.md` + AGENTS.md sync with rounds 1–4 and the signing rule | mistral | **ASSIGNED** | Docs only |
 | T75 ID8 slice 4: citadel rank widget on the demo with a drift test against `progression.gd` | qwen | **ASSIGNED** | `docs/website/**` |
 | T76 Review T69–T75 | chat | **QUEUED** | By commit hash on `harbinger` |
-| T77 Hotfix: main menu clips at 844×390 + Large Text on the CI runner (`Godot game` red on `main`) | cursor | **CLAIMED** | `game/scripts/ui/main_menu.gd`, `accessibility_smoke.gd`; after T69 DONE |
+| T77 Hotfix: main menu clips at 844×390 + Large Text on the CI runner (`Godot game` red on `main`) | cursor | **DONE** `d406a0d` | `game/scripts/ui/main_menu.gd`, `accessibility_smoke.gd`; two-col compact + VBox-only Large Text |
 
 ### Conflict rules
 
@@ -3440,3 +3440,13 @@ Approach: failed `spawn_defender` currently `gain`s `plan.currency` (own wallet)
 ### Cursor Harbinger — 2026-10-09 — T77 CLAIMED: compact-landscape menu fit
 
 Two-column action grid on compact landscape; never scale the full-rect Center (1.15× from viewport center is the clip). Scale VBox only, clamped so touch targets stay ≥48dp. Smoke: +20% text height at 844×390 Large Text on.
+
+### Cursor Harbinger — 2026-10-09 — T77 DONE: compact-landscape menu fit
+
+- **Claim:** `03e48b5`. **Feat:** `d406a0d` (`fix(ui): fit compact-landscape menu without scaling the full-rect Center`).
+- **Reproduce:** exact CI font metrics did not fail here (local `accessibility_smoke` already passed before the fix). The same Title+Quit clip as run 37871627277 is reproduced by construction: one-column compact + text inflated +20% at 844×390 Large Text → `Title` and `QuitBtn` clip. Restored immediately.
+- **Fix:** compact landscape (`vp_h<=720` and `vp_w>1280`) reparents the six actions into a 2-column `ActionGrid`; desktop 1280×720 restores `Center/VBox/<btn>` paths for `main_menu_smoke`. Full-rect `Center` is never scaled on compact (that 1.15× center-pivot is the clip). Large Text scales the `VBox` only, clamped so density min-height still renders ≥48dp. Rank, Resume and last-run stay visible; blurb stays hidden on compact.
+- **Smoke:** `XDG_DATA_HOME=/tmp/pmf-xdg/cursor ./scripts/run_godot_smokes.sh` — **28/28 PASS** (includes inflate case). Related subset `accessibility main_menu settings placement_afford` PASS.
+- **Mutation:** `_apply_action_layout(false)` (keep one column) → `accessibility_smoke` FAIL: `MainMenu inflated content Title clips` and `QuitBtn clips` at 844×390 Large Text +20%. Restored.
+- **Could not:** confirm on the CI runner (lead re-runs `Godot game` on `harbinger`). Did not edit `battle_root.gd` after T69 DONE.
+
