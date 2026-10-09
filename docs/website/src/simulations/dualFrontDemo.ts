@@ -28,7 +28,13 @@ export interface UnitDef {
   currency: "land" | "sea";
   hp: number;
   damage: number;
+  /** Canonical range from unit_defs.gd (world units). */
+  canonicalRange: number;
+  /** Canonical cooldown from unit_defs.gd (seconds). */
+  canonicalCooldown: number;
+  /** Derived grid-cell range for the demo (Chebyshev distance). */
   range: number;
+  /** Derived tick cooldown for the demo (1 tick = 100ms). */
   cooldown: number;
   /** Hero active ability cooldown (ticks). Absent for non-heroes. */
   activeCooldown?: number;
@@ -51,6 +57,8 @@ export interface PlacedUnit {
   cooldownRemaining: number;
   /** Ticks until the hero's active ability is ready. Absent for non-heroes. */
   activeCooldownRemaining?: number;
+  /** Which wallet was charged for this unit. Used for refund on removal. */
+  paidFrom: Front;
 }
 
 export interface Raider {
@@ -104,17 +112,19 @@ export interface SimState {
 }
 
 // Roster names, costs, HP and damage follow game/scripts/data/unit_defs.gd.
-// Range is simplified for this grid; cooldowns are rounded to 100 ms ticks.
+// canonicalRange is in world units; canonicalCooldown is in seconds (from game).
+// range = ceil(canonicalRange) for Chebyshev grid distance.
+// cooldown = round(canonicalCooldown * 10) for 100ms ticks.
 // ownEnvMult / crossEnvMult mirror the game's get_effective_damage rule.
 
 export const UNIT_DEFS: UnitDef[] = [
-  { id: "spearman", name: "Ming Garrison Spearman", kind: "defender", front: "land", cost: 10, currency: "land", hp: 40, damage: 8, range: 2, cooldown: 7, ownEnvMult: 1.0, crossEnvMult: 0.0 },
-  { id: "cannon", name: "Fo-lang-ji Cannon Crew", kind: "defender", front: "land", cost: 18, currency: "land", hp: 30, damage: 14, range: 3, cooldown: 12, ownEnvMult: 1.0, crossEnvMult: 0.35 },
-  { id: "arquebusier", name: "Portuguese Arquebusier", kind: "defender", front: "sea", cost: 12, currency: "sea", hp: 32, damage: 10, range: 2, cooldown: 9, ownEnvMult: 1.0, crossEnvMult: 0.25 },
-  { id: "junk", name: "East Asian War Junk", kind: "defender", front: "sea", cost: 16, currency: "sea", hp: 45, damage: 11, range: 2, cooldown: 9, ownEnvMult: 1.0, crossEnvMult: 0.0 },
-  { id: "hero_dias", name: "Capitão Dias (Hero)", kind: "hero", front: "both", cost: 26, currency: "sea", hp: 48, damage: 10, range: 2, cooldown: 11, ownEnvMult: 1.0, crossEnvMult: 0.65, activeCooldown: 100, activeDamage: 22 },
-  { id: "hero_qi", name: "Commander Qi (Hero)", kind: "hero", front: "both", cost: 28, currency: "land", hp: 55, damage: 12, range: 2, cooldown: 10, ownEnvMult: 1.0, crossEnvMult: 0.5, activeCooldown: 80, activeDamage: 28 },
-  { id: "cross_support", name: "Signal Battery", kind: "cross_support", front: "both", cost: 20, currency: "sea", hp: 28, damage: 6, range: 3, cooldown: 11, ownEnvMult: 0.55, crossEnvMult: 1.15 },
+  { id: "spearman", name: "Ming Garrison Spearman", kind: "defender", front: "land", cost: 10, currency: "land", hp: 40, damage: 8, canonicalRange: 1.6, canonicalCooldown: 0.7, range: 2, cooldown: 7, ownEnvMult: 1.0, crossEnvMult: 0.0 },
+  { id: "cannon", name: "Fo-lang-ji Cannon Crew", kind: "defender", front: "land", cost: 18, currency: "land", hp: 30, damage: 14, canonicalRange: 2.8, canonicalCooldown: 1.2, range: 3, cooldown: 12, ownEnvMult: 1.0, crossEnvMult: 0.35 },
+  { id: "arquebusier", name: "Portuguese Arquebusier", kind: "defender", front: "sea", cost: 12, currency: "sea", hp: 32, damage: 10, canonicalRange: 2.2, canonicalCooldown: 0.85, range: 2, cooldown: 9, ownEnvMult: 1.0, crossEnvMult: 0.25 },
+  { id: "junk", name: "East Asian War Junk", kind: "defender", front: "sea", cost: 16, currency: "sea", hp: 45, damage: 11, canonicalRange: 1.8, canonicalCooldown: 0.9, range: 2, cooldown: 9, ownEnvMult: 1.0, crossEnvMult: 0.0 },
+  { id: "hero_dias", name: "Capitão Dias (Hero)", kind: "hero", front: "both", cost: 26, currency: "sea", hp: 48, damage: 10, canonicalRange: 2.2, canonicalCooldown: 1.1, range: 2, cooldown: 11, ownEnvMult: 1.0, crossEnvMult: 0.65, activeCooldown: 100, activeDamage: 22 },
+  { id: "hero_qi", name: "Commander Qi (Hero)", kind: "hero", front: "both", cost: 28, currency: "land", hp: 55, damage: 12, canonicalRange: 2.0, canonicalCooldown: 1.0, range: 2, cooldown: 10, ownEnvMult: 1.0, crossEnvMult: 0.5, activeCooldown: 80, activeDamage: 28 },
+  { id: "cross_support", name: "Signal Battery", kind: "cross_support", front: "both", cost: 20, currency: "sea", hp: 28, damage: 6, canonicalRange: 12.0, canonicalCooldown: 1.1, range: 3, cooldown: 11, ownEnvMult: 0.55, crossEnvMult: 1.15 },
 ];
 
 export const DEFAULT_CONFIG: DemoConfig = {
@@ -184,10 +194,28 @@ export function canPlace(
   const units = front === "land" ? state.landUnits : state.seaUnits;
   if (units.some((u) => u.col === col && u.row === row)) return "Cell occupied";
 
-  const budget = front === "land" ? state.landBudget : state.seaBudget;
-  if (def.cost > budget) return "Insufficient budget";
+  // Own-wallet-first: charge the unit's currency first, fall back to clicked grid's wallet
+  const ownWallet = def.currency === "land" ? state.landBudget : state.seaBudget;
+  const gridWallet = front === "land" ? state.landBudget : state.seaBudget;
+  const ownCurrencyMatchesGrid = def.currency === front;
+
+  if (def.cost > ownWallet) {
+    // Own wallet can't pay; try fallback to grid wallet (only if different)
+    if (!ownCurrencyMatchesGrid && def.cost <= gridWallet) {
+      // Fallback OK
+    } else {
+      return "Insufficient budget";
+    }
+  }
 
   return null;
+}
+
+/** Determine which wallet pays for a placement. Returns the front of the paying wallet. */
+export function getPayingWallet(def: UnitDef, placedFront: Front, state: SimState): Front {
+  const ownWallet = def.currency === "land" ? state.landBudget : state.seaBudget;
+  if (def.cost <= ownWallet) return def.currency;
+  return placedFront;
 }
 
 export function placeUnit(
@@ -202,6 +230,7 @@ export function placeUnit(
   if (err) return state;
 
   const def = getUnitDef(defId, config)!;
+  const paidFrom = getPayingWallet(def, front, state);
   const unit: PlacedUnit = {
     uid: state.nextUid,
     defId,
@@ -211,15 +240,20 @@ export function placeUnit(
     hp: def.hp,
     maxHp: def.hp,
     cooldownRemaining: 0,
+    paidFrom,
     ...(def.activeCooldown != null ? { activeCooldownRemaining: 0 } : {}),
   };
 
   const next = { ...state, nextUid: state.nextUid + 1 };
   if (front === "land") {
     next.landUnits = [...state.landUnits, unit];
-    next.landBudget = state.landBudget - def.cost;
   } else {
     next.seaUnits = [...state.seaUnits, unit];
+  }
+  // Charge the paying wallet
+  if (paidFrom === "land") {
+    next.landBudget = state.landBudget - def.cost;
+  } else {
     next.seaBudget = state.seaBudget - def.cost;
   }
   return next;
@@ -235,21 +269,33 @@ export function removeUnit(
   const landMatch = state.landUnits.find((u) => u.uid === uid);
   if (landMatch) {
     const def = getUnitDef(landMatch.defId, config)!;
-    return {
+    const next = {
       ...state,
       landUnits: state.landUnits.filter((u) => u.uid !== uid),
-      landBudget: state.landBudget + def.cost,
     };
+    // Refund the wallet that was charged
+    if (landMatch.paidFrom === "land") {
+      next.landBudget = state.landBudget + def.cost;
+    } else {
+      next.seaBudget = state.seaBudget + def.cost;
+    }
+    return next;
   }
 
   const seaMatch = state.seaUnits.find((u) => u.uid === uid);
   if (seaMatch) {
     const def = getUnitDef(seaMatch.defId, config)!;
-    return {
+    const next = {
       ...state,
       seaUnits: state.seaUnits.filter((u) => u.uid !== uid),
-      seaBudget: state.seaBudget + def.cost,
     };
+    // Refund the wallet that was charged
+    if (seaMatch.paidFrom === "land") {
+      next.landBudget = state.landBudget + def.cost;
+    } else {
+      next.seaBudget = state.seaBudget + def.cost;
+    }
+    return next;
   }
 
   return state;
@@ -394,8 +440,8 @@ function defendersFire(state: SimState, config: DemoConfig): SimState {
         const dy = Math.abs(config.pathRow - unit.row);
         return Math.max(dx, dy) <= def.range;
       });
-      const ownDmg = Math.round(def.damage * def.ownEnvMult);
-      const crossDmg = Math.round(def.damage * def.crossEnvMult);
+      const ownDmg = def.damage * def.ownEnvMult;
+      const crossDmg = def.damage * def.crossEnvMult;
       let hit = false;
       if (ownTargets.length > 0) {
         const closest = ownTargets.sort((a, b) => a.col - b.col)[0];
@@ -429,7 +475,7 @@ function defendersFire(state: SimState, config: DemoConfig): SimState {
     // Normal defender: find closest alive raider on same front within range
     const target = findTarget(unit, def, raiders, config);
     if (target) {
-      const dmg = Math.round(def.damage * def.ownEnvMult);
+      const dmg = def.damage * def.ownEnvMult;
       target.hp -= dmg;
       log.push(`Tick ${state.tick}: ${def.name} hits raider for ${dmg}`);
       updatedUnits.push({
@@ -552,9 +598,9 @@ export interface DamageMatrix {
 
 export function getDamageMatrix(def: UnitDef): DamageMatrix {
   return {
-    landVsLand: Math.round(def.damage * def.ownEnvMult),
-    landVsSea: Math.round(def.damage * def.crossEnvMult),
-    seaVsLand: Math.round(def.damage * def.crossEnvMult),
-    seaVsSea: Math.round(def.damage * def.ownEnvMult),
+    landVsLand: def.damage * def.ownEnvMult,
+    landVsSea: def.damage * def.crossEnvMult,
+    seaVsLand: def.damage * def.crossEnvMult,
+    seaVsSea: def.damage * def.ownEnvMult,
   };
 }

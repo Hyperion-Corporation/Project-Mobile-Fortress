@@ -327,6 +327,9 @@ export default function DualFrontDemoView() {
           </p>
         </div>
       )}
+      <div style={{ marginTop: "0.75rem", padding: "0.5rem 0.75rem", background: "rgba(255,255,255,0.03)", border: "1px solid var(--border, rgba(255,255,255,0.1))", borderRadius: "6px", fontSize: "0.78rem", color: "var(--text-muted)" }}>
+        <strong>Toy vs native combat:</strong> This demo simplifies targeting — normal defenders only fire at raiders on their own front, while the damage matrix shows cross-front values for reference. Signal Battery fires at both fronts per tick; native combat chooses one eligible closest target. Range uses Chebyshev distance on a 6×3 grid (canonical values shown in roster).
+      </div>
       <RosterPanel />
     </div>
   );

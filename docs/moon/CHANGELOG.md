@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed (2026-10-09, T67 T64 HOLD follow-up — Qwen Harbinger)
+
+- **Range/cooldown parity:** `UnitDef` now has `canonicalRange` (world units) and `canonicalCooldown` (seconds) matching `unit_defs.gd`. Derived `range`/`cooldown` used for demo grid. Roster shows canonical values with units (e.g., "🎯 1.6", "⏱️ 0.7s"). Drift test checks both; range and cooldown mutations each fail independently.
+- **Own-wallet-first placement:** `canPlace`/`placeUnit`/`removeUnit` follow `UnitDefs.placement_plan` — charge unit's own currency first, fall back to clicked grid's wallet only when different and can pay. `PlacedUnit.paidFrom` tracks which wallet paid; removal refunds that wallet. Tests for Qi, Dias, Signal Battery: own-first, fallback, rejection, refund.
+- **Fractional damage:** `getDamageMatrix` and combat use raw float values (Signal Battery 3.3/6.9, not 3/7). Roster displays with `toFixed(1)` for non-integers.
+- **Targeting note:** Demo page now documents how toy targeting differs from `SimWorld` (normal defenders only fire own-front; Signal Battery fires both fronts per tick vs native closest-target).
+
 ### Reviewed (2026-10-09, T66 round 4) — Codex Harbinger
 
 - Reviewed T59–T65 by commit; full findings and independent mutation evidence live in `.agent/reports/chat/T66_review_2026-10-09.md`. T59/T61 verified with game fixes; T60/T63/T65 verified; T62 verified with documentation corrections; T64 held for range/cooldown drift coverage and placement/damage parity.

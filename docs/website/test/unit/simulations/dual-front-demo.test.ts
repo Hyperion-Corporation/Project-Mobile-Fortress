@@ -337,16 +337,17 @@ describe("cross-support unit", () => {
     ] };
     let state = placeUnit(createState(config), "cross_support", 3, 0, front, config);
     state = tick(startRun(state), config);
-    expect(state.raiders.filter(r => r.front === front).map(r => r.hp)).toEqual([97]);
-    expect(state.raiders.filter(r => r.front !== front).map(r => r.hp)).toEqual([93]);
+    // Fractional damage: own = 6 * 0.55 = 3.3, cross = 6 * 1.15 = 6.9
+    expect(state.raiders.filter(r => r.front === front).map(r => r.hp)).toEqual([96.7]);
+    expect(state.raiders.filter(r => r.front !== front).map(r => r.hp)).toEqual([93.1]);
   });
 
   it("cross_support deals reduced damage to own front and boosted to cross front", () => {
     const def = getUnitDef("cross_support", CFG)!;
-    const ownDmg = Math.round(def.damage * def.ownEnvMult!);
-    const crossDmg = Math.round(def.damage * def.crossEnvMult!);
-    expect(ownDmg).toBe(3);
-    expect(crossDmg).toBe(7);
+    const ownDmg = def.damage * def.ownEnvMult;
+    const crossDmg = def.damage * def.crossEnvMult;
+    expect(ownDmg).toBeCloseTo(3.3, 5);
+    expect(crossDmg).toBeCloseTo(6.9, 5);
   });
 });
 
@@ -371,5 +372,84 @@ describe("unit classification", () => {
     const hero = state.landUnits[0];
     const def = getUnitDef("hero_qi", CFG)!;
     expect(getAbilityCooldownFraction(hero, def)).toBe(0);
+  });
+});
+
+// ── Own-wallet-first placement ───────────────────────────────────────────────
+
+describe("own-wallet-first placement", () => {
+  it("Qi (land currency) on land charges land wallet", () => {
+    let state = createState(CFG);
+    state = placeUnit(state, "hero_qi", 0, 0, "land", CFG);
+    expect(state.landBudget).toBe(60 - 28);
+    expect(state.seaBudget).toBe(60);
+    expect(state.landUnits[0].paidFrom).toBe("land");
+  });
+
+  it("Qi (land currency) on sea charges land wallet (own-first)", () => {
+    let state = createState(CFG);
+    state = placeUnit(state, "hero_qi", 0, 0, "sea", CFG);
+    expect(state.landBudget).toBe(60 - 28);
+    expect(state.seaBudget).toBe(60);
+    expect(state.seaUnits[0].paidFrom).toBe("land");
+  });
+
+  it("Qi on sea falls back to sea wallet when land is exhausted", () => {
+    let state = createState(CFG);
+    // Exhaust land budget
+    state = placeUnit(state, "spearman", 0, 0, "land", CFG);
+    state = placeUnit(state, "spearman", 1, 0, "land", CFG);
+    state = placeUnit(state, "spearman", 2, 0, "land", CFG);
+    state = placeUnit(state, "spearman", 3, 0, "land", CFG);
+    state = placeUnit(state, "spearman", 4, 0, "land", CFG);
+    state = placeUnit(state, "spearman", 5, 0, "land", CFG);
+    expect(state.landBudget).toBe(0);
+    // Qi on sea should fall back to sea wallet
+    state = placeUnit(state, "hero_qi", 0, 2, "sea", CFG);
+    expect(state.seaBudget).toBe(60 - 28);
+    expect(state.landBudget).toBe(0);
+    expect(state.seaUnits[0].paidFrom).toBe("sea");
+  });
+
+  it("Qi on sea rejected when both wallets insufficient", () => {
+    let state = createState(CFG);
+    state = { ...state, landBudget: 10, seaBudget: 10 };
+    expect(canPlace(state, "hero_qi", 0, 0, "sea", CFG)).toBe("Insufficient budget");
+  });
+
+  it("Dias (sea currency) on land charges sea wallet (own-first)", () => {
+    let state = createState(CFG);
+    state = placeUnit(state, "hero_dias", 0, 0, "land", CFG);
+    expect(state.seaBudget).toBe(60 - 26);
+    expect(state.landBudget).toBe(60);
+    expect(state.landUnits[0].paidFrom).toBe("sea");
+  });
+
+  it("Signal Battery (sea currency) on land charges sea wallet", () => {
+    let state = createState(CFG);
+    state = placeUnit(state, "cross_support", 0, 0, "land", CFG);
+    expect(state.seaBudget).toBe(60 - 20);
+    expect(state.landBudget).toBe(60);
+    expect(state.landUnits[0].paidFrom).toBe("sea");
+  });
+
+  it("removal refunds the wallet that was charged", () => {
+    let state = createState(CFG);
+    state = placeUnit(state, "hero_qi", 0, 0, "sea", CFG);
+    expect(state.landBudget).toBe(60 - 28);
+    const uid = state.seaUnits[0].uid;
+    state = removeUnit(state, uid, CFG);
+    expect(state.landBudget).toBe(60);
+    expect(state.seaUnits).toHaveLength(0);
+  });
+
+  it("removal refunds fallback wallet when own was exhausted", () => {
+    let state = createState(CFG);
+    state = { ...state, landBudget: 0 };
+    state = placeUnit(state, "hero_qi", 0, 0, "sea", CFG);
+    expect(state.seaBudget).toBe(60 - 28);
+    const uid = state.seaUnits[0].uid;
+    state = removeUnit(state, uid, CFG);
+    expect(state.seaBudget).toBe(60);
   });
 });

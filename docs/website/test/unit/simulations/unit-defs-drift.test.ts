@@ -92,4 +92,18 @@ describe("unit_defs.gd drift test", () => {
       expect(gameIds.has(w.id), `extra website unit: ${w.id}`).toBe(true);
     }
   });
+
+  it("canonical range matches game range for every shared unit", () => {
+    for (const g of gameUnits) {
+      const w = getUnitDef(g.id)!;
+      expect(w.canonicalRange, `${g.id} canonicalRange`).toBeCloseTo(g.range, 5);
+    }
+  });
+
+  it("canonical cooldown matches game cooldown for every shared unit", () => {
+    for (const g of gameUnits) {
+      const w = getUnitDef(g.id)!;
+      expect(w.canonicalCooldown, `${g.id} canonicalCooldown`).toBeCloseTo(g.cooldown, 5);
+    }
+  });
 });

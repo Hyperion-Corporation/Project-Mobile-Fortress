@@ -1,6 +1,10 @@
 import { UNIT_DEFS, getDamageMatrix, isHero, isCrossSupport, type UnitDef, type DamageMatrix } from "../../../simulations/dualFrontDemo";
 import "./RosterPanel.css";
 
+function formatDmg(v: number): string {
+  return Number.isInteger(v) ? String(v) : v.toFixed(1);
+}
+
 function DamageMatrixTable({ def, matrix }: { def: UnitDef; matrix: DamageMatrix }) {
   const canStandLand = def.front === "land" || def.front === "both";
   const canStandSea = def.front === "sea" || def.front === "both";
@@ -17,13 +21,13 @@ function DamageMatrixTable({ def, matrix }: { def: UnitDef; matrix: DamageMatrix
       <tbody>
         <tr className={canStandLand ? "" : "roster-unavailable"}>
           <th scope="row">🛡️ Land</th>
-          <td className={matrix.landVsLand > 0 ? "" : "roster-zero"}>{canStandLand ? matrix.landVsLand : "—"}</td>
-          <td className={matrix.landVsSea > 0 ? "" : "roster-zero"}>{canStandLand ? matrix.landVsSea : "—"}</td>
+          <td className={matrix.landVsLand > 0 ? "" : "roster-zero"}>{canStandLand ? formatDmg(matrix.landVsLand) : "—"}</td>
+          <td className={matrix.landVsSea > 0 ? "" : "roster-zero"}>{canStandLand ? formatDmg(matrix.landVsSea) : "—"}</td>
         </tr>
         <tr className={canStandSea ? "" : "roster-unavailable"}>
           <th scope="row">⚓ Sea</th>
-          <td className={matrix.seaVsLand > 0 ? "" : "roster-zero"}>{canStandSea ? matrix.seaVsLand : "—"}</td>
-          <td className={matrix.seaVsSea > 0 ? "" : "roster-zero"}>{canStandSea ? matrix.seaVsSea : "—"}</td>
+          <td className={matrix.seaVsLand > 0 ? "" : "roster-zero"}>{canStandSea ? formatDmg(matrix.seaVsLand) : "—"}</td>
+          <td className={matrix.seaVsSea > 0 ? "" : "roster-zero"}>{canStandSea ? formatDmg(matrix.seaVsSea) : "—"}</td>
         </tr>
       </tbody>
     </table>
@@ -44,8 +48,8 @@ function RosterCard({ def }: { def: UnitDef }) {
       </div>
       <div className="roster-stats">
         <span title="Damage">⚔️ {def.damage}</span>
-        <span title="Range">🎯 {def.range}</span>
-        <span title="Cooldown">⏱️ {def.cooldown}</span>
+        <span title={`Range: ${def.canonicalRange} world units (grid: ${def.range} cells)`}>🎯 {def.canonicalRange}</span>
+        <span title={`Cooldown: ${def.canonicalCooldown}s (grid: ${def.cooldown} ticks)`}>⏱️ {def.canonicalCooldown}s</span>
         <span title="HP">❤️ {def.hp}</span>
       </div>
       {isHero(def) && def.activeDamage != null && def.activeCooldown != null && (
