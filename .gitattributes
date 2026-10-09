@@ -1,3 +1,8 @@
 # Append-only coordination logs: parallel agent branches each add blocks; keep both sides.
 .agent/cache/AGENT_BUS.md merge=union
 docs/moon/CHANGELOG.md merge=union
+
+# Official Gradle wrapper batch script ships with CRLF line endings; tell git's
+# whitespace checker that CR-at-EOL is expected here (keeps `git diff --check`
+# clean without altering the official artifact).
+gradlew.bat whitespace=cr-at-eol

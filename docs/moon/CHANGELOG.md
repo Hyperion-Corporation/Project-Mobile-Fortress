@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed (2026-10-09, T71 Android dependency strategy — toolchain moved forward as one set — Kimi Harbinger)
+
+- **Q2 / Android CI:** dependabot bumps can no longer re-break the build piecemeal. T63's reverts are superseded by a coordinated move forward, verified locally under JDK 21 (`ktlintCheck`, `testDebugUnitTest` 3/3, `lintDebug`, `assembleDebug` all green): Gradle wrapper **9.7.0** (official jar checksum `7a9ce74c…62c5d`), AGP **9.3.1** — which embeds Kotlin support, so `org.jetbrains.kotlin.android` is removed from the root and app build files along with the obsolete `kotlinOptions` block — Kotlin **2.4.10**, ktlint-gradle **14.2.0** (five formatting-only fixes in `GameEngine.kt`/`GameState.kt`/`GameView.kt` for its new defaults), androidx at the bumped versions (activity-compose 1.13.0, core-ktx 1.19.0, compose-bom 2026.06.01, lifecycle 2.11.0, coroutines 1.11.0, espresso 3.7.0, test-core 1.7.0, test-junit 1.3.0, serialization-json 1.11.0), **compileSdk 37** (core-ktx 1.19.0 / lifecycle 2.11.0 require it), **targetSdk stays 35** deliberately (runtime-behavior opt-in is the owner's call).
+- **`.github/dependabot.yml`:** new `android-toolchain` group (Gradle wrapper + AGP + Kotlin + ktlint plugin, excluding kotlinx) and `android-libraries` group (androidx + kotlinx) with an in-file coupling-constraint comment — coupled bumps arrive as single PRs, and CI's Android jobs (which run for every `gradle/**` change) fail any incompatible piece before merge. The Android CI jobs use JDK 21, matching the verified runtime.
+
 ### Fixed (2026-10-09, T70 both grids fully visible in landscape and portrait — Gemini Harbinger)
 
 - **U4 / IOS2 / G2:** Resolved #1 playability gap where LandGrid and SeaGrid were positioned in vertical series, pushing SeaGrid 296 px off the bottom of the 720-height canvas in landscape. Implemented responsive layout in `battle_root.gd` (`_apply_layout`):

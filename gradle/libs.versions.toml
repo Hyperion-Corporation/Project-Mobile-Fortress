@@ -1,23 +1,26 @@
 [versions]
-# Versions must stay consistent with the wrapper-pinned Gradle 8.7 and
-# compileSdk 35 (.agent/AGENTS.md §2). The dependabot-style bumps that raised
-# agp to 9.3.1 / lifecycle to 2.11.0 / coroutines to 1.11.0 / espresso to
-# 3.7.0 / androidx.test:core to 1.7.0 were merged while CI was already red;
-# lifecycle 2.11.0 alone demands AGP 9.1.0 + compileSdk 37 (AAR metadata),
-# which the 9.x line requires Gradle 9.5+ for. These are the pre-bump values.
-agp = "8.5.2"
-kotlin = "2.0.20"
-ktlint-gradle = "12.1.1"
-coreKtx = "1.13.1"
-lifecycleRuntimeKtx = "2.8.4"
-activityCompose = "1.9.1"
-composeBom = "2024.09.00"
+# Coordinated Android toolchain (T71, 2026-10-09) — move these together, never
+# piecemeal: Gradle wrapper 9.7.0 + AGP 9.3.1 + Kotlin 2.4.10 + ktlint 14.2.0,
+# with compileSdk 37 (targetSdk deliberately stays 35). AGP 9 embeds Kotlin
+# support, so `org.jetbrains.kotlin.android` is NOT applied (see root +
+# android/app build.gradle.kts). Dependabot groups live in .github/dependabot.yml;
+# CI runs the Android jobs for every gradle/** change and fails on any
+# incompatible piece. History: piecemeal dependabot bumps (AGP 9.3.1 alone)
+# broke every Android CI run (runs 37830995010 and earlier); T63 reverted them,
+# T71 moved the whole set forward.
+agp = "9.3.1"
+kotlin = "2.4.10"
+ktlint-gradle = "14.2.0"
+coreKtx = "1.19.0"
+lifecycleRuntimeKtx = "2.11.0"
+activityCompose = "1.13.0"
+composeBom = "2026.06.01"
 junit = "4.13.2"
-androidxJunit = "1.2.1"
-androidxTestCore = "1.6.1"
-espressoCore = "3.6.1"
-kotlinxCoroutines = "1.8.1"
-kotlinxSerializationJson = "1.7.1"
+androidxJunit = "1.3.0"
+androidxTestCore = "1.7.0"
+espressoCore = "3.7.0"
+kotlinxCoroutines = "1.11.0"
+kotlinxSerializationJson = "1.11.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }

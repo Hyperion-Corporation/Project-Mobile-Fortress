@@ -19,7 +19,8 @@ class GameView
     constructor(
         context: Context,
         attrs: AttributeSet? = null,
-    ) : SurfaceView(context, attrs), SurfaceHolder.Callback {
+    ) : SurfaceView(context, attrs),
+        SurfaceHolder.Callback {
         private val engine = GameEngine(GameState.loadFrom(context))
         private var gameLoop: GameLoop? = null
 

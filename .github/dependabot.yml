@@ -18,6 +18,27 @@ updates:
     commit-message:
       prefix: "chore(deps)"
       include: "scope"
+    # Coupling constraint (see docs/TESTING.md "Legacy-tree findings"): the
+    # Android toolchain moves as ONE set — Gradle wrapper + AGP + Kotlin +
+    # ktlint plugin — and the androidx library ceiling follows the toolchain
+    # (compileSdk 37 today; targetSdk deliberately lags). Groups keep coupled
+    # bumps in single PRs; CI's Android jobs run for every gradle/** change
+    # (wrapper validation + ktlint/lint/unit/assemble) and fail on any piece
+    # that does not fit the set. A grouped PR that fails must be amended, not
+    # split and force-merged.
+    groups:
+      android-toolchain:
+        patterns:
+          - "gradle" # Gradle wrapper (distributionUrl bumps)
+          - "com.android.application"
+          - "org.jetbrains.kotlin*"
+          - "org.jlleitschuh.gradle.ktlint"
+        exclude-patterns:
+          - "org.jetbrains.kotlinx*" # kotlinx libraries ride with androidx
+      android-libraries:
+        patterns:
+          - "androidx.*"
+          - "org.jetbrains.kotlinx*"
 
   # Node/npm — root package.json's npm workspaces cover docs/website
   # (the documentation site + interactive design hub) and any future JS/TS

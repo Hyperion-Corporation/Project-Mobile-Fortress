@@ -12,7 +12,9 @@ import com.acfharbinger.mobilefortress.engine.entities.Entity
  * ints for viewport bounds, so it's unit-testable on the JVM without
  * Robolectric or an emulator. See `app/src/test/.../GameEngineTest.kt`.
  */
-class GameEngine(initialState: GameState) {
+class GameEngine(
+    initialState: GameState,
+) {
     private var boundsWidth: Int = 0
     private var boundsHeight: Int = 0
 
