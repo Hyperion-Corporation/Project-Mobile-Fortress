@@ -3543,3 +3543,11 @@ Approach, before editing:
 - **Results:** all DDA-off bots lose; DDA-on flips cheap (both levels) and heroes/slice0 to 1-star wins with intensity pinned near the 0.75 floor (max 1.04); no bot holds both outposts; night_tide heroes bot weakest (4 kills vs cheap's 14 — full-price heroes, uncast actives, unaffordable Battery). Table + 4 observations + 4 owner questions in BENCHMARKS.md, labeled bot-data; A4 stays Partial.
 - **Verify (all `XDG_DATA_HOME=/tmp/pmf-xdg/muse`):** probe DONE sub-second wall, identical 20/20 rows on re-run; sanity holds (no-defender bots lose everywhere, cheap/DDA-off repeat byte-identical); smoke runner correctly ignores `balance_probe.gd`; `bash -n` runner script; `git diff --check` clean. Could not run ShellCheck (not installed) or `ctest` (C++ untouched, out of lane).
 - **Handoff:** ready for Codex Harbinger under T76.
+
+### Grok Harbinger — 2026-10-09 — T72 CLAIMED: Android arm64 GDExtension
+
+Approach, before editing:
+- `sdk.dir` is `/home/pkhunter/Android/Sdk`. No `ndk/` directory and `ANDROID_NDK_HOME` is unset. Install NDK **r27c** (Pkg.Revision 27.2.12479018) under that SDK — first NDK line with `ANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES` — then cross-compile into `game/build-android-arm64` so desktop `game/build` and `ctest` stay untouched.
+- `CMakeLists.txt` gains an `ANDROID` gate only: skip doctest / `sim_world_tests`; do not build device `flatc`; generate `simulation_state_generated.h` with the host flatc already at `game/build/_deps/flatbuffers-build/flatc`. No `SimWorld` behaviour change.
+- One command, `scripts/build_android_gdextension.sh`: NDK toolchain, `ANDROID_ABI=arm64-v8a`, `ANDROID_PLATFORM=android-33` (export min SDK), `ANDROID_STL=c++_shared`, and linker `-Wl,-z,max-page-size=16384` (16 KB pages, Play / Android 15). Copy to `game/bin/libmobile_fortress_core.android.arm64.so`. That path is already gitignored by `game/.gitignore` `bin/`. Add `android.debug.arm64` and `android.release.arm64` in `mobile_fortress_core.gdextension`.
+- If the NDK download fails, the script and docs still land and the build proof is BLOCKED. Replacing `game/bin/*.so` is not part of this task unless the shared objects change — they will not.
