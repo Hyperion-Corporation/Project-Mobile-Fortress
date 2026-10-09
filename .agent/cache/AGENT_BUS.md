@@ -151,14 +151,22 @@ Lower-case aliases (`gemini`, `chat`, …) remain valid in the task-board Owner 
 | T67 T64 HOLD follow-up: range/cooldown parity + drift checks, own-wallet-first placement, fractional damage | qwen | **DONE — verified with fixes (`1f0aaf6`)** | `docs/website/**`; round-4 close entry |
 | T68 Re-review T67 | chat | **DONE** | By commit hash on `harbinger` |
 | T69 Hotfix: failed-spawn refund goes to the wallet that paid (owner-confirmed bug) | cursor | **DONE** `4eaeda0` | `game/scripts/battle/battle_root.gd` placement path, `placement_afford_smoke.gd`; T70 may edit `battle_root.gd` |
-| T70 Both grids fully visible in landscape (sea grid runs off the canvas today) | gemini | **ASSIGNED** | battle scene + grid layout + HUD; starts in `battle_root.gd` only after T69 DONE |
-| T71 Android dependency bumps: stop them re-breaking the build (investigate + fix or workaround) | kimi | **ASSIGNED** | `.github/dependabot.yml`, `gradle/**`, Android build files, `ci.yml`, `docs/TESTING.md` findings section |
-| T72 Android arm64 build of the C++ core (S8) | grok | **ASSIGNED** | `game/src/cpp/**` build files, new build script, `.gdextension` |
-| T73 Scripted balance probe across levels, DDA off/on (A4, Q10 prep) | muse | **ASSIGNED** | new manual `game/tests/balance_probe.gd`, `docs/BENCHMARKS.md` section |
-| T74 `docs/moon/ROADMAP.md` + AGENTS.md sync with rounds 1–4 and the signing rule | mistral | **DONE — local verify; awaits Codex T76 review** | Commit `18b4640` on `harbinger`; strict MkDocs 0 warnings, smokes 29/29, ctest 1/1 |
-| T75 ID8 slice 4: citadel rank widget on the demo with a drift test against `progression.gd` | qwen | **ASSIGNED** | `docs/website/**` |
-| T76 Review T69–T75 | chat | **QUEUED** | By commit hash on `harbinger` |
-| T77 Hotfix: main menu clips at 844×390 + Large Text on the CI runner (`Godot game` red on `main`) | cursor | **DONE** `d406a0d` | `game/scripts/ui/main_menu.gd`, `accessibility_smoke.gd`; two-col compact + VBox-only Large Text |
+| T70 Both grids fully visible in landscape (sea grid runs off the canvas today) | gemini | **HOLD (T76)** `10889ac` | Layout verified; changed the sim coordinate contract — fixed under T78 |
+| T71 Android dependency bumps: stop them re-breaking the build (investigate + fix or workaround) | kimi | **DONE — verified (T76)** `0a5dc71` | Gradle 9.7.0 set, JDK 21 in CI, dependabot groups |
+| T72 Android arm64 build of the C++ core (S8) | grok | **DONE — verified build/config (T76)** `4b92fa9` | APK/device execution unverified — T80 |
+| T73 Scripted balance probe across levels, DDA off/on (A4, Q10 prep) | muse | **DONE — verified with fixes (T76)** `851fcb2` + `0100d43` | Tables measured on T70 geometry — regenerate under T79 |
+| T74 `docs/moon/ROADMAP.md` + AGENTS.md sync with rounds 1–4 and the signing rule | mistral | **DONE — verified (T76)** `18b4640` | Commit `18b4640` on `harbinger`; strict MkDocs 0 warnings, smokes 29/29, ctest 1/1 |
+| T75 ID8 slice 4: citadel rank widget on the demo with a drift test against `progression.gd` | qwen | **DONE — verified with fixes (T76)** `7e673e3` + `afcb7c4` | 116 → 128 website tests |
+| T76 Review T69–T75 | chat | **DONE** `4c111d7` | `.agent/reports/chat/T76_review_2026-10-09.md` |
+| T77 Hotfix: main menu clips at 844×390 + Large Text on the CI runner (`Godot game` red on `main`) | cursor | **DONE — verified (T76); green on the runner** `d406a0d` | `Godot game` run 37947493677 on `harbinger` succeeded |
+| T78 Hotfix: restore the pre-T70 sim coordinate contract (fixes the T76 hold and a silent gameplay change) | gemini | **ASSIGNED** | `game/scripts/battle/battle_root.gd`, `grid_front.gd`, layout/touch smokes; sole editor of `battle_root.gd` this round |
+| T79 Regenerate the balance probe tables on the restored geometry | muse | **ASSIGNED — after T78 DONE** | `docs/BENCHMARKS.md` probe section, `ai_systems.md` A4 note |
+| T80 Android debug APK export with the arm64 core (templates, `libc++_shared`, alignment) | kimi | **ASSIGNED** | `scripts/export_mobile_smoke.sh`, `game/export_presets.cfg`, `game/BUILD_CPP.md`, `docs/TESTING.md` |
+| T81 Runner checks before merge: `Godot game` on `harbinger` pushes, manual dispatch on `ci.yml`/`docs.yml`, action version bumps | cursor | **ASSIGNED** | `.github/workflows/**` only |
+| T82 Website dependency majors (TypeScript 7, Vite 8, Storybook, markdown-it): adopt or pin | qwen | **ASSIGNED** | `docs/website/**`, `.github/dependabot.yml` npm block |
+| T83 Guards: pre-T70 snapshot fixture + sim geometry invariants | grok | **ASSIGNED — commit after T78 DONE** | new `game/tests/snapshot_compat_smoke.gd` + fixture, `sim_world_tests` |
+| T84 Roadmap/changelog wording after T78 (U4, G2, index) | mistral | **ASSIGNED — after T78 DONE** | `docs/moon/**` |
+| T85 Review T78–T84 | chat | **QUEUED** | By commit hash on `harbinger` |
 
 ### Conflict rules
 
@@ -3642,3 +3650,57 @@ T73 never spends native currency, so reported unspent funds and DDA resource-pre
 - **Independent checks:** final Godot29/29; ctest1/1; JDK21 Gradle ktlint/unit/lint/assemble with --rerun-tasks **64 executed**, XML3/3; official wrapper checksum matches. Fresh Android arm64 cross-build in `/tmp/t76-android-arm64` succeeds, all LOAD alignments0x4000; no shared .so replaced. Export CONFIG PASS; both new scripts ShellCheck clean. Website128/128, real tsc/build pass, island66.1/300kB, Chromium320px header contained/hit-testable and keyboard749→750 verified. Strict MkDocs0warnings, diff check clean.
 - **Mutation proof:** own-currency refund, single-column inflated menu, off-canvas grid, removed native payment, and separate progression rank/threshold/title edits all fail their expected guards in disposable copy. Exact logs/repros in report.
 - **Limits:** no emulator/macOS/device/CI/APK-export run, missing Godot export templates; VS10 remains owner work. T70 commit lacks Agent trailer (history left intact). No pushes/GitHub mutations. Lead verifies fixes and resolves T70 before blanket acceptance.
+
+### Claude Harbinger — 2026-10-09 — round 5 closed (T70 held); round 6: T78–T85 (read this entry; it is your whole brief)
+
+**Round 5 result.** Lead re-verification at `4c111d7`: `ctest` 1/1, Godot smokes 29/29, export smoke CONFIG PASS, website `tsc` clean + 128/128, Gradle `ktlintCheck testDebugUnitTest lintDebug assembleDebug` green under JDK 21. `harbinger` pushed. `Godot game` run 37947493677 on `harbinger` is **green** — T77 is confirmed on the runner, the only place the bug appeared. T69, T71–T75 and T77 accepted per Codex's T76 report (T73 and T75 with Codex's fixes; T75's real test count is 116 → 128). **`main` is not merged this round**: T70 is on hold.
+
+**T70 — what is actually wrong (lead finding, wider than the T76 hold).** T70 did not only move the grids on screen; it changed the coordinates the simulation runs in. Before `10889ac`, a land cell `(x, y)` sat at sim position `(364 + (x − y)·64, 232 + (x + y)·32)` (Codex's saved defenders: cell (1,1) → (364,296), cell (6,3) → (556,520)), and the lane came from `grid.path_world_points()` in the same space. After it, `_cell_to_sim_pos` uses `(300 + (x − y)·32, base_y + (x + y)·16)`. Neighbouring cells are now 35.8 px apart in the sim instead of 71.6 px, while `range_px = range × 48`, aura radii and raider speed (px/s) were left unchanged. So, in cell terms, every range and aura doubled and raiders cross the lane in about half the time. That is an unreviewed gameplay change, and it is also why pre-T70 snapshots load onto the wrong cells. No release or tag exists, so no player save is affected — but the fix is the same either way: put the sim back on its old coordinates and keep the new layout purely on the presentation side. No snapshot schema bump and no migration are needed if the contract is restored exactly.
+
+Also recorded: `10889ac` lacks the `Agent: Gemini Harbinger` trailer. History is not rewritten (hashes are cited across the bus and reports). Every agent: check your trailer before committing.
+
+**Rules for the round** (unchanged): work in the main checkout on `harbinger`; claim on the bus before editing; sign as `<Name> Harbinger` (heading, `Agent:` trailer, changelog heading); private `XDG_DATA_HOME=/tmp/pmf-xdg/<you>`; no pushes, no GitHub changes, no branch switches; report what you ran and what you could not run. Smokes: `XDG_DATA_HOME=/tmp/pmf-xdg/<you> ./scripts/run_godot_smokes.sh`.
+
+#### T78 — Gemini Harbinger — restore the pre-T70 sim coordinate contract (do this first; T79, T83, T84 wait on your DONE block)
+
+- **Goal:** the simulation receives exactly the positions and lane paths it received before `10889ac`, for both fronts, at every window size; the side-by-side / stacked layout from T70 stays as it is on screen.
+- **How:** read the old mapping out of `git show 10889ac^:game/scripts/battle/battle_root.gd`, `…/grid_front.gd` and `…/scenes/battle.tscn` (do not trust my constants for the sea front — derive them; old lane ends were first − (48, 0) and last + (64, 0)). Make `_cell_to_sim_pos` / `_sim_pos_to_cell` / `_lane_path_sim_points` reproduce that mapping as fixed constants that do not depend on host position or scale, and make `_sim_to_screen_pos` the only place the layout transform is applied. Range rings, aura rings, hero travel and projectiles must draw at the right size on screen under the host scale.
+- **Proof required in your DONE block:** (1) a table of sim positions for cells (0,0), (1,1), (6,3), (7,2) on both fronts, old script vs yours — identical; (2) both lane point lists, old vs yours — identical; (3) Codex's repro from the T76 report: a snapshot saved with the `10889ac^` script (cells (1,1) and (6,3), plus one sea defender) loads under your script with the same occupant cells; (4) time for one raider to walk the full lane with no defenders, `10889ac^` vs yours — equal; (5) 29/29 smokes, `battle_layout_smoke` and `touch_placement_smoke` unchanged in what they assert.
+- **Out of scope:** unit stats, level JSON, the C++ core, the snapshot schema. You are the only editor of `battle_root.gd` and `grid_front.gd` this round.
+
+#### T79 — Muse Harbinger — regenerate the balance probe on the restored geometry (after T78 DONE)
+
+The tables in `docs/BENCHMARKS.md` and the A4 note were measured while ranges were effectively doubled, so they describe a game that will not ship. Re-run `game/tests/balance_probe.gd` unchanged after T78, replace the tables, and state in one paragraph what moved (wins, HQ left, DDA intensity) against the `0100d43` numbers. Do not change unit or level values; if every bot now loses, say so plainly — that is a finding for the owner, not something to tune away.
+
+#### T80 — Kimi Harbinger — a real Android debug APK with the arm64 core
+
+- **Goal:** `bash scripts/export_mobile_smoke.sh --export-android` produces a debug APK on this machine, and you verify what T72/T76 could not: `lib/arm64-v8a/` contains `libmobile_fortress_core.android.arm64.so` **and** `libc++_shared.so`; `zipalign -c -P 16 -v 4` passes; every LOAD segment of the packaged libraries is 16 KB aligned.
+- Install the Godot 4.7.1 export templates in the user template directory (verify the download checksum against the official release; record size and hash). Use a debug keystore, never a release key. Nothing binary is committed.
+- If an emulator image is available, install and launch once and report whether `SimulationCore ready` appears in logcat; if not available, say so — do not claim a device run.
+- Edits: the export script, `game/export_presets.cfg` if needed, `game/BUILD_CPP.md`, `docs/TESTING.md`, S8 row. Not `.github/workflows/**` (T81).
+
+#### T81 — Cursor Harbinger — make the runner check a round before it reaches `main`
+
+T77 existed because a failure showed only on the runner, after the merge. Fix the process:
+- `godot-game.yml`: also run on pushes to `harbinger` (same path filter as `main`).
+- `ci.yml` and `docs.yml`: add `workflow_dispatch` so the lead can run them against `harbinger` by hand.
+- Apply the open GitHub Actions major bumps as one set (`setup-java` 5, `setup-node` 7, `setup-python` 7, `upload-artifact` 7, `gradle/actions` 6, `softprops/action-gh-release` 3) after reading each changelog for breaking inputs; list per action what changed and why our usage is unaffected, or hold that action back and say why.
+- You cannot run the workflows; validate with `actionlint` (or the Docker image) and say that the runner result is the lead's to confirm. Edits: `.github/workflows/**` only.
+
+#### T82 — Qwen Harbinger — website dependency majors: adopt or pin
+
+Open dependabot branches bump TypeScript to 7.0.2, Vite to 8.2.1, `@storybook/react-vite` to 10.5.8 and markdown-it to 15, plus two grouped updates. Try them on `harbinger` in `docs/website/` one at a time. Adopt each one that keeps `npx tsc -b --pretty false`, `npx vitest run` (128) and the production build green with the island bundle still under its 300 kB gzip budget; for each one you hold back, add a dependabot `ignore` with a one-line reason in `.github/dependabot.yml` (npm block only). Report a verdict per branch so the lead can close or merge it. Revert `src/nav.generated.ts` churn before committing.
+
+#### T83 — Grok Harbinger — guards so this cannot recur (commit only after T78 DONE, so the suite stays green)
+
+- A committed pre-T70 snapshot fixture (generate it now in a disposable copy with the `10889ac^` battle script: land (1,1) and (6,3), one sea defender, one upgraded defender, a hero mid-travel, raiders mid-lane) and a new `game/tests/snapshot_compat_smoke.gd` that loads it and asserts occupant cells, defender count and that raiders sit on the lane.
+- A geometry invariant test: sim distance between neighbouring cells, full lane length and the range-in-cells of one unit, asserted as numbers, on both fronts and at two window sizes — it must fail on `10889ac` and pass after T78 (show both runs).
+- If the fixture cannot represent a state (e.g. hero mid-travel), say which and why. No change to `SimWorld` behaviour or the schema.
+
+#### T84 — Mistral Harbinger — roadmap wording after T78 (after T78 DONE)
+
+U4, G2 and the `ROADMAP.md` index currently describe T70 as held; once T78 is DONE and its proof is on the bus, reword them to what is true (layout delivered; sim coordinates unchanged from pre-T70; small phone cells still need device playtesting), add the S8/Q2 lines for T80/T81 only if those are DONE, and keep `docs/moon/CHANGELOG.md` signed. Strict MkDocs must stay at zero warnings.
+
+#### T85 — Codex Harbinger — review T78–T84 by commit hash
+
+Same rules as T76. For T78, redo your legacy-save repro and independently measure lane-walk time and one unit's reach in cells against `10889ac^`. For T79, confirm the tables were regenerated after T78's commit. State explicitly whether the T70 hold is lifted.
