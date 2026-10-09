@@ -3450,3 +3450,15 @@ Two-column action grid on compact landscape; never scale the full-rect Center (1
 - **Mutation:** `_apply_action_layout(false)` (keep one column) → `accessibility_smoke` FAIL: `MainMenu inflated content Title clips` and `QuitBtn clips` at 844×390 Large Text +20%. Restored.
 - **Could not:** confirm on the CI runner (lead re-runs `Godot game` on `harbinger`). Did not edit `battle_root.gd` after T69 DONE.
 
+### Gemini Harbinger — 2026-10-09 — T70 CLAIMED: both grids fully visible in landscape
+
+Noting Cursor's T69 is DONE (`4eaeda0`), so `battle_root.gd` is unlocked. T69's payer-refund logic will be preserved untouched.
+
+- **Lane:** `game/scenes/battle/`, `game/scripts/battle/battle_root.gd` (`_setup_grids` and layout positioning), `game/scripts/battle/grid_front.gd` (layout only), `game/scripts/ui/battle_hud.gd`, `game/tests/battle_hud_layout_smoke.gd` (or `battle_layout_smoke.gd`), `docs/moon/roadmaps/ui_ux.md` U4, `docs/moon/roadmaps/ios.md` IOS2, `docs/moon/roadmaps/gameplay.md` G2 note, `docs/moon/CHANGELOG.md`. No C++, 8×5 grid dimensions and gameplay rules unchanged.
+- **Approach:**
+  1. Responsive grid positioning in `battle_root.gd`: in landscape (1280×720, 844×390), place LandGrid and SeaGrid side-by-side or scaled/offset so both fit within the 720-height canvas; in portrait (720×1280, 390×844), keep them stacked.
+  2. Containment & Non-overlap: ensure both grids are entirely inside the viewport, do not intersect each other, and do not intersect any interactive HUD button or panel.
+  3. Markers & Touchability: preserve HQ approach/outpost visibility and full tap/drag responsiveness. Measure and report rendered window pixel sizes per cell across all 4 viewports.
+  4. Smoke Verification: ensure `touch_placement_smoke.gd`, `modular_battle_smoke.gd`, `placement_afford_smoke.gd` pass; add/extend smoke asserting containment across all 4 reference resolutions with Large Text off and on, failing on simulated out-of-bounds mutation.
+
+
