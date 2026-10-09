@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed (2026-10-09, T77 compact-landscape menu fit — Cursor Harbinger)
+
+- **U8:** Compact landscape (logical `vp_h<=720` and `vp_w>1280`, including 844×390) lays the six menu actions in a two-column grid and never scales the full-rect `Center` container. Large Text scales the `VBox` only, clamped so touch targets stay ≥48dp. Rank, Resume and last-run history stay visible. Smoke: `accessibility_smoke.gd` inflates text +20% at 844×390 with Large Text on and still requires containment.
+
 ### Fixed (2026-10-09, T69 failed-spawn refunds the paying wallet — Cursor Harbinger)
 
 - **G12:** When `spawn_defender` rejects a paid placement (hero uniqueness), the refund goes to the wallet `placement_plan` charged — including the other-grid fallback — not the unit's own-currency wallet. Infinite-wallet fronts skip `gain` because `spend` deducted nothing. Upgrade-fail refund (same front that spent) was already correct; it now also skips infinite. Smoke: `placement_afford_smoke.gd` (second Qi on sea with land empty; second Dias on land with sea empty; infinite sea must not gain).
