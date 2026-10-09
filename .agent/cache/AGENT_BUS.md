@@ -3551,3 +3551,19 @@ Approach, before editing:
 - `CMakeLists.txt` gains an `ANDROID` gate only: skip doctest / `sim_world_tests`; do not build device `flatc`; generate `simulation_state_generated.h` with the host flatc already at `game/build/_deps/flatbuffers-build/flatc`. No `SimWorld` behaviour change.
 - One command, `scripts/build_android_gdextension.sh`: NDK toolchain, `ANDROID_ABI=arm64-v8a`, `ANDROID_PLATFORM=android-33` (export min SDK), `ANDROID_STL=c++_shared`, and linker `-Wl,-z,max-page-size=16384` (16 KB pages, Play / Android 15). Copy to `game/bin/libmobile_fortress_core.android.arm64.so`. That path is already gitignored by `game/.gitignore` `bin/`. Add `android.debug.arm64` and `android.release.arm64` in `mobile_fortress_core.gdextension`.
 - If the NDK download fails, the script and docs still land and the build proof is BLOCKED. Replacing `game/bin/*.so` is not part of this task unless the shared objects change — they will not.
+
+### Grok Harbinger — 2026-10-09 — T72 DONE: Android arm64 GDExtension
+
+- **Claim:** `a5a19e9`. **Feat:** `4b92fa9` (`feat(core): cross-compile the GDExtension for Android arm64`).
+- **Command:** `bash scripts/build_android_gdextension.sh`. NDK was absent under `sdk.dir` (`/home/pkhunter/Android/Sdk`); installed **r27c** there. Zip size 663987688, SHA1 `090e8083a715fdb1a3e402d0763c388abb03fb4e` matches the r27c GitHub release. `Pkg.Revision` **27.2.12479018**. Path: `/home/pkhunter/Android/Sdk/ndk/27.2.12479018`.
+- **16 KB decision:** `ANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON` (NDK r27 adds `-Wl,-z,max-page-size=16384` for `arm64-v8a`) and the same flag on `mobile_fortress_core`. `common-page-size` stays the NDK default (4 KB) so the library still loads on 4 KB-page devices. Documented in `game/BUILD_CPP.md`.
+- **Proof** (`game/bin/libmobile_fortress_core.android.arm64.so`):
+  - `file`: `ELF 64-bit LSB shared object, ARM aarch64, version 1 (SYSV), dynamically linked, for Android 33, built by NDK r27c (12479018)`
+  - `readelf -lW`: every `LOAD` `Align` is `0x4000` (16384).
+  - `.note.android.ident`: `Android` / `r27c` / `12479018`.
+  - `NEEDED`: `libm.so`, `libc++_shared.so`, `libdl.so`, `libc.so`.
+- **Gitignore:** `git check-ignore` hits `game/.gitignore` `bin/` for the `.so` and `build-android-arm64/` for the cross tree. Neither is committed. Desktop `game/bin/libmobile_fortress_core.so` and `libmobile_fortress_core.linux.x86_64.so` were not replaced (mtime still 2026-10-08 22:25). No shared-object rebuild note, because those files were not touched.
+- **Smoke:** `ANDROID_HOME=/home/pkhunter/Android/Sdk XDG_DATA_HOME=/tmp/pmf-xdg/grok bash scripts/export_mobile_smoke.sh` — `PASS gdextension declares android.arm64 library path`, `PASS android.arm64 GDExtension binary present`, `RESULT: CONFIG PASS`. Pre-existing `WARN` for missing export templates and for iOS-on-Linux remain. `--export-android` was not run (templates not installed).
+- **Desktop:** reconfigured `game/build` (host `flatc` still built), `ctest --test-dir game/build` **1/1** `sim_world_tests`. `XDG_DATA_HOME=/tmp/pmf-xdg/grok ./scripts/run_godot_smokes.sh` **29 passed, 0 failed, 0 skipped**. Import log: `SimulationCore ready`.
+- **Docs:** S8 stays Partial (signed store pipelines and the iOS dylib still open). IOS3 notes the Android `.so` and that no ios.arm64 binary is declared. No `SimWorld` behaviour change.
+- **Handoff:** ready for Codex Harbinger under T76.
