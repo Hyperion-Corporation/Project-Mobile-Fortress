@@ -150,7 +150,7 @@ Lower-case aliases (`gemini`, `chat`, …) remain valid in the task-board Owner 
 | T66 Review T59–T65 | chat | **DONE (T64 HOLD)** | By commit hash on `harbinger` as DONE blocks land |
 | T67 T64 HOLD follow-up: range/cooldown parity + drift checks, own-wallet-first placement, fractional damage | qwen | **DONE — verified with fixes (`1f0aaf6`)** | `docs/website/**`; round-4 close entry |
 | T68 Re-review T67 | chat | **DONE** | By commit hash on `harbinger` |
-| T69 Hotfix: failed-spawn refund goes to the wallet that paid (owner-confirmed bug) | cursor | **ASSIGNED** | `game/scripts/battle/battle_root.gd` placement path, `placement_afford_smoke.gd`; do this first — T70 waits on it |
+| T69 Hotfix: failed-spawn refund goes to the wallet that paid (owner-confirmed bug) | cursor | **DONE** `4eaeda0` | `game/scripts/battle/battle_root.gd` placement path, `placement_afford_smoke.gd`; T70 may edit `battle_root.gd` |
 | T70 Both grids fully visible in landscape (sea grid runs off the canvas today) | gemini | **ASSIGNED** | battle scene + grid layout + HUD; starts in `battle_root.gd` only after T69 DONE |
 | T71 Android dependency bumps: stop them re-breaking the build (investigate + fix or workaround) | kimi | **ASSIGNED** | `.github/dependabot.yml`, `gradle/**`, Android build files, `ci.yml`, `docs/TESTING.md` findings section |
 | T72 Android arm64 build of the C++ core (S8) | grok | **ASSIGNED** | `game/src/cpp/**` build files, new build script, `.gdextension` |
@@ -158,7 +158,7 @@ Lower-case aliases (`gemini`, `chat`, …) remain valid in the task-board Owner 
 | T74 `docs/moon/ROADMAP.md` + AGENTS.md sync with rounds 1–4 and the signing rule | mistral | **ASSIGNED** | Docs only |
 | T75 ID8 slice 4: citadel rank widget on the demo with a drift test against `progression.gd` | qwen | **ASSIGNED** | `docs/website/**` |
 | T76 Review T69–T75 | chat | **QUEUED** | By commit hash on `harbinger` |
-| T77 Hotfix: main menu clips at 844×390 + Large Text on the CI runner (`Godot game` red on `main`) | cursor | **ASSIGNED** | `game/scripts/ui/main_menu.gd`, `accessibility_smoke.gd`; right after T69 |
+| T77 Hotfix: main menu clips at 844×390 + Large Text on the CI runner (`Godot game` red on `main`) | cursor | **CLAIMED** | `game/scripts/ui/main_menu.gd`, `accessibility_smoke.gd`; after T69 DONE |
 
 ### Conflict rules
 
@@ -3427,3 +3427,16 @@ Only Large Text on, only 844×390. QuitBtn ends at 749.85 against a 720-high can
 ### Cursor Harbinger — 2026-10-09 — T69 CLAIMED: refund the wallet that paid
 
 Approach: failed `spawn_defender` currently `gain`s `plan.currency` (own wallet). Change it to `gain` the `pay_front` that `placement_plan` charged. Skip `gain` when that front is on infinite-wallet (spend deducted nothing). Line 509 upgrade refund already uses the same front that spent — not the T61 bug; will still skip infinite so cheats do not fabricate currency. Smoke: place Qi, then a second Qi on sea with land empty (fallback sea pays, spawn fails unique); same for Dias on land with sea empty; both wallets unchanged. T77 next after DONE so T70 can take `battle_root.gd`.
+
+### Cursor Harbinger — 2026-10-09 — T69 DONE: refund the wallet that paid
+
+- **Claim:** `189f676`. **Feat:** `4eaeda0` (`fix(game): refund failed unique spawns to the wallet that paid`).
+- **Fix:** failed `spawn_defender` refunds `pay_front` (the wallet `placement_plan` charged), not own-currency. `_refund_paid_wallet` skips `gain` when that front is infinite (spend deducted nothing).
+- **Line 509:** upgrade-fail `sim.gain(front, cost)` already used the same front that spent — not the T61 bug. It now goes through `_refund_paid_wallet` so infinite upgrades cannot fabricate currency.
+- **Smoke:** `XDG_DATA_HOME=/tmp/pmf-xdg/cursor-t69 ./scripts/run_godot_smokes.sh placement_afford modular_battle touch_placement` — all PASS.
+- **Mutation:** disposable own-currency refund (`gain(plan.currency)` instead of `pay_front`) → `placement_afford_smoke` FAIL: `failed Qi sea-fallback refunded the wrong wallet (land 0→28 sea 40→12)` and Dias `land 40→14 sea 0→26`. Restored immediately.
+- **Could not:** full Godot suite in this block (T77 next). I will not edit `battle_root.gd` again this round — T70 may take it.
+
+### Cursor Harbinger — 2026-10-09 — T77 CLAIMED: compact-landscape menu fit
+
+Two-column action grid on compact landscape; never scale the full-rect Center (1.15× from viewport center is the clip). Scale VBox only, clamped so touch targets stay ≥48dp. Smoke: +20% text height at 844×390 Large Text on.
