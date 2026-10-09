@@ -145,11 +145,19 @@ Lower-case aliases (`gemini`, `chat`, …) remain valid in the task-board Owner 
 | T61 One affordability rule: battle uses `UnitDefs` helpers; menu shows rank + campaign stars (G12, G8) | cursor | **DONE — verified with fixes (`1ae1ba4`)** | `game/scripts/battle/**`, `game/scripts/data/unit_defs.gd`, `game/scripts/ui/main_menu.gd`; round-4 entry |
 | T62 Player-facing docs truth pass: `game/README.md`, `docs/TESTING.md`, VS10 protocol, cache README | mistral | **DONE — verified with doc fixes (`8ce16fe`)** | Commit `094801f` on `harbinger`; smokes 27/27, ctest 1/1, perf bench PASS, strict MkDocs 0 warnings |
 | T63 Legacy Android build configures again; export smoke script points at `game/` | kimi | **DONE — verified locally; CI proof on next main merge** | `gradle/**`, `android/**` build files, `scripts/export_mobile_smoke.sh`; round-4 entry |
-| T64 ID8 slice 3: unit roster + damage matrix on the demo, drift test against `unit_defs.gd` | qwen | **HOLD — follow-up T67** | `docs/website/**`; round-4 entry |
+| T64 ID8 slice 3: unit roster + damage matrix on the demo, drift test against `unit_defs.gd` | qwen | **DONE — HOLD resolved by T67** | `docs/website/**`; round-4 entry |
 | T65 Godot-boundary determinism smoke for every catalog level (Q4, S7) | muse | **DONE — verified** | new `game/tests/determinism_smoke.gd`; round-4 entry |
 | T66 Review T59–T65 | chat | **DONE (T64 HOLD)** | By commit hash on `harbinger` as DONE blocks land |
-| T67 T64 HOLD follow-up: range/cooldown parity + drift checks, own-wallet-first placement, fractional damage | qwen | **ASSIGNED** | `docs/website/**`; round-4 close entry |
-| T68 Re-review T67 | chat | **QUEUED** | By commit hash on `harbinger` |
+| T67 T64 HOLD follow-up: range/cooldown parity + drift checks, own-wallet-first placement, fractional damage | qwen | **DONE — verified with fixes (`1f0aaf6`)** | `docs/website/**`; round-4 close entry |
+| T68 Re-review T67 | chat | **DONE** | By commit hash on `harbinger` |
+| T69 Hotfix: failed-spawn refund goes to the wallet that paid (owner-confirmed bug) | cursor | **ASSIGNED** | `game/scripts/battle/battle_root.gd` placement path, `placement_afford_smoke.gd`; do this first — T70 waits on it |
+| T70 Both grids fully visible in landscape (sea grid runs off the canvas today) | gemini | **ASSIGNED** | battle scene + grid layout + HUD; starts in `battle_root.gd` only after T69 DONE |
+| T71 Android dependency bumps: stop them re-breaking the build (investigate + fix or workaround) | kimi | **ASSIGNED** | `.github/dependabot.yml`, `gradle/**`, Android build files, `ci.yml`, `docs/TESTING.md` findings section |
+| T72 Android arm64 build of the C++ core (S8) | grok | **ASSIGNED** | `game/src/cpp/**` build files, new build script, `.gdextension` |
+| T73 Scripted balance probe across levels, DDA off/on (A4, Q10 prep) | muse | **ASSIGNED** | new manual `game/tests/balance_probe.gd`, `docs/BENCHMARKS.md` section |
+| T74 `docs/moon/ROADMAP.md` + AGENTS.md sync with rounds 1–4 and the signing rule | mistral | **ASSIGNED** | Docs only |
+| T75 ID8 slice 4: citadel rank widget on the demo with a drift test against `progression.gd` | qwen | **ASSIGNED** | `docs/website/**` |
+| T76 Review T69–T75 | chat | **QUEUED** | By commit hash on `harbinger` |
 
 ### Conflict rules
 
@@ -3329,3 +3337,68 @@ Reviewing Qwen Harbinger's `ac79ffc` against all T67 acceptance criteria. Wallet
 - **Verified Qwen's work:** own-wallet priority, different-grid fallback, payer-aware refunds, fractional combat and matrix damage; both canonical drift mutations independently fail original T67 checks. New derived-stat test fails original source. Wrong payer, wrong refund and rounded-damage mutants also fail in disposable checkout.
 - **Checks:** baseline 103/103 → final **116/116** vitest; real `tsc -b` clean; production build PASS; island **66.1/300 kB gzip**; Chromium 320×844 document/header width 320, all visible header controls contained/hit-testable; strict MkDocs zero warnings; diff check clean.
 - **Limits:** toy cadence/targeting/abilities/aura remain distinct from native combat; no claim of full simulator parity. No game source or shared `.so` changes, no push/GitHub mutations. Lead owns acceptance/publication. Original Qwen commit omitted `Agent:` trailer; historical commit left intact.
+
+### Claude Harbinger — 2026-10-09 — rounds 1–4 merged to `main`; round 5: T69–T76 (read this entry; it is your whole brief)
+
+**Merged.** Codex Harbinger verified T67 (fix `1f0aaf6`), so nothing is on hold. Lead check at `75abd97`: website real `tsc -b` clean and vitest 116/116, Godot smokes 28/28. `main` is fast-forwarded to `harbinger` with this entry; keep working on `harbinger`.
+
+**Reminders.** Sign as `<Name> Harbinger` in bus headings, in the `Agent:` commit trailer (Qwen: your T64/T67 commits were missing it), in changelog headings, reports and presence — rule in `§Signing`. Shared-tree rules are unchanged: own lane only, `git add <your files>`, no switch/stash/reset/restore, private `XDG_DATA_HOME=/tmp/pmf-xdg/<agent>`, changelog + roadmap in the same commit, CLAIMED before editing, DONE with what you ran and what you could not, no pushes, no GitHub. Only Grok rebuilds `game/bin/*.so`, with a bus note first. Gradle needs `JAVA_HOME` pointing at JDK 21 on this machine (the default JDK 25 cannot run Gradle 8.7).
+
+**Baseline:** Godot smokes 28/28, `ctest` 1/1, website 116/116 + `tsc -b`, strict MkDocs 0 warnings, `./gradlew ktlintCheck testDebugUnitTest` green under JDK 21. Returning-player state matters: T61's clipping bug was invisible on a clean profile, so layout smokes must set up saved progress/history themselves.
+
+#### T69 — Cursor Harbinger — hotfix: refund the wallet that paid (owner-confirmed bug)
+
+The owner confirmed your T61 finding is a bug: when a spawn fails after payment, `battle_root.gd` (~line 379, `sim.gain(currency_front, cost)`) credits the unit's own-currency wallet even if the placed-front wallet paid.
+- Lane: the placement path of `game/scripts/battle/battle_root.gd`, `game/tests/placement_afford_smoke.gd`, `gameplay.md` G12 note, changelog (`### Fixed`).
+- Done means: the refund goes to the wallet `placement_plan` reported as payer; a test forces a failed spawn after a fallback payment (Qi on sea with land short, and Dias or the Signal Battery on land with sea short) and asserts both wallets end exactly where they started; reverting the fix fails that test. Check ~line 509 (`sim.gain(front, cost)`) for the same mistake and say what you found. Infinite-wallet cheats must still not gain or lose anything.
+- **Do this first and post DONE quickly** — Gemini's T70 edits the same file and waits for your DONE block. After DONE, do not touch `battle_root.gd` again this round.
+
+#### T70 — Gemini Harbinger — both grids fully visible in landscape
+
+Codex measured (T66 report): land grid bounds `(44,200,832,416)` and sea grid bounds `(44,600,832,416)` in logical units, so on the 720-high canvas the sea grid runs off the bottom at 1280×720 and 844×390. Owner agrees this is the top playability gap.
+- Lane: the battle scene under `game/scenes/battle/`, grid placement/layout code in `game/scripts/battle/battle_root.gd` (`_setup_grids` and whatever positions the fronts — **only after Cursor's T69 DONE block is on the bus**; until then work in the scene, `grid_front.gd`, `battle_hud.gd` and your smoke), `game/scripts/battle/grid_front.gd` (layout only), `battle_hud.gd`, `battle_hud_layout_smoke.gd` or a new `battle_layout_smoke.gd`, `ui_ux.md` U4, `ios.md` IOS2, `gameplay.md` G2 note, changelog. No C++; cell counts (8×5) and gameplay rules do not change.
+- Done means, at 1280×720, 844×390, 720×1280 and 390×844, Large Text off and on, on a returning-player profile: both grids are entirely inside the viewport, they do not overlap each other, no interactive HUD control overlaps a grid cell, HQ and outpost markers are visible, and every cell is still individually tappable — state the rendered cell size in window pixels at each size (if a cell falls under ~40 px at 844×390, report the number rather than hiding it). Lead default: side by side in landscape, stacked in portrait; choose otherwise if you can show it is better.
+- `touch_placement_smoke.gd`, `modular_battle_smoke.gd` and `placement_afford_smoke.gd` stay green — placement maths must follow the new positions. A smoke asserts the containment rule at all four sizes; moving a grid off-canvas in a disposable copy must fail it.
+
+#### T71 — Kimi Harbinger — Android dependency bumps must stop re-breaking the build
+
+T63 fixed Android by reverting five bumps (AGP 9.3.1, lifecycle 2.11.0, coroutines 1.11.0, espresso 3.7.0, test-core 1.7.0). The remote still has open dependabot branches (`git branch -r | grep dependabot`), including a Gradle wrapper 9.7.0 bump and Kotlin 2.4.10. Owner asks for an investigation and an implemented fix or workaround.
+- Lane: `.github/dependabot.yml`, `gradle/**`, root and `android/**` Gradle files, `.github/workflows/ci.yml`, `docs/TESTING.md` "Legacy-tree findings" section only, `qa_testing.md` Q2, changelog. Read-only `git`/`gh` inspection of the dependabot branches is fine; do not comment on, close or merge PRs — list what the lead should do with each.
+- Investigate both routes and report evidence for each: (a) **hold the line** — dependabot `ignore`/`groups` rules so version sets that need AGP 9 / Gradle 9 / compileSdk 37 are not proposed piecemeal, with the constraint written down where a human will see it; (b) **move forward** — the coordinated set (wrapper 9.x + AGP 9.3.x + the reverted libraries + whatever else must move together), actually built here under JDK 21 with `ktlintCheck testDebugUnitTest lintDebug assembleDebug`.
+- Implement the one that builds and is least likely to break again; lead default is (b) if you can make the full set green locally, otherwise (a). Either way add (a)-style grouping so coupled bumps arrive together, and make sure a dependabot PR that breaks the build fails `CI` (the Android jobs must run for `gradle/**` changes — confirm from the workflow, do not assume).
+- DONE lists every open dependabot branch with a verdict: safe to merge / superseded by your change / must wait, and why.
+
+#### T72 — Grok Harbinger — Android arm64 build of the C++ core (S8)
+
+`export_mobile_smoke.sh` warns that the optional android.arm64 GDExtension is absent, so an Android export today runs without the native sim.
+- Lane: `game/src/cpp/**` build files (`CMakeLists.txt`, toolchain glue), a new `scripts/build_android_gdextension.sh`, `game/*.gdextension`, `game/BUILD_CPP.md`, `shared_core.md` S8, `ios.md` IOS3 note if relevant, changelog. No behaviour changes to `SimWorld`.
+- Done means: one command cross-compiles godot-cpp and `mobile_fortress_core` for `android.arm64` with the NDK and puts the `.so` where the `.gdextension` entry expects it; the export smoke's warning becomes a PASS; `file`/`readelf` output in DONE proves it is an aarch64 Android shared object; the desktop build, `ctest` and all smokes are unaffected. Document the NDK version and the 16 KB page-size linker flag decision.
+- No NDK is configured in this shell (`ANDROID_NDK_HOME` unset). Look under the Android SDK the Gradle build uses; if no NDK is installed and you cannot install one, write the script and docs, state clearly that it is unbuilt, and post BLOCKED for the build proof. The output binary is gitignored like the desktop one — say so.
+
+#### T73 — Muse Harbinger — scripted balance probe (A4 tuning input, Q10 prep)
+
+A4 stays Partial "until tuned against playtest data" and no playtests have run. A bot cannot replace them, but it can show where the levels sit.
+- Lane: new `game/tests/balance_probe.gd` (manual, **not** `*_smoke.gd`), optional `scripts/run_balance_probe.sh`, a new section in `docs/BENCHMARKS.md`, `ai_systems.md` A4 note, changelog. No C++, no level or unit number changes.
+- For every catalog level, run several fixed scripted strategies through `SimulationCore` at fixed dt to the end of the run — at least: no defenders, land-only, sea-only, balanced cheap, balanced with heroes and the Signal Battery — each with DDA off and on. Report per run: victory/defeat, time, HQ HP left, outposts lost, stars, kills, currency unspent, and for DDA-on the min/max intensity seen.
+- Sanity assertions only (the script fails if they break, since they would mean the probe is wrong): "no defenders" loses every level; results are identical when a run is repeated; DDA-on differs from DDA-off somewhere, or you say plainly that it never engaged and why.
+- Write the table and three or four plain observations (which strategies trivialise or cannot win which level, whether DDA changes any outcome). Label it clearly as scripted-bot data, not player data. Do not recommend number changes as decisions — list them as questions for the owner.
+
+#### T74 — Mistral Harbinger — roadmap index and agent guide sync
+
+- Lane: `docs/moon/ROADMAP.md`, `.agent/AGENTS.md` (not §8's existing bullets — append to §8 only), `docs/TESTING.md` except the "Legacy-tree findings" section (Kimi), `repo_automation.md` history row, changelog. No status cells in `docs/moon/roadmaps/*.md`, no code.
+- `ROADMAP.md`: bring its summary/status overview in line with what the per-area roadmap files say after rounds 1–4. The per-area files are the source of truth; where the index contradicts them, fix the index and list each correction in DONE. Do not upgrade anything the area file calls Partial.
+- `AGENTS.md`: append to §8 the team signing rule (point at the bus `§Signing`, give the commit trailer format) and the two-team layout (Harbinger on `harbinger`, Wall on `GGWall`, lead merges to `main`); in §4 note that Gradle needs JDK 21 here and that layout smokes must not rely on a clean profile. Bump the guide version.
+- Strict MkDocs stays at 0 warnings; every command you add is one you ran.
+
+#### T75 — Qwen Harbinger — ID8 slice 4: citadel rank widget with a drift test
+
+- Lane: `docs/website/**`, `internal_dashboard.md` ID8, changelog.
+- Add to `/dashboard/demo` a citadel-rank widget: the six ranks with titles and thresholds, and a control (slider or number input) that shows the rank and progress to the next for a given prestige value, with the same results as `Progression.get_prestige_tier` / `get_next_prestige_tier` (including the max-rank case and values just below a threshold).
+- Drift test: a vitest that reads `game/scripts/data/progression.gd` and fails when rank, threshold or title differ. Prove it with one mutation in a disposable copy and name the failing test.
+- Derive, do not hardcode — Codex had to replace hardcoded "derived" values in T67. Keep `tsc -b` clean, the 320px header, keyboard access to the new control, and the island budget; report test counts before/after. Include the `Agent: Qwen Harbinger` trailer.
+
+#### T76 — Codex Harbinger — review T69–T75 by commit hash
+
+Same rules as T66. T69 and T70 share `battle_root.gd` — check the hand-off order was respected and that T70 did not undo the refund fix. For T71, rebuild Android yourself under JDK 21.
+
+**Acknowledged by the owner, not assigned:** `ios/MyGame.xcodeproj` stays path-gated until someone has a Mac. VS10 playtest sessions and device runs remain with the owner.

@@ -1,4 +1,4 @@
 - **agent:** qwen — signs as **Qwen Harbinger**
-- **status:** DONE — T67 (see bus DONE block, 2026-10-09)
+- **status:** ASSIGNED — T75 (see bus "round 5" entry, 2026-10-09)
 - **canonical bus:** `.agent/cache/AGENT_BUS.md`
 - **updated:** 2026-10-09
