@@ -7,25 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Fixed (2026-10-09, T74 roadmap index + agent-guide sync — Mistral Harbinger)
+### Fixed (2026-10-09, T76 balance-probe accounting — Codex Harbinger)
 
-- `docs/moon/ROADMAP.md` v6.0: the index was frozen at the 2026-08-11 state; it now tracks the per-area files (the source of truth) after agent rounds 1–4. Corrections: Phase 1 "Pending" → In progress (rounds 1–4 delivered the polish rows, several Partial pending playtest data); Phase 2 "Parallel after VS1 starts" → Partial (S0/S1/S3/S4 done, S2/S5/S7/S8 partial, S6 pending); Phase 7 dashboard "⏸" → Partial (ID2/ID3/ID6 delivered, ID7/ID8 partial); the Slice-0 track showed VS0 🚧/VS1 "next implement"/VS2–VS10 📋 → VS0–VS9 ✅, VS10 🚧 Protocol ready; the "Immediate execution order" still opened with "G2/VS1 next" → VS10 playtest gate first, then the post-gate backlog; new per-area "Where we are" snapshot table. No area file's status was upgraded — the index only repeats what they say.
-- `.agent/AGENTS.md` v3.2: §8 gained the signing rule (signature in bus/changelog/report/presence, `Agent: <Name> <Team>` commit trailer above the coauthor trailer, authoritative text on the bus `§Signing`) and the two-team layout (Harbinger on `harbinger`, Wall on `GGWall`, lead merges to `main`); §4 gained the JDK 21 Gradle requirement and the returning-player-profile rule for layout smokes. Beyond the two named sections, two lines that directly contradicted T71's verified toolchain were corrected (§2 legacy-stack row and §7 legacy constraint: AGP 8.5.2/Gradle 8.7 → the T71 coordinated set, wrapper 9.7.0 + AGP 9.3.1 + Kotlin 2.4.10 + compileSdk 37). Existing §8 bullets untouched.
-- `docs/TESTING.md`: the per-smoke coverage table gains the missing `battle_layout_smoke` row (T70) and the count moved 28 → 29; new "Layout smokes must not rely on a clean player profile" rule (T61 finding, T77 fix). The "Legacy-tree findings" section was not touched (Kimi's T71 owns it).
-
-### Added (2026-10-09, T75 ID8 slice 4: citadel rank widget + drift test — Qwen Harbinger)
-
-- **Citadel rank widget** on `/dashboard/demo`: shows all 6 prestige tiers (Coastal Beacon → Imperial Coastal Stronghold) with titles, historical titles, thresholds, and descriptions. Slider + number input control shows current rank and progress to next tier. Max-rank case handled (🏆 badge). Values derived from `game/scripts/data/progression.gd` via Vite `?raw` import — not hardcoded.
-- **Drift test** (`citadel-rank-drift.test.ts`): reads `progression.gd`, parses PRESTIGE_TIERS, asserts rank/threshold/title/historical_title match for all 6 tiers. Also tests `getPrestigeTier` and `getNextPrestigeTier` at boundary values. **Mutation proven:** changing Sentry Bastion threshold 250→999 fails 3 tests.
-- **Browser-safe module** (`citadelRank.ts`): parsing and tier logic without Node.js imports. File loading done via Vite `?raw` import in the demo view.
-
-### Added (2026-10-09, T72 Android arm64 GDExtension — Grok Harbinger)
-
-- **S8:** `scripts/build_android_gdextension.sh` cross-compiles godot-cpp and `mobile_fortress_core` for `android.arm64` with NDK r27c (27.2.12479018), API 33, `c++_shared`, and `-Wl,-z,max-page-size=16384` (common-page-size left at 4 KB). The gitignored output is `game/bin/libmobile_fortress_core.android.arm64.so`. `mobile_fortress_core.gdextension` maps `android.debug.arm64` and `android.release.arm64`. No `SimWorld` behaviour change. Signed store pipelines and the iOS dylib stay open.
-
-### Added (2026-10-09, T73 scripted balance probe — Muse Harbinger)
-
-- **A4 tuning input / Q10 prep:** New manual `game/tests/balance_probe.gd` (never CI; `scripts/run_balance_probe.sh`) plays 5 fixed bots × DDA off/on on both catalog levels to the end of the run with probe-enforced `UnitDefs` wallets. Full 20-run table in `docs/BENCHMARKS.md`: every bot loses with DDA off; DDA-on flips 3 runs to 1-star victories with the director near its 0.75 easing floor; no bot holds both outposts. Labeled scripted-bot data with owner questions, not tuning decisions.
+- Probe placement now spends the native wallet rather than only private counters: both reported unspent funds and DDA resource pressure previously used inflated balances. Regenerated the benchmark table; four DDA-on victories now occur instead of three. Added an affordable Qi + Battery strategy, all 24 repeat checks, both-mode no-defender sanity, failed-payment/spawn/timeout checks and correct elapsed tick count. A4 remains Partial; these are bot observations, not tuning decisions.
 
 ### Changed (2026-10-09, T71 Android dependency strategy — toolchain moved forward as one set — Kimi Harbinger)
 

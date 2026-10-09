@@ -6,8 +6,8 @@ extends SceneTree
 ## CI. Run via scripts/run_balance_probe.sh or directly:
 ##   godot --path game --headless --script res://tests/balance_probe.gd
 ##
-## For every catalog level × 5 fixed strategies (none, land-only, sea-only,
-## balanced cheap, heroes + Signal Battery) × DDA off/on, a fixed-dt run
+## For every catalog level × 6 fixed strategies (none, land-only, sea-only,
+## balanced cheap, two heroes, affordable hero + Signal Battery) × DDA off/on, a fixed-dt run
 ## plays to the end through SimulationCore. Placements happen pre-combat at
 ## fixed ticks; the probe enforces wallets from the level's starting
 ## currencies with UnitDefs.placement_plan (the real affordability rule) and
@@ -15,7 +15,7 @@ extends SceneTree
 ## abilities are never cast — a stated bot limitation. Reports per run:
 ## victory/defeat, combat time, HQ HP left, outposts lost, stars (pure
 ## Progression.compute_stars), kills, currency unspent, DDA min/max
-## intensity. Sanity assertions only: no-defender runs must lose, one repeat
+## intensity. Sanity assertions only: no-defender runs must lose, every repeat
 ## must be identical, DDA engagement is reported not asserted.
 
 const LevelCatalogScript := preload("res://scripts/data/level_catalog.gd")
@@ -45,6 +45,10 @@ const STRATS := {
 		["spearman", 0, Vector2i(5, 3)],
 		["arquebusier", 1, Vector2i(5, 3)],
 	],
+	"hero_support": [
+		["hero_qi", 0, Vector2i(3, 1)],
+		["cross_support", 1, Vector2i(1, 3)],
+	],
 	"heroes": [
 		["hero_qi", 0, Vector2i(3, 1)],
 		["hero_dias", 1, Vector2i(3, 3)],
@@ -53,7 +57,7 @@ const STRATS := {
 		["arquebusier", 1, Vector2i(6, 1)],
 	],
 }
-const STRAT_ORDER := ["none", "land", "sea", "cheap", "heroes"]
+const STRAT_ORDER := ["none", "land", "sea", "cheap", "heroes", "hero_support"]
 
 
 func _init() -> void:
@@ -81,17 +85,15 @@ func _init() -> void:
 				_print_row(level_id, strat, dda, row)
 				if bool(row.get("dda_moved", false)):
 					dda_engaged = true
-				if strat == "none" and not dda and bool(row.get("victory", false)):
-					failures.append("%s: no-defender run won — the probe is wrong, not the game" % level_id)
-		# Sanity: one strategy repeated must be identical.
-		var a := _play_run(path, "cheap", false, failures)
-		var b := _play_run(path, "cheap", false, failures)
-		if not a.is_empty() and not b.is_empty() and a["digest"] != b["digest"]:
-			failures.append("%s: repeated cheap/DDA-off run diverged" % level_id)
+				if strat == "none" and not bool(row.get("defeat", false)):
+					failures.append("%s: no-defender run did not lose — inspect probe setup" % level_id)
+				var repeated := _play_run(path, strat, dda, failures)
+				if not repeated.is_empty() and row != repeated:
+					failures.append("%s/%s/dda=%s: repeated run diverged" % [level_id, strat, dda])
 	if not dda_engaged:
-		print("balance_probe: NOTE dda_never_engaged — no DDA-on run differed from its DDA-off twin; see BENCHMARKS.md for why")
+		print("balance_probe: NOTE dda_never_engaged — no DDA-on intensity departed from 1.0; see BENCHMARKS.md for why")
 	else:
-		print("balance_probe: NOTE dda_engaged — at least one DDA-on run differed from its DDA-off twin")
+		print("balance_probe: NOTE dda_engaged — at least one DDA-on intensity departed from 1.0")
 	_finish(failures, wall_start)
 
 
@@ -107,8 +109,6 @@ func _play_run(path: String, strat: String, dda: bool, failures: Array[String]) 
 	sim.set_cell_solid(0, OUTPOST_CELL, true)
 	sim.set_cell_solid(1, OUTPOST_CELL, true)
 	sim.set_dda_enabled(dda)
-	var land: int = sim.get_land_resources()
-	var sea: int = sim.get_sea_resources()
 	var want: Array = STRATS[strat]
 	var queue: Array = want.duplicate()
 	var placed := 0
@@ -123,16 +123,23 @@ func _play_run(path: String, strat: String, dda: bool, failures: Array[String]) 
 	while tick_counter < cap:
 		if tick_counter < COMBAT_AT_TICK and not queue.is_empty() and tick_counter % 5 == 0:
 			var order: Array = queue.pop_front()
-			var plan: Dictionary = UnitDefs.placement_plan(str(order[0]), "land" if int(order[1]) == 0 else "sea", land, sea)
+			var plan: Dictionary = UnitDefs.placement_plan(str(order[0]), "land" if int(order[1]) == 0 else "sea", int(sim.get_land_resources()), int(sim.get_sea_resources()))
 			if bool(plan.get("allowed", false)) and str(plan.get("wallet", "")) != "":
 				var cost: int = int(plan.get("cost", 0))
-				if str(plan.get("wallet", "")) == "land":
-					land -= cost
+				var payer := 0 if str(plan.get("wallet", "")) == "land" else 1
+				var before := int(sim.get_land_resources()) if payer == 0 else int(sim.get_sea_resources())
+				if not sim.spend(payer, cost):
+					failures.append("%s/%s: planned payment rejected" % [path, strat])
+				elif not _place(sim, str(order[0]), int(order[1]), order[2]):
+					sim.gain(payer, cost)
+					failures.append("%s/%s: planned spawn failed" % [path, strat])
 				else:
-					sea -= cost
-				_place(sim, str(order[0]), int(order[1]), order[2])
-				placed += 1
-				spent += cost
+					var after := int(sim.get_land_resources()) if payer == 0 else int(sim.get_sea_resources())
+					if after != before - cost:
+						failures.append("%s/%s: native wallet did not pay cost" % [path, strat])
+					placed += 1
+					spent += cost
+
 		if tick_counter == COMBAT_AT_TICK:
 			sim.start_combat()
 		var events: Array = sim.tick(FIXED_DT, true)
@@ -150,6 +157,10 @@ func _play_run(path: String, strat: String, dda: bool, failures: Array[String]) 
 		tick_counter += 1
 		if victory or defeat:
 			break
+	if not victory and not defeat:
+		failures.append("%s/%s: timed out before a terminal event" % [path, strat])
+	if strat == "hero_support" and placed != 2:
+		failures.append("%s: hero_support must place Qi and Battery" % path)
 	var outposts_lost := (0 if sim.is_land_outpost_alive() else 1) + (0 if sim.is_sea_outpost_alive() else 1)
 	var hq: int = sim.get_hq_hp()
 	var stars: int = Progression.compute_stars({
@@ -158,7 +169,7 @@ func _play_run(path: String, strat: String, dda: bool, failures: Array[String]) 
 	var digest := _digest(sim.save_state())
 	var row := {
 		"victory": victory, "defeat": defeat,
-		"t": snappedf(float(end_tick - COMBAT_AT_TICK) * FIXED_DT, 0.1),
+		"t": snappedf(float(end_tick - COMBAT_AT_TICK + 1) * FIXED_DT, 0.1),
 		"hq": hq, "outposts_lost": outposts_lost, "stars": stars,
 		"kills": int(sim.get_enemies_killed()),
 		"land_left": int(sim.get_land_resources()), "sea_left": int(sim.get_sea_resources()),
@@ -171,7 +182,7 @@ func _play_run(path: String, strat: String, dda: bool, failures: Array[String]) 
 	return row
 
 
-func _place(sim: Node, unit_id: String, front: int, cell: Vector2i) -> void:
+func _place(sim: Node, unit_id: String, front: int, cell: Vector2i) -> bool:
 	var def: Dictionary = UnitDefs.get_def(unit_id)
 	var base_y := 200.0 if front == 0 else 600.0
 	var pos := Vector2(300.0 + float(cell.x - cell.y) * 32.0, base_y + float(cell.x + cell.y) * 16.0)
@@ -182,6 +193,7 @@ func _place(sim: Node, unit_id: String, front: int, cell: Vector2i) -> void:
 		float(def.get("aura_radius", 0.0)) * 48.0, float(def.get("aura_damage_bonus", 0.0)))
 	if did >= 0 and int(def.get("kind", UnitDefs.Kind.DEFENDER)) != UnitDefs.Kind.HERO:
 		sim.set_cell_solid(front, cell, true)
+	return did >= 0
 
 
 func _print_row(level_id: String, strat: String, dda: bool, row: Dictionary) -> void:

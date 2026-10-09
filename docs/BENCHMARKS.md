@@ -216,7 +216,7 @@ not profiled; timer resolution is 1 us.
 ## Scripted Balance Probe (A4 Tuning Input)
 
 Scripted-bot data for A4 tuning and Q10 prep (T73). This is **not player
-data** and not a pass/fail gate: five fixed bots play both catalog levels
+data** and not a pass/fail gate: six fixed bots play both catalog levels
 with DDA off and on, and the numbers below show where the levels sit before
 any playtest exists.
 
@@ -229,56 +229,64 @@ godot --path game --headless --script res://tests/balance_probe.gd
 ```
 
 Manual only — never CI. Each bot places a fixed unit list pre-combat at
-fixed ticks; the probe enforces wallets from the level's starting currencies
-through the real `UnitDefs.placement_plan` rule and spawns with the real
+fixed ticks; the probe spends native wallets
+through the real `UnitDefs.placement_plan` rule and `SimulationCore.spend` and spawns with the real
 battle conversions (range×48, aura×48). Hero active abilities are never cast
 (stated bot limitation). Runs play at fixed dt to the victory / HQ-destroyed
-event. Sanity assertions: no-defender bots must lose every level, one repeat
-must be byte-identical, DDA engagement is reported, not asserted.
+event. Sanity assertions: no-defender bots must lose every level in both DDA modes, every repeat
+must have identical rows and snapshot digests, DDA engagement is reported, not asserted.
 
 ### Measured table (2026-10-09)
 
 Machine: 12th Gen Intel i9-12900HX, desktop x86-64 Linux, Godot 4.7.1
-headless, current-`harbinger` native library. Sub-second wall for all 22 runs
-(20 probe + 2 repeats). Columns: outcome, combat seconds, HQ HP left,
+headless, current-`harbinger` native library. Sub-second wall for all 48 runs
+(24 probe + 24 repeats). T76 corrected native wallet payment: the original T73
+table reported uncharged wallets and fed those inflated purses into DDA; the
+table below supersedes it. The extra `hero_support` strategy always buys Qi
+on land and Signal Battery on sea. The original `heroes` attempt still cannot
+afford Battery; it remains a useful separate comparison. Columns: outcome, combat seconds, HQ HP left,
 outposts lost, stars, kills, unspent land/sea, DDA intensity min–max.
 
 | Level | Strategy | DDA | Outcome | t(s) | HQ | Out | ★ | Kills | Unspent L/S | Intensity |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| night_tide | none | off | defeat | 28.0 | 0 | 2 | 0 | 0 | 39/32 | 1.00–1.00 |
-| night_tide | none | on | defeat | 28.0 | 0 | 2 | 0 | 0 | 39/32 | 0.75–1.01 |
-| night_tide | land-only | off | defeat | 29.6 | 0 | 1 | 0 | 7 | 42/32 | 1.00–1.00 |
-| night_tide | land-only | on | defeat | 42.2 | 0 | 1 | 0 | 12 | 48/32 | 0.75–1.01 |
-| night_tide | sea-only | off | defeat | 29.6 | 0 | 2 | 0 | 5 | 39/33 | 1.00–1.00 |
-| night_tide | sea-only | on | defeat | 41.5 | 0 | 2 | 0 | 8 | 39/35 | 0.75–1.01 |
-| night_tide | cheap | off | defeat | 42.3 | 0 | 2 | 0 | 14 | 39/33 | 1.00–1.00 |
-| night_tide | cheap | on | victory | 72.0 | 12 | 2 | 1 | 26 | 39/35 | 0.75–1.01 |
-| night_tide | heroes | off | defeat | 28.7 | 0 | 1 | 0 | 4 | 40/32 | 1.00–1.00 |
-| night_tide | heroes | on | defeat | 29.6 | 0 | 1 | 0 | 6 | 40/32 | 0.75–1.01 |
-| slice0 | none | off | defeat | 32.7 | 0 | 2 | 0 | 0 | 45/48 | 1.00–1.00 |
-| slice0 | none | on | defeat | 33.0 | 0 | 2 | 0 | 0 | 48/48 | 0.75–1.01 |
-| slice0 | land-only | off | defeat | 46.2 | 0 | 2 | 0 | 10 | 48/48 | 1.00–1.00 |
-| slice0 | land-only | on | defeat | 47.0 | 0 | 2 | 0 | 12 | 51/48 | 0.75–1.01 |
-| slice0 | sea-only | off | defeat | 46.3 | 0 | 2 | 0 | 11 | 45/51 | 1.00–1.00 |
-| slice0 | sea-only | on | defeat | 47.0 | 0 | 2 | 0 | 12 | 48/54 | 0.75–1.01 |
-| slice0 | cheap | off | defeat | 46.1 | 0 | 2 | 0 | 10 | 45/51 | 1.00–1.00 |
-| slice0 | cheap | on | victory | 55.0 | 22 | 2 | 1 | 17 | 45/51 | 0.75–1.01 |
-| slice0 | heroes | off | defeat | 48.0 | 0 | 2 | 0 | 17 | 48/48 | 1.00–1.00 |
-| slice0 | heroes | on | victory | 55.0 | 10 | 2 | 1 | 17 | 48/48 | 0.75–1.04 |
+| night_tide | none | off | defeat | 28.0 | 0 | 2 | 0 | 0 | 39/32 | 1.00-1.00 |
+| night_tide | none | on | defeat | 28.0 | 0 | 2 | 0 | 0 | 39/32 | 0.75-1.01 |
+| night_tide | land-only | off | defeat | 29.6 | 0 | 1 | 0 | 7 | 12/32 | 1.00-1.00 |
+| night_tide | land-only | on | defeat | 42.2 | 0 | 1 | 0 | 11 | 18/32 | 0.75-1.00 |
+| night_tide | sea-only | off | defeat | 29.6 | 0 | 2 | 0 | 5 | 39/9 | 1.00-1.00 |
+| night_tide | sea-only | on | defeat | 42.2 | 0 | 2 | 0 | 8 | 39/11 | 0.75-1.00 |
+| night_tide | cheap | off | defeat | 42.4 | 0 | 2 | 0 | 14 | 19/9 | 1.00-1.00 |
+| night_tide | cheap | on | victory | 72.0 | 18 | 2 | 1 | 26 | 22/11 | 0.75-1.00 |
+| night_tide | heroes | off | defeat | 28.7 | 0 | 1 | 0 | 4 | 12/6 | 1.00-1.00 |
+| night_tide | heroes | on | defeat | 42.4 | 0 | 1 | 0 | 11 | 17/6 | 0.75-1.00 |
+| night_tide | hero_support | off | defeat | 28.7 | 0 | 1 | 0 | 4 | 12/12 | 1.00-1.00 |
+| night_tide | hero_support | on | defeat | 41.6 | 0 | 2 | 0 | 8 | 14/12 | 0.75-1.00 |
+| slice0 | none | off | defeat | 32.8 | 0 | 2 | 0 | 0 | 45/48 | 1.00-1.00 |
+| slice0 | none | on | defeat | 33.0 | 0 | 2 | 0 | 0 | 48/48 | 0.75-1.01 |
+| slice0 | land-only | off | defeat | 46.2 | 0 | 2 | 0 | 10 | 18/48 | 1.00-1.00 |
+| slice0 | land-only | on | defeat | 47.1 | 0 | 2 | 0 | 12 | 27/48 | 0.75-1.00 |
+| slice0 | sea-only | off | defeat | 46.4 | 0 | 2 | 0 | 11 | 45/11 | 1.00-1.00 |
+| slice0 | sea-only | on | victory | 55.0 | 4 | 2 | 1 | 14 | 48/17 | 0.75-1.00 |
+| slice0 | cheap | off | defeat | 46.1 | 0 | 2 | 0 | 10 | 25/27 | 1.00-1.00 |
+| slice0 | cheap | on | victory | 55.0 | 28 | 2 | 1 | 18 | 25/27 | 0.75-1.00 |
+| slice0 | heroes | off | defeat | 48.1 | 0 | 2 | 0 | 17 | 10/10 | 1.00-1.00 |
+| slice0 | heroes | on | victory | 55.0 | 22 | 2 | 1 | 17 | 10/13 | 0.75-1.00 |
+| slice0 | hero_support | off | defeat | 33.9 | 0 | 2 | 0 | 4 | 20/28 | 1.00-1.00 |
+| slice0 | hero_support | on | defeat | 46.9 | 0 | 2 | 0 | 8 | 20/28 | 0.75-1.00 |
 
 ### Plain observations (bot data, not player data)
 
 1. Every bot loses with DDA off, including the heroes bot — no strategy trivialises either level, and the no-defender sanity bot dies in ~30 s on both.
-2. DDA-on flips three losing runs to 1-star victories (cheap on both levels, heroes on slice0) while barely extending the still-lost runs. The director spent nearly every run at its 0.75 easing floor (max 1.01–1.04): at current numbers DDA is doing almost all easing, almost no punishing.
-3. No bot held both outposts — every run lost at least one, and all three victories lost both. Only the night_tide land-only and heroes bots held one (the sea outpost falls almost unopposed when the sea grid is empty or thin). Raiders damage outposts passing mid-grid whether or not defenders engage them.
-4. The night_tide heroes bot is the weakest armed bot (4 kills DDA-off vs 14 for cheap): two full-price heroes with uncast actives and no affordable Battery (sea 28 buys Dias 26 and leaves 2) contribute less than four cheap defenders. Hero value in human hands depends on timed actives this probe never casts.
+2. DDA-on flips four losing runs to 1-star victories (cheap on both levels, sea-only and heroes on slice0). Intensity ranges reach the 0.75 easing floor (maximum 1.01 for no defenders, 1.00 for armed bots); min/max alone do not measure time spent at the floor.
+3. No bot held both outposts — every run lost at least one, and all four victories lost both. The night_tide land-only, heroes and DDA-off hero_support bots held one (the sea outpost falls almost unopposed when the sea grid is empty or thin). Raiders damage outposts passing mid-grid whether or not defenders engage them.
+4. The night_tide heroes bot ties hero_support for the fewest armed-bot kills (4 DDA-off vs 14 for cheap): two full-price heroes with uncast actives and no affordable Battery (sea 28 buys Dias 26 and leaves 2) contribute less than four cheap defenders. Hero value in human hands depends on timed actives this probe never casts.
 
 ### Questions for the owner (not decisions)
 
 - Should both outposts always fall, even in victory, or should a good defence be able to hold at least one for 2–3 stars?
 - Is "DDA easing turns defeats into 1-star wins" the desired difficulty shape, or should the baseline hold more and the DDA band move less?
 - Heroes cost most of a front's starting purse and the bot gets little from them without actives — is that the intended trade, pending human-timed salvos?
-- Single-front bots die ~15 s later with DDA on but still lose: is the intended lesson "you must defend both fronts," and does the game teach it?
+- The sea-only slice0 bot wins with DDA on despite leaving land undefended: is that acceptable easing, and what should teach the value of defending both fronts?
 
 ---
 
