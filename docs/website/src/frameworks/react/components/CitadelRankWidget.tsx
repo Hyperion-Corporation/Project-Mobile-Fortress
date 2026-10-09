@@ -17,7 +17,7 @@ export default function CitadelRankWidget({ tiers }: CitadelRankWidgetProps) {
   const maxPrestige = tiers[tiers.length - 1].prestige_required;
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setPrestige(Math.max(0, parseInt(e.target.value, 10) || 0));
+    setPrestige(Math.max(0, Math.min(99999, Math.floor(Number(e.target.value) || 0))));
   }, []);
 
   const progressPct = Math.round(next.progress_ratio * 100);
@@ -44,10 +44,10 @@ export default function CitadelRankWidget({ tiers }: CitadelRankWidgetProps) {
           type="range"
           min={0}
           max={maxPrestige}
-          step={10}
-          value={prestige}
+          step={1}
+          value={Math.min(prestige, maxPrestige)}
           onChange={handleChange}
-          aria-label={`Prestige value: ${prestige}`}
+          aria-label="Prestige slider"
           data-testid="crw-prestige-slider"
         />
         <input

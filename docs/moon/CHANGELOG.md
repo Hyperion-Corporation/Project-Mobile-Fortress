@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed (2026-10-09, T76 citadel rank controls — Codex Harbinger)
+
+- Rank slider uses single-prestige steps so entering 749 no longer silently displays slider value 750 or jumps to 760 on ArrowRight. Number input handles exponent notation as a number and bounds values; max-rank values keep the slider within its range. Added three interaction tests (125 → 128 total). T75 actually added 9 tests over the T68 baseline of 116, not 22.
+
 ### Fixed (2026-10-09, T76 balance-probe accounting — Codex Harbinger)
 
 - Probe placement now spends the native wallet rather than only private counters: both reported unspent funds and DDA resource pressure previously used inflated balances. Regenerated the benchmark table; four DDA-on victories now occur instead of three. Added an affordable Qi + Battery strategy, all 24 repeat checks, both-mode no-defender sanity, failed-payment/spawn/timeout checks and correct elapsed tick count. A4 remains Partial; these are bot observations, not tuning decisions.
