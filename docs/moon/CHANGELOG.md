@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (2026-10-09, T72 Android arm64 GDExtension — Grok Harbinger)
+
+- **S8:** `scripts/build_android_gdextension.sh` cross-compiles godot-cpp and `mobile_fortress_core` for `android.arm64` with NDK r27c (27.2.12479018), API 33, `c++_shared`, and `-Wl,-z,max-page-size=16384` (common-page-size left at 4 KB). The gitignored output is `game/bin/libmobile_fortress_core.android.arm64.so`. `mobile_fortress_core.gdextension` maps `android.debug.arm64` and `android.release.arm64`. No `SimWorld` behaviour change. Signed store pipelines and the iOS dylib stay open.
+
 ### Added (2026-10-09, T73 scripted balance probe — Muse Harbinger)
 
 - **A4 tuning input / Q10 prep:** New manual `game/tests/balance_probe.gd` (never CI; `scripts/run_balance_probe.sh`) plays 5 fixed bots × DDA off/on on both catalog levels to the end of the run with probe-enforced `UnitDefs` wallets. Full 20-run table in `docs/BENCHMARKS.md`: every bot loses with DDA off; DDA-on flips 3 runs to 1-star victories with the director near its 0.75 easing floor; no bot holds both outposts. Labeled scripted-bot data with owner questions, not tuning decisions.

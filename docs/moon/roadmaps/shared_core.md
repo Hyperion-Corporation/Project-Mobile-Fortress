@@ -28,6 +28,6 @@
 | S5 | Move dual-front game logic into C++; Godot presentation | XL | 🚧 **In progress** — combat + wave-on-flow in C++ `SimWorld`; a v2 snapshot resumes that flow and the DDA director; UX still Godot |
 | S6 | Async/job bridging sim thread ↔ Godot main (TSan) | M | 📋 Pending (retarget from Kotlin/Swift era) |
 | S7 | Cross-platform regression suite (soft determinism) | L | 🚧 **Partial** — `ctest` `sim_world_tests` (v1 fixture + v2 flow/DDA tick match) + headless smokes incl. `determinism_smoke.gd` (T65: scripted fixed-dt sessions past wave 2 on every catalog level, byte-identical repeat + save/load-resume buffers, 1-tick perturbation control); Godot CI job added |
-| S8 | Android 13+ / iOS 17+ Godot export packaging | M | 🚧 **Partial** — presets + smoke; **Android debug APK exported** (2026-08-11); NDK arm64 sim + signed store pipelines still open |
+| S8 | Android 13+ / iOS 17+ Godot export packaging | M | 🚧 **Partial** — presets + smoke; **Android debug APK exported** (2026-08-11); NDK r27c arm64 GDExtension built by `scripts/build_android_gdextension.sh` (16 KB max-page-size, Android 33); signed store pipelines and the iOS dylib still open |
 
 Effort key: S = days, M = 1–2 weeks, L = 3–6 weeks, XL = multi-month/cross-cutting.
