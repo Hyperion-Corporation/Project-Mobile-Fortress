@@ -140,14 +140,16 @@ Lower-case aliases (`gemini`, `chat`, …) remain valid in the task-board Owner 
 | T53 Review T46–T52 vs changelog/roadmap | chat | **QUEUED** | Review each task's commits on `main` when its DONE block lands; fix-ups allowed |
 | T57 G12 cross-front support units & catalog validation smoke | geminiwall | **DONE — lead-reviewed with fixes (`bd211b9`), Partial** | Enhanced `unit_defs.gd` with G12 synergy/affordance helpers + `unit_catalog_smoke.gd` PASS |
 | T58 Citadel prestige tiers & campaign progress | geminiwall | **DONE — lead-reviewed with fixes (`bd211b9`), Partial** | Historical fortress defense tiers (0–5), next-tier calculation, total stars & progression_smoke.gd PASS |
-| T59 Battle HUD phone-scale targets + results panel shows citadel rank (#25, #14) | gemini | **ASSIGNED** | `game/scripts/ui/battle_hud.gd`, new `game/tests/battle_hud_layout_smoke.gd`; round-4 entry |
-| T60 Property tests for flow field + tick allocation audit (Q3, P4) | grok | **ASSIGNED** | Sole owner of `game/src/cpp/**`, `game/tests/native/**`; round-4 entry |
-| T61 One affordability rule: battle uses `UnitDefs` helpers; menu shows rank + campaign stars (G12, G8) | cursor | **ASSIGNED** | `game/scripts/battle/**`, `game/scripts/data/unit_defs.gd`, `game/scripts/ui/main_menu.gd`; round-4 entry |
-| T62 Player-facing docs truth pass: `game/README.md`, `docs/TESTING.md`, VS10 protocol, cache README | mistral | **DONE — local verify; awaits Codex T66 review** | Commit `094801f` on `harbinger`; smokes 27/27, ctest 1/1, perf bench PASS, strict MkDocs 0 warnings |
-| T63 Legacy Android build configures again; export smoke script points at `game/` | kimi | **ASSIGNED** | `gradle/**`, `android/**` build files, `scripts/export_mobile_smoke.sh`; round-4 entry |
-| T64 ID8 slice 3: unit roster + damage matrix on the demo, drift test against `unit_defs.gd` | qwen | **ASSIGNED** | `docs/website/**`; round-4 entry |
-| T65 Godot-boundary determinism smoke for every catalog level (Q4, S7) | muse | **ASSIGNED** | new `game/tests/determinism_smoke.gd`; round-4 entry |
-| T66 Review T59–T65 | chat | **QUEUED** | By commit hash on `harbinger` as DONE blocks land |
+| T59 Battle HUD phone-scale targets + results panel shows citadel rank (#25, #14) | gemini | **DONE — verified with fixes (`1ae1ba4`)** | `game/scripts/ui/battle_hud.gd`, new `game/tests/battle_hud_layout_smoke.gd`; round-4 entry |
+| T60 Property tests for flow field + tick allocation audit (Q3, P4) | grok | **DONE — verified (Q3/P4 Partial)** | Sole owner of `game/src/cpp/**`, `game/tests/native/**`; round-4 entry |
+| T61 One affordability rule: battle uses `UnitDefs` helpers; menu shows rank + campaign stars (G12, G8) | cursor | **DONE — verified with fixes (`1ae1ba4`)** | `game/scripts/battle/**`, `game/scripts/data/unit_defs.gd`, `game/scripts/ui/main_menu.gd`; round-4 entry |
+| T62 Player-facing docs truth pass: `game/README.md`, `docs/TESTING.md`, VS10 protocol, cache README | mistral | **DONE — verified with doc fixes (`8ce16fe`)** | Commit `094801f` on `harbinger`; smokes 27/27, ctest 1/1, perf bench PASS, strict MkDocs 0 warnings |
+| T63 Legacy Android build configures again; export smoke script points at `game/` | kimi | **DONE — verified locally; CI proof on next main merge** | `gradle/**`, `android/**` build files, `scripts/export_mobile_smoke.sh`; round-4 entry |
+| T64 ID8 slice 3: unit roster + damage matrix on the demo, drift test against `unit_defs.gd` | qwen | **HOLD — follow-up T67** | `docs/website/**`; round-4 entry |
+| T65 Godot-boundary determinism smoke for every catalog level (Q4, S7) | muse | **DONE — verified** | new `game/tests/determinism_smoke.gd`; round-4 entry |
+| T66 Review T59–T65 | chat | **DONE (T64 HOLD)** | By commit hash on `harbinger` as DONE blocks land |
+| T67 T64 HOLD follow-up: range/cooldown parity + drift checks, own-wallet-first placement, fractional damage | qwen | **ASSIGNED** | `docs/website/**`; round-4 close entry |
+| T68 Re-review T67 | chat | **QUEUED** | By commit hash on `harbinger` |
 
 ### Conflict rules
 
@@ -3268,3 +3270,25 @@ T61 pre-check bypasses `SimWorld::spend`'s infinite-wallet allowance: zero land 
 - **T64 follow-up for lead/Qwen:** preserve canonical range/cooldown in roster/catalog and assert both (range=9999 mutant still passes original 11 drift tests); Qi on sea with land=28/sea=0 must use land first, with payer-aware removal refunds; preserve fractional matrix damage (Signal Battery 3.3/6.9, not 3/7). Reconcile/document demo targeting differences from native combat. Exact reproductions and correction criteria are in the report. No game-side number changes.
 - **Independent verification:** final Godot **28/28**; separately compiled native **24 cases / 114310 assertions**, ctest **1/1**, boxed-in mutant fails; tick/flow p95 **1 µs**; website **93/93**, real tsc and production build pass after generation, 320px header geometry/hit checks pass, island **66.1/300 kB gzip**; Gradle lint/unit/assemble pass, ktlint+unit rerun **35 executed tasks**, **3/3** unit tests; export CONFIG PASS; Docker ShellCheck clean; strict MkDocs **0 warnings**. Disposable mutations also detect removed wallet fallback, shifted replay and skipped snapshot load. T65 save points independently show second wave with 9/8 live raiders.
 - **Limits:** no macOS/Xcode, device/emulator, APK export, CI-JDK-17 run or VS10 owner playtest. Existing sea-grid landscape clipping and failed-spawn refund quirk remain separately documented; P4/S7 stay Partial. No pushes, GitHub mutations or shared `.so` replacements. Lead can verify fixes and route T64 for correction; this is not blanket approval of round 4.
+
+### Claude Harbinger — 2026-10-09 — round 4 close; T67 (Qwen) and T68 (Codex) opened
+
+**Lead verification on `harbinger` at `6ae15f6`:** native rebuild matches the shared `.so`; `ctest` 1/1; Godot smokes 28/28; perf bench PASS (tick and flow p95 = 1 us); website real `tsc -b` clean, vitest 93/93; `./gradlew ktlintCheck testDebugUnitTest` BUILD SUCCESSFUL under JDK 21 (the default JDK 25 on this machine cannot run Gradle 8.7 — set `JAVA_HOME` to 21); `export_mobile_smoke.sh` CONFIG PASS; strict MkDocs 0 warnings. Not run: JDK 17, emulator, Xcode, devices.
+
+**Accepted:** T59, T60, T61, T62, T63, T65, T66. **Not accepted:** T64 — its code stays on `harbinger`; Codex already reworded ID8 and the changelog to say so.
+
+#### T67 — Qwen Harbinger — T64 HOLD follow-up
+
+Evidence and exact repros: `.agent/reports/chat/T66_review_2026-10-09.md`, the three "HOLD: T64" sections. Lane `docs/website/**`, ID8 row, changelog. Game numbers do not change. Done means all three:
+1. **Range and cooldown parity.** The website catalog and roster keep the game's canonical `range` and `cooldown` (seconds) with unit labels. If the demo needs grid-cell ranges or tick cooldowns, derive them from the canonical values with an explicit, named conversion. The drift test compares range and cooldown too. Prove it: changing a game range, and separately a game cooldown, in a disposable copy must each fail the drift test — name the failing test in DONE.
+2. **Own wallet first.** Placement follows `UnitDefs.placement_plan`: charge the unit's own currency first; fall back to the clicked grid's wallet only when it is a different wallet and can pay; the unit still stands on the clicked grid. Record which wallet paid so removal refunds that wallet. Tests: own-first, fallback, rejection and refund, for Qi, Dias and the Signal Battery.
+3. **Fractional damage.** The matrix shows the real values (Signal Battery 3.3 / 6.9, not 3 / 7), and combat uses them or the difference is stated on the page.
+Also list, on the demo page or in the ID8 notes, any remaining way the toy's targeting differs from `SimWorld`. Keep `tsc -b` clean, the 320px header and the island budget; report test counts before/after.
+
+#### T68 — Codex Harbinger — re-review T67 by commit hash.
+
+**For the owner, not assigned:**
+- Failed-spawn refund credits the unit's own-currency wallet even when the other wallet paid (Cursor, T61 — preserved, looks like a bug).
+- At the two landscape windows (1280×720, 844×390) the sea grid extends below the 720-high canvas (Codex, T66 — predates round 4).
+- `ios/MyGame.xcodeproj` still cannot be opened by Xcode 26.6; job stays path-gated.
+- T63's Android fix reverts five dependency bumps; open dependabot PRs for those will re-break it if merged.
